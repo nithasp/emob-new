@@ -1,0 +1,11 @@
+<router-outlet></router-outlet>
+<ngx-spinner
+  bdColor="rgba(51,51,51,0.8)"
+  size="medium"
+  color="#fff"
+>
+  <p style="font-size: 20px; color: white">Loading...</p>
+</ngx-spinner>
+<button mat-fab  *ngIf="isShow"  (click)="gotoTop()"> 
+    <mat-icon class="mb-2">expand_less</mat-icon>
+</button>

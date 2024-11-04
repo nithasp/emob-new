@@ -1,0 +1,43 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand text-center font-weight-bold logo pl-lg-3 pr-lg-3 text-dark" [routerLink]="['/']">Banpu<br>E-mobility</a>
+  <button class="navbar-toggler navbar-toggler-right collapsed" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="my-1 mx-2 close ">X</span>
+      <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbar">
+      <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+
+          <li class="nav-item" id="overview">
+              <a class="nav-link " [routerLink]="['/users/overview']" routerLinkActive>Overview</a>
+          </li>
+          <li class="nav-item" id="constraint">
+              <a class="nav-link" [routerLink]="['/users/constraint']" routerLinkActive>Contraint</a>
+          </li>
+          <li class="nav-item" id="task">
+              <a class="nav-link" [routerLink]="['/users/task']" routerLinkActive>Task</a>
+          </li>
+          <li class="nav-item" id="result">
+              <a class="nav-link" [routerLink]="['/users/result']" routerLinkActive>Result</a>
+          </li>
+      </ul>
+      <ul class="navbar-nav ml-auto nav-flex-icons" >
+          <li class="avatar dropdown">
+              <button class="nav-link dropdown-toggle btn btn-light btn-block" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <ng-container >
+              <b class="pr-2">USerTest01</b>
+              <img src="assets/image/person.png" alt="avatarimage" class="rounded-circle z-depth-0" width="30" >
+          </ng-container>
+          
+      </button>
+              <div class="dropdown-menu dropdown-menu-right dropdown-secondary " aria-labelledby="navbarDropdown">
+                  <button class="dropdown-item btn btn-block border-bottom" [routerLink]="['/users/profile']">
+                    <i class="fa fa-user-circle" aria-hidden="true"></i> Profile</button>
+                  <button class="dropdown-item btn btn-block mt-2 border-bottom dropdown-toggle-custom" >
+                      <i class="fa fa-envelope" aria-hidden="true"></i>Messages <span class=" pl-2 badge badge-danger rounded" ></span></button>
+                  <button class="dropdown-item btn btn-block" (click)="logout()"><i class="fa fa-sign-out" aria-hidden="true" ></i> Logout</button>
+              </div>
+          </li>
+      </ul>
+  </div>
+</nav>

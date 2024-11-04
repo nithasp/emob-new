@@ -1,0 +1,14 @@
+*:not(mat-icon) {
+    font-family: Kanit;
+}
+button {
+    position: fixed;
+    bottom: 10px;
+    right: 2px;
+    font-size: 30px;
+
+    background-color: rgba(61, 60, 60, 0.368) !important;
+    outline: none;
+    z-index: 1000;
+
+  }

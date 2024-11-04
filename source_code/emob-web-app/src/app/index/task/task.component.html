@@ -1,0 +1,225 @@
+<div class="card mt-2 container-fluid main_container" style="min-height: 650px;">
+
+  <h3 class="text-center mt-5 mb-3">Overview
+    <h3 class="text-warning">Task</h3>
+  </h3>
+  <div class="row">
+    <div class="col-md-6 border-right mt-3">
+      <ul ngbNav #nav="ngbNav" [(activeId)]="active"
+        class="nav-tabs justify-content-center">
+        <li [ngbNavItem]="1">
+          <button ngbNavLink><h3><strong>Orders data</strong></h3></button>
+          <ng-template ngbNavContent>
+            <div class="row card-body " style="min-height: 420px;">
+              <div class="col-md-12 rounded-3 dropzone" DropZone
+                (onFileDropped)="droppedFiles($event)">
+                <div class="row">
+                  <div class="col-md-12 text-center">
+
+                    <mat-icon class="icon-upload">upload_file</mat-icon>
+                    <div class="col-md-12 text-center">
+                      <span>Drag and drop file here</span>
+                      <span><br>or</span>
+                    </div>
+
+                  </div>
+                  <input type="file" class="file-input"
+                    [accept]="requiredFileType"
+                    (change)="onFileSelected($event)" #fileUpload>
+                  <div class="col-md-12 text-center mt-2">
+                    <button mat-stroked-button color="primary"
+                      class="border-primary" (click)="fileUpload.click()">
+                      <mat-icon class="icon-browser">attach_file</mat-icon>Browse
+                      File</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4 text-center p-3">
+
+              </div>
+
+              @if (uploadProgress!==-1) {
+              <div class="progress col-md-12">
+
+                <mat-progress-bar mode="determinate"
+                  [value]="uploadProgress">
+
+                </mat-progress-bar>
+
+                <button mat-icon-button (click)="cancelUpload()">
+                  <mat-icon class="cancel-upload">delete_forever</mat-icon>
+                  Cancle
+                </button>
+
+              </div>
+              }
+              <div class="col-md-12">
+                <div class="table-responsive ">
+                  @if (allFiles.length) {
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th scope="col">No.</th>
+                        <th scope="col">File Name</th>
+                        <th scope="col">Size</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">#</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let file of allFiles; let i = index">
+                        <th scope="row">{{i+1}}</th>
+                        <td
+                          style="word-wrap: break-word;min-width: 160px;max-width: 200px;">{{file.name}}</td>
+                        <td>{{file.size/1000000 | number : '1.2-2'}} MB</td>
+                        <td >{{file.type | slice:0:10}}</td>
+                        <td><button class="btn" (click)="deleteFileinList(i)"><mat-icon>delete</mat-icon></button></td>
+                      </tr>
+                      <tr class="text-center" *ngIf="allFiles.length === 0">
+                        <td colspan="4"><strong>No files are uploaded</strong></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  }
+                </div>
+              </div>
+              <div class="text-end">
+                <button mat-raised-button color="primary"
+                  (click)="nav.select(2)">Next</button>
+              </div>
+            </div>
+          </ng-template>
+        </li>
+        <li [ngbNavItem]="2">
+          <button ngbNavLink><h3><strong>Parameters</strong></h3></button>
+          <ng-template ngbNavContent>
+            <mat-accordion [multi]="true">
+              <mat-expansion-panel [expanded]="true">
+                <mat-expansion-panel-header>
+                  <mat-panel-title> Generals</mat-panel-title>
+                </mat-expansion-panel-header>
+                <ul class="list-unstyled">
+                  <li>
+                    <ul>
+                      <li><p>Early delivery Time is
+                          <ngx-popover [placement]="'bottom-start'">
+                            <button class="link link-primary">
+                              {{prependZero(test_value.hour)}}:{{prependZero(test_value.minute)}}
+                            </button>
+                            <ng-template ngx-popover-template>
+                              <div class="card p-3">
+                                <div class="card-body p-2">
+                                  <p class="card-title">Time is: </p>
+                                  <ngb-timepicker [(ngModel)]="test_value" />
+                                </div>
+                                <div
+                                  class="popover__controls d-flex justify-content-end mt-2">
+                                  <button ngx-popover-close class="btn">Close</button>
+                                </div>
+                              </div>
+                            </ng-template>
+                            <ngx-arrow padding="8" />
+                          </ngx-popover>
+                        </p></li>
+                      <li><p>Back to depot time is
+                          <ngx-popover [placement]="'bottom-start'">
+                            <button class="link link-primary">
+                              {{prependZero(test_value.hour)}}:{{prependZero(test_value.minute)}}
+                            </button>
+                            <ng-template ngx-popover-template>
+                              <div class="card p-3">
+                                <div class="card-body p-2">
+                                  <p class="card-title">Time is: </p>
+                                  <ngb-timepicker [(ngModel)]="test_value" />
+                                </div>
+                                <div
+                                  class="popover__controls d-flex justify-content-end mt-2">
+                                  <button ngx-popover-close class="btn">Close</button>
+                                </div>
+                              </div>
+                            </ng-template>
+                            <ngx-arrow padding="8" />
+                          </ngx-popover>
+                        </p></li>
+                      <li><p>Maximum Work Duration is <button
+                            class="link link-primary link-opacity-75-hover">8
+                            Hours</button></p></li>
+                    </ul>
+                  </li>
+                </ul>
+
+              </mat-expansion-panel>
+              <mat-expansion-panel [expanded]="true">
+                <mat-expansion-panel-header>
+                  <mat-panel-title> Vehicle</mat-panel-title>
+                </mat-expansion-panel-header>
+                <ul class="list-unstyled">
+                  <li>
+                    <ul>
+                      <li><p>Number of routes is set to <button
+                            class="link link-primary link-opacity-75-hover">150</button></p></li>
+                      <li><p>Vehicle order-size capacity is <button
+                            class="link link-primary link-opacity-75-hover">2500
+                            KG.</button></p></li>
+                      <li><p>Max route duration is <button
+                            class="link link-primary link-opacity-75-hover">200
+                            KM.</button></p></li>
+                    </ul>
+                  </li>
+                </ul>
+
+              </mat-expansion-panel>
+              <mat-expansion-panel [expanded]="true">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>Customer</mat-panel-title>
+                </mat-expansion-panel-header>
+                <ul class="list-unstyled">
+                  <li>
+                    <ul>
+                      <li><p>Service Duration Time is <button
+                            class="link link-primary link-opacity-75-hover">15
+                            minutes</button></p></li>
+                    </ul>
+                  </li>
+                </ul>
+
+              </mat-expansion-panel>
+            </mat-accordion>
+            <div class="text-end">
+              <button mat-raised-button color="secondary" class="btn btn-secondary m-3" (click)="nav.select(1)">Back</button>
+              <button mat-raised-button color="primary" class="btn btn-primary">Plan My Route</button>
+            </div>
+
+          </ng-template>
+        </li>
+      </ul>
+
+      <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    </div>
+    <div class="col-md-6">
+      <div class="p-2">
+        <div class="row ustify-content-md-center">
+          <div class="col-12">
+            <p>Total : 2,200 Addresses</p>
+          </div>
+          <button mat-fab extended class="fab-success col">
+            <mat-icon>visibility</mat-icon>
+            (2,000)<br> Verified
+          </button>
+          <button mat-fab extended class="fab-warning col">
+            <mat-icon>favorite</mat-icon>
+            (30)<br>Inaccurate
+          </button>
+          <button mat-fab extended class="fab-danger col"> 
+            <mat-icon>visibility_off</mat-icon>
+            (30)<br>Unverified
+          </button>
+        </div>
+        
+      </div>
+      <div id="map" class="map"></div>
+    </div>
+  </div>
+
+</div>

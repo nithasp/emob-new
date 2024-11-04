@@ -1,0 +1,15 @@
+<!-- The sidebar -->
+<div class="sidebar">
+  <div class="nav nav-pills flex-column mb-auto">
+    <a [routerLink]="['/users/overview']" routerLinkActive="active">Overview</a>
+    <a [routerLink]="['/users/constraint']" routerLinkActive="active">Constraint</a>
+    <a [routerLink]="['/users/task']" routerLinkActive="active">Task</a>
+    <a [routerLink]="['/users/result']" routerLinkActive="active">Result</a>
+    <a routerLinkActive="active" [routerLink]="['/logout']"(click)="logout()">Logout</a>    
+  </div>
+</div>
+  
+  <!-- Page content -->
+  <div class="content">
+  <router-outlet></router-outlet>
+  </div>
