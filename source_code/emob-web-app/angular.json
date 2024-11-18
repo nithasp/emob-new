@@ -100,10 +100,12 @@
               "@angular/material/prebuilt-themes/azure-blue.css",
               "node_modules/ngx-spinner/animations/ball-scale-multiple.css",
               "src/styles.scss",
-              "node_modules/ol/ol.css"
+              "node_modules/ol/ol.css",
+              "node_modules/ol-opacity/dist/ol-opacity.css"
             ],
             "scripts": [
-              "./node_modules/jquery/dist/jquery.min.js"
+              "./node_modules/jquery/dist/jquery.min.js",
+              "./node_modules/ol-opacity/dist/ol-opacity.js"
             ]
           }
         }

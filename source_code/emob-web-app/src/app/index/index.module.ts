@@ -16,6 +16,7 @@ import { ConfirmationDialogComponent } from './default/confirmation-dialog/confi
 import { PopoverModule } from '@ngx-popovers/popover';
 import { Arrow } from '@ngx-popovers/core';
 import { DropzoneDirective } from '../directives/dropzone.directive';
+import { TruncatePipe } from '../directives/truncate-pipe.directive';
 @NgModule({
   declarations: [
     IndexComponent,
@@ -26,7 +27,8 @@ import { DropzoneDirective } from '../directives/dropzone.directive';
     NavbarComponent,
     TopbarComponent,
     ConfirmationDialogComponent,
-    DropzoneDirective
+    DropzoneDirective,
+    TruncatePipe
     
   ],
   imports: [

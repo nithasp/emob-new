@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner';
 
 
@@ -21,6 +21,8 @@ export class AppComponent implements OnInit {
       this.spinner.hide();
     }, 300);
   }
+
+  @HostListener("window:scroll")
   checkScroll() {
     const scrollPosition =
       window.pageYOffset ||

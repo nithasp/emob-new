@@ -21,7 +21,7 @@ const routes: Routes = [
         component: ConstraintComponent
       },
       {
-        path: "task",
+        path: "experiments",
         component: TaskComponent
       },
       {

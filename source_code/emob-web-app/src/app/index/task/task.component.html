@@ -1,18 +1,17 @@
-<div class="card mt-2 container-fluid main_container" style="min-height: 650px;">
+<div class="card mt-2 container-fluid main_container" style="min-height:650px;">
+  <div class="row mt-5 justify-content-center">
 
-  <h3 class="text-center mt-5 mb-3">Overview
-    <h3 class="text-warning">Task</h3>
-  </h3>
-  <div class="row">
-    <div class="col-md-6 border-right mt-3">
+    <div class="border-right mt-3"
+      [ngClass]="allFiles.length >0 ? 'col-md-6' : 'col-md-6 border-left'">
       <ul ngbNav #nav="ngbNav" [(activeId)]="active"
         class="nav-tabs justify-content-center">
         <li [ngbNavItem]="1">
-          <button ngbNavLink><h3><strong>Orders data</strong></h3></button>
+          <button ngbNavLink><h3>Orders data</h3></button>
           <ng-template ngbNavContent>
-            <div class="row card-body " style="min-height: 420px;">
+            <div class="row card-body " style="min-height: 720px;">
               <div class="col-md-12 rounded-3 dropzone" DropZone
-                (onFileDropped)="droppedFiles($event)">
+                (onFileDropped)="droppedFiles($event)"
+                [hidden]="allFiles.length > 0">
                 <div class="row">
                   <div class="col-md-12 text-center">
 
@@ -34,28 +33,8 @@
                   </div>
                 </div>
               </div>
-
-              <div class="col-md-4 text-center p-3">
-
-              </div>
-
-              @if (uploadProgress!==-1) {
-              <div class="progress col-md-12">
-
-                <mat-progress-bar mode="determinate"
-                  [value]="uploadProgress">
-
-                </mat-progress-bar>
-
-                <button mat-icon-button (click)="cancelUpload()">
-                  <mat-icon class="cancel-upload">delete_forever</mat-icon>
-                  Cancle
-                </button>
-
-              </div>
-              }
               <div class="col-md-12">
-                <div class="table-responsive ">
+                <div class="table-responsive">
                   @if (allFiles.length) {
                   <table class="table table-striped">
                     <thead>
@@ -71,9 +50,9 @@
                       <tr *ngFor="let file of allFiles; let i = index">
                         <th scope="row">{{i+1}}</th>
                         <td
-                          style="word-wrap: break-word;min-width: 160px;max-width: 200px;">{{file.name}}</td>
+                          style="word-wrap: break-word;min-width: 160px;max-width: 400px;">{{file.name}}</td>
                         <td>{{file.size/1000000 | number : '1.2-2'}} MB</td>
-                        <td >{{file.type | slice:0:10}}</td>
+                        <td>{{file.type | slice:0:10}}</td>
                         <td><button class="btn" (click)="deleteFileinList(i)"><mat-icon>delete</mat-icon></button></td>
                       </tr>
                       <tr class="text-center" *ngIf="allFiles.length === 0">
@@ -84,7 +63,88 @@
                   }
                 </div>
               </div>
-              <div class="text-end">
+
+              <div class="row justify-content-md-center mb-2"
+                style="max-width: 450px;" [hidden]="allFiles.length < 1">
+                <div class="col-12">
+                  <span>Total (2,300 Orders) : 1,200 Point </span>
+                </div>
+                <div class="col-12">
+                  <button mat-fab extended class="fab-success col">
+                    <mat-icon>location_on</mat-icon>
+                    (1,000)<br> Verified
+                  </button>
+                  <button mat-fab extended class="fab-warning col">
+                    <mat-icon>favorite</mat-icon>
+                    (130)<br>Inaccurate
+                  </button>
+                  <button mat-fab extended class="fab-danger col">
+                    <mat-icon>wrong_location</mat-icon>
+                    (70)<br>Unverified
+                  </button>
+                </div>
+              </div>
+              <mat-form-field [hidden]="allFiles.length < 1">
+                <mat-label>Filter</mat-label>
+                <input matInput (keyup)="applyFilter($event)"
+                  placeholder="Ex. ดินแดง" #input>
+              </mat-form-field>
+              <div class="table-container mat-elevation-z8"
+                [hidden]="allFiles.length < 1">
+                <table mat-table [dataSource]="dataSource">
+
+                  <!-- Position Column -->
+                  <ng-container matColumnDef="ORDERID_ORG">
+                    <th mat-header-cell *matHeaderCellDef> ORDERID ORG </th>
+                    <td mat-cell *matCellDef="let element">
+                      {{element.ORDERID_ORG}}
+                      <button mat-icon-button class="small-icon-button"
+                        [cdkCopyToClipboard]="element.ORDERID_ORG"
+                        color="secondary">
+                        <mat-icon>content_copy</mat-icon>
+                      </button>
+                    </td>
+                  </ng-container>
+
+                  <!-- Name Column -->
+                  <ng-container matColumnDef="ADDRESS">
+                    <th mat-header-cell *matHeaderCellDef> ADDRESS </th>
+                    <td mat-cell *matCellDef="let element">
+                      <span>{{ element.ADDRESS | truncate:[70, '...'] }}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Weight Column -->
+                  <ng-container matColumnDef="AUMPHER">
+                    <th mat-header-cell *matHeaderCellDef> AUMPHER </th>
+                    <td mat-cell *matCellDef="let element"> {{element.AUMPHER}}
+                    </td>
+                  </ng-container>
+
+                  <!-- Symbol Column -->
+                  <ng-container matColumnDef="PROVICE">
+                    <th mat-header-cell *matHeaderCellDef> PROVICE </th>
+                    <td mat-cell *matCellDef="let element"> {{element.PROVICE}}
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row
+                    *matHeaderRowDef="displayedColumns; sticky: true"
+                    class="example-element-row"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                    [class.text-highlight-verify]="row.LatLng"
+                    [class.text-highlight-unverify]="!row.LatLng"></tr>
+
+                </table>
+
+                <mat-paginator [pageSizeOptions]="[20, 50, 100,200]"
+                  showFirstLastButtons
+                  aria-label="Select page of periodic elements"
+                  class="mat-paginator-sticky">
+                </mat-paginator>
+              </div>
+
+              <div class="text-end mt-3">
                 <button mat-raised-button color="primary"
                   (click)="nav.select(2)">Next</button>
               </div>
@@ -92,134 +152,150 @@
           </ng-template>
         </li>
         <li [ngbNavItem]="2">
-          <button ngbNavLink><h3><strong>Parameters</strong></h3></button>
+          <button ngbNavLink><h3>Parameters</h3></button>
           <ng-template ngbNavContent>
-            <mat-accordion [multi]="true">
-              <mat-expansion-panel [expanded]="true">
-                <mat-expansion-panel-header>
-                  <mat-panel-title> Generals</mat-panel-title>
-                </mat-expansion-panel-header>
-                <ul class="list-unstyled">
-                  <li>
-                    <ul>
-                      <li><p>Early delivery Time is
-                          <ngx-popover [placement]="'bottom-start'">
-                            <button class="link link-primary">
-                              {{prependZero(test_value.hour)}}:{{prependZero(test_value.minute)}}
-                            </button>
-                            <ng-template ngx-popover-template>
-                              <div class="card p-3">
-                                <div class="card-body p-2">
-                                  <p class="card-title">Time is: </p>
-                                  <ngb-timepicker [(ngModel)]="test_value" />
-                                </div>
-                                <div
-                                  class="popover__controls d-flex justify-content-end mt-2">
-                                  <button ngx-popover-close class="btn">Close</button>
-                                </div>
-                              </div>
-                            </ng-template>
-                            <ngx-arrow padding="8" />
-                          </ngx-popover>
-                        </p></li>
-                      <li><p>Back to depot time is
-                          <ngx-popover [placement]="'bottom-start'">
-                            <button class="link link-primary">
-                              {{prependZero(test_value.hour)}}:{{prependZero(test_value.minute)}}
-                            </button>
-                            <ng-template ngx-popover-template>
-                              <div class="card p-3">
-                                <div class="card-body p-2">
-                                  <p class="card-title">Time is: </p>
-                                  <ngb-timepicker [(ngModel)]="test_value" />
-                                </div>
-                                <div
-                                  class="popover__controls d-flex justify-content-end mt-2">
-                                  <button ngx-popover-close class="btn">Close</button>
-                                </div>
-                              </div>
-                            </ng-template>
-                            <ngx-arrow padding="8" />
-                          </ngx-popover>
-                        </p></li>
-                      <li><p>Maximum Work Duration is <button
-                            class="link link-primary link-opacity-75-hover">8
-                            Hours</button></p></li>
-                    </ul>
-                  </li>
-                </ul>
+            <div style="min-height: 720px;">
 
-              </mat-expansion-panel>
-              <mat-expansion-panel [expanded]="true">
-                <mat-expansion-panel-header>
-                  <mat-panel-title> Vehicle</mat-panel-title>
-                </mat-expansion-panel-header>
-                <ul class="list-unstyled">
-                  <li>
-                    <ul>
-                      <li><p>Number of routes is set to <button
-                            class="link link-primary link-opacity-75-hover">150</button></p></li>
-                      <li><p>Vehicle order-size capacity is <button
-                            class="link link-primary link-opacity-75-hover">2500
-                            KG.</button></p></li>
-                      <li><p>Max route duration is <button
-                            class="link link-primary link-opacity-75-hover">200
-                            KM.</button></p></li>
-                    </ul>
-                  </li>
-                </ul>
+              <mat-accordion [multi]="true">
+                <mat-expansion-panel [expanded]="true">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title> Generals</mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <ul class="list-unstyled">
+                    <li>
+                      <ul>
+                        <li><p>Early delivery Time is
+                            <ngx-popover [placement]="'bottom-start'">
+                              <button class="link link-primary">
+                                {{prependZero(test_value.hour)}}:{{prependZero(test_value.minute)}}
+                              </button>
+                              <ng-template ngx-popover-template>
+                                <div class="card p-3">
+                                  <div class="card-body p-2">
+                                    <p class="card-title">Time is: </p>
+                                    <ngb-timepicker [(ngModel)]="test_value" />
+                                  </div>
+                                  <div
+                                    class="popover__controls d-flex justify-content-end mt-2">
+                                    <button ngx-popover-close class="btn">Close</button>
+                                  </div>
+                                </div>
+                              </ng-template>
+                              <ngx-arrow padding="8" />
+                            </ngx-popover>
+                          </p></li>
+                        <li><p>Back to depot time is
+                            <ngx-popover [placement]="'bottom-start'">
+                              <button class="link link-primary">
+                                {{prependZero(test_value.hour)}}:{{prependZero(test_value.minute)}}
+                              </button>
+                              <ng-template ngx-popover-template>
+                                <div class="card p-3">
+                                  <div class="card-body p-2">
+                                    <p class="card-title">Time is: </p>
+                                    <ngb-timepicker [(ngModel)]="test_value" />
+                                  </div>
+                                  <div
+                                    class="popover__controls d-flex justify-content-end mt-2">
+                                    <button ngx-popover-close class="btn">Close</button>
+                                  </div>
+                                </div>
+                              </ng-template>
+                              <ngx-arrow padding="8" />
+                            </ngx-popover>
+                          </p></li>
+                        <li><p>Maximum Work Duration is <button
+                              class="link link-primary link-opacity-75-hover">8
+                              Hours</button></p></li>
+                      </ul>
+                    </li>
+                  </ul>
 
-              </mat-expansion-panel>
-              <mat-expansion-panel [expanded]="true">
-                <mat-expansion-panel-header>
-                  <mat-panel-title>Customer</mat-panel-title>
-                </mat-expansion-panel-header>
-                <ul class="list-unstyled">
-                  <li>
-                    <ul>
-                      <li><p>Service Duration Time is <button
-                            class="link link-primary link-opacity-75-hover">15
-                            minutes</button></p></li>
-                    </ul>
-                  </li>
-                </ul>
+                </mat-expansion-panel>
+                <mat-expansion-panel [expanded]="true">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title> Vehicle</mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <ul class="list-unstyled">
+                    <li>
+                      <ul>
+                        <li><p>Number of routes is set to <button
+                              class="link link-primary link-opacity-75-hover">150</button></p></li>
+                        <li><p>Vehicle order-size capacity is <button
+                              class="link link-primary link-opacity-75-hover">2500
+                              KG.</button></p></li>
+                        <li><p>Max route duration is <button
+                              class="link link-primary link-opacity-75-hover">200
+                              KM.</button></p></li>
+                      </ul>
+                    </li>
+                  </ul>
 
-              </mat-expansion-panel>
-            </mat-accordion>
-            <div class="text-end">
-              <button mat-raised-button color="secondary" class="btn btn-secondary m-3" (click)="nav.select(1)">Back</button>
-              <button mat-raised-button color="primary" class="btn btn-primary">Plan My Route</button>
+                </mat-expansion-panel>
+                <mat-expansion-panel [expanded]="true">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>Customer</mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <ul class="list-unstyled">
+                    <li>
+                      <ul>
+                        <li><p>Service Duration Time is <button
+                              class="link link-primary link-opacity-75-hover">15
+                              minutes</button></p></li>
+                      </ul>
+                    </li>
+                  </ul>
+
+                </mat-expansion-panel>
+              </mat-accordion>
+              <div class="text-end">
+                <button mat-raised-button color="secondary"
+                  class="btn btn-secondary m-3" (click)="nav.select(1)">Back</button>
+                <button mat-raised-button color="primary"
+                  class="btn btn-primary">Plan
+                  My Route</button>
+              </div>
             </div>
-
           </ng-template>
         </li>
       </ul>
 
       <div [ngbNavOutlet]="nav" class="mt-2"></div>
+
     </div>
-    <div class="col-md-6">
-      <div class="p-2">
-        <div class="row ustify-content-md-center">
-          <div class="col-12">
-            <p>Total : 2,200 Addresses</p>
+
+    <div class="col-md-6" [hidden]="allFiles.length < 1">
+      <div class="row">
+        <div id="map" class="map col-12" style="min-height: 800px;">
+          <div id="popup" class="ol-popup" [hidden]="!popupContent">
+            <div id="popup-content" class="row justify-content-end"
+              *ngIf="popupContent">
+              <p class="d-inline-block text-truncate" style="max-width: 300px;">
+                <strong>Address :</strong> {{popupContent.ADDRESS}}</p>
+              <p class="d-inline-block text-truncate" style="max-width: 300px;">
+                <strong>Tumbol :</strong> {{popupContent.TUMBOL}}</p>
+              <p class="d-inline-block text-truncate" style="max-width: 300px;">
+                <strong>Aumpher :</strong>{{popupContent.AUMPHER}} </p>
+              <p class="d-inline-block text-truncate" style="max-width: 300px;">
+                <strong>Provice :</strong>{{popupContent.PROVICE}} </p>
+              <button class="float-right col-6" mat-raised-button
+                color="primary"><mat-icon>search</mat-icon>รายละเอียด
+              </button>
+            </div>
           </div>
-          <button mat-fab extended class="fab-success col">
-            <mat-icon>visibility</mat-icon>
-            (2,000)<br> Verified
-          </button>
-          <button mat-fab extended class="fab-warning col">
-            <mat-icon>favorite</mat-icon>
-            (30)<br>Inaccurate
-          </button>
-          <button mat-fab extended class="fab-danger col"> 
-            <mat-icon>visibility_off</mat-icon>
-            (30)<br>Unverified
-          </button>
         </div>
-        
+
       </div>
-      <div id="map" class="map"></div>
+
     </div>
+    @if (allFiles.length > 0) {
+    <div class="p-2 col-12">
+
+    </div>
+    <div class="col-12 ">
+
+    </div>
+    }
   </div>
 
 </div>
