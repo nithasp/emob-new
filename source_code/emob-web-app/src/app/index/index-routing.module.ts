@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { OverviewComponent } from './overview/overview.component';
+import { ExperimentComponent } from './experiment/experiment.component';
 import { ConstraintComponent } from './constraint/constraint.component';
-import { TaskComponent } from './task/task.component';
+import { RunComponent } from './run/run.component';
 import { ResultComponent } from './result/result.component';
 import { IndexComponent } from './index.component';
 
@@ -13,16 +13,16 @@ const routes: Routes = [
     component: IndexComponent,
     children: [
       {
-        path: "overview",
-        component: OverviewComponent
+        path: "experiments",
+        component: ExperimentComponent
       },
       {
         path: "constraint",
         component: ConstraintComponent
       },
       {
-        path: "experiments",
-        component: TaskComponent
+        path: "run/:RunId",
+        component: RunComponent
       },
       {
         path: "result",
@@ -30,7 +30,7 @@ const routes: Routes = [
       },
       {
         path: "**",
-        redirectTo: "overview"
+        redirectTo: "experiments"
       }
     ]
   }

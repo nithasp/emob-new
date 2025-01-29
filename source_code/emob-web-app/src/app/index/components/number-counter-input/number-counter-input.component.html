@@ -1,0 +1,19 @@
+<div class="counter-container">
+    <button mat-mini-fab
+    class="mat-button"
+      (click)="remove()"
+      aria-label="Reduce counter"
+    ><mat-icon>remove</mat-icon>
+    </button>
+    <div class="counter-value">
+      <input  [type]="inputType" class="form-control" [(ngModel)]="value" [max]="maxValue" [min]="minValue"
+      (ngModelChange)="onChange($event)">
+    </div>
+    <button mat-mini-fab
+    class="mat-button"
+      (click)="add()"
+      aria-label="Increase counter"
+    ><mat-icon>add</mat-icon>
+    </button>
+  </div>
+  

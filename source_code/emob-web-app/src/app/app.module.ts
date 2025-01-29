@@ -10,6 +10,7 @@ import { LoginComponent } from "./login/login.component";
 import { NgxSpinnerModule } from "ngx-spinner";
 import { CommonModule } from "@angular/common";
 import { provideHttpClient } from "@angular/common/http";
+import { GraphQLModule } from "./graphql.module";
 
 @NgModule({
   declarations: [AppComponent,LoginComponent],
@@ -21,7 +22,8 @@ import { provideHttpClient } from "@angular/common/http";
     FormsModule,
     ReactiveFormsModule,
     CommonModule ,
-    NgxSpinnerModule.forRoot({ type: 'ball-scale-multiple' })
+    NgxSpinnerModule.forRoot({type: "line-scale-party"}),
+    GraphQLModule
   ],
   schemas :[CUSTOM_ELEMENTS_SCHEMA ],
   bootstrap: [AppComponent],

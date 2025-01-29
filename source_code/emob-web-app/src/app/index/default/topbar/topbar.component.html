@@ -8,17 +8,17 @@
   <div class="collapse navbar-collapse" id="navbar">
       <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
 
-          <li class="nav-item" id="overview">
-              <a class="nav-link " [routerLink]="['/users/overview']" routerLinkActive>Overview</a>
+          <li class="nav-item" id="experiments">
+              <a class="nav-link " [routerLink]="['/users/experiments']" routerLinkActive>Experiments</a>
           </li>
           <li class="nav-item" id="constraint">
-              <a class="nav-link" [routerLink]="['/users/constraint']" routerLinkActive>Contraint</a>
+              <a class="nav-link" [routerLink]="['/users/constraint']" routerLinkActive>Inventories</a>
           </li>
-          <li class="nav-item" id="experiments">
-              <a class="nav-link" [routerLink]="['/users/experiments']" routerLinkActive>Experiments</a>
-          </li>
+          <!-- <li class="nav-item" id="run">
+              <a class="nav-link" [routerLink]="['/users/run']" routerLinkActive>Run</a>
+          </li> -->
           <li class="nav-item" id="result">
-              <a class="nav-link" [routerLink]="['/users/result']" routerLinkActive>Result</a>
+              <a class="nav-link" [routerLink]="['/users/result']" routerLinkActive>Results</a>
           </li>
       </ul>
       <ul class="navbar-nav ml-auto nav-flex-icons" >
@@ -31,9 +31,9 @@
           
       </button>
               <div class="dropdown-menu dropdown-menu-right dropdown-secondary " aria-labelledby="navbarDropdown">
-                  <button class="dropdown-item btn btn-block border-bottom" [routerLink]="['/users/profile']">
+                  <button class="dropdown-item btn btn-block border-bottom" [routerLink]="['/users/profile']" [hidden]="true">
                     <i class="fa fa-user-circle" aria-hidden="true"></i> Profile</button>
-                  <button class="dropdown-item btn btn-block mt-2 border-bottom dropdown-toggle-custom" >
+                  <button class="dropdown-item btn btn-block mt-2 border-bottom dropdown-toggle-custom"[hidden]="true" >
                       <i class="fa fa-envelope" aria-hidden="true"></i>Messages <span class=" pl-2 badge badge-danger rounded" ></span></button>
                   <button class="dropdown-item btn btn-block" (click)="logout()"><i class="fa fa-sign-out" aria-hidden="true" ></i> Logout</button>
               </div>

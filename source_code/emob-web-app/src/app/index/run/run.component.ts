@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Injectable, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -17,7 +17,6 @@ import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import Icon from 'ol/style/Icon';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
-import Style from 'ol/style/Style';
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import { LocationService } from 'src/app/services/location.service';
@@ -28,22 +27,62 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 
-import * as XLSX from 'xlsx';
+import * as ExcelJS from 'exceljs';
 import { PreOrder } from 'src/app/models/pre-order.model';
+import Style from 'ol/style/Style';
+import { ConstraintService } from 'src/app/services/constraint.service';
+import { Constraint } from 'src/app/models/constraint.model';
+import { ActivatedRoute } from '@angular/router';
+import { Experiment } from 'src/app/models/experiment.model';
+import { ExperimentService } from 'src/app/services/experiment.service';
+import { NgbTimeStruct, NgbTimeAdapter} from '@ng-bootstrap/ng-bootstrap';
+
+const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
+
+/**
+ * Example of a String Time adapter
+ */
+@Injectable()
+export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
+	fromModel(value: string | null): NgbTimeStruct | null {
+		if (!value) {
+			return null;
+		}
+		const split = value.split(':');
+		return {
+			hour: parseInt(split[0], 10),
+			minute: parseInt(split[1], 10),
+			second: parseInt(split[2], 10),
+		};
+	}
+
+	toModel(time: NgbTimeStruct | null): string | null {
+		return time != null ? `${pad(time.hour)}:${pad(time.minute)}` : null;
+	}
+}
 
 
 @Component({
-  selector: 'app-task',
-  templateUrl: './task.component.html',
-  styleUrl: './task.component.scss'
+  selector: 'app-run',
+  templateUrl: './run.component.html',
+  styleUrl: './run.component.scss',
+  providers: [{ provide: NgbTimeAdapter, useClass: NgbTimeStringAdapter }]
 })
-export class TaskComponent implements OnInit, AfterViewInit {
-  allFiles: File[] = [];
+export class RunComponent implements OnInit, AfterViewInit {
+
+  // Experiment
+  experiment = <Experiment>{};
+
+  // Condition
+  public isUpload!: boolean;
+
+  preOrderFiles: File[] = [];
   readonly panelOpenState = signal(false);
   private readonly _formBuilder = inject(FormBuilder);
   public map!: Map
   public iconStyle?: Style;
-  public vectorSource: VectorSource = new VectorSource();
+  public vectorSource!: VectorSource;
+  public vectorLayer!: VectorLayer;
   requiredFileType: string = '.xlsx, .xls';
   public fileName: string = '';
   public uploadProgress: number = -1;
@@ -52,8 +91,6 @@ export class TaskComponent implements OnInit, AfterViewInit {
   public popupContent?: PreOrder;
   value: string = 'File';
   active = 1;
-  test_value: Time = new Time(9, 0);
-
   private dataPreOrder: Array<PreOrder> = [];
 
 
@@ -62,17 +99,40 @@ export class TaskComponent implements OnInit, AfterViewInit {
   clickedRows = new Set<PreOrder>();
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-
+  constraintsData!: Constraint;
   constructor(private readonly http: HttpClient,
-    private readonly locationService: LocationService,
-    private readonly elementRef: ElementRef<HTMLElement>,
-    private spinner: NgxSpinnerService
+    private readonly spinner: NgxSpinnerService,
+    private readonly constraintService: ConstraintService,
+    private readonly route: ActivatedRoute,
+    private readonly experimentService: ExperimentService
   ) { }
 
   ngOnInit(): void {
-    this.initIconStyle();
-    this.initMap();
+    this.spinner.show()
+    this.route.params.subscribe(params => {
+      this.experimentService.getExperiment(params['RunId']).subscribe(response => {
+        this.experiment = { ...response };
 
+      });
+
+    })
+
+    this.constraintService.getParameter().subscribe(response => {
+      this.constraintsData = { ...response };
+      console.log(this.constraintsData);
+    })
+
+    this.initIconStyle();
+    this.vectorSource = new VectorSource({});
+    this.vectorLayer = new VectorLayer({
+      source: this.vectorSource,
+
+      updateWhileInteracting: true,
+      updateWhileAnimating: true
+    });
+
+    this.initMap();
+    this.spinner.hide()
   }
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
@@ -86,7 +146,6 @@ export class TaskComponent implements OnInit, AfterViewInit {
   });
   isLinear = false;
 
-
   prependZero(num: number) {
     if (num <= 9)
       return "0" + num;
@@ -98,62 +157,53 @@ export class TaskComponent implements OnInit, AfterViewInit {
     this.spinner.show();
     console.log(files)
     const file: File = files.target.files[0];
-
-
     if (file) {
-      this.allFiles.push(file);
+      this.preOrderFiles.push(file);
       const target: DataTransfer = <DataTransfer>(files.target);
-      if (target.files.length !== 1) throw new Error('Cannot use multiple files');
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        const binaryStr: string = e.target.result;
-        const workbook: XLSX.WorkBook = XLSX.read(binaryStr, { type: 'binary' });
-
-        const firstSheetName: string = workbook.SheetNames[0];
-        const worksheet: XLSX.WorkSheet = workbook.Sheets[firstSheetName];
-
-        const jsonData = XLSX.utils.sheet_to_json<PreOrder>(worksheet);
-        if (this.validateData(jsonData)) {
-          this.dataPreOrder = jsonData;
-          this.dataSource.data = this.dataPreOrder
-          console.log(this.dataPreOrder);
-          this.vectorSource.clear();
-          this.initIconStyle();
-          this.dataPreOrder.forEach((item, index) => {
-            if (item.LatLng) {
-              let latlong = item.LatLng.split(",").map(Number);
-              const location: Feature = new Feature({
-                geometry: new Point(
-                  OlProj.fromLonLat([
-                    latlong[1], latlong[0]
-                  ])
-                ),
-                data: item,
-
-              });
-              location.setStyle(this.iconStyle);
-              console.log(location);
-              this.vectorSource.addFeature(location);
-            }
-
-
-          });
-
-        } else {
-          console.error('Data validation failed');
-        }
-      };
-      reader.readAsArrayBuffer(target.files[0]);
-
-
+      if (target.files.length !== 1) {
+        throw new Error('Cannot use multiple files');
+      }
+      this.processExcelFile(file);
+      this.experiment.Name = file.name;
+      this.isUpload = true;
+      this.spinner.hide();
 
     }
-    this.loadLocation();
-    setTimeout(() => {
-      /** spinner ends after 5 seconds */
-      this.spinner.hide();
-    }, 1000);
+  }
 
+  private async processExcelFile(file: File) {
+    const reader = new FileReader();
+
+    reader.onload = async (e: any) => {
+      const preOrderData: PreOrder[] = [];
+      const arrayBuffer = e.target.result;
+      const workbook: ExcelJS.Workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(arrayBuffer);
+      console.log("worksheet lenght", workbook.worksheets.length);
+      const worksheet = workbook.getWorksheet(1)! || workbook.getWorksheet("PreOrder")!;
+      if (!worksheet) {
+        console.error('Worksheet not found');
+        return;
+      }
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber > 1) { // Assuming the first row is the header
+          const rowData: any = {};
+          row.eachCell((cell, colNumber) => {
+            const header = worksheet.getRow(1).getCell(colNumber).value as string;
+            rowData[header] = cell.value;
+          });
+          preOrderData.push(rowData as PreOrder);
+        }
+      });
+
+      if (this.validateData(preOrderData)) {
+        this.dataSource.data = this.dataPreOrder = preOrderData;
+        this.loadLocation(this.dataPreOrder);
+      } else {
+        console.error('Data validation failed');
+      }
+    }
+    reader.readAsArrayBuffer(file);
   }
   uploadFile(file: any) {
     const formData = new FormData();
@@ -170,24 +220,27 @@ export class TaskComponent implements OnInit, AfterViewInit {
       this.uploadProgress = this.getEventMessage(event)
     })
   }
-  droppedFiles(allFiles: any): void {
+
+  droppedFiles(files: any): void {
     this.spinner.show();
-    const filesAmount = allFiles.length;
-    console.log(allFiles);
+    const filesAmount = files.length;
+    console.log(files);
     for (let i = 0; i < filesAmount; i++) {
-      const file = allFiles[i];
-      this.allFiles.push(file);
+      const file = files[i];
+      this.preOrderFiles.push(file);
     }
-    this.loadLocation();
+    this.isUpload = true;
+    this.experiment.Name = files.name;
     setTimeout(() => {
-      /** spinner ends after 5 seconds */
       this.spinner.hide();
     }, 1000);
   }
   deleteFileinList(index: number) {
     this.spinner.show();
-    this.allFiles.splice(index, 1)
+    this.preOrderFiles.splice(index, 1)
     this.vectorSource.clear();
+    this.dataPreOrder = [];
+    this.isUpload = false;
     setTimeout(() => {
       /** spinner ends after 5 seconds */
       this.spinner.hide();
@@ -197,6 +250,14 @@ export class TaskComponent implements OnInit, AfterViewInit {
   cancelUpload() {
     this.uploadSub.unsubscribe();
     this.reset();
+  }
+
+  setParameterDefault(){
+    console.log(this.constraintsData);
+    this.constraintService.updateParameter(this.constraintsData).subscribe(response =>{
+      console.log("update parameter status code :",response.status_message);
+    });
+    
   }
 
   reset() {
@@ -227,22 +288,25 @@ export class TaskComponent implements OnInit, AfterViewInit {
       })
     });
   }
-  private loadLocation() {
+  private loadLocation(dataPreOrder: Array<PreOrder>) {
     this.initIconStyle();
     this.vectorSource.clear();
-    this.locationService.mockupdata.forEach((item, index) => {
-      const location: Feature = new Feature({
-        geometry: new Point(
-          OlProj.fromLonLat([
-            item[0], item[1]
-          ])
-        ),
-        name: index,
-        population: 4000,
-        rainfall: 500
-      });
-      location.setStyle(this.iconStyle);
-      this.vectorSource.addFeature(location);
+    dataPreOrder.forEach((item, index) => {
+      if (item.LatLng) {
+        let latlong = item.LatLng.split(",").map(Number);
+        const location: Feature = new Feature({
+          geometry: new Point(
+            OlProj.fromLonLat([
+              latlong[1], latlong[0]
+            ])
+          ),
+          data: item,
+
+        });
+        location.setStyle(this.iconStyle);
+        this.vectorSource.addFeature(location);
+      }
+
 
     });
 
@@ -264,6 +328,7 @@ export class TaskComponent implements OnInit, AfterViewInit {
       }
 
       this.popUp?.setPosition(coordinates)
+      console.log(feature);
       this.popupContent = feature.get('data');
       console.log(this.popupContent)
 
@@ -290,8 +355,7 @@ export class TaskComponent implements OnInit, AfterViewInit {
     const attribution = new Attribution({
       collapsible: true,
     });
-    console.log(this.allFiles)
-    this.map = new Map();
+    console.log(this.preOrderFiles)
     this.map = new Map({
       layers: [
         new TileLayer({
@@ -301,13 +365,12 @@ export class TaskComponent implements OnInit, AfterViewInit {
               '&copy;<a href="https://carto.com" "> CARTO</a>' +
               '&copy;<a href="http://openmaptiles.org/" > OpenMapTiles</a>' +
               '&copy;<a href="https://www.openstreetmap.org/copyright"> OpenStreetMap contributors</a>',
-            crossOrigin: 'anonymous'
-
+            crossOrigin: 'anonymous',
+            cacheSize: 10000,
+            maxZoom: 20
           })
         }),
-        new VectorLayer({
-          source: this.vectorSource
-        })
+        this.vectorLayer
       ],
       target: 'map',
       view: new View({
@@ -317,14 +380,17 @@ export class TaskComponent implements OnInit, AfterViewInit {
           "EPSG:3857"
         ),
         zoom: 10,
-        maxZoom: 30,
-        minZoom: 8
+        maxZoom: 20,
+        minZoom: 0,
       }),
       controls: defaultControls({ attribution: false }).extend([
         new ZoomSlider(),
         new FullScreen(),
         attribution
-      ])
+      ]),
+      // interactions: defaults({
+      //   dragPan: false, mouseWheelZoom: false
+      // }).extend([new DragPan({/* options */ }), new MouseWheelZoom({/* options */})])
     });
 
 

@@ -1,5 +1,5 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { NgxSpinnerService } from 'ngx-spinner';
+
 
 
 @Component({
@@ -10,16 +10,9 @@ import { NgxSpinnerService } from 'ngx-spinner';
 export class AppComponent implements OnInit {
   isShow: boolean = false;
   topPosToStartShowing = 500;
-  constructor(private spinner: NgxSpinnerService) {}
+  constructor() {}
 
   ngOnInit() {
-    /** spinner starts on init */
-    this.spinner.show();
-
-    setTimeout(() => {
-      /** spinner ends after 5 seconds */
-      this.spinner.hide();
-    }, 300);
   }
 
   @HostListener("window:scroll")

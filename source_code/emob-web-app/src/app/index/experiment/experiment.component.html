@@ -1,0 +1,152 @@
+<div class=" card mt-2 container-fluid main_container" style="min-height:650px;height: 100vh;">
+  <div class="row mt-5 justify-content-center">
+    <div class="col-12 mb-3 text-right">
+      <button mat-raised-button color="primary" (click)="createNewExperiment()">
+        <mat-icon>add</mat-icon>
+        New
+      </button>
+      <button mat-raised-button color="primary" class="ml-3">
+        <mat-icon>content_copy</mat-icon>
+        Clone Previous
+      </button>
+    </div>
+    <div class="col-12">
+      <mat-form-field class="full-width">
+        <mat-label>Filter</mat-label>
+        <input
+          matInput
+          (keyup)="applyFilter($event)"
+          placeholder="Search Columns"
+          #input />
+      </mat-form-field>
+      <div class="text-right border-bottom">
+        <button mat-button [matMenuTriggerFor]="menu" class="table-config-menu">
+          <mat-icon aria-hidden="false">view_list</mat-icon>
+          Edit Columns
+          <mat-menu #menu="matMenu">
+            <span class="table-config-menu-label">Edit Columns</span>
+            <div class="table-config-menu-options">
+              <mat-checkbox color="primary"
+                *ngFor="let cd of displayedColumns; let i = index"
+                (click)="$event.stopPropagation()"
+                [(ngModel)]="cd.visible">
+                {{cd.label}}
+              </mat-checkbox>
+            </div>
+          </mat-menu>
+        </button>
+      </div>
+    </div>
+    <div class="col-12 ">
+
+      <div class="table-container p-md-2">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 "
+          multiTemplateDataRows>
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-checkbox (change)="$event ? toggleAllRows() : null"
+                [checked]="selection.hasValue() && isAllSelected()"
+                [indeterminate]="selection.hasValue() && !isAllSelected()"
+                [aria-label]="checkboxLabel()">
+              </mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let row">
+              <mat-checkbox (click)="$event.stopPropagation()"
+                (change)="$event ? selection.toggle(row) : null"
+                [checked]="selection.isSelected(row)"
+                [aria-label]="checkboxLabel(row)">
+              </mat-checkbox>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="Name">
+            <th mat-header-cell *matHeaderCellDef> Name </th>
+            <td mat-cell *matCellDef="let element"> <a
+                class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+                href="#">{{element.Name}}</a> </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+            <td mat-cell *matCellDef="let element">
+              <mat-icon color="primary"
+                style="float: right;">replay</mat-icon> <mat-icon
+                color="primary" style="float: right;">list_alt</mat-icon>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="TimeStart">
+            <th mat-header-cell *matHeaderCellDef> Run Start </th>
+            <td mat-cell *matCellDef="let element"> {{element.TimeStart | date:'MM/dd/yy h:mm:ss a'}}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="TimeEnd">
+            <th mat-header-cell *matHeaderCellDef> Run End </th>
+            <td mat-cell *matCellDef="let element"> {{element.TimeEnd | date:'MM/dd/yy h:mm:ss a'}}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="TimeDulatin">
+            <th mat-header-cell *matHeaderCellDef> Duration </th>
+            <td mat-cell *matCellDef="let element"> {{element.TimeDulatin *1000
+              | date:'mm\'m\' ss\'s\''}} </td>
+          </ng-container>
+          <ng-container matColumnDef="TriggeredBy">
+            <th mat-header-cell *matHeaderCellDef> Triggered By </th>
+            <td mat-cell *matCellDef="let element"> {{element.TriggeredBy}}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="Status">
+            <th mat-header-cell *matHeaderCellDef> Status </th>
+            <td mat-cell *matCellDef="let element">
+              @if(element.Status =='Succeeded'){
+              <mat-icon style="color: green;vertical-align: middle;">check_circle</mat-icon>
+              }@else if(element.Status =='In progress'){
+              <mat-icon style="color: blue;vertical-align: middle;">pending</mat-icon>
+              }
+              @else if(element.Status =='Failed'){
+              <mat-icon style="color: red;vertical-align: middle;">cancel</mat-icon>
+              }
+              @else if(element.Status =='Canceled'){
+              <mat-icon style="color: gray;vertical-align: middle;">block</mat-icon>
+              }
+              @else if(element.Status =='Queued'){
+              <mat-icon style="color: blue;vertical-align: middle;">update</mat-icon>
+              }
+              {{element.Status}} </td>
+          </ng-container>
+          <ng-container matColumnDef="Run">
+            <th mat-header-cell *matHeaderCellDef> Run </th>
+            <td mat-cell *matCellDef="let element"> {{element.Run}} </td>
+          </ng-container>
+          <ng-container matColumnDef="parameter">
+            <th mat-header-cell *matHeaderCellDef> Parameter </th>
+            <td mat-cell *matCellDef="let element" class="text-center">
+              <mat-icon color="primary">list_alt</mat-icon> </td>
+          </ng-container>
+          <ng-container matColumnDef="RunId">
+            <th mat-header-cell *matHeaderCellDef> Run ID </th>
+            <td mat-cell *matCellDef="let element"> {{element.RunId}} </td>
+          </ng-container>
+          <ng-container matColumnDef="GroupId">
+            <th mat-header-cell *matHeaderCellDef> Group ID </th>
+            <td mat-cell *matCellDef="let element"> {{element.GroupId}} </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="getDisplayedColumns()">
+          </tr>
+          <tr mat-row *matRowDef="let row; columns: getDisplayedColumns()" class="hover-row"></tr>
+
+        </table>
+      </div>
+      <mat-paginator
+        [pageSize]="10"
+        [pageSizeOptions]="[10,20,40,50]"
+        showFirstLastButtons
+        aria-label="Select page of periodic elements">
+      </mat-paginator>
+
+    </div>
+  </div>
+</div>

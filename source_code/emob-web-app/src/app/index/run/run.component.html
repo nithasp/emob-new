@@ -1,18 +1,30 @@
-<div class="card mt-2 container-fluid main_container" style="min-height:650px;">
+<div class="card mt-2 container-fluid main_container"
+  style="min-height:650px;">
   <div class="row mt-5 justify-content-center">
 
     <div class="border-right mt-3"
-      [ngClass]="allFiles.length >0 ? 'col-md-6' : 'col-md-6 border-left'">
+      [ngClass]="preOrderFiles.length >0 ? 'col-md-6' : 'col-md-6 border-left'">
       <ul ngbNav #nav="ngbNav" [(activeId)]="active"
         class="nav-tabs justify-content-center">
         <li [ngbNavItem]="1">
           <button ngbNavLink><h3>Orders data</h3></button>
           <ng-template ngbNavContent>
-            <div class="row card-body " style="min-height: 720px;">
+            <div class="row card-body ">
+              <div class="col-md-12" *ngIf="isUpload">
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">Experiment
+                      Name</span>
+                  </div>
+                  <input type="text" class="form-control"
+                    [(ngModel)]="experiment.Name">
+                </div>
+              </div>
               <div class="col-md-12 rounded-3 dropzone" DropZone
                 (onFileDropped)="droppedFiles($event)"
-                [hidden]="allFiles.length > 0">
+                [hidden]="preOrderFiles.length > 0">
                 <div class="row">
+
                   <div class="col-md-12 text-center">
 
                     <mat-icon class="icon-upload">upload_file</mat-icon>
@@ -35,7 +47,7 @@
               </div>
               <div class="col-md-12">
                 <div class="table-responsive">
-                  @if (allFiles.length) {
+                  @if (preOrderFiles.length) {
                   <table class="table table-striped">
                     <thead>
                       <tr>
@@ -47,7 +59,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr *ngFor="let file of allFiles; let i = index">
+                      <tr *ngFor="let file of preOrderFiles; let i = index">
                         <th scope="row">{{i+1}}</th>
                         <td
                           style="word-wrap: break-word;min-width: 160px;max-width: 400px;">{{file.name}}</td>
@@ -55,7 +67,7 @@
                         <td>{{file.type | slice:0:10}}</td>
                         <td><button class="btn" (click)="deleteFileinList(i)"><mat-icon>delete</mat-icon></button></td>
                       </tr>
-                      <tr class="text-center" *ngIf="allFiles.length === 0">
+                      <tr class="text-center" *ngIf="preOrderFiles.length === 0">
                         <td colspan="4"><strong>No files are uploaded</strong></td>
                       </tr>
                     </tbody>
@@ -65,7 +77,7 @@
               </div>
 
               <div class="row justify-content-md-center mb-2"
-                style="max-width: 450px;" [hidden]="allFiles.length < 1">
+                style="max-width: 450px;" [hidden]="preOrderFiles.length < 1">
                 <div class="col-12">
                   <span>Total (2,300 Orders) : 1,200 Point </span>
                 </div>
@@ -84,13 +96,13 @@
                   </button>
                 </div>
               </div>
-              <mat-form-field [hidden]="allFiles.length < 1">
+              <mat-form-field [hidden]="preOrderFiles.length < 1">
                 <mat-label>Filter</mat-label>
                 <input matInput (keyup)="applyFilter($event)"
                   placeholder="Ex. ดินแดง" #input>
               </mat-form-field>
               <div class="table-container mat-elevation-z8"
-                [hidden]="allFiles.length < 1">
+                [hidden]="preOrderFiles.length < 1">
                 <table mat-table [dataSource]="dataSource">
 
                   <!-- Position Column -->
@@ -167,13 +179,14 @@
                         <li><p>Early delivery Time is
                             <ngx-popover [placement]="'bottom-start'">
                               <button class="link link-primary">
-                                {{prependZero(test_value.hour)}}:{{prependZero(test_value.minute)}}
+                                {{constraintsData.EarlyDeliveryTime}}
                               </button>
                               <ng-template ngx-popover-template>
                                 <div class="card p-3">
                                   <div class="card-body p-2">
                                     <p class="card-title">Time is: </p>
-                                    <ngb-timepicker [(ngModel)]="test_value" />
+                                    <ngb-timepicker
+                                      [(ngModel)]="constraintsData.EarlyDeliveryTime" />
                                   </div>
                                   <div
                                     class="popover__controls d-flex justify-content-end mt-2">
@@ -187,13 +200,14 @@
                         <li><p>Back to depot time is
                             <ngx-popover [placement]="'bottom-start'">
                               <button class="link link-primary">
-                                {{prependZero(test_value.hour)}}:{{prependZero(test_value.minute)}}
+                                {{constraintsData.BackToDepotTime}}
                               </button>
                               <ng-template ngx-popover-template>
                                 <div class="card p-3">
                                   <div class="card-body p-2">
                                     <p class="card-title">Time is: </p>
-                                    <ngb-timepicker [(ngModel)]="test_value" />
+                                    <ngb-timepicker
+                                      [(ngModel)]="constraintsData.BackToDepotTime" />
                                   </div>
                                   <div
                                     class="popover__controls d-flex justify-content-end mt-2">
@@ -204,9 +218,28 @@
                               <ngx-arrow padding="8" />
                             </ngx-popover>
                           </p></li>
-                        <li><p>Maximum Work Duration is <button
-                              class="link link-primary link-opacity-75-hover">8
-                              Hours</button></p></li>
+                        <li><p>Maximum Work Duration is
+                            <ngx-popover [placement]="'bottom-start'">
+                              <button
+                                class="link link-primary link-opacity-75-hover">
+                                {{constraintsData.MaximumWorkDuration}}
+                                Hours</button>
+                              <ng-template ngx-popover-template>
+                                <div class="card p-3">
+                                  <div class="card-body p-2">
+                                    <p class="card-title">Work Duration is (0 - 24 Hrs): </p>
+                                    <app-number-counter-input [(ngModel)]="constraintsData.MaximumWorkDuration" [maxValue]="24" [minValue]="0"></app-number-counter-input>
+                                  </div>
+                                  <div
+                                    class="popover__controls d-flex justify-content-end mt-2">
+                                    <button ngx-popover-close class="btn">Close</button>
+                                  </div>
+                                </div>
+                              </ng-template>
+                              <ngx-arrow padding="8" />
+                            </ngx-popover>
+                          </p>
+                        </li>
                       </ul>
                     </li>
                   </ul>
@@ -219,14 +252,69 @@
                   <ul class="list-unstyled">
                     <li>
                       <ul>
-                        <li><p>Number of routes is set to <button
-                              class="link link-primary link-opacity-75-hover">150</button></p></li>
-                        <li><p>Vehicle order-size capacity is <button
-                              class="link link-primary link-opacity-75-hover">2500
-                              KG.</button></p></li>
-                        <li><p>Max route duration is <button
-                              class="link link-primary link-opacity-75-hover">200
-                              KM.</button></p></li>
+                        <li>
+                          <p>Number of routes is set to 
+                            <ngx-popover [placement]="'bottom-start'">
+                            <button
+                              class="link link-primary link-opacity-75-hover">{{constraintsData.NumberOfRouters}}</button>
+                              <ng-template ngx-popover-template>
+                                <div class="card p-3">
+                                  <div class="card-body p-2">
+                                    <p class="card-title">Number of routes: </p>
+                                    <app-number-counter-input [(ngModel)]="constraintsData.NumberOfRouters" [maxValue]="175" [minValue]="0"></app-number-counter-input>
+                                  </div>
+                                  <div
+                                    class="popover__controls d-flex justify-content-end mt-2">
+                                    <button ngx-popover-close class="btn">Close</button>
+                                  </div>
+                                </div>
+                              </ng-template>
+                              <ngx-arrow padding="8" />
+                            </ngx-popover>
+                            </p>
+                          </li>
+                        <li>
+                          <p>Vehicle order-size capacity is 
+                            <ngx-popover [placement]="'bottom-start'"><button
+                              class="link link-primary link-opacity-75-hover">{{constraintsData.VehicleOrderSizeCapacity}}
+                              KG.</button>
+                              <ng-template ngx-popover-template>
+                                <div class="card p-3">
+                                  <div class="card-body p-2">
+                                    <p class="card-title">Order-size capacity : </p>
+                                    <app-number-counter-input [(ngModel)]="constraintsData.VehicleOrderSizeCapacity" [maxValue]="10000" [minValue]="0" [count]="100" ></app-number-counter-input>
+                                  </div>
+                                  <div
+                                    class="popover__controls d-flex justify-content-end mt-2">
+                                    <button ngx-popover-close class="btn">Close</button>
+                                  </div>
+                                </div>
+                              </ng-template>
+                              <ngx-arrow padding="8" />
+                            </ngx-popover>
+                          </p>
+                        </li>
+                        <li>
+                          <p>Max route duration is 
+                            <ngx-popover [placement]="'bottom-start'"><button
+                              class="link link-primary link-opacity-75-hover">{{constraintsData.MaxRouteDuration}}
+                              KM.</button>
+                              <ng-template ngx-popover-template>
+                                <div class="card p-3">
+                                  <div class="card-body p-2">
+                                    <p class="card-title">Max route duration : </p>
+                                    <app-number-counter-input [(ngModel)]="constraintsData.MaxRouteDuration" [maxValue]="1200" [minValue]="0"></app-number-counter-input>
+                                  </div>
+                                  <div
+                                    class="popover__controls d-flex justify-content-end mt-2">
+                                    <button ngx-popover-close class="btn">Close</button>
+                                  </div>
+                                </div>
+                              </ng-template>
+                              <ngx-arrow padding="8" />
+                            </ngx-popover>
+                          </p>
+                        </li>
                       </ul>
                     </li>
                   </ul>
@@ -239,21 +327,45 @@
                   <ul class="list-unstyled">
                     <li>
                       <ul>
-                        <li><p>Service Duration Time is <button
-                              class="link link-primary link-opacity-75-hover">15
-                              minutes</button></p></li>
+                        <li>
+                          <p>Service Duration Time is 
+                            <ngx-popover [placement]="'bottom-start'"><button
+                                class="link link-primary link-opacity-75-hover">{{constraintsData.ServiceDurationTime}}
+                                minutes</button>
+                                <ng-template ngx-popover-template>
+                                  <div class="card p-3">
+                                    <div class="card-body p-2">
+                                      <p class="card-title">Service Duration Time : </p>
+                                      <app-number-counter-input [inputType]="'text'" [(ngModel)]="constraintsData.ServiceDurationTime" [maxValue]="120" [minValue]="0"></app-number-counter-input>
+                                    </div>
+                                    <div
+                                      class="popover__controls d-flex justify-content-end mt-2">
+                                      <button ngx-popover-close class="btn">Close</button>
+                                    </div>
+                                  </div>
+                                </ng-template>
+                                <ngx-arrow padding="8" />
+                            </ngx-popover>
+                          </p>
+                        </li>
                       </ul>
                     </li>
                   </ul>
 
                 </mat-expansion-panel>
               </mat-accordion>
-              <div class="text-end">
-                <button mat-raised-button color="secondary"
-                  class="btn btn-secondary m-3" (click)="nav.select(1)">Back</button>
-                <button mat-raised-button color="primary"
-                  class="btn btn-primary">Plan
-                  My Route</button>
+
+              <div class="row mt-4">
+                <div class="col text-start">
+                  <button mat-raised-button
+                    style="background-color: gray; color: white;" (click)="setParameterDefault()">Set Default</button>
+                </div>
+                <div class="col text-end">
+                  <button mat-raised-button color="secondary"
+                    class="btn btn-secondary" (click)="nav.select(1)">Back</button>
+                  <button mat-raised-button color="primary"
+                    class="btn btn-primary">Plan My Route</button>
+                </div>
               </div>
             </div>
           </ng-template>
@@ -264,7 +376,7 @@
 
     </div>
 
-    <div class="col-md-6" [hidden]="allFiles.length < 1">
+    <div class="col-md-6" [hidden]="!isUpload">
       <div class="row">
         <div id="map" class="map col-12" style="min-height: 800px;">
           <div id="popup" class="ol-popup" [hidden]="!popupContent">
@@ -288,14 +400,6 @@
       </div>
 
     </div>
-    @if (allFiles.length > 0) {
-    <div class="p-2 col-12">
-
-    </div>
-    <div class="col-12 ">
-
-    </div>
-    }
   </div>
 
 </div>

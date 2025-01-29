@@ -1,45 +1,51 @@
-body {
-    background-color: rgb(184, 118, 118);
-  }
-  *{
-    font-family: Kanit;
-  }
-  
-  a:link, a:visited {
-    text-decoration: none;
-  
-  }
-  
-  .excerpt {
-    margin-bottom: 10px;
-    max-height: 4.6em;
-    overflow: hidden;
-    
-  }
+a:link,
+a:visited {
+  text-decoration: none;
 
-  .mat-stepper-horizontal {
-    margin-top: 8px;
-  }
-  
-  .mat-mdc-form-field {
-    margin-top: 16px;
-  }
-
-  .mat-expansion-panel-header {
-    background-color: rgb(255, 252, 252);
-  }
-  .mat-expansion-panel p a,.mat-expansion-panel p,.template div a,button.link {
-    font-size: 15px;
-    user-select: inherit;
-    /* display: flex; */
-    flex-direction: row;
-    font-weight: 500;
 }
-.mat-expansion-panel p a,button.link {
-  border:none;
+
+.excerpt {
+  margin-bottom: 10px;
+  max-height: 4.6em;
+  overflow: hidden;
+
+}
+
+.gray-button {
+  background-color: gray;
+  color: white;
+}
+
+.mat-stepper-horizontal {
+  margin-top: 8px;
+}
+
+.mat-mdc-form-field {
+  margin-top: 16px;
+}
+
+.mat-expansion-panel-header {
+  background-color: rgb(255, 252, 252);
+}
+
+.mat-expansion-panel p a,
+.mat-expansion-panel p,
+.template div a,
+button.link {
+  font-size: 15px;
+  user-select: inherit;
+  /* display: flex; */
+  flex-direction: row;
+  font-weight: 500;
+}
+
+.mat-expansion-panel p a,
+button.link {
+  border: none;
   border-bottom: 1px dashed rgb(21, 2, 231);
-  background:none; 
+  background: none;
 }
+
 .file-input {
   display: none;
 }
@@ -47,16 +53,17 @@ body {
 .icon-browser {
   font-size: 20px;
 }
+
 .icon-upload {
   font-size: 50px;
   height: fit-content;
   width: fit-content;
-  color:  rgba(86, 87, 89, 0.726);
+  color: rgba(86, 87, 89, 0.726);
   display: inline-flex;
 
 }
 
-.dropzone{
+.dropzone {
   background-color: rgb(240, 242, 246);
   padding: 80px 0px;
   border-radius: 0.5rem;
@@ -80,20 +87,21 @@ body {
   background-color: #ffc107 !important;
   color: white;
 }
+
 .fab-danger {
-  background-color:  #dc3545 !important;
+  background-color: #dc3545 !important;
   color: white;
 }
 
 .fab-info {
-  background-color:  #ffffff !important;
+  background-color: #ffffff !important;
   color: rgb(21, 20, 20);
 }
 
 .ol-popup {
   position: absolute;
   background-color: white;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   padding: 15px;
   border-radius: 10px;
   border: 1px solid #cccccc;
@@ -101,7 +109,9 @@ body {
   left: -50px;
   min-width: 280px;
 }
-.ol-popup:after, .ol-popup:before {
+
+.ol-popup:after,
+.ol-popup:before {
   top: 100%;
   border: solid transparent;
   content: " ";
@@ -110,12 +120,14 @@ body {
   position: absolute;
   pointer-events: none;
 }
+
 .ol-popup:after {
   border-top-color: white;
   border-width: 10px;
   left: 48px;
   margin-left: -10px;
 }
+
 .ol-popup:before {
   border-top-color: #cccccc;
   border-width: 11px;
@@ -127,6 +139,7 @@ table {
   width: 100%;
   max-width: 100%;
 }
+
 .text-highlight-verify {
   border: none;
   box-sizing: border-box;
@@ -138,6 +151,7 @@ table {
   background-color: rgb(220, 250, 213);
   transition: 0.3s;
 }
+
 .text-highlight-inaccurate {
   border: none;
   box-sizing: border-box;
@@ -149,6 +163,7 @@ table {
   background-color: rgb(250, 247, 213);
   transition: 0.3s;
 }
+
 .text-highlight-unverify {
   border: none;
   box-sizing: border-box;
@@ -172,20 +187,20 @@ table {
   align-items: center;
   justify-content: center;
 
-  & > *[role=img] {
-     width: 16px;
-     height: 16px;
-     font-size: 16px;
+  &>*[role=img] {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
 
-     svg {
-        width: 16px;
-        height: 16px;
-     }
+    svg {
+      width: 16px;
+      height: 16px;
+    }
   }
 
   .mat-mdc-button-touch-target {
-     width: 24px !important;
-     height: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
   }
 }
 
@@ -202,6 +217,7 @@ table {
   -webkit-hyphens: auto;
   hyphens: auto;
 }
+
 .mat-column-AUMPHER {
   word-wrap: break-word !important;
   white-space: unset !important;
@@ -215,6 +231,7 @@ table {
   -webkit-hyphens: auto;
   hyphens: auto;
 }
+
 .mat-column-PROVICE {
   word-wrap: break-word !important;
   white-space: unset !important;
@@ -235,14 +252,17 @@ table {
   cursor: pointer;
 }
 
-.mdc-data-table__cell, .mdc-data-table__header-cell {
+.mdc-data-table__cell,
+.mdc-data-table__header-cell {
   padding: 0 5px;
 }
+
 .table-container {
   height: 400px;
   max-width: 100%;
   overflow: auto;
 }
+
 .mat-paginator-sticky {
   bottom: 0px;
   position: sticky;
