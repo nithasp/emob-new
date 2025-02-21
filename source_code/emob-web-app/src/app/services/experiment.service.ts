@@ -19,16 +19,16 @@ export class ExperimentService {
       query: gql`
       query {
         experiments {
-          RunId
-          Name
-          Timestamp
-          TimeStart
-          TimeEnd
-          TimeDulatin
-          TriggeredBy
-          Status
-          Run
-          GroupId
+          runId
+          name
+          timestamp
+          timeStart
+          timeEnd
+          timeDuration
+          triggeredBy
+          status
+          run
+          groupId
         }
       }
     `,
@@ -43,32 +43,32 @@ export class ExperimentService {
       mutation: gql`
       mutation {
         createExperiment {
-          RunId
+          runId
         }
       }`
     }).pipe(map(result => result.data!.createExperiment));
   }
-  getExperiment(RunId:string):Observable<Experiment>{
+  getExperiment(runId:string):Observable<Experiment>{
     return this.apollo.query<Response>({
       query: gql`
-      query experiment($Id:RunId!){
+      query experiment($Id:RunIdInput!){
         experiment(input: $Id) {
-          RunId
-          Name
-          Timestamp
-          TimeStart
-          TimeEnd
-          TimeDulatin
-          TriggeredBy
-          Status
-          Run
-          GroupId
+          runId
+          name
+          timestamp
+          timeStart
+          timeEnd
+          timeDuration
+          triggeredBy
+          status
+          run
+          groupId
         }
       }
       `,
       variables : {
         Id :{
-          RunId : RunId
+          runId : runId
         }
         
       }

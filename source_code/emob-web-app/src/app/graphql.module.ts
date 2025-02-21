@@ -4,6 +4,11 @@ import { onError } from "@apollo/client/link/error";
 import { ApolloModule, APOLLO_OPTIONS } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
+import extractFiles from 'extract-files/extractFiles.mjs';
+import isExtractableFile from 'extract-files/isExtractableFile.mjs';
+import { createUploadLink } from 'apollo-upload-client';
+
+
 const uri = '/api/v1/graphql'; // Replace with your GraphQL endpoint
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
@@ -17,17 +22,34 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (networkError) console.log(`[Network error]: ${networkError}`);
 });
 const removeTypenameLink = removeTypenameFromVariables();
+const uploadLink = createUploadLink({
+  uri,
+  extractFiles: (body: Record<string, any>) => extractFiles(body, isExtractableFile),
+});
+  
 
 export function createApollo(httpLink: HttpLink) {
   return {
-    link: ApolloLink.from([removeTypenameLink,errorLink,httpLink.create({ uri })]),
+    link: ApolloLink.from([removeTypenameLink,errorLink,uploadLink,httpLink.create({ uri })]),
     cache: new InMemoryCache({
       typePolicies : {
         User : {
           keyFields: false
-        }
+
+        },
       },
-    })
+    }),
+    defaultOptions: {
+      watchQuery: {
+        errorPolicy: 'all',
+      },
+      query: {
+        errorPolicy: 'all',
+      },
+      mutate: {
+        errorPolicy: 'all',
+      },
+    },
   };
 }
 
@@ -38,6 +60,7 @@ export function createApollo(httpLink: HttpLink) {
       provide: APOLLO_OPTIONS,
       useFactory: createApollo,
       deps: [HttpLink],
+
     },
   ],
 })

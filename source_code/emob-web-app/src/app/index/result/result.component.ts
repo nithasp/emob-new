@@ -123,8 +123,6 @@ function generateRandomRoutes(count: number): RouteInfo[] {
 }
 
 const randomRoutes = generateRandomRoutes(150);
-console.log(randomRoutes);
-
 
 
 @Component({

@@ -3,6 +3,7 @@ import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import {  Router } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {  NgxSpinnerService } from 'ngx-spinner';
 import { Experiment } from 'src/app/models/experiment.model';
 import { ExperimentService } from 'src/app/services/experiment.service';
@@ -42,7 +43,7 @@ export class ExperimentComponent implements AfterViewInit,OnInit {
       visible: true
     },
     {
-      def: "TimeDulatin",
+      def: "TimeDuration",
       label: "Duration",
       visible: true
     },
@@ -135,7 +136,7 @@ export class ExperimentComponent implements AfterViewInit,OnInit {
     this.spinner.show();
     this.experimentService.createExperiment().subscribe(response =>{
       this.spinner.hide();
-      this.router.navigate(['/users/run',response.RunId]);
+      this.router.navigate(['/users/run',response.runId]);
       
     });
   }

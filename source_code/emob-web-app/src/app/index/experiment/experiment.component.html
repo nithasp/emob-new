@@ -21,7 +21,7 @@
       </mat-form-field>
       <div class="text-right border-bottom">
         <button mat-button [matMenuTriggerFor]="menu" class="table-config-menu">
-          <mat-icon aria-hidden="false">view_list</mat-icon>
+          <mat-icon >view_list</mat-icon>
           Edit Columns
           <mat-menu #menu="matMenu">
             <span class="table-config-menu-label">Edit Columns</span>
@@ -63,7 +63,7 @@
             <th mat-header-cell *matHeaderCellDef> Name </th>
             <td mat-cell *matCellDef="let element"> <a
                 class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
-                href="#">{{element.Name}}</a> </td>
+                href="#">{{element.name}}</a> </td>
           </ng-container>
 
           <ng-container matColumnDef="actions">
@@ -77,48 +77,52 @@
 
           <ng-container matColumnDef="TimeStart">
             <th mat-header-cell *matHeaderCellDef> Run Start </th>
-            <td mat-cell *matCellDef="let element"> {{element.TimeStart | date:'MM/dd/yy h:mm:ss a'}}
+            <td mat-cell *matCellDef="let element"> {{element.timeStart | date:'MM/dd/yy h:mm:ss a'}}
             </td>
           </ng-container>
 
           <ng-container matColumnDef="TimeEnd">
             <th mat-header-cell *matHeaderCellDef> Run End </th>
-            <td mat-cell *matCellDef="let element"> {{element.TimeEnd | date:'MM/dd/yy h:mm:ss a'}}
+            <td mat-cell *matCellDef="let element">{{element.timeEnd | date:'MM/dd/yy h:mm:ss a'}}
             </td>
           </ng-container>
 
-          <ng-container matColumnDef="TimeDulatin">
+          <ng-container matColumnDef="TimeDuration">
             <th mat-header-cell *matHeaderCellDef> Duration </th>
-            <td mat-cell *matCellDef="let element"> {{element.TimeDulatin *1000
+            <td mat-cell *matCellDef="let element"> {{element.timeDuration *1000
               | date:'mm\'m\' ss\'s\''}} </td>
           </ng-container>
           <ng-container matColumnDef="TriggeredBy">
             <th mat-header-cell *matHeaderCellDef> Triggered By </th>
-            <td mat-cell *matCellDef="let element"> {{element.TriggeredBy}}
+            <td mat-cell *matCellDef="let element"> {{element.triggeredBy}}
             </td>
           </ng-container>
           <ng-container matColumnDef="Status">
             <th mat-header-cell *matHeaderCellDef> Status </th>
             <td mat-cell *matCellDef="let element">
-              @if(element.Status =='Succeeded'){
+              @if(element.status =='Succeeded'){
               <mat-icon style="color: green;vertical-align: middle;">check_circle</mat-icon>
-              }@else if(element.Status =='In progress'){
+              }
+              @else if(element.status =='In progress'){
               <mat-icon style="color: blue;vertical-align: middle;">pending</mat-icon>
               }
-              @else if(element.Status =='Failed'){
+              @else if(element.status =='Failed'){
               <mat-icon style="color: red;vertical-align: middle;">cancel</mat-icon>
               }
-              @else if(element.Status =='Canceled'){
+              @else if(element.status =='Canceled'){
               <mat-icon style="color: gray;vertical-align: middle;">block</mat-icon>
               }
-              @else if(element.Status =='Queued'){
+              @else if(element.status =='Queued'){
               <mat-icon style="color: blue;vertical-align: middle;">update</mat-icon>
               }
-              {{element.Status}} </td>
+              @else if(element.status =='Initializing'){
+                <mat-icon style="color: blue;vertical-align: middle;">draw</mat-icon>
+                }
+              {{element.status}} </td>
           </ng-container>
           <ng-container matColumnDef="Run">
             <th mat-header-cell *matHeaderCellDef> Run </th>
-            <td mat-cell *matCellDef="let element"> {{element.Run}} </td>
+            <td mat-cell *matCellDef="let element"> {{element.run}} </td>
           </ng-container>
           <ng-container matColumnDef="parameter">
             <th mat-header-cell *matHeaderCellDef> Parameter </th>
@@ -127,11 +131,11 @@
           </ng-container>
           <ng-container matColumnDef="RunId">
             <th mat-header-cell *matHeaderCellDef> Run ID </th>
-            <td mat-cell *matCellDef="let element"> {{element.RunId}} </td>
+            <td mat-cell *matCellDef="let element"> {{element.runId}} </td>
           </ng-container>
           <ng-container matColumnDef="GroupId">
             <th mat-header-cell *matHeaderCellDef> Group ID </th>
-            <td mat-cell *matCellDef="let element"> {{element.GroupId}} </td>
+            <td mat-cell *matCellDef="let element"> {{element.groupId}} </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="getDisplayedColumns()">

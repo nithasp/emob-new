@@ -17,11 +17,11 @@
                       Name</span>
                   </div>
                   <input type="text" class="form-control"
-                    [(ngModel)]="experiment.Name">
+                    [(ngModel)]="experiment.name">
                 </div>
               </div>
               <div class="col-md-12 rounded-3 dropzone" DropZone
-                (onFileDropped)="droppedFiles($event)"
+                (onFileDropped)="onFileSelected($event)"
                 [hidden]="preOrderFiles.length > 0">
                 <div class="row">
 
@@ -163,7 +163,9 @@
             </div>
           </ng-template>
         </li>
-        <li [ngbNavItem]="2">
+        <li [ngbNavItem]="2" >
+        <!-- [disabled]="!isUpload" -->
+        
           <button ngbNavLink><h3>Parameters</h3></button>
           <ng-template ngbNavContent>
             <div style="min-height: 720px;">
@@ -179,14 +181,14 @@
                         <li><p>Early delivery Time is
                             <ngx-popover [placement]="'bottom-start'">
                               <button class="link link-primary">
-                                {{constraintsData.EarlyDeliveryTime}}
+                                {{constraintsData.earlyDeliveryTime}}
                               </button>
                               <ng-template ngx-popover-template>
                                 <div class="card p-3">
                                   <div class="card-body p-2">
                                     <p class="card-title">Time is: </p>
                                     <ngb-timepicker
-                                      [(ngModel)]="constraintsData.EarlyDeliveryTime" />
+                                      [(ngModel)]="constraintsData.earlyDeliveryTime" />
                                   </div>
                                   <div
                                     class="popover__controls d-flex justify-content-end mt-2">
@@ -200,14 +202,14 @@
                         <li><p>Back to depot time is
                             <ngx-popover [placement]="'bottom-start'">
                               <button class="link link-primary">
-                                {{constraintsData.BackToDepotTime}}
+                                {{constraintsData.backToDepotTime}}
                               </button>
                               <ng-template ngx-popover-template>
                                 <div class="card p-3">
                                   <div class="card-body p-2">
                                     <p class="card-title">Time is: </p>
                                     <ngb-timepicker
-                                      [(ngModel)]="constraintsData.BackToDepotTime" />
+                                      [(ngModel)]="constraintsData.backToDepotTime" />
                                   </div>
                                   <div
                                     class="popover__controls d-flex justify-content-end mt-2">
@@ -222,13 +224,14 @@
                             <ngx-popover [placement]="'bottom-start'">
                               <button
                                 class="link link-primary link-opacity-75-hover">
-                                {{constraintsData.MaximumWorkDuration}}
-                                Hours</button>
+                                {{constraintsData.maximumWorkDuration | timeFormat}}</button>
                               <ng-template ngx-popover-template>
                                 <div class="card p-3">
                                   <div class="card-body p-2">
                                     <p class="card-title">Work Duration is (0 - 24 Hrs): </p>
-                                    <app-number-counter-input [(ngModel)]="constraintsData.MaximumWorkDuration" [maxValue]="24" [minValue]="0"></app-number-counter-input>
+                                    <!-- <app-number-counter-input [(ngModel)]="constraintsData.maximumWorkDuration" [maxValue]="24" [minValue]="0"></app-number-counter-input> -->
+                                    <ngb-timepicker
+                                    [(ngModel)]="constraintsData.maximumWorkDuration" />
                                   </div>
                                   <div
                                     class="popover__controls d-flex justify-content-end mt-2">
@@ -256,12 +259,12 @@
                           <p>Number of routes is set to 
                             <ngx-popover [placement]="'bottom-start'">
                             <button
-                              class="link link-primary link-opacity-75-hover">{{constraintsData.NumberOfRouters}}</button>
+                              class="link link-primary link-opacity-75-hover">{{constraintsData.numberOfVehicleAvailable}}</button>
                               <ng-template ngx-popover-template>
                                 <div class="card p-3">
                                   <div class="card-body p-2">
-                                    <p class="card-title">Number of routes: </p>
-                                    <app-number-counter-input [(ngModel)]="constraintsData.NumberOfRouters" [maxValue]="175" [minValue]="0"></app-number-counter-input>
+                                    <p class="card-title">number Of Vehicle Available: </p>
+                                    <app-number-counter-input [(ngModel)]="constraintsData.numberOfVehicleAvailable" [maxValue]="175" [minValue]="0"></app-number-counter-input>
                                   </div>
                                   <div
                                     class="popover__controls d-flex justify-content-end mt-2">
@@ -276,13 +279,13 @@
                         <li>
                           <p>Vehicle order-size capacity is 
                             <ngx-popover [placement]="'bottom-start'"><button
-                              class="link link-primary link-opacity-75-hover">{{constraintsData.VehicleOrderSizeCapacity}}
+                              class="link link-primary link-opacity-75-hover">{{constraintsData.vehicleOrderSizeCapacity}}
                               KG.</button>
                               <ng-template ngx-popover-template>
                                 <div class="card p-3">
                                   <div class="card-body p-2">
                                     <p class="card-title">Order-size capacity : </p>
-                                    <app-number-counter-input [(ngModel)]="constraintsData.VehicleOrderSizeCapacity" [maxValue]="10000" [minValue]="0" [count]="100" ></app-number-counter-input>
+                                    <app-number-counter-input [(ngModel)]="constraintsData.vehicleOrderSizeCapacity" [maxValue]="10000" [minValue]="0" [count]="100" ></app-number-counter-input>
                                   </div>
                                   <div
                                     class="popover__controls d-flex justify-content-end mt-2">
@@ -295,15 +298,15 @@
                           </p>
                         </li>
                         <li>
-                          <p>Max route duration is 
+                          <p>Maximum Travel Distance is 
                             <ngx-popover [placement]="'bottom-start'"><button
-                              class="link link-primary link-opacity-75-hover">{{constraintsData.MaxRouteDuration}}
+                              class="link link-primary link-opacity-75-hover">{{constraintsData.maximumTravelDistance}}
                               KM.</button>
                               <ng-template ngx-popover-template>
                                 <div class="card p-3">
                                   <div class="card-body p-2">
-                                    <p class="card-title">Max route duration : </p>
-                                    <app-number-counter-input [(ngModel)]="constraintsData.MaxRouteDuration" [maxValue]="1200" [minValue]="0"></app-number-counter-input>
+                                    <p class="card-title">maximum Work Duration : </p>
+                                    <app-number-counter-input [(ngModel)]="constraintsData.maximumTravelDistance" [maxValue]="1200" [minValue]="0"></app-number-counter-input>
                                   </div>
                                   <div
                                     class="popover__controls d-flex justify-content-end mt-2">
@@ -330,13 +333,14 @@
                         <li>
                           <p>Service Duration Time is 
                             <ngx-popover [placement]="'bottom-start'"><button
-                                class="link link-primary link-opacity-75-hover">{{constraintsData.ServiceDurationTime}}
-                                minutes</button>
+                                class="link link-primary link-opacity-75-hover">{{constraintsData.serviceDurationTime | timeFormat}}</button>
                                 <ng-template ngx-popover-template>
                                   <div class="card p-3">
                                     <div class="card-body p-2">
                                       <p class="card-title">Service Duration Time : </p>
-                                      <app-number-counter-input [inputType]="'text'" [(ngModel)]="constraintsData.ServiceDurationTime" [maxValue]="120" [minValue]="0"></app-number-counter-input>
+                                      <!-- <app-number-counter-input [inputType]="'text'" [(ngModel)]="constraintsData.serviceDurationTime" [maxValue]="120" [minValue]="0"></app-number-counter-input> -->
+                                      <ngb-timepicker
+                                      [(ngModel)]="constraintsData.serviceDurationTime" />
                                     </div>
                                     <div
                                       class="popover__controls d-flex justify-content-end mt-2">
@@ -358,7 +362,7 @@
               <div class="row mt-4">
                 <div class="col text-start">
                   <button mat-raised-button
-                    style="background-color: gray; color: white;" (click)="setParameterDefault()">Set Default</button>
+                    style="background-color: gray; color: white;"(click)="setParameterDefault()">Set Default</button>
                 </div>
                 <div class="col text-end">
                   <button mat-raised-button color="secondary"

@@ -10,7 +10,6 @@ import {
   Attribution
 } from "ol/control";
 import * as OlProj from "ol/proj";
-import { Time } from 'src/app/models/time.model';
 import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
 import { Subscription, finalize } from 'rxjs';
 import Feature from 'ol/Feature';
@@ -19,7 +18,6 @@ import Icon from 'ol/style/Icon';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
-import { LocationService } from 'src/app/services/location.service';
 import Overlay from 'ol/Overlay';
 import { Coordinate } from 'ol/coordinate';
 import OSM from 'ol/source/OSM';
@@ -35,7 +33,10 @@ import { Constraint } from 'src/app/models/constraint.model';
 import { ActivatedRoute } from '@angular/router';
 import { Experiment } from 'src/app/models/experiment.model';
 import { ExperimentService } from 'src/app/services/experiment.service';
-import { NgbTimeStruct, NgbTimeAdapter} from '@ng-bootstrap/ng-bootstrap';
+import { NgbTimeStruct, NgbTimeAdapter, NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
+import {ToastrService} from "ngx-toastr";
+import { PreOrderService } from 'src/app/services/pre-order.service';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -60,7 +61,6 @@ export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
 		return time != null ? `${pad(time.hour)}:${pad(time.minute)}` : null;
 	}
 }
-
 
 @Component({
   selector: 'app-run',
@@ -92,10 +92,11 @@ export class RunComponent implements OnInit, AfterViewInit {
   value: string = 'File';
   active = 1;
   private dataPreOrder: Array<PreOrder> = [];
+  groupedDataPreOrder:any = {};
 
 
   displayedColumns: string[] = ['ORDERID_ORG', 'ADDRESS', 'AUMPHER', 'PROVICE'];
-  dataSource = new MatTableDataSource<PreOrder>();
+  dataSource = new MatTableDataSource<any>();
   clickedRows = new Set<PreOrder>();
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -104,13 +105,16 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly spinner: NgxSpinnerService,
     private readonly constraintService: ConstraintService,
     private readonly route: ActivatedRoute,
-    private readonly experimentService: ExperimentService
+    private readonly experimentService: ExperimentService,
+    private readonly ngbModal : NgbModal,
+    private readonly toastr: ToastrService,
+    private readonly preOrderService: PreOrderService
   ) { }
 
   ngOnInit(): void {
     this.spinner.show()
     this.route.params.subscribe(params => {
-      this.experimentService.getExperiment(params['RunId']).subscribe(response => {
+      this.experimentService.getExperiment(params['runId']).subscribe(response => {
         this.experiment = { ...response };
 
       });
@@ -154,20 +158,23 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   onFileSelected(files: any) {
-    this.spinner.show();
     console.log(files)
-    const file: File = files.target.files[0];
-    if (file) {
-      this.preOrderFiles.push(file);
-      const target: DataTransfer = <DataTransfer>(files.target);
-      if (target.files.length !== 1) {
-        throw new Error('Cannot use multiple files');
+    let file: File;
+    if(files instanceof FileList){
+      file = files[0];
+      if (files.length > 1) {
+        this.toastr.warning('Cannot use multiple files');
       }
-      this.processExcelFile(file);
-      this.experiment.Name = file.name;
-      this.isUpload = true;
-      this.spinner.hide();
 
+    }else{
+       file = files.target.files[0] ;
+       const target: DataTransfer = <DataTransfer>(files.target);
+       if (target.files.length > 1) {
+        this.toastr.warning('Cannot use multiple files');
+      }
+    }
+    if (file) {
+      this.uploadFile(file);
     }
   }
 
@@ -197,7 +204,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       });
 
       if (this.validateData(preOrderData)) {
-        this.dataSource.data = this.dataPreOrder = preOrderData;
+        this.dataPreOrder = preOrderData;
+        this.groupDataById();
+        console.log(this.groupedDataPreOrder);
         this.loadLocation(this.dataPreOrder);
       } else {
         console.error('Data validation failed');
@@ -205,36 +214,79 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
     reader.readAsArrayBuffer(file);
   }
-  uploadFile(file: any) {
-    const formData = new FormData();
-    formData.append("thumbnail", file);
-    const upload$ = this.http.post("http://localhost:8080/fileupload", formData, {
-      reportProgress: true,
-      observe: 'events'
-    })
-      .pipe(
-        finalize(() => this.reset())
-      );
 
-    this.uploadSub = upload$.subscribe(event => {
-      this.uploadProgress = this.getEventMessage(event)
-    })
+
+/**
+ * The function `groupDataById` in TypeScript groups data by a specified ID, department, aumpher, and
+ * province.
+ */
+  groupDataById() {
+    this.groupedDataPreOrder = this.dataPreOrder.reduce((acc, row) => {
+      const ORDERID_ORG = row.ORDERID_ORG // Assuming the ID is in the first column
+      const ADDRESS = row.ADDRESS; // Assuming the Department is in the fourth column
+      const AUMPHER = row.AUMPHER; // Assuming the aumpher is in the fourth column
+      const PROVICE = row.PROVICE; // Assuming the province is in the fourth column
+      if (!acc[ORDERID_ORG]) {
+        acc[ORDERID_ORG] = { ADDRESS,AUMPHER,PROVICE, details: [] };
+      }
+      acc[ORDERID_ORG].details.push(row);
+      return acc;
+    }, {} as { [ORDERID_ORG: string]: { ADDRESS: string; AUMPHER: string; PROVICE: string; details: Array<PreOrder> } });
+
+    // Convert grouped data to array for MatTable
+    this.dataSource.data = Object.keys(this.groupedDataPreOrder).map(key => ({
+      ORDERID_ORG: key,
+      ADDRESS: this.groupedDataPreOrder[key].ADDRESS,
+      AUMPHER: this.groupedDataPreOrder[key].AUMPHER,
+      PROVICE: this.groupedDataPreOrder[key].PROVICE
+    }));
   }
 
-  droppedFiles(files: any): void {
-    this.spinner.show();
-    const filesAmount = files.length;
-    console.log(files);
-    for (let i = 0; i < filesAmount; i++) {
-      const file = files[i];
-      this.preOrderFiles.push(file);
+/**
+ * The `uploadFile` function in TypeScript uploads a file to a server using HTTP POST request with
+ * progress tracking.
+ * @param {any} file - The `uploadFile` function you provided is used to upload a file to a server
+ * using Angular's HttpClient. It creates a FormData object, appends the file to it, and then makes a
+ * POST request to the specified URL with the FormData object.
+ */
+  uploadFile(file: File) {
+    const focusedElement = document.activeElement as HTMLElement;
+    if (focusedElement) {
+      focusedElement.blur();
     }
-    this.isUpload = true;
-    this.experiment.Name = files.name;
-    setTimeout(() => {
-      this.spinner.hide();
-    }, 1000);
+    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      centered: true,
+      size: 'lg',
+      animation: true,
+      
+    });
+    dialogRef.componentInstance.title = 'Confirm to Upload file ?'
+    dialogRef.componentInstance.message = 'Please make sure to upload the file, and note that there may be a cost associated with finding the location.'
+
+    dialogRef.result.then((confirmed: boolean) => {
+      if (confirmed) {
+        this.spinner.show();
+        this.preOrderService.uploadPreOrder(this.experiment.runId,file).subscribe(response =>{
+          console.log(response);
+            this.experiment.name = response.name;
+            this.isUpload = true;
+            this.processExcelFile(file);
+            this.preOrderFiles.push(file);
+            
+            this.spinner.hide();
+            this.toastr.success('Uploading');
+            
+        });
+        
+        
+        
+      }
+    }).catch((error) => {
+      console.error('Dialog was dismissed:', error);
+    });
   }
+
+
   deleteFileinList(index: number) {
     this.spinner.show();
     this.preOrderFiles.splice(index, 1)
@@ -253,11 +305,34 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   setParameterDefault(){
-    console.log(this.constraintsData);
-    this.constraintService.updateParameter(this.constraintsData).subscribe(response =>{
-      console.log("update parameter status code :",response.status_message);
+    const focusedElement = document.activeElement as HTMLElement;
+    if (focusedElement) {
+      focusedElement.blur();
+    }
+    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      centered: true,
+      size: 'sm',
+      animation: true,
+      
     });
-    
+    dialogRef.componentInstance.message = 'Confirm to set default Parameter ?'
+    dialogRef.componentInstance.title = 'Confirm to action'
+
+    dialogRef.result.then((confirmed: boolean) => {
+      if (confirmed) {
+        this.constraintService.updateParameter(this.constraintsData).subscribe(
+          (response) => {
+            this.toastr.success(response.status_message, 'Set default Parameter');
+          },
+          (error) => {
+            this.toastr.error('Failed to set default Parameter', 'Error');
+            console.error('Error updating parameter:', error);
+          }
+        );
+      }
+    }).catch((error) => {
+      console.error('Dialog was dismissed:', error);
+    });
   }
 
   reset() {
@@ -351,6 +426,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
 
   }
+  /**
+   * The `initMap` function initializes a map with layers, controls, and overlays in TypeScript using
+   * OpenLayers library.
+   */
   private initMap() {
     const attribution = new Attribution({
       collapsible: true,

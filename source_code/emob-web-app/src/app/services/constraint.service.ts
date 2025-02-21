@@ -19,13 +19,13 @@ export class ConstraintService {
       query: gql`
       query MyParameter {
         myParameter {
-          EarlyDeliveryTime
-          BackToDepotTime
-          MaximumWorkDuration
-          NumberOfRouters
-          VehicleOrderSizeCapacity
-          MaxRouteDuration
-          ServiceDurationTime
+          earlyDeliveryTime
+          backToDepotTime
+          maximumWorkDuration
+          numberOfVehicleAvailable
+          vehicleOrderSizeCapacity
+          maximumTravelDistance
+          serviceDurationTime
         }
       }
     
@@ -38,15 +38,15 @@ export class ConstraintService {
   updateParameter(constraints:Constraint): Observable<Response>{
     return this.apollo.mutate<Response>({
       mutation: gql`
-      mutation updateParameter( $constraints : inpputParameter!){
+      mutation updateParameter( $constraints : UpdateParameterInput!){
         updateParameter(input: $constraints) {
-          EarlyDeliveryTime
-          BackToDepotTime
-          MaximumWorkDuration
-          NumberOfRouters
-          VehicleOrderSizeCapacity
-          MaxRouteDuration
-          ServiceDurationTime
+          earlyDeliveryTime
+          backToDepotTime
+          maximumWorkDuration
+          numberOfVehicleAvailable
+          vehicleOrderSizeCapacity
+          maximumTravelDistance
+          serviceDurationTime
         }
       }
     

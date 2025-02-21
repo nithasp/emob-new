@@ -3,7 +3,7 @@ import { IndexRoutingModule } from './index-routing.module';
 import { ExperimentComponent } from './experiment/experiment.component';
 import { RunComponent } from './run/run.component';
 import { ResultComponent } from './result/result.component';
-import { ConstraintComponent } from './constraint/constraint.component';
+import { InventoryComponent } from './inventory/inventory.component';
 import { MaterialModule } from '../material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavbarComponent } from './default/navbar/navbar.component';
@@ -19,19 +19,21 @@ import { DropzoneDirective } from '../directives/dropzone.directive';
 import { TruncatePipe } from '../directives/truncate-pipe.directive';
 import { NgxSpinnerModule } from "ngx-spinner";
 import { NumberCounterInputComponent } from './components/number-counter-input/number-counter-input.component';
+import { TimeFormatPipe } from '../directives/timeformat-pipe.directive';
 @NgModule({
   declarations: [
     IndexComponent,
     ExperimentComponent,
     RunComponent,
     ResultComponent,
-    ConstraintComponent,
+    InventoryComponent,
     NavbarComponent,
     TopbarComponent,
     ConfirmationDialogComponent,
     DropzoneDirective,
     TruncatePipe,
-    NumberCounterInputComponent
+    NumberCounterInputComponent,
+    TimeFormatPipe
   ],
   imports: [
     IndexRoutingModule,
@@ -48,5 +50,6 @@ import { NumberCounterInputComponent } from './components/number-counter-input/n
     
   ],
   schemas :[CUSTOM_ELEMENTS_SCHEMA ],
+
 })
 export class IndexModule { }

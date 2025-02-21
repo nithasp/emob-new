@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { UserService } from 'src/app/services/user.service';
 import $ from 'jquery';
 @Component({
   selector: 'app-topbar',
@@ -9,7 +8,6 @@ import $ from 'jquery';
 })
 export class TopbarComponent implements OnInit{
   constructor(
-    private userService: UserService,
     private router: Router
   ){}
 
@@ -19,8 +17,6 @@ export class TopbarComponent implements OnInit{
 
   logout(){
     console.log("Delete USer")
-    const user = this.userService.logout();
-    console.log(`confirm delete user : ${user}`)
     this.router.navigate(['/login'])
   }
 
