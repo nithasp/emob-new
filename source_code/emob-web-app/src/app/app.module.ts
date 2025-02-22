@@ -8,15 +8,16 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MaterialModule } from "./material.module";
 import { NgxSpinnerModule } from "ngx-spinner";
 import { CommonModule } from "@angular/common";
-import { HTTP_INTERCEPTORS, HttpClientModule, provideHttpClient } from "@angular/common/http";
+import { HTTP_INTERCEPTORS, provideHttpClient } from "@angular/common/http";
 import { GraphQLModule } from "./graphql.module";
 import {provideToastr, ToastrModule} from "ngx-toastr";
 
 
 import { msalConfig, loginRequest } from './auth-config';
 import { InteractionType, IPublicClientApplication, PublicClientApplication } from "@azure/msal-browser";
-import { MSAL_GUARD_CONFIG, MSAL_INSTANCE, MsalBroadcastService, MsalGuardConfiguration, MsalInterceptor, MsalModule, MsalRedirectComponent, MsalService } from "@azure/msal-angular";
+import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalInterceptor, MsalModule, MsalRedirectComponent, MsalService } from "@azure/msal-angular";
 import { RoleGuard } from "./guards/role.guard";
+import { TopbarComponent } from "./index/default/topbar/topbar.component";
 
 /**
  * Here we pass the configuration parameters to create an MSAL instance.
@@ -36,8 +37,12 @@ export function MsalGuardConfigurationFactory(): MsalGuardConfiguration {
     authRequest: loginRequest
   };
 }
+
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [
+    AppComponent,
+    TopbarComponent,
+  ],
   imports: [
     AppRoutingModule,
     MaterialModule,
@@ -68,7 +73,8 @@ export function MsalGuardConfigurationFactory(): MsalGuardConfiguration {
     }),
   ],
   schemas :[CUSTOM_ELEMENTS_SCHEMA ],
-  bootstrap: [AppComponent,MsalRedirectComponent],
+  bootstrap: [AppComponent,
+    MsalRedirectComponent],
   providers: [
     provideHttpClient(),
     provideAnimations(),

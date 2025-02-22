@@ -7,7 +7,6 @@ import { InventoryComponent } from './inventory/inventory.component';
 import { MaterialModule } from '../material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavbarComponent } from './default/navbar/navbar.component';
-import { TopbarComponent } from './default/topbar/topbar.component';
 import { RouterLinkActive } from '@angular/router';
 import { IndexComponent } from './index.component';
 import { NgbModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
@@ -28,7 +27,6 @@ import { TimeFormatPipe } from '../directives/timeformat-pipe.directive';
     ResultComponent,
     InventoryComponent,
     NavbarComponent,
-    TopbarComponent,
     ConfirmationDialogComponent,
     DropzoneDirective,
     TruncatePipe,

@@ -17,8 +17,8 @@ import {
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { createClaimsTable } from './claim-utils';
-import { routes } from './app-routing.module';
 import { Router } from '@angular/router';
+import { UserADProfile } from './models/profile.model';
 
 
 @Component({
@@ -27,6 +27,7 @@ import { Router } from '@angular/router';
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit, OnDestroy {
+  userADProfile!: UserADProfile;
   isShow: boolean = false;
   topPosToStartShowing = 500;
   loginDisplay = false;
@@ -78,6 +79,11 @@ export class AppComponent implements OnInit, OnDestroy {
      * Note: Basic usage demonstrated. Your app may require more complicated account selection logic
      */
     let activeAccount = this.authService.instance.getActiveAccount();
+    console.log(activeAccount);
+    this.userADProfile = {name:activeAccount?.name ?? null,
+      tenantId:activeAccount?.tenantId ?? null,
+      username:activeAccount?.username ?? null
+    };
     this.getClaims(activeAccount?.idTokenClaims);
 
     if (!activeAccount && this.authService.instance.getAllAccounts().length > 0) {
@@ -117,18 +123,7 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     }
   }
-  logout() {
-
-    if (this.msalGuardConfig.interactionType === InteractionType.Popup) {
-      this.authService.logoutPopup({
-        account: this.authService.instance.getActiveAccount(),
-      });
-    } else {
-      this.authService.logoutRedirect({
-        account: this.authService.instance.getActiveAccount(),
-      });
-    }
-  }
+  
   @HostListener("window:scroll")
   checkScroll() {
     const scrollPosition =

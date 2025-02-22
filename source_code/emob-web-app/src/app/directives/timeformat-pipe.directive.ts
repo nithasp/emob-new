@@ -12,6 +12,12 @@ export class TimeFormatPipe implements PipeTransform {
     if(hours != '00'){
     textValue += `${Number(hours)} Hours`
     } 
-    return `${textValue} ${minutes} Minutes`;
+    if(minutes != '00'){
+      textValue += ` ${Number(minutes)} Minutes`
+      }
+    if(minutes =='00' && hours == '00'){
+      textValue = "Not Set"
+    } 
+    return textValue;
   }
 }

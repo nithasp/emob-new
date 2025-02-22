@@ -9,7 +9,6 @@
     width: 100%;
     max-height: 100%;
 }
-
 .mat-form-field-infix {
 
     width: 90px !important;
@@ -21,17 +20,39 @@
 
 @import url('https://fonts.googleapis.com/css?family=Kanit');
 
-body {
-    font-family: Kanit;
-    position: relative;
-    height: auto !important;
-    min-height: 100% !important;
-}
-
+// body {
+//     font-family: Kanit;
+//     position: relative;
+//     height: auto !important;
+//     min-height: 100% !important;
+// }
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+  }
+  .container {
+    display: flex;
+    flex-direction: column;
+    min-width: 100vw;
+    min-height: 100vh;
+    background-color: #ffffff;
+    margin-top: 2px;
+    margin-left: 2px;
+    margin-right: 2px;
+  }
+  .content {
+    flex: 1;
+  }
+  
 * {
     font-family: Kanit;
 }
-
+.fullscreen-fit-content {
+    min-height: 100vh;
+    height: auto;
+  }
+  
 /* Importing Bootstrap SCSS file. */
 @import 'bootstrap/scss/bootstrap';
 

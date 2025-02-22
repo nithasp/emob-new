@@ -1,38 +1,53 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, Inject, Input, OnInit } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalService } from '@azure/msal-angular';
+import { InteractionType } from '@azure/msal-browser';
 import $ from 'jquery';
+import { UserADProfile } from 'src/app/models/profile.model';
 @Component({
   selector: 'app-topbar',
   templateUrl: './topbar.component.html',
   styleUrl: './topbar.component.scss'
 })
 export class TopbarComponent implements OnInit{
+  @Input() public userADprofile?: UserADProfile;
+  public activeRoute: string;
+
   constructor(
-    private router: Router
-  ){}
+    private router: Router,
+    @Inject(MSAL_GUARD_CONFIG) private readonly msalGuardConfig: MsalGuardConfiguration,
+    private readonly authService: MsalService,
+    private readonly msalBroadcastService: MsalBroadcastService,
+  ){
+    this.activeRoute = '';
+  }
 
   ngOnInit() {
-    this.ActiveUI();
-  }
-
-  logout(){
-    console.log("Delete USer")
-    this.router.navigate(['/login'])
-  }
-
-  private ActiveUI() {
-    let routePath = this.router.url.substring(1).split('/')[1]
-    console.log(routePath)
-    $(document).ready(function(){
-      $(".nav-item").click(function() {
-        $("li.nav-item").removeClass("active");
-        console.log(this)
-        $(this).toggleClass("active");
-      });
-      if (!$(".nav-item").data("clicked")) {
-        $("li.nav-item").removeClass("active");
-        $("#"+routePath).toggleClass("active");
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.activeRoute = event.urlAfterRedirects.split('/')[2];
       }
     });
   }
+
+  logout() {
+
+    if (this.msalGuardConfig.interactionType === InteractionType.Popup) {
+      this.authService.logoutPopup({
+        account: this.authService.instance.getActiveAccount(),
+      });
+    } else {
+      this.authService.logoutRedirect({
+        account: this.authService.instance.getActiveAccount(),
+      });
+    }
+  }
+  setActive(route: string) {
+    this.activeRoute = route;
+  }
+
+  isActive(route: string): boolean {
+    return this.activeRoute === route;
+  }
+
 }

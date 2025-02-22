@@ -37,7 +37,6 @@
     "exceljs": "^4.4.0",
     "extract-files": "^13.0.0",
     "graphql": "^16.10.0",
-    "jquery": "^3.7.1",
     "ngx-spinner": "^17.0.0",
     "ngx-toastr": "^19.0.0",
     "ol": "^10.2.1",

@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { RoleGuard } from './guards/role.guard';
 import { BrowserUtils } from '@azure/msal-browser';
 import { roles } from './auth-config';
+import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 
 export const routes: Routes = [
     {
@@ -13,9 +14,11 @@ export const routes: Routes = [
         expectedRoles: [roles.UserRole]
       }
     },
+    { path: 'unauthorized', component: UnauthorizedComponent },
+    { path: '', redirectTo: '/users', pathMatch: 'full' },
     {
       path: "**",
-      redirectTo: 'users'
+      redirectTo: '/users'
     }
 ];
 @NgModule({

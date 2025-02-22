@@ -8,16 +8,13 @@
   <div class="collapse navbar-collapse" id="navbar">
       <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
 
-          <li class="nav-item" id="experiments">
+          <li class="nav-item"  [class.active]="isActive('experiments')" (click)="setActive('experiments')">
               <a class="nav-link " [routerLink]="['/users/experiments']" routerLinkActive>Experiments</a>
           </li>
-          <li class="nav-item" id="inventory">
+          <li class="nav-item" [class.active]="isActive('inventories')" (click)="setActive('inventories')">
               <a class="nav-link" [routerLink]="['/users/inventories']" routerLinkActive>Inventories</a>
           </li>
-          <!-- <li class="nav-item" id="run">
-              <a class="nav-link" [routerLink]="['/users/run']" routerLinkActive>Run</a>
-          </li> -->
-          <li class="nav-item" id="result">
+          <li class="nav-item" [class.active]="isActive('result')" (click)="setActive('result')">
               <a class="nav-link" [routerLink]="['/users/result']" routerLinkActive>Results</a>
           </li>
       </ul>
@@ -25,7 +22,8 @@
           <li class="avatar dropdown">
               <button class="nav-link dropdown-toggle btn btn-light btn-block" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <ng-container >
-              <b class="pr-2">USerTest01</b>
+                    
+                        <b class="pr-2" *ngIf="userADprofile?.name">{{userADprofile?.name }}</b>
               <img src="assets/image/person.png" alt="avatarimage" class="rounded-circle z-depth-0" width="30" >
           </ng-container>
           

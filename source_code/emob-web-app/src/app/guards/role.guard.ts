@@ -35,6 +35,7 @@ export class RoleGuard extends BaseGuard {
           activeAccount = this.authService.instance.getAllAccounts()[0];
         }
         if (!activeAccount?.idTokenClaims?.roles) {
+          this.router.navigate(['/unauthorized']);
           console.warn('Token does not have roles claim. Please ensure that your account is assigned to an app role and then sign-out and sign-in again.');
           return of(false);
         }
@@ -42,7 +43,9 @@ export class RoleGuard extends BaseGuard {
         const hasRequiredRole = expectedRoles.some((role: string) => activeAccount?.idTokenClaims?.roles?.includes(role));
 
         if (!hasRequiredRole) {
+          this.router.navigate(['/unauthorized']);
           console.warn('You do not have access as the expected role is not found. Please ensure that your account is assigned to an app role and then sign-out and sign-in again.');
+          return of(false);
         }
 
         return of(hasRequiredRole);

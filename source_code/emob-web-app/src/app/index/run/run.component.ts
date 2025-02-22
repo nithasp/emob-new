@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Injectable, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, Injectable, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -11,7 +11,7 @@ import {
 } from "ol/control";
 import * as OlProj from "ol/proj";
 import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
-import { Subscription, finalize } from 'rxjs';
+import { Subscription } from 'rxjs';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import Icon from 'ol/style/Icon';
@@ -26,17 +26,19 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 
 import * as ExcelJS from 'exceljs';
-import { PreOrder } from 'src/app/models/pre-order.model';
+import { Customer, PreOrder, ReplaceType, UploadPreOrder, ValidationType } from 'src/app/models/pre-order.model';
 import Style from 'ol/style/Style';
 import { ConstraintService } from 'src/app/services/constraint.service';
 import { Constraint } from 'src/app/models/constraint.model';
 import { ActivatedRoute } from '@angular/router';
 import { Experiment } from 'src/app/models/experiment.model';
 import { ExperimentService } from 'src/app/services/experiment.service';
-import { NgbTimeStruct, NgbTimeAdapter, NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import { NgbTimeStruct, NgbTimeAdapter, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
-import {ToastrService} from "ngx-toastr";
+import { ToastrService } from "ngx-toastr";
 import { PreOrderService } from 'src/app/services/pre-order.service';
+import { ChangeDetectorRef } from '@angular/core';
+import { MatSort } from '@angular/material/sort';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -45,21 +47,21 @@ const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
  */
 @Injectable()
 export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
-	fromModel(value: string | null): NgbTimeStruct | null {
-		if (!value) {
-			return null;
-		}
-		const split = value.split(':');
-		return {
-			hour: parseInt(split[0], 10),
-			minute: parseInt(split[1], 10),
-			second: parseInt(split[2], 10),
-		};
-	}
+  fromModel(value: string | null): NgbTimeStruct | null {
+    if (!value) {
+      return null;
+    }
+    const split = value.split(':');
+    return {
+      hour: parseInt(split[0], 10),
+      minute: parseInt(split[1], 10),
+      second: parseInt(split[2], 10),
+    };
+  }
 
-	toModel(time: NgbTimeStruct | null): string | null {
-		return time != null ? `${pad(time.hour)}:${pad(time.minute)}` : null;
-	}
+  toModel(time: NgbTimeStruct | null): string | null {
+    return time != null ? `${pad(time.hour)}:${pad(time.minute)}` : null;
+  }
 }
 
 @Component({
@@ -70,6 +72,11 @@ export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
 })
 export class RunComponent implements OnInit, AfterViewInit {
 
+  private readonly requiredColumns:Array<string> = [
+    'ADDRESS', 'AUMPHER', 'CHANNEL', 'COMPANY_ID', 'CUSTOMER_NAME', 'DELIVERYDATE', 'ORDERDATE', 'ORDERID',
+    'ORDERID_ORG', 'ORDER_ID', 'PRODUCTID', 'PRODUCTNAME', 'PROVICE', 'TUMBOL', 'ZIPCODE' ];
+  // ngNav
+  public activeNavId = 1; 
   // Experiment
   experiment = <Experiment>{};
 
@@ -90,15 +97,27 @@ export class RunComponent implements OnInit, AfterViewInit {
   public popUp?: Overlay;
   public popupContent?: PreOrder;
   value: string = 'File';
-  active = 1;
   private dataPreOrder: Array<PreOrder> = [];
-  groupedDataPreOrder:any = {};
+  groupedDataPreOrder: any = {};
+  public preOrdercount: number =0;
+  public updalodDataGroupCustomers?:{verify:Array<Customer>, uncertain:Array<Customer>, unverify:Array<Customer>} ; 
 
 
   displayedColumns: string[] = ['ORDERID_ORG', 'ADDRESS', 'AUMPHER', 'PROVICE'];
   dataSource = new MatTableDataSource<any>();
   clickedRows = new Set<PreOrder>();
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatPaginator, {static: false})
+  set paginator(value: MatPaginator) {
+    if (this.dataSource){
+      this.dataSource.paginator = value;
+    }
+  }
+  @ViewChild(MatSort, {static: false})
+  set sort(value: MatSort) {
+    if (this.dataSource){
+      this.dataSource.sort = value;
+    }
+  }
 
   constraintsData!: Constraint;
   constructor(private readonly http: HttpClient,
@@ -106,22 +125,23 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly constraintService: ConstraintService,
     private readonly route: ActivatedRoute,
     private readonly experimentService: ExperimentService,
-    private readonly ngbModal : NgbModal,
+    private readonly ngbModal: NgbModal,
     private readonly toastr: ToastrService,
-    private readonly preOrderService: PreOrderService
+    private readonly preOrderService: PreOrderService,
+    private readonly cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.spinner.show()
-    this.route.params.subscribe(params => {
-      this.experimentService.getExperiment(params['runId']).subscribe(response => {
+    this.route.params.subscribe((params: { [x: string]: string; }) => {
+      this.experimentService.getExperiment(params['runId']).subscribe((response: Experiment) => {
         this.experiment = { ...response };
 
       });
 
     })
 
-    this.constraintService.getParameter().subscribe(response => {
+    this.constraintService.getParameter().subscribe((response: Constraint) => {
       this.constraintsData = { ...response };
       console.log(this.constraintsData);
     })
@@ -139,7 +159,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.spinner.hide()
   }
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
+    this.dataSource.paginator = this.paginator; // For pagination
+    this.dataSource.sort = this.sort; // For sort
   }
 
   firstFormGroup = this._formBuilder.group({
@@ -160,16 +181,16 @@ export class RunComponent implements OnInit, AfterViewInit {
   onFileSelected(files: any) {
     console.log(files)
     let file: File;
-    if(files instanceof FileList){
+    if (files instanceof FileList) {
       file = files[0];
       if (files.length > 1) {
         this.toastr.warning('Cannot use multiple files');
       }
 
-    }else{
-       file = files.target.files[0] ;
-       const target: DataTransfer = <DataTransfer>(files.target);
-       if (target.files.length > 1) {
+    } else {
+      file = files.target.files[0];
+      const target: DataTransfer = <DataTransfer>(files.target);
+      if (target.files.length > 1) {
         this.toastr.warning('Cannot use multiple files');
       }
     }
@@ -192,6 +213,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         console.error('Worksheet not found');
         return;
       }
+
       worksheet.eachRow((row, rowNumber) => {
         if (rowNumber > 1) { // Assuming the first row is the header
           const rowData: any = {};
@@ -202,12 +224,12 @@ export class RunComponent implements OnInit, AfterViewInit {
           preOrderData.push(rowData as PreOrder);
         }
       });
-
-      if (this.validateData(preOrderData)) {
+      const columnNames = (worksheet.getRow(1).values as (string | undefined)[]).filter(value => typeof value === 'string');
+      console.log("Cloumn on excel file :",columnNames)
+      if (this.validateData(columnNames)) {
         this.dataPreOrder = preOrderData;
+        this.preOrdercount = this.dataPreOrder.length;
         this.groupDataById();
-        console.log(this.groupedDataPreOrder);
-        this.loadLocation(this.dataPreOrder);
       } else {
         console.error('Data validation failed');
       }
@@ -216,10 +238,10 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
 
-/**
- * The function `groupDataById` in TypeScript groups data by a specified ID, department, aumpher, and
- * province.
- */
+  /**
+   * The function `groupDataById` in TypeScript groups data by a specified ID, department, aumpher, and
+   * province.
+   */
   groupDataById() {
     this.groupedDataPreOrder = this.dataPreOrder.reduce((acc, row) => {
       const ORDERID_ORG = row.ORDERID_ORG // Assuming the ID is in the first column
@@ -227,28 +249,22 @@ export class RunComponent implements OnInit, AfterViewInit {
       const AUMPHER = row.AUMPHER; // Assuming the aumpher is in the fourth column
       const PROVICE = row.PROVICE; // Assuming the province is in the fourth column
       if (!acc[ORDERID_ORG]) {
-        acc[ORDERID_ORG] = { ADDRESS,AUMPHER,PROVICE, details: [] };
+        acc[ORDERID_ORG] = { ADDRESS, AUMPHER, PROVICE, details: [] };
       }
       acc[ORDERID_ORG].details.push(row);
       return acc;
     }, {} as { [ORDERID_ORG: string]: { ADDRESS: string; AUMPHER: string; PROVICE: string; details: Array<PreOrder> } });
 
-    // Convert grouped data to array for MatTable
-    this.dataSource.data = Object.keys(this.groupedDataPreOrder).map(key => ({
-      ORDERID_ORG: key,
-      ADDRESS: this.groupedDataPreOrder[key].ADDRESS,
-      AUMPHER: this.groupedDataPreOrder[key].AUMPHER,
-      PROVICE: this.groupedDataPreOrder[key].PROVICE
-    }));
+    this.reInitializeDatatable();
   }
 
-/**
- * The `uploadFile` function in TypeScript uploads a file to a server using HTTP POST request with
- * progress tracking.
- * @param {any} file - The `uploadFile` function you provided is used to upload a file to a server
- * using Angular's HttpClient. It creates a FormData object, appends the file to it, and then makes a
- * POST request to the specified URL with the FormData object.
- */
+  /**
+   * The `uploadFile` function in TypeScript uploads a file to a server using HTTP POST request with
+   * progress tracking.
+   * @param {any} file - The `uploadFile` function you provided is used to upload a file to a server
+   * using Angular's HttpClient. It creates a FormData object, appends the file to it, and then makes a
+   * POST request to the specified URL with the FormData object.
+   */
   uploadFile(file: File) {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
@@ -258,7 +274,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       centered: true,
       size: 'lg',
       animation: true,
-      
+
     });
     dialogRef.componentInstance.title = 'Confirm to Upload file ?'
     dialogRef.componentInstance.message = 'Please make sure to upload the file, and note that there may be a cost associated with finding the location.'
@@ -266,20 +282,22 @@ export class RunComponent implements OnInit, AfterViewInit {
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
         this.spinner.show();
-        this.preOrderService.uploadPreOrder(this.experiment.runId,file).subscribe(response =>{
+        this.processExcelFile(file);
+        this.preOrderFiles.push(file);
+        this.preOrderService.uploadPreOrder(this.experiment.runId, file).subscribe((response: UploadPreOrder) => {
           console.log(response);
-            this.experiment.name = response.name;
-            this.isUpload = true;
-            this.processExcelFile(file);
-            this.preOrderFiles.push(file);
-            
-            this.spinner.hide();
-            this.toastr.success('Uploading');
-            
+          this.loadLocation(response.result.customers);
+          this.updalodDataGroupCustomers = this.groupCustomers(response);
+          console.log(this.updalodDataGroupCustomers);
+          this.experiment.name = response.name;
+          this.isUpload = true;
+          this.spinner.hide();
+          this.toastr.success('Uploading');
+
         });
-        
-        
-        
+
+
+
       }
     }).catch((error) => {
       console.error('Dialog was dismissed:', error);
@@ -304,7 +322,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.reset();
   }
 
-  setParameterDefault(){
+  setParameterDefault() {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -313,7 +331,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       centered: true,
       size: 'sm',
       animation: true,
-      
+
     });
     dialogRef.componentInstance.message = 'Confirm to set default Parameter ?'
     dialogRef.componentInstance.title = 'Confirm to action'
@@ -321,10 +339,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
         this.constraintService.updateParameter(this.constraintsData).subscribe(
-          (response) => {
+          (response: { status_message: string | undefined; }) => {
             this.toastr.success(response.status_message, 'Set default Parameter');
           },
-          (error) => {
+          (error: any) => {
             this.toastr.error('Failed to set default Parameter', 'Error');
             console.error('Error updating parameter:', error);
           }
@@ -363,19 +381,18 @@ export class RunComponent implements OnInit, AfterViewInit {
       })
     });
   }
-  private loadLocation(dataPreOrder: Array<PreOrder>) {
+  private loadLocation(customers: Array<Customer>) {
     this.initIconStyle();
     this.vectorSource.clear();
-    dataPreOrder.forEach((item, index) => {
-      if (item.LatLng) {
-        let latlong = item.LatLng.split(",").map(Number);
+    customers.forEach((item, index) => {
+      if (item.latitude && item.longitude) {
         const location: Feature = new Feature({
           geometry: new Point(
             OlProj.fromLonLat([
-              latlong[1], latlong[0]
+            Number(item.longitude),Number(item.latitude)
             ])
           ),
-          data: item,
+          data: this.groupedDataPreOrder[item.name]
 
         });
         location.setStyle(this.iconStyle);
@@ -491,17 +508,40 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.map.on('click', event => this.popupShow(event, element));
     this.map.on('pointermove', event => this.pointMove(event, element));
   }
-  private validateData(data: PreOrder[]): boolean {
-    for (const row of data) {
-      if (!row.ADDRESS || typeof row.ADDRESS !== 'string') {
-        console.error('Invalid or missing ADDRESS');
-        return false;
+  private groupCustomers(result:UploadPreOrder) {
+    const verify: Customer[] = [];
+    const uncertain: Customer[] = [];
+    const unverify: Customer[] = [];
+
+    result.result.customers.forEach(customer => {
+      if (
+        (customer.replace_type === ReplaceType.NO_REPLACE || customer.replace_type === ReplaceType.INPUT) &&
+        (customer.validation_type === ValidationType.SUBDISTRICT_LEVEL || customer.validation_type === ValidationType.DISTRICT_LEVEL)
+      ) {
+        verify.push(customer);
+      } else if (
+        customer.replace_type === ReplaceType.SUBDISTRICT_LEVEL || customer.replace_type === ReplaceType.DISTRICT_LEVEL
+      ) {
+        uncertain.push(customer);
+      } else if (
+        customer.replace_type === ReplaceType.PROVINCE_LEVEL ||
+        customer.validation_type === ValidationType.NO_VALID ||
+        customer.validation_type === ValidationType.NAN_INPUT ||
+        customer.validation_type === ValidationType.NON_VALIDATED
+      ) {
+        unverify.push(customer);
       }
-      if (!row.AUMPHER || typeof row.AUMPHER !== 'string') {
-        console.error('Invalid or missing AUMPHER');
-        return false;
-      }
-      // Add more validation rules as needed
+    });
+
+    return { verify, uncertain, unverify };
+  }
+  private validateData(columnNames:Array<string> ): boolean {
+    const missingColumns = this.requiredColumns.filter(col => !columnNames.includes(col));
+
+    if (missingColumns.length > 0) {
+      console.error('Missing required columns:', missingColumns);
+      this.toastr.error('Missing required columns:', missingColumns.join(","));
+      return false;
     }
     return true;
   }
@@ -514,5 +554,20 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.dataSource.paginator.firstPage();
     }
   }
+  navigateToTab(page:number) {
+    // Your logic to navigate to the next tab
+    this.activeNavId = page; // Assuming 'tab2' is the id of the next tab
 
+    // Trigger change detection to refresh the table
+    this.cdr.detectChanges();
+  }
+  private reInitializeDatatable() : void{
+    // Convert grouped data to array for MatTable
+    this.dataSource.data = Object.keys(this.groupedDataPreOrder).map(key => ({
+      ORDERID_ORG: key,
+      ADDRESS: this.groupedDataPreOrder[key].ADDRESS,
+      AUMPHER: this.groupedDataPreOrder[key].AUMPHER,
+      PROVICE: this.groupedDataPreOrder[key].PROVICE
+    }));
+      }
 }

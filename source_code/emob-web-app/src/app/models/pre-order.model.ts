@@ -98,14 +98,20 @@ export interface Address {
 }
 
 export enum ReplaceType {
-  OriginalLocation = "ORIGINAL LOCATION",
-  SubDistrictCentroid = "SUB_DISTRICT CENTROID",
+  SUBDISTRICT_LEVEL = 'SUB_DISTRICT CENTROID',
+  DISTRICT_LEVEL = 'DISTRICT CENTROID',
+  PROVINCE_LEVEL = 'PROVINCE CENTROID',
+  NO_REPLACE = 'ORIGINAL LOCATION',
+  INPUT = 'INPUT'
 }
 
 export enum ValidationType {
-  DistrictLevel = "DISTRICT LEVEL",
-  NoValid = "NO_VALID",
-  SubDistrictLevel = "SUB_DISTRICT LEVEL",
+  SUBDISTRICT_LEVEL = 'SUB_DISTRICT LEVEL',
+  DISTRICT_LEVEL = 'DISTRICT LEVEL',
+  PROVINCE_LEVEL = 'PROVINCE LEVEL',
+  NO_VALID = 'NO_VALID',
+  NAN_INPUT = 'NAN_INPUT',
+  NON_VALIDATED = 'NON_VALIDATED'
 }
 
 export interface Depot {
