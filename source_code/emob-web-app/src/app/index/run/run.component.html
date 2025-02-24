@@ -82,17 +82,17 @@
                   <span>Total ({{preOrdercount}} Orders) : {{groupedDataPreOrder.lenght}} Point </span>
                 </div>
                 <div class="col-12">
-                  <button mat-fab extended class="fab-success col">
+                  <button *ngIf="uploadDataGroupCustomers?.verify?.customers!.length > 0" mat-fab extended class="fab-success col">
                     <mat-icon>location_on</mat-icon>
-                    ({{updalodDataGroupCustomers?.verify?.length||0}})<br> Verified
+                    ({{uploadDataGroupCustomers?.verify?.customers?.length || 0}})<br> Verified
                   </button>
-                  <button mat-fab extended class="fab-warning col">
-                    <mat-icon>favorite</mat-icon>
-                    ({{updalodDataGroupCustomers?.uncertain?.length||0}})<br>Uncertain
+                  <button *ngIf="uploadDataGroupCustomers?.uncertain?.customers!.length > 0" mat-fab extended class="fab-warning col">
+                    <mat-icon>edit_location</mat-icon>
+                    ({{uploadDataGroupCustomers?.uncertain?.customers?.length || 0}})<br> Uncertain
                   </button>
-                  <button mat-fab extended class="fab-danger col">
+                  <button *ngIf="uploadDataGroupCustomers?.unverify?.customers!.length > 0" mat-fab extended class="fab-danger col">
                     <mat-icon>wrong_location</mat-icon>
-                    ({{updalodDataGroupCustomers?.unverify?.length ||0}})<br>Unverified
+                    ({{uploadDataGroupCustomers?.unverify?.customers?.length || 0}})<br> Unverified
                   </button>
                 </div>
               </div>
@@ -109,9 +109,9 @@
                   <ng-container matColumnDef="ORDERID_ORG">
                     <th mat-header-cell *matHeaderCellDef> ORDERID ORG </th>
                     <td mat-cell *matCellDef="let element">
-                      {{element.ORDERID_ORG}}
+                      {{element.name}}
                       <button mat-icon-button class="small-icon-button"
-                        [cdkCopyToClipboard]="element.ORDERID_ORG"
+                        [cdkCopyToClipboard]="element.name"
                         color="secondary">
                         <mat-icon>content_copy</mat-icon>
                       </button>
@@ -122,21 +122,21 @@
                   <ng-container matColumnDef="ADDRESS">
                     <th mat-header-cell *matHeaderCellDef> ADDRESS </th>
                     <td mat-cell *matCellDef="let element">
-                      <span>{{ element.ADDRESS | truncate:[70, '...'] }}</span>
+                      <span>{{ element.original_address.address | truncate:[70, '...'] }}</span>
                     </td>
                   </ng-container>
 
                   <!-- Weight Column -->
                   <ng-container matColumnDef="AUMPHER">
                     <th mat-header-cell *matHeaderCellDef> AUMPHER </th>
-                    <td mat-cell *matCellDef="let element"> {{element.AUMPHER}}
+                    <td mat-cell *matCellDef="let element"> {{element.original_address.district}}
                     </td>
                   </ng-container>
 
                   <!-- Symbol Column -->
                   <ng-container matColumnDef="PROVICE">
-                    <th mat-header-cell *matHeaderCellDef> PROVICE </th>
-                    <td mat-cell *matCellDef="let element"> {{element.PROVICE}}
+                    <th mat-header-cell *matHeaderCellDef> PROVINCE </th>
+                    <td mat-cell *matCellDef="let element"> {{element.original_address.province}}
                     </td>
                   </ng-container>
 
@@ -144,8 +144,12 @@
                     *matHeaderRowDef="displayedColumns; sticky: true"
                     class="example-element-row"></tr>
                   <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-                    [class.text-highlight-verify]="row.LatLng"
-                    [class.text-highlight-unverify]="!row.LatLng"></tr>
+                  [ngClass]="{
+                    'text-highlight-verify': isVerified(row.name),
+                    'text-highlight-uncertain': isUncertain(row.name),
+                    'text-highlight-unverify': isUnverified(row.name)
+                  }"
+                    ></tr>
 
                 </table>
 

@@ -17,7 +17,7 @@ import { msalConfig, loginRequest } from './auth-config';
 import { InteractionType, IPublicClientApplication, PublicClientApplication } from "@azure/msal-browser";
 import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalInterceptor, MsalModule, MsalRedirectComponent, MsalService } from "@azure/msal-angular";
 import { RoleGuard } from "./guards/role.guard";
-import { TopbarComponent } from "./index/default/topbar/topbar.component";
+import { UnauthorizedComponent } from "./unauthorized/unauthorized.component";
 
 /**
  * Here we pass the configuration parameters to create an MSAL instance.
@@ -41,7 +41,7 @@ export function MsalGuardConfigurationFactory(): MsalGuardConfiguration {
 @NgModule({
   declarations: [
     AppComponent,
-    TopbarComponent,
+    UnauthorizedComponent
   ],
   imports: [
     AppRoutingModule,

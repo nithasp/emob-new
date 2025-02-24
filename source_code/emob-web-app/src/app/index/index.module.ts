@@ -19,6 +19,7 @@ import { TruncatePipe } from '../directives/truncate-pipe.directive';
 import { NgxSpinnerModule } from "ngx-spinner";
 import { NumberCounterInputComponent } from './components/number-counter-input/number-counter-input.component';
 import { TimeFormatPipe } from '../directives/timeformat-pipe.directive';
+import { TopbarComponent } from './default/topbar/topbar.component';
 @NgModule({
   declarations: [
     IndexComponent,
@@ -31,7 +32,8 @@ import { TimeFormatPipe } from '../directives/timeformat-pipe.directive';
     DropzoneDirective,
     TruncatePipe,
     NumberCounterInputComponent,
-    TimeFormatPipe
+    TimeFormatPipe,
+    TopbarComponent
   ],
   imports: [
     IndexRoutingModule,

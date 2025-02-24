@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { ApolloLink, InMemoryCache } from '@apollo/client/core';
 import { onError } from "@apollo/client/link/error";
-import { ApolloModule, APOLLO_OPTIONS } from 'apollo-angular';
+import { ApolloModule, APOLLO_OPTIONS, provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 import extractFiles from 'extract-files/extractFiles.mjs';
@@ -61,7 +61,7 @@ export function createApollo(httpLink: HttpLink) {
       useFactory: createApollo,
       deps: [HttpLink],
 
-    },
+    }
   ],
 })
 export class GraphQLModule {}

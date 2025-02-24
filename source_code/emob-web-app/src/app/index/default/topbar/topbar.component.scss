@@ -1,26 +1,6 @@
 ::ng-deep .mat-form-field-flex>.mat-form-field-infix {
     padding: 0.6em 0px !important;
 }
-
-@import url('https://fonts.googleapis.com/css?family=Itim&display=swap');
-@import url('https://fonts.googleapis.com/css?family=Kanit');
-body {
-    font-family: Kanit;
-}
-
-p,
-a,
-b,
-div,
-label,
-button,
-input,
-::placeholder,
-h4,
-mat-label {
-    font-family: Kanit;
-}
-
 .navbar-toggler>.close {
     display: inline;
 }

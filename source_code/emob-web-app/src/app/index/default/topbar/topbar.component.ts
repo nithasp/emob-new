@@ -1,5 +1,5 @@
 import { Component, Inject, Input, OnInit } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
+import { GuardsCheckEnd, NavigationEnd, Router, Scroll } from '@angular/router';
 import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalService } from '@azure/msal-angular';
 import { InteractionType } from '@azure/msal-browser';
 import $ from 'jquery';
@@ -14,10 +14,9 @@ export class TopbarComponent implements OnInit{
   public activeRoute: string;
 
   constructor(
-    private router: Router,
+    private readonly router: Router,
     @Inject(MSAL_GUARD_CONFIG) private readonly msalGuardConfig: MsalGuardConfiguration,
     private readonly authService: MsalService,
-    private readonly msalBroadcastService: MsalBroadcastService,
   ){
     this.activeRoute = '';
   }
@@ -26,7 +25,13 @@ export class TopbarComponent implements OnInit{
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         this.activeRoute = event.urlAfterRedirects.split('/')[2];
+
+      }else if (event instanceof Scroll) {
+        console.log("Scroll event detected");
+        this.activeRoute = event.routerEvent.url.split('/')[2];
+        
       }
+      console.log("Active Route", this.activeRoute);
     });
   }
 

@@ -1,0 +1,24 @@
+.container {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  h1 {
+    color: #dc3545;
+    font-size: 5em;
+  }
+  p {
+    color: #6c757d;
+    font-size: 2em;
+  }
+
+  mat-icon{
+    vertical-align: middle;
+  }

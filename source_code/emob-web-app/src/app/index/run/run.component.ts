@@ -39,6 +39,7 @@ import { ToastrService } from "ngx-toastr";
 import { PreOrderService } from 'src/app/services/pre-order.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
+import { DataGroup, IconStyle, LocationType } from 'src/app/models/location.model';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -72,11 +73,11 @@ export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
 })
 export class RunComponent implements OnInit, AfterViewInit {
 
-  private readonly requiredColumns:Array<string> = [
+  private readonly requiredColumns: Array<string> = [
     'ADDRESS', 'AUMPHER', 'CHANNEL', 'COMPANY_ID', 'CUSTOMER_NAME', 'DELIVERYDATE', 'ORDERDATE', 'ORDERID',
-    'ORDERID_ORG', 'ORDER_ID', 'PRODUCTID', 'PRODUCTNAME', 'PROVICE', 'TUMBOL', 'ZIPCODE' ];
+    'ORDERID_ORG', 'ORDER_ID', 'PRODUCTID', 'PRODUCTNAME', 'PROVICE', 'TUMBOL', 'ZIPCODE'];
   // ngNav
-  public activeNavId = 1; 
+  public activeNavId = 1;
   // Experiment
   experiment = <Experiment>{};
 
@@ -87,7 +88,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   readonly panelOpenState = signal(false);
   private readonly _formBuilder = inject(FormBuilder);
   public map!: Map
-  public iconStyle?: Style;
+  public iconStyle: Partial<IconStyle> = {};
   public vectorSource!: VectorSource;
   public vectorLayer!: VectorLayer;
   requiredFileType: string = '.xlsx, .xls';
@@ -99,22 +100,22 @@ export class RunComponent implements OnInit, AfterViewInit {
   value: string = 'File';
   private dataPreOrder: Array<PreOrder> = [];
   groupedDataPreOrder: any = {};
-  public preOrdercount: number =0;
-  public updalodDataGroupCustomers?:{verify:Array<Customer>, uncertain:Array<Customer>, unverify:Array<Customer>} ; 
+  public preOrdercount: number = 0;
+  public uploadDataGroupCustomers?: DataGroup;
 
 
   displayedColumns: string[] = ['ORDERID_ORG', 'ADDRESS', 'AUMPHER', 'PROVICE'];
-  dataSource = new MatTableDataSource<any>();
+  dataSource = new MatTableDataSource<Customer>();
   clickedRows = new Set<PreOrder>();
-  @ViewChild(MatPaginator, {static: false})
+  @ViewChild(MatPaginator, { static: false })
   set paginator(value: MatPaginator) {
-    if (this.dataSource){
+    if (this.dataSource) {
       this.dataSource.paginator = value;
     }
   }
-  @ViewChild(MatSort, {static: false})
+  @ViewChild(MatSort, { static: false })
   set sort(value: MatSort) {
-    if (this.dataSource){
+    if (this.dataSource) {
       this.dataSource.sort = value;
     }
   }
@@ -136,7 +137,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.route.params.subscribe((params: { [x: string]: string; }) => {
       this.experimentService.getExperiment(params['runId']).subscribe((response: Experiment) => {
         this.experiment = { ...response };
-
       });
 
     })
@@ -225,7 +225,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
       });
       const columnNames = (worksheet.getRow(1).values as (string | undefined)[]).filter(value => typeof value === 'string');
-      console.log("Cloumn on excel file :",columnNames)
+      console.log("Cloumn on excel file :", columnNames)
       if (this.validateData(columnNames)) {
         this.dataPreOrder = preOrderData;
         this.preOrdercount = this.dataPreOrder.length;
@@ -255,7 +255,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       return acc;
     }, {} as { [ORDERID_ORG: string]: { ADDRESS: string; AUMPHER: string; PROVICE: string; details: Array<PreOrder> } });
 
-    this.reInitializeDatatable();
+    // this.reInitializeDatatable();
   }
 
   /**
@@ -286,9 +286,24 @@ export class RunComponent implements OnInit, AfterViewInit {
         this.preOrderFiles.push(file);
         this.preOrderService.uploadPreOrder(this.experiment.runId, file).subscribe((response: UploadPreOrder) => {
           console.log(response);
-          this.loadLocation(response.result.customers);
-          this.updalodDataGroupCustomers = this.groupCustomers(response);
-          console.log(this.updalodDataGroupCustomers);
+          this.dataSource.data = response.result.customers;
+          const groupedCustomer = this.groupCustomers(response);
+          this.uploadDataGroupCustomers = {
+            verify: {
+              customers: groupedCustomer.verify,
+              type: LocationType.Verify
+            },
+            uncertain: {
+              customers: groupedCustomer.uncertain,
+              type: LocationType.Uncertain
+            },
+            unverify: {
+              customers: groupedCustomer.unverify,
+              type: LocationType.Unverify
+            }
+          };
+          this.loadLocation(this.uploadDataGroupCustomers);
+          console.log(this.uploadDataGroupCustomers);
           this.experiment.name = response.name;
           this.isUpload = true;
           this.spinner.hide();
@@ -369,40 +384,53 @@ export class RunComponent implements OnInit, AfterViewInit {
 
 
   }
+
   private initIconStyle() {
-    this.iconStyle = new Style({
-      image: new Icon({
-        anchor: [0.5, 0.5],
-        anchorOrigin: 'bottom-left',
-        anchorXUnits: 'fraction',
-        anchorYUnits: 'pixels',
-        crossOrigin: "anonymous",
-        src: "assets/image/position.png"
-      })
-    });
-  }
-  private loadLocation(customers: Array<Customer>) {
-    this.initIconStyle();
-    this.vectorSource.clear();
-    customers.forEach((item, index) => {
-      if (item.latitude && item.longitude) {
-        const location: Feature = new Feature({
-          geometry: new Point(
-            OlProj.fromLonLat([
-            Number(item.longitude),Number(item.latitude)
-            ])
-          ),
-          data: this.groupedDataPreOrder[item.name]
+    Object.values(LocationType).forEach(type => {
+      let iconLocation = new Style({
+        image: new Icon({
+          anchor: [0.5, 0.5],
+          anchorOrigin: 'bottom-left',
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          crossOrigin: "anonymous",
+          opacity: 0.8,
+          src: `assets/image/${type}.png`
+        })
+      });
 
-        });
-        location.setStyle(this.iconStyle);
-        this.vectorSource.addFeature(location);
+      if (type === LocationType.Verify) {
+        iconLocation.getImage()?.setOpacity(0.2);
+        this.iconStyle.verify = iconLocation;
+      } else if (type === LocationType.Uncertain) {
+        this.iconStyle.uncertain = iconLocation;
+      } else if (type === LocationType.Unverify) {
+        this.iconStyle.unverify = iconLocation;
       }
+    });
+  }
+  private loadLocation(uploadDataGroupCustomers: DataGroup) {
+    this.vectorSource.clear();
+    Object.keys(uploadDataGroupCustomers).forEach(key => {
+      uploadDataGroupCustomers[key as keyof DataGroup].customers.forEach(customer => {
+        if (customer.latitude && customer.longitude) {
+          const location: Feature = new Feature({
+            geometry: new Point(
+              OlProj.fromLonLat([
+                Number(customer.longitude), Number(customer.latitude)
+              ])
+            ),
+            data: this.groupedDataPreOrder[customer.name]
 
-
+          });
+          location.setStyle(this.iconStyle[uploadDataGroupCustomers[key as keyof DataGroup].type]);
+          this.vectorSource.addFeature(location);
+        }
+      });
     });
 
   }
+
 
   private popupShow(evt: any, element: any) {
     let coordinates: Coordinate;
@@ -508,7 +536,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.map.on('click', event => this.popupShow(event, element));
     this.map.on('pointermove', event => this.pointMove(event, element));
   }
-  private groupCustomers(result:UploadPreOrder) {
+  private groupCustomers(result: UploadPreOrder) {
     const verify: Customer[] = [];
     const uncertain: Customer[] = [];
     const unverify: Customer[] = [];
@@ -535,7 +563,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     return { verify, uncertain, unverify };
   }
-  private validateData(columnNames:Array<string> ): boolean {
+  private validateData(columnNames: Array<string>): boolean {
     const missingColumns = this.requiredColumns.filter(col => !columnNames.includes(col));
 
     if (missingColumns.length > 0) {
@@ -554,20 +582,32 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.dataSource.paginator.firstPage();
     }
   }
-  navigateToTab(page:number) {
+  navigateToTab(page: number) {
     // Your logic to navigate to the next tab
     this.activeNavId = page; // Assuming 'tab2' is the id of the next tab
 
     // Trigger change detection to refresh the table
     this.cdr.detectChanges();
   }
-  private reInitializeDatatable() : void{
-    // Convert grouped data to array for MatTable
-    this.dataSource.data = Object.keys(this.groupedDataPreOrder).map(key => ({
-      ORDERID_ORG: key,
-      ADDRESS: this.groupedDataPreOrder[key].ADDRESS,
-      AUMPHER: this.groupedDataPreOrder[key].AUMPHER,
-      PROVICE: this.groupedDataPreOrder[key].PROVICE
-    }));
-      }
+  // private reInitializeDatatable(): void {
+  //   // Convert grouped data to array for MatTable
+  //   this.dataSource.data = Object.keys(this.groupedDataPreOrder).map(key => ({
+  //     ORDERID_ORG: key,
+  //     ADDRESS: this.groupedDataPreOrder[key].ADDRESS,
+  //     AUMPHER: this.groupedDataPreOrder[key].AUMPHER,
+  //     PROVICE: this.groupedDataPreOrder[key].PROVICE
+  //   }));
+  // }
+
+  isVerified(orderId: string): boolean {
+    return this.uploadDataGroupCustomers?.verify.customers.some(customer => customer.name === orderId) ?? false;
+  }
+
+  isUncertain(orderId: string): boolean {
+    return this.uploadDataGroupCustomers?.uncertain.customers.some(customer => customer.name === orderId) ?? false;
+  }
+
+  isUnverified(orderId: string): boolean {
+    return this.uploadDataGroupCustomers?.unverify.customers.some(customer => customer.name === orderId) ?? false;
+  }
 }
