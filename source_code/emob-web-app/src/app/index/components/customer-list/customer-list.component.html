@@ -1,0 +1,38 @@
+<div class="align-right" >
+    <button class="btn" (click)="close()" aria-label="Close">
+        <mat-icon>clear</mat-icon>
+    </button>
+</div>
+@if(CustomersToVerify.length > 0){
+<div class="row m-3">
+    
+        <div class="col-md-3">
+            <div class="mat-list-container">
+              <mat-list>
+                <mat-list-item *ngFor="let item of CustomersToVerify" (click)="selectCustomer(item)">
+                  {{ item.name }}
+                </mat-list-item>
+              </mat-list>
+            </div>
+          </div>
+          <div class="col-md-9">
+            <app-customer-details
+              [dataPreOder]="groupedDataPreOrder[CustomersToVerify[indexSelected].name]"
+              [dataCustomer]="CustomersToVerify[indexSelected]"
+              [locationType]="findLocationType(CustomersToVerify[indexSelected].name)"
+              [isModal]="false"
+              (dataEmitter)="receiveData($event,CustomersToVerify[indexSelected])"
+      
+            ></app-customer-details>
+          </div>
+    
+    
+  </div>
+}@else{
+    <div class="container-custom">
+        <div class="mt-5">
+            <h1>Verify Customer's location</h1>
+            <p>Empty</p>
+        </div>
+    </div>
+}

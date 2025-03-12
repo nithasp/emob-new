@@ -3,7 +3,7 @@
   <div class="row mt-5 justify-content-center content">
 
     <div class="border-right mt-3"
-      [ngClass]="preOrderFiles.length >0 ? 'col-md-6' : 'col-md-6 border-left'">
+      [ngClass]="preOrderFiles.length >0 ? 'col-md-7' : 'col-md-6 border-left'">
       <ul ngbNav #nav="ngbNav" [(activeId)]="activeNavId"
         class="nav-tabs justify-content-center">
         <li [ngbNavItem]="1">
@@ -36,7 +36,9 @@
                   </div>
                   <input type="file" class="file-input"
                     [accept]="requiredFileType"
-                    (change)="onFileSelected($event)" #fileUpload>
+                    (change)="onFileSelected($event)" 
+                    (click)="resetFileInput($event)"
+                    #fileUpload>
                   <div class="col-md-12 text-center mt-2">
                     <button mat-stroked-button color="primary"
                       class="border-primary" (click)="fileUpload.click()">
@@ -76,23 +78,76 @@
                 </div>
               </div>
 
-              <div class="row justify-content-md-center mb-2"
-                style="max-width: 450px;" [hidden]="preOrderFiles.length < 1">
+              <div class="row justify-content-md-center mb-2" [hidden]="preOrderFiles.length < 1">
                 <div class="col-12">
-                  <span>Total ({{preOrdercount}} Orders) : {{groupedDataPreOrder.lenght}} Point </span>
+                  <span>Total ({{preOrdercount}} Orders) :
+                    @if (uploadDataGroupCustomers) {}
+                    {{countUploadedCustomers}} Point </span>
                 </div>
                 <div class="col-12">
-                  <button *ngIf="uploadDataGroupCustomers?.verify?.customers!.length > 0" mat-fab extended class="fab-success col">
-                    <mat-icon>location_on</mat-icon>
-                    ({{uploadDataGroupCustomers?.verify?.customers?.length || 0}})<br> Verified
+                  <button
+                    *ngIf="uploadDataGroupCustomers?.verify?.customers!.length > 0"
+                    mat-fab extended class="col-md-2"
+                    [ngClass]="displayLocationType.verify ? 'fab-success' : 'fab-visibility-off'"
+                    (click)="displayDataInTable(locationTypeEnum.Verify)">
+                    <mat-icon>
+                      @if (!displayLocationType.verify){
+                      visibility_off
+                      }@else{
+                      location_on
+                      }
+                    </mat-icon>
+                    ({{uploadDataGroupCustomers?.verify?.customers?.length ||
+                    0}})<br> Verified
                   </button>
-                  <button *ngIf="uploadDataGroupCustomers?.uncertain?.customers!.length > 0" mat-fab extended class="fab-warning col">
-                    <mat-icon>edit_location</mat-icon>
-                    ({{uploadDataGroupCustomers?.uncertain?.customers?.length || 0}})<br> Uncertain
+                  <button
+                    *ngIf="uploadDataGroupCustomers?.uncertain?.customers!.length > 0"
+                    mat-fab extended class=" col-md-2"
+                    [ngClass]="displayLocationType.uncertain ? 'fab-warning' : 'fab-visibility-off'"
+                    (click)="displayDataInTable(locationTypeEnum.Uncertain)">
+                    <mat-icon>
+                      @if (!displayLocationType.uncertain){
+                      visibility_off
+                      }@else{
+                      not_listed_location
+                      }
+                    </mat-icon>
+                    ({{uploadDataGroupCustomers?.uncertain?.customers?.length ||
+                    0}})<br> Uncertain
                   </button>
-                  <button *ngIf="uploadDataGroupCustomers?.unverify?.customers!.length > 0" mat-fab extended class="fab-danger col">
-                    <mat-icon>wrong_location</mat-icon>
-                    ({{uploadDataGroupCustomers?.unverify?.customers?.length || 0}})<br> Unverified
+                  <button
+                    *ngIf="uploadDataGroupCustomers?.unverify?.customers!.length > 0"
+                    mat-fab extended class=" col-md-2"
+                    [ngClass]="displayLocationType.unverify ? 'fab-danger' : 'fab-visibility-off'"
+                    (click)="displayDataInTable(locationTypeEnum.Unverify)">
+                    <mat-icon>
+                      @if (!displayLocationType.unverify){
+                      visibility_off
+                      }@else{
+                      wrong_location
+                      }</mat-icon>
+                    ({{uploadDataGroupCustomers?.unverify?.customers?.length ||
+                    0}})<br> Unverified
+                  </button>
+                  <button
+                    *ngIf="uploadDataGroupCustomers?.edit?.customers!.length > 0"
+                    mat-fab extended class=" col-md-2"
+                    [ngClass]="displayLocationType.edit ? 'fab-edit' : 'fab-visibility-off'"
+                    (click)="displayDataInTable(locationTypeEnum.Edit)">
+                    <mat-icon>
+                      @if (!displayLocationType.edit){
+                      visibility_off
+                      }@else{
+                        edit_location_alt
+                      }</mat-icon>
+                    ({{uploadDataGroupCustomers?.edit?.customers?.length ||
+                    0}})<br>Edited
+                  </button>
+                  <button class="col-md-2 link-verify link-success"
+                  (click)="openCustomersListToVerify()"
+                  *ngIf="uploadDataGroupCustomers?.unverify?.customers!.length > 0 || uploadDataGroupCustomers?.uncertain?.customers!.length > 0 ">
+                    <mat-icon >add_task</mat-icon>
+                    Verify All
                   </button>
                 </div>
               </div>
@@ -105,16 +160,24 @@
                 [hidden]="preOrderFiles.length < 1">
                 <table mat-table [dataSource]="dataSource">
 
+                  <ng-container matColumnDef="No">
+                    <th mat-header-cell *matHeaderCellDef> No. </th>
+                    <td mat-cell *matCellDef="let element; let i = index">
+                      <span> {{ i + 1 }}</span>
+                    </td>
+                  </ng-container>
+
                   <!-- Position Column -->
                   <ng-container matColumnDef="ORDERID_ORG">
                     <th mat-header-cell *matHeaderCellDef> ORDERID ORG </th>
                     <td mat-cell *matCellDef="let element">
-                      {{element.name}}
                       <button mat-icon-button class="small-icon-button"
                         [cdkCopyToClipboard]="element.name"
                         color="secondary">
                         <mat-icon>content_copy</mat-icon>
                       </button>
+                      {{element.name}}
+                      
                     </td>
                   </ng-container>
 
@@ -122,21 +185,48 @@
                   <ng-container matColumnDef="ADDRESS">
                     <th mat-header-cell *matHeaderCellDef> ADDRESS </th>
                     <td mat-cell *matCellDef="let element">
-                      <span>{{ element.original_address.address | truncate:[70, '...'] }}</span>
+                      <div class="address-container">
+                        <span>{{ element.original_address.address | truncate:[70, '...'] }}</span>
+                        <button class="btn btn-sm align-right"
+                          *ngIf="isUnverified(element.name) || isUncertain(element.name)" 
+                          mat-button
+                          [ngClass]="{
+                            'btn-outline-warning': isUncertain(element.name),
+                            'btn-outline-danger': isUnverified(element.name)
+                          }">
+                          Verify
+                        </button>
+                      </div>
                     </td>
                   </ng-container>
+                  
 
                   <!-- Weight Column -->
                   <ng-container matColumnDef="AUMPHER">
                     <th mat-header-cell *matHeaderCellDef> AUMPHER </th>
-                    <td mat-cell *matCellDef="let element"> {{element.original_address.district}}
+                    <td mat-cell *matCellDef="let element">
+                      {{element.original_address.district}}
                     </td>
                   </ng-container>
 
                   <!-- Symbol Column -->
-                  <ng-container matColumnDef="PROVICE">
+                  <ng-container matColumnDef="PROVINCE">
                     <th mat-header-cell *matHeaderCellDef> PROVINCE </th>
-                    <td mat-cell *matCellDef="let element"> {{element.original_address.province}}
+                    <td mat-cell *matCellDef="let element">
+                      {{element.original_address.province}}
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="TotalOrder">
+                    <th mat-header-cell *matHeaderCellDef>ORDER</th>
+                    <td mat-cell *matCellDef="let element">
+                      {{countOrder(element.name)}}
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="">
+                    <th mat-header-cell *matHeaderCellDef></th>
+                    <td mat-cell *matCellDef="let element">
+                      {{countOrder(element.name)}}
                     </td>
                   </ng-container>
 
@@ -144,23 +234,25 @@
                     *matHeaderRowDef="displayedColumns; sticky: true"
                     class="example-element-row"></tr>
                   <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-                  [ngClass]="{
+                    [ngClass]="{
                     'text-highlight-verify': isVerified(row.name),
                     'text-highlight-uncertain': isUncertain(row.name),
-                    'text-highlight-unverify': isUnverified(row.name)
+                    'text-highlight-unverify': isUnverified(row.name),
+                    'text-highlight-edit': isEdited(row.name)
                   }"
-                    ></tr>
+                  (click)="openCustomerOrderDetails(row)"></tr>
 
                 </table>
 
-                <mat-paginator [pageSizeOptions]="[20, 50, 100,200]"
+                <mat-paginator [length]="dataSource.data.length" [pageSize]="29"
+                  [pageSizeOptions]="[20, 50, 100,200]"
                   showFirstLastButtons
                   aria-label="Select page of periodic elements"
                   class="mat-paginator-sticky">
                 </mat-paginator>
               </div>
 
-              <div class="text-end mt-3">
+              <div class="text-end mt-3" [hidden]="preOrderFiles.length < 1">
                 <button mat-raised-button color="primary"
                   (click)="navigateToTab(2)">Next</button>
               </div>
@@ -226,7 +318,8 @@
                             <ngx-popover [placement]="'bottom-start'">
                               <button
                                 class="link link-primary link-opacity-75-hover">
-                                {{constraintsData.maximumWorkDuration | timeFormat}}</button>
+                                {{constraintsData.maximumWorkDuration |
+                                timeFormat}}</button>
                               <ng-template ngx-popover-template>
                                 <div class="card p-3">
                                   <div class="card-body p-2">
@@ -411,7 +504,7 @@
 
     </div>
 
-    <div class="col-md-6" [hidden]="!isUpload">
+    <div class="col-md-5" [hidden]="!isUpload">
       <div class="row">
         <div id="map" class="map col-12" style="min-height: 800px;">
           <div id="popup" class="ol-popup" [hidden]="!popupContent">
@@ -424,7 +517,7 @@
               <p class="d-inline-block text-truncate" style="max-width: 300px;">
                 <strong>Aumpher :</strong>{{popupContent.AUMPHER}} </p>
               <p class="d-inline-block text-truncate" style="max-width: 300px;">
-                <strong>Provice :</strong>{{popupContent.PROVICE}} </p>
+                <strong>Province :</strong>{{popupContent.PROVINCE}} </p>
               <button class="float-right col-6" mat-raised-button
                 color="primary"><mat-icon>search</mat-icon>รายละเอียด
               </button>

@@ -1,0 +1,21 @@
+<div class="m-3">
+    <div class="modal-header">
+        <p mat-dialog-title class="modal-title w-bold text-danger fs-5">{{ title }}</p>
+        <button class="btn close-button" (click)="onCancleClick()" aria-label="Close">
+          <mat-icon>clear</mat-icon>
+        </button>
+      </div>
+    <mat-dialog-content class="ml-3">
+        @if(isArray(message)){
+        <div class="row">
+            <div class="col-md-6" *ngFor="let error of messageArray">
+                <p class="text-break">{{ error }}</p>
+            </div>
+        </div>
+
+        }@else if (isString(message)) {
+        <p>{{ message }}</p>
+
+        }
+    </mat-dialog-content>
+</div>

@@ -1,0 +1,32 @@
+<div id="markLocationMap" class="map"></div>
+<div class="m-3 row justify-content-sm-center">
+    <mat-error *ngIf="messageError">Please mark location on map or Input Latitude and Longtitude</mat-error>
+    <div class="col-sm-5">
+        <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+                <span
+                    class="input-group-text bg-primary bg-gradient text-white"
+                    style="width: fit-content;">Latitude</span>
+            </div>
+            <input type="text" class="form-control bg-white"
+            [(ngModel)]="location.latitude">
+        </div>
+    </div>
+    <div class="col-sm-5">
+        <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend ">
+                <span
+                    class="input-group-text bg-primary bg-gradient text-white"
+                    style="width: fit-content;">Longitude</span>
+            </div>
+            <input type="text" class="form-control bg-white"
+            [(ngModel)]="location.longitude">
+        </div>
+    </div>
+    <div class="col-sm-2">
+        <button mat-mini-fab color="primary" (click)="updateLocation()" class="center-icon-button">
+            <mat-icon>sync</mat-icon>
+          </button> 
+    </div>
+    <button mat-flat-button color="primary" class="col-sm-2 btn-block" (click)="closeLocation()">Confirm</button>
+</div>

@@ -10,7 +10,7 @@ const proxyConfig = {
     },
     configure(proxy) {
       proxy.on("proxyReq", (proxyReq) => {
-        proxyReq.setHeader('Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJlbW9iIiwiaWQiOiIwMTk0YjQ4OS0yOWQ0LTcyOTYtOGU3My0yZWU1ZjkxZTg2Y2MiLCJ1c2VybmFtZSI6InVzZXIxIiwicm9sZXMiOiJ1c2VyIiwiaWF0IjoxNzQwMzgzMjQzLCJleHAiOjE3NDA0MTkyNDN9.AJ8YyWAQp5n0tZm6mjs_6MuF6FMsbkhBdgCDut-cjGA');
+        proxyReq.setHeader('Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJlbW9iIiwiaWQiOiIwMTk0YjQ4OS0yOWQ0LTcyOTYtOGU3My0yZWU1ZjkxZTg2Y2MiLCJ1c2VybmFtZSI6InVzZXIxIiwicm9sZXMiOiJ1c2VyIiwiaWF0IjoxNzQxNzUwMzk1LCJleHAiOjE3NDE3ODYzOTV9.DN26WYZjcUPNW2kgHoey_5WGft_Zt4SLqTyICP3_1L8');
       });
     },
   },

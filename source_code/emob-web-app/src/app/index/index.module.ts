@@ -20,6 +20,11 @@ import { NgxSpinnerModule } from "ngx-spinner";
 import { NumberCounterInputComponent } from './components/number-counter-input/number-counter-input.component';
 import { TimeFormatPipe } from '../directives/timeformat-pipe.directive';
 import { TopbarComponent } from './default/topbar/topbar.component';
+import { CustomerDetailsComponent } from './components/customer-details/customer-details.component';
+import { DetailsDialogComponent } from './components/details-dialog/details-dialog.component';
+import { VerifyLocationDialogComponent } from './components/verify-location-dialog/verify-location-dialog.component';
+import { MarkLocationDialogComponent } from './components/mark-location-dialog/mark-location-dialog.component';
+import { CustomerListComponent } from './components/customer-list/customer-list.component';
 @NgModule({
   declarations: [
     IndexComponent,
@@ -33,7 +38,12 @@ import { TopbarComponent } from './default/topbar/topbar.component';
     TruncatePipe,
     NumberCounterInputComponent,
     TimeFormatPipe,
-    TopbarComponent
+    TopbarComponent,
+    CustomerDetailsComponent,
+    DetailsDialogComponent,
+    VerifyLocationDialogComponent,
+    MarkLocationDialogComponent,
+    CustomerListComponent
   ],
   imports: [
     IndexRoutingModule,

@@ -26,7 +26,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 
 import * as ExcelJS from 'exceljs';
-import { Customer, PreOrder, ReplaceType, UploadPreOrder, ValidationType } from 'src/app/models/pre-order.model';
+import { Customer, CustomerUpdated, GroupedDataPreOrder, PreOrder, ReplaceType, UploadPreOrder, ValidationType } from 'src/app/models/pre-order.model';
 import Style from 'ol/style/Style';
 import { ConstraintService } from 'src/app/services/constraint.service';
 import { Constraint } from 'src/app/models/constraint.model';
@@ -39,8 +39,11 @@ import { ToastrService } from "ngx-toastr";
 import { PreOrderService } from 'src/app/services/pre-order.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
-import { DataGroup, IconStyle, LocationType } from 'src/app/models/location.model';
-
+import { DataGroup, DisplayLocationType, IconStyle, LocationType,Location } from 'src/app/models/location.model';
+import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
+import { MatDialog } from '@angular/material/dialog';
+import { DetailsDialogComponent } from '../components/details-dialog/details-dialog.component';
+import { CustomerListComponent } from '../components/customer-list/customer-list.component';
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
 /**
@@ -73,10 +76,9 @@ export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
 })
 export class RunComponent implements OnInit, AfterViewInit {
 
-  private readonly requiredColumns: Array<string> = [
-    'ADDRESS', 'AUMPHER', 'CHANNEL', 'COMPANY_ID', 'CUSTOMER_NAME', 'DELIVERYDATE', 'ORDERDATE', 'ORDERID',
-    'ORDERID_ORG', 'ORDER_ID', 'PRODUCTID', 'PRODUCTNAME', 'PROVICE', 'TUMBOL', 'ZIPCODE'];
-  // ngNav
+
+  private readonly requiredColumns: Array<string> = ['ORDERID_ORG', 'CHANNEL', 'ORDERDATE', 'DELIVERYDATE', 'ADDRESS',
+    'TUMBOL', 'AUMPHER', 'PROVICE', 'ZIPCODE', 'PRODUCTID', 'PRODUCTNAME', 'QUANTITYMAIN', 'QUANTITYMINOR', 'DELIVERYDATE_CONFIRM', 'ORDER_ID']
   public activeNavId = 1;
   // Experiment
   experiment = <Experiment>{};
@@ -99,12 +101,15 @@ export class RunComponent implements OnInit, AfterViewInit {
   public popupContent?: PreOrder;
   value: string = 'File';
   private dataPreOrder: Array<PreOrder> = [];
-  groupedDataPreOrder: any = {};
+  groupedDataPreOrder: Partial<GroupedDataPreOrder> = {};
   public preOrdercount: number = 0;
   public uploadDataGroupCustomers?: DataGroup;
+  public countUploadedCustomers: number = 0;
+  public customersLocationUpdated: Array<CustomerUpdated> = [];
 
-
-  displayedColumns: string[] = ['ORDERID_ORG', 'ADDRESS', 'AUMPHER', 'PROVICE'];
+  displayLocationType: DisplayLocationType = { verify: false, uncertain: true, unverify: true, edit: true };
+  locationTypeEnum = LocationType;
+  displayedColumns: string[] = ['No', 'ORDERID_ORG', 'ADDRESS', 'AUMPHER', 'PROVINCE', 'TotalOrder'];
   dataSource = new MatTableDataSource<Customer>();
   clickedRows = new Set<PreOrder>();
   @ViewChild(MatPaginator, { static: false })
@@ -129,7 +134,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly ngbModal: NgbModal,
     private readonly toastr: ToastrService,
     private readonly preOrderService: PreOrderService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -199,43 +205,58 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private async processExcelFile(file: File) {
+  private async processExcelFile(file: File): Promise<boolean> {
     const reader = new FileReader();
 
-    reader.onload = async (e: any) => {
-      const preOrderData: PreOrder[] = [];
-      const arrayBuffer = e.target.result;
-      const workbook: ExcelJS.Workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(arrayBuffer);
-      console.log("worksheet lenght", workbook.worksheets.length);
-      const worksheet = workbook.getWorksheet(1)! || workbook.getWorksheet("PreOrder")!;
-      if (!worksheet) {
-        console.error('Worksheet not found');
-        return;
-      }
-
-      worksheet.eachRow((row, rowNumber) => {
-        if (rowNumber > 1) { // Assuming the first row is the header
-          const rowData: any = {};
-          row.eachCell((cell, colNumber) => {
-            const header = worksheet.getRow(1).getCell(colNumber).value as string;
-            rowData[header] = cell.value;
-          });
-          preOrderData.push(rowData as PreOrder);
+    return new Promise((resolve, reject) => {
+      reader.onload = async (e: any) => {
+        const preOrderData: PreOrder[] = [];
+        const arrayBuffer = e.target.result;
+        const workbook: ExcelJS.Workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(arrayBuffer);
+        console.log("worksheet length", workbook.worksheets.length);
+        const worksheet = workbook.getWorksheet(1) || workbook.getWorksheet("PreOrder");
+        if (!worksheet) {
+          this.toastr.warning('Worksheet not found');
+          resolve(false);
+          return;
         }
-      });
-      const columnNames = (worksheet.getRow(1).values as (string | undefined)[]).filter(value => typeof value === 'string');
-      console.log("Cloumn on excel file :", columnNames)
-      if (this.validateData(columnNames)) {
-        this.dataPreOrder = preOrderData;
-        this.preOrdercount = this.dataPreOrder.length;
-        this.groupDataById();
-      } else {
-        console.error('Data validation failed');
-      }
-    }
-    reader.readAsArrayBuffer(file);
+
+        worksheet.eachRow((row, rowNumber) => {
+          if (rowNumber > 1) { // Assuming the first row is the header
+            const rowData: any = {};
+            row.eachCell((cell, colNumber) => {
+              const header = worksheet.getRow(1).getCell(colNumber).value as string;
+              rowData[header] = cell.value;
+            });
+            // Because User Input Template Word is wrong, convert data to correct.
+            rowData["PROVINCE"] = rowData["PROVICE"];
+            preOrderData.push(rowData as PreOrder);
+          }
+        });
+
+        const columnNames = (worksheet.getRow(1).values as (string | undefined)[]).filter(value => typeof value === 'string');
+        console.log("Columns in excel file:", columnNames);
+        if (this.validateData(columnNames)) {
+          this.dataPreOrder = preOrderData;
+          this.preOrdercount = this.dataPreOrder.length;
+          this.groupDataById();
+          resolve(true);
+        } else {
+          this.toastr.error('Data validation failed');
+          resolve(false);
+        }
+      };
+
+      reader.onerror = (error) => {
+        console.error('File reading error:', error);
+        reject(false);
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
   }
+
 
 
   /**
@@ -244,18 +265,20 @@ export class RunComponent implements OnInit, AfterViewInit {
    */
   groupDataById() {
     this.groupedDataPreOrder = this.dataPreOrder.reduce((acc, row) => {
-      const ORDERID_ORG = row.ORDERID_ORG // Assuming the ID is in the first column
-      const ADDRESS = row.ADDRESS; // Assuming the Department is in the fourth column
-      const AUMPHER = row.AUMPHER; // Assuming the aumpher is in the fourth column
-      const PROVICE = row.PROVICE; // Assuming the province is in the fourth column
+      const ORDERID_ORG = row.ORDERID_ORG;
+      const ADDRESS = row.ADDRESS;
+      const AUMPHER = row.AUMPHER;
+      const PROVINCE = row.PROVINCE;
+      const TEL = row.TEL;
+      const CUSTOMER_NAME = row.CUSTOMER_NAME;
+      const CHANNEL = row.CHANNEL;
+      const ZIPCODE = row.ZIPCODE;
       if (!acc[ORDERID_ORG]) {
-        acc[ORDERID_ORG] = { ADDRESS, AUMPHER, PROVICE, details: [] };
+        acc[ORDERID_ORG] = { ZIPCODE, TEL, CUSTOMER_NAME, CHANNEL, ORDERID_ORG, ADDRESS, AUMPHER, PROVINCE, details: [] };
       }
       acc[ORDERID_ORG].details.push(row);
       return acc;
-    }, {} as { [ORDERID_ORG: string]: { ADDRESS: string; AUMPHER: string; PROVICE: string; details: Array<PreOrder> } });
-
-    // this.reInitializeDatatable();
+    }, {} as GroupedDataPreOrder);
   }
 
   /**
@@ -265,61 +288,92 @@ export class RunComponent implements OnInit, AfterViewInit {
    * using Angular's HttpClient. It creates a FormData object, appends the file to it, and then makes a
    * POST request to the specified URL with the FormData object.
    */
-  uploadFile(file: File) {
+  async uploadFile(file: File) {
+    const isValid = await this.processExcelFile(file);
+    if (isValid) {
+      console.log('Data is valid');
+
+      const focusedElement = document.activeElement as HTMLElement;
+      if (focusedElement) {
+        focusedElement.blur();
+      }
+      const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+        centered: true,
+        size: 'lg',
+        animation: true,
+
+      });
+      dialogRef.componentInstance.title = 'Confirm to Upload file ?'
+      dialogRef.componentInstance.message = 'Please make sure to upload the file, and note that there may be a cost associated with finding the location.'
+
+      dialogRef.result.then((confirmed: boolean) => {
+        if (confirmed) {
+          this.spinner.show();
+          this.preOrderFiles.push(file);
+          this.preOrderService.uploadPreOrder(this.experiment.runId, file).subscribe((response: UploadPreOrder) => {
+            console.log(response);
+            this.countUploadedCustomers = response.result.customers.length;
+            const groupedCustomer = this.groupCustomers(response);
+            this.uploadDataGroupCustomers = {
+              verify: {
+                customers: groupedCustomer.verify,
+                type: LocationType.Verify
+              },
+              uncertain: {
+                customers: groupedCustomer.uncertain,
+                type: LocationType.Uncertain
+              },
+              unverify: {
+                customers: groupedCustomer.unverify,
+                type: LocationType.Unverify
+              },
+              edit: {
+                customers: [],
+                type: LocationType.Edit
+              }
+            };
+            this.reInitializeDatatable();
+            this.loadLocation(this.uploadDataGroupCustomers);
+            console.log(this.uploadDataGroupCustomers);
+            this.experiment.name = response.name;
+            this.isUpload = true;
+            this.spinner.hide();
+            this.toastr.success('Uploading');
+
+          });
+
+
+
+        }
+      }).catch((error) => {
+        console.error('Dialog was dismissed:', error);
+      });
+    } else {
+      console.log('Data is invalid');
+
+    }
+  }
+
+  private showInvalidModal(title: string, message: (string | string[])): void {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
     }
-    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+    const dialogRef = this.ngbModal.open(DetailsDialogComponent, {
       centered: true,
-      size: 'lg',
+      size: 'sm',
       animation: true,
+      windowClass: 'custom-model'
+
 
     });
-    dialogRef.componentInstance.title = 'Confirm to Upload file ?'
-    dialogRef.componentInstance.message = 'Please make sure to upload the file, and note that there may be a cost associated with finding the location.'
-
-    dialogRef.result.then((confirmed: boolean) => {
-      if (confirmed) {
-        this.spinner.show();
-        this.processExcelFile(file);
-        this.preOrderFiles.push(file);
-        this.preOrderService.uploadPreOrder(this.experiment.runId, file).subscribe((response: UploadPreOrder) => {
-          console.log(response);
-          this.dataSource.data = response.result.customers;
-          const groupedCustomer = this.groupCustomers(response);
-          this.uploadDataGroupCustomers = {
-            verify: {
-              customers: groupedCustomer.verify,
-              type: LocationType.Verify
-            },
-            uncertain: {
-              customers: groupedCustomer.uncertain,
-              type: LocationType.Uncertain
-            },
-            unverify: {
-              customers: groupedCustomer.unverify,
-              type: LocationType.Unverify
-            }
-          };
-          this.loadLocation(this.uploadDataGroupCustomers);
-          console.log(this.uploadDataGroupCustomers);
-          this.experiment.name = response.name;
-          this.isUpload = true;
-          this.spinner.hide();
-          this.toastr.success('Uploading');
-
-        });
-
-
-
-      }
-    }).catch((error) => {
-      console.error('Dialog was dismissed:', error);
-    });
+    dialogRef.componentInstance.message = message
+    dialogRef.componentInstance.title = title
   }
 
-
+  resetFileInput(event: any): void {
+    event.target.value = null;
+  }
   deleteFileinList(index: number) {
     this.spinner.show();
     this.preOrderFiles.splice(index, 1)
@@ -394,18 +448,20 @@ export class RunComponent implements OnInit, AfterViewInit {
           anchorXUnits: 'fraction',
           anchorYUnits: 'pixels',
           crossOrigin: "anonymous",
-          opacity: 0.8,
+          opacity: 1,
           src: `assets/image/${type}.png`
         })
       });
 
       if (type === LocationType.Verify) {
-        iconLocation.getImage()?.setOpacity(0.2);
+        iconLocation.getImage()?.setOpacity(0.1);
         this.iconStyle.verify = iconLocation;
       } else if (type === LocationType.Uncertain) {
         this.iconStyle.uncertain = iconLocation;
       } else if (type === LocationType.Unverify) {
         this.iconStyle.unverify = iconLocation;
+      }else if (type === LocationType.Edit) {
+        this.iconStyle.edit = iconLocation;
       }
     });
   }
@@ -420,7 +476,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                 Number(customer.longitude), Number(customer.latitude)
               ])
             ),
-            data: this.groupedDataPreOrder[customer.name]
+            data: customer.name
 
           });
           location.setStyle(this.iconStyle[uploadDataGroupCustomers[key as keyof DataGroup].type]);
@@ -511,10 +567,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         new ZoomSlider(),
         new FullScreen(),
         attribution
-      ]),
-      // interactions: defaults({
-      //   dragPan: false, mouseWheelZoom: false
-      // }).extend([new DragPan({/* options */ }), new MouseWheelZoom({/* options */})])
+      ])
     });
 
 
@@ -567,7 +620,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     const missingColumns = this.requiredColumns.filter(col => !columnNames.includes(col));
 
     if (missingColumns.length > 0) {
-      console.error('Missing required columns:', missingColumns);
+      this.showInvalidModal('Missing required columns:', missingColumns);
       this.toastr.error('Missing required columns:', missingColumns.join(","));
       return false;
     }
@@ -589,16 +642,174 @@ export class RunComponent implements OnInit, AfterViewInit {
     // Trigger change detection to refresh the table
     this.cdr.detectChanges();
   }
-  // private reInitializeDatatable(): void {
-  //   // Convert grouped data to array for MatTable
-  //   this.dataSource.data = Object.keys(this.groupedDataPreOrder).map(key => ({
-  //     ORDERID_ORG: key,
-  //     ADDRESS: this.groupedDataPreOrder[key].ADDRESS,
-  //     AUMPHER: this.groupedDataPreOrder[key].AUMPHER,
-  //     PROVICE: this.groupedDataPreOrder[key].PROVICE
-  //   }));
-  // }
+  private reInitializeDatatable(): void {
 
+    if (this.uploadDataGroupCustomers) {
+      const keys = Object.keys(this.uploadDataGroupCustomers).sort((a, b) => a.localeCompare(b));
+      console.log(keys); // Output: ['verify', 'uncertain', 'unverify']
+      this.dataSource.data = [];
+      keys.forEach(key => {
+        if (this.displayLocationType[key as keyof DisplayLocationType]) {
+          const customers: Customer[] = this.uploadDataGroupCustomers![key as keyof DataGroup]?.customers || [];
+          this.dataSource.data.push(...customers);
+        }
+
+      });
+
+    } else {
+      console.log('uploadDataGroupCustomers is undefined');
+    }
+
+
+
+  }
+
+  displayDataInTable(locationType: LocationType) {
+
+    console.log(locationType, this.displayLocationType[locationType], !this.displayLocationType[locationType]);
+
+    this.displayLocationType[locationType] = !this.displayLocationType[locationType];
+    this.reInitializeDatatable();
+    this.ngAfterViewInit();
+    if (this.paginator) {
+      this.paginator.firstPage();
+    }
+
+  }
+  openCustomerOrderDetails(customer: Customer) {
+    const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
+      centered: true,
+      size: 'xl',
+      animation: true,
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => {
+        return false;
+      }
+    });
+    modalRef.componentInstance.dataPreOder = this.groupedDataPreOrder[customer.name];
+    modalRef.componentInstance.dataCustomer = customer
+    const existingIndex = this.customersLocationUpdated.findIndex(
+      (item) => item.index === customer.index && item.name === customer.name
+    );
+    if (existingIndex !== -1) {
+      modalRef.componentInstance.locationType = LocationType.Edit
+    }
+
+    console.log("customer details previous", customer);
+    modalRef.result.then((locationUpdated: Location) => {
+      console.log("new value customer details", locationUpdated);
+      if (Number(customer.longitude) != Number(locationUpdated.longitude) && Number(customer.latitude) != Number(locationUpdated.latitude)) {
+
+        if (existingIndex !== -1) {
+          // Replace the existing entry
+          this.customersLocationUpdated[existingIndex] = {
+            index: customer.index,
+            name: customer.name,
+            latitude: locationUpdated.latitude,
+            longitude: locationUpdated.longitude
+          };
+        } else {
+          // Add a new entry
+          this.customersLocationUpdated.push({
+            index: customer.index,
+            name: customer.name,
+            latitude: locationUpdated.latitude,
+            longitude: locationUpdated.longitude
+          });
+        }
+        this.moveCustomerToEdit(customer,locationUpdated);
+
+      }
+
+
+
+    });
+  }
+
+  openCustomersListToVerify(){
+    const modalRef = this.ngbModal.open(CustomerListComponent, {
+      centered: true,
+      size: 'xl',
+      animation: true,
+      backdrop: 'static',
+      keyboard: false,
+      windowClass: 'custom-modal-width',
+      modalDialogClass: 'custom-modal-content',
+      beforeDismiss: () => {
+        return false;
+      }
+    });
+    modalRef.componentInstance.groupedDataPreOrder = this.groupedDataPreOrder;
+    modalRef.componentInstance.uploadDataGroupCustomers = this.uploadDataGroupCustomers;
+    
+    modalRef.result.then((locationUpdated: Array<CustomerUpdated>) => {
+      
+      console.log("new value customer details", locationUpdated);
+      locationUpdated.forEach(item =>{
+        const existingIndex = this.customersLocationUpdated.findIndex(
+          (i) => i.index === item.index && i.name === item.name
+        );
+        if (existingIndex !== -1) {
+          // Replace the existing entry
+          this.customersLocationUpdated[existingIndex] = item;
+        } else {
+          // Add a new entry
+          this.customersLocationUpdated.push(item);
+        }
+
+        // Find and remove the customer from uncertain
+    const uncertainIndex = this.uploadDataGroupCustomers!.uncertain.customers.findIndex(
+      (c) => c.name === item.name
+    );
+    // Find and remove the customer from unverify
+    const unverifyIndex = this.uploadDataGroupCustomers!.unverify.customers.findIndex(
+      (c) => c.name === item.name
+    );
+    if (uncertainIndex !== -1) {
+      this.moveCustomerToEdit(this.uploadDataGroupCustomers!.uncertain.customers[uncertainIndex],{longitude:Number(item.longitude),latitude:Number(item.latitude)});
+    } else if (unverifyIndex !== -1) {
+      this.moveCustomerToEdit(this.uploadDataGroupCustomers!.unverify.customers[uncertainIndex],{longitude:Number(item.longitude),latitude:Number(item.latitude)});
+    }
+        
+      });
+      
+
+      
+
+
+    });
+
+  }
+
+  moveCustomerToEdit(customer: Customer,locationUpdated:Location) {
+    // Find and remove the customer from uncertain
+    const uncertainIndex = this.uploadDataGroupCustomers!.uncertain.customers.findIndex(
+      (c) => c.name === customer.name
+    );
+    // Find and remove the customer from unverify
+    const unverifyIndex = this.uploadDataGroupCustomers!.unverify.customers.findIndex(
+      (c) => c.name === customer.name
+    );
+    if (uncertainIndex !== -1) {
+      const _customer = this.uploadDataGroupCustomers!.uncertain.customers.splice(uncertainIndex, 1)[0];
+      _customer.latitude = locationUpdated.latitude;
+      _customer.longitude = locationUpdated.longitude;
+      this.uploadDataGroupCustomers!.edit.customers.push(_customer);
+    } else if (unverifyIndex !== -1) {
+      const _customer = this.uploadDataGroupCustomers!.unverify.customers.splice(unverifyIndex, 1)[0];
+      _customer.latitude = locationUpdated.latitude;
+      _customer.longitude = locationUpdated.longitude;
+      this.uploadDataGroupCustomers!.edit.customers.push(_customer);
+    }
+    this.loadLocation(this.uploadDataGroupCustomers!);
+
+  }
+  updateCustomerLocation(customersLocationUpdated: Customer) {
+    this.customersLocationUpdated.push(customersLocationUpdated);
+    this.toastr.info("Updating Customer Location", "In Memory in sesion.");
+
+  }
   isVerified(orderId: string): boolean {
     return this.uploadDataGroupCustomers?.verify.customers.some(customer => customer.name === orderId) ?? false;
   }
@@ -609,5 +820,11 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isUnverified(orderId: string): boolean {
     return this.uploadDataGroupCustomers?.unverify.customers.some(customer => customer.name === orderId) ?? false;
+  }
+  isEdited(orderId: string): boolean {
+    return this.uploadDataGroupCustomers?.edit.customers.some(customer => customer.name === orderId) ?? false;
+  }
+  countOrder(orderId: string) {
+    return this.groupedDataPreOrder[orderId]?.details.length;
   }
 }

@@ -47,6 +47,20 @@ button.link {
   background: none;
 }
 
+.mat-expansion-panel p a,
+.mat-expansion-panel p,
+.template div a,
+button.link-verify {
+  font-size: 15px;
+  user-select: inherit;
+  flex-direction: row;
+  font-weight: 500;
+}
+button.link-verify {
+  border: none;
+  background: none;
+}
+
 .file-input {
   display: none;
 }
@@ -82,21 +96,36 @@ button.link {
 .fab-success {
   background-color: green;
   color: white;
+  min-width: 100px;
+}
+
+.fab-edit {
+  background-color: #0c23f1 !important;
+  color: white;
 }
 
 .fab-warning {
   background-color: #ffc107 !important;
   color: white;
+  min-width: 100px;
 }
 
 .fab-danger {
   background-color: #dc3545 !important;
   color: white;
+  min-width: 100px;
 }
 
 .fab-info {
   background-color: #ffffff !important;
   color: rgb(21, 20, 20);
+  min-width: 100px;
+}
+
+.fab-visibility-off {
+  background-color: gray;
+  color: white;
+  min-width: 100px;
 }
 
 .ol-popup {
@@ -149,7 +178,6 @@ table {
   padding: 0px 5px;
   color: rgb(0, 0, 0);
   font-size: 13px;
-  background-color: rgb(123, 200, 105);
   transition: 0.3s;
 }
 
@@ -174,6 +202,17 @@ table {
   color: rgb(0, 0, 0);
   font-size: 13px;
   background-color: rgb(237, 161, 161);
+  transition: 0.3s;
+}
+.text-highlight-edit {
+  border: none;
+  box-sizing: border-box;
+  width: 100%;
+  height: 24px;
+  padding: 0px 5px;
+  color: rgb(0, 0, 0);
+  font-size: 13px;
+  background-color: rgba(105, 115, 211, 0.793);
   transition: 0.3s;
 }
 
@@ -205,11 +244,25 @@ table {
   }
 }
 
+.mat-column-No{
+  word-wrap: break-word !important;
+  white-space: unset !important;
+  flex: 0 0 5% !important;
+  width: 50px !important;
+  overflow-wrap: break-word;
+  word-break: break-word;
+
+  -ms-hyphens: auto;
+  -moz-hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
 .mat-column-ORDERID_ORG {
   word-wrap: break-word !important;
   white-space: unset !important;
   flex: 0 0 5% !important;
-  width: 220px !important;
+  width: 240px !important;
   overflow-wrap: break-word;
   word-break: break-word;
 
@@ -233,7 +286,7 @@ table {
   hyphens: auto;
 }
 
-.mat-column-PROVICE {
+.mat-column-PROVINCE {
   word-wrap: break-word !important;
   white-space: unset !important;
   flex: 0 0 5% !important;
@@ -281,3 +334,15 @@ tr.example-element-row:not(.example-expanded-row):active {
 tr.mat-mdc-footer-row td {
   font-weight: bold;
 }
+
+.address-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.align-right {
+  margin-left: auto;
+}
+
+

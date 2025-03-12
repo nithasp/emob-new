@@ -334,3 +334,11 @@ button.toast-close-button {
         width: 25em;
     }
 }
+
+.custom-modal-width .modal-dialog {
+    max-width: 90%; /* Adjust the width as needed */
+  }
+  
+  .custom-modal-content {
+    width: 100%;
+  }

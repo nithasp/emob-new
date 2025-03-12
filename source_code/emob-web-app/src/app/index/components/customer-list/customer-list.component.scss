@@ -1,0 +1,40 @@
+.mat-list-container {
+    max-height: 700px; /* Set the desired height */
+    overflow-y: auto;
+  }
+
+  .align-right {
+    text-align: right;
+    margin: 10px;
+}
+
+.btn {
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #e0e0e0; /* Example hover effect */
+}
+
+.container-custom {
+    text-align: center;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 700px;
+  }
+  h1 {
+    color: #9d898b;
+    font-size: 3em;
+  }
+  p {
+    color: #6c757d;
+    font-size: 2em;
+  }
+
+  mat-icon{
+    vertical-align: middle;
+  }

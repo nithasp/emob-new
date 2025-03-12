@@ -1,0 +1,33 @@
+.align-right {
+    text-align: right;
+    margin: 10px;
+}
+
+.btn {
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #e0e0e0; /* Example hover effect */
+}
+
+.input-group-text {
+    width: 150px; /* Set your desired width */
+    text-align: left; /* Optional: Center the text */
+    display: inline-block; /* Ensure it behaves like an inline element */
+}
+.input-group-location {
+    width: 100px; /* Set your desired width */
+    text-align: left; /* Optional: Center the text */
+    display: inline-block; /* Ensure it behaves like an inline element */
+}
+
+#customerProfileMap {
+    width: 100%;
+    max-height: 100%;
+}
+
+.table-responsive {
+    overflow-x: auto;
+  }
