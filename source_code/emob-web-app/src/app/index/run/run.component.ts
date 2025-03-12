@@ -80,7 +80,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   
   // map rendering
   private map!: Map
-  private iconStyle: Partial<IconStyle> = {};
+  private readonly iconStyle: Partial<IconStyle> = {};
   private vectorSource!: VectorSource;
   private vectorLayer!: VectorLayer;
   private popUp?: Overlay;
