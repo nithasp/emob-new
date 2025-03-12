@@ -10,6 +10,14 @@
           <button ngbNavLink><h3>Orders data</h3></button>
           <ng-template ngbNavContent>
             <div class="row card-body ">
+              <ngb-alert type="danger">
+                <strong>Invalid coordinate Warning!</strong> Better check
+                yourself, you're not looking too good.
+              </ngb-alert>
+              <ngb-alert>
+                <strong>Zero weight Warning!</strong> Better check yourself,
+                you're not looking too good.
+              </ngb-alert>
               <div class="col-md-12" *ngIf="isUpload">
                 <div class="input-group mb-3">
                   <div class="input-group-prepend">
@@ -36,7 +44,7 @@
                   </div>
                   <input type="file" class="file-input"
                     [accept]="requiredFileType"
-                    (change)="onFileSelected($event)" 
+                    (change)="onFileSelected($event)"
                     (click)="resetFileInput($event)"
                     #fileUpload>
                   <div class="col-md-12 text-center mt-2">
@@ -78,7 +86,8 @@
                 </div>
               </div>
 
-              <div class="row justify-content-md-center mb-2" [hidden]="preOrderFiles.length < 1">
+              <div class="row justify-content-md-center mb-2"
+                [hidden]="preOrderFiles.length < 1">
                 <div class="col-12">
                   <span>Total ({{preOrdercount}} Orders) :
                     @if (uploadDataGroupCustomers) {}
@@ -138,15 +147,15 @@
                       @if (!displayLocationType.edit){
                       visibility_off
                       }@else{
-                        edit_location_alt
+                      edit_location_alt
                       }</mat-icon>
                     ({{uploadDataGroupCustomers?.edit?.customers?.length ||
                     0}})<br>Edited
                   </button>
                   <button class="col-md-2 link-verify link-success"
-                  (click)="openCustomersListToVerify()"
-                  *ngIf="uploadDataGroupCustomers?.unverify?.customers!.length > 0 || uploadDataGroupCustomers?.uncertain?.customers!.length > 0 ">
-                    <mat-icon >add_task</mat-icon>
+                    (click)="openCustomersListToVerify()"
+                    *ngIf="uploadDataGroupCustomers?.unverify?.customers!.length > 0 || uploadDataGroupCustomers?.uncertain?.customers!.length > 0 ">
+                    <mat-icon>add_task</mat-icon>
                     Verify All
                   </button>
                 </div>
@@ -177,7 +186,7 @@
                         <mat-icon>content_copy</mat-icon>
                       </button>
                       {{element.name}}
-                      
+
                     </td>
                   </ng-container>
 
@@ -186,9 +195,10 @@
                     <th mat-header-cell *matHeaderCellDef> ADDRESS </th>
                     <td mat-cell *matCellDef="let element">
                       <div class="address-container">
-                        <span>{{ element.original_address.address | truncate:[70, '...'] }}</span>
+                        <span>{{ element.original_address.address |
+                          truncate:[70, '...'] }}</span>
                         <button class="btn btn-sm align-right"
-                          *ngIf="isUnverified(element.name) || isUncertain(element.name)" 
+                          *ngIf="isUnverified(element.name) || isUncertain(element.name)"
                           mat-button
                           [ngClass]="{
                             'btn-outline-warning': isUncertain(element.name),
@@ -199,7 +209,6 @@
                       </div>
                     </td>
                   </ng-container>
-                  
 
                   <!-- Weight Column -->
                   <ng-container matColumnDef="AUMPHER">
@@ -223,7 +232,7 @@
                       {{countOrder(element.name)}}
                     </td>
                   </ng-container>
-                  <ng-container matColumnDef="">
+                  <ng-container matColumnDef>
                     <th mat-header-cell *matHeaderCellDef></th>
                     <td mat-cell *matCellDef="let element">
                       {{countOrder(element.name)}}
@@ -240,7 +249,7 @@
                     'text-highlight-unverify': isUnverified(row.name),
                     'text-highlight-edit': isEdited(row.name)
                   }"
-                  (click)="openCustomerOrderDetails(row)"></tr>
+                    (click)="openCustomerOrderDetails(row)"></tr>
 
                 </table>
 
@@ -259,11 +268,18 @@
             </div>
           </ng-template>
         </li>
-        <li [ngbNavItem]="2" [disabled]="!isUpload">
+        <li [ngbNavItem]="2" [disabled]="false">
           <button ngbNavLink><h3>Parameters</h3></button>
           <ng-template ngbNavContent>
             <div style="min-height: 720px;">
-
+              <ngb-alert type="danger">
+                <strong>Over distance Warning!</strong> Better check
+                yourself, you're not looking too good.
+              </ngb-alert>
+              <ngb-alert type="danger">
+                <strong>Over weight Warning!</strong> Better check yourself,
+                you're not looking too good.
+              </ngb-alert>
               <mat-accordion [multi]="true">
                 <mat-expansion-panel [expanded]="true">
                   <mat-expansion-panel-header>
@@ -375,7 +391,8 @@
                           </p>
                         </li>
                         <li>
-                          <p>Vehicle order-size capacity is
+                          <p class="text-highlight">Vehicle order-size capacity
+                            is
                             <ngx-popover [placement]="'bottom-start'"><button
                                 class="link link-primary link-opacity-75-hover">{{constraintsData.vehicleOrderSizeCapacity}}
                                 KG.</button>
@@ -400,7 +417,7 @@
                           </p>
                         </li>
                         <li>
-                          <p>Maximum Travel Distance is
+                          <p class="text-highlight">Maximum Travel Distance is
                             <ngx-popover [placement]="'bottom-start'"><button
                                 class="link link-primary link-opacity-75-hover">{{constraintsData.maximumTravelDistance}}
                                 KM.</button>
@@ -482,12 +499,104 @@
             </div>
           </ng-template>
         </li>
-        <li [ngbNavItem]="3" [disabled]="!isUpload">
-
+        <li [ngbNavItem]="3" [disabled]="false">
           <button ngbNavLink><h3>Validation</h3></button>
           <ng-template ngbNavContent>
             <div style="min-height: 720px;">
               <div class="row mt-4">
+                <div class="col-md-12">
+                  <ngb-alert [dismissible]="false">
+                    <strong class="h-2">Warning!</strong> If you do not change
+                    or adjust the order data or the parameters of the
+                    constraints, please proceed to plan your route. <strong
+                      class="text-dark font-weight-bold">The validation process
+                      will filter and eliminate any invalid order data</strong>
+                    before the AI service can continue with route planning.
+                  </ngb-alert>
+
+                  <!-- validate -->
+                  <p class="h-2 text-uppercase">filter and eliminate any invalid
+                    order data</p>
+                  @if(true){
+                  <ngb-alert>
+                    <strong>Over distance Warning!</strong> Better check
+                    yourself, you're not looking too good.
+                  </ngb-alert>
+                  }
+                  @if(true){
+                  <ngb-alert>
+                    <strong>Over weight Warning!</strong> Better check yourself,
+                    you're not looking too good.
+                  </ngb-alert>
+                  }
+                  @if(false){
+                  <ngb-alert type="danger">
+                    <strong>Unverify coordinate danger!</strong> Better check
+                    Order data yourself, you're not looking too good.
+                  </ngb-alert>
+                  }
+                  <div class="mb-3">
+                    <div class="table-responsive">
+                      <table class="table table-striped">
+                        <thead>
+                          <tr><th scope="col">FILTER TYPE</th>
+                            <th scope="col">ORDER ID</th>
+                            <th scope="col">ADDRESS</th>
+                            <th scope="col">TAMBOL</th>
+                            <th scope="col">AMPHOR</th>
+                            <th scope="col">PROVINCE</th>
+
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <th scope="row">Over distance</th>
+                            <td>xxx</td>
+                            <td>xx</td>
+                            <td>xxx</td>
+                            <td>xxxx</td>
+                            <td>xxx</td>
+
+                          </tr>
+                          <tr>
+                            <th scope="row">Over weight</th>
+                            <td>xxx</td>
+                            <td>xx</td>
+                            <td>xxx</td>
+                            <td>xxxx</td>
+                            <td>xxx</td>
+
+                          </tr>
+                          <tr>
+                            <th scope="row">Unverify coordinate</th>
+                            <td>xxx</td>
+                            <td>xx</td>
+                            <td>xxx</td>
+                            <td>xxxx</td>
+                            <td>xxx</td>
+
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="d-flex justify-content-between p-2 float-right">
+                      <ngb-pagination [collectionSize]="10"
+                        [pageSize]="6">
+                      </ngb-pagination>
+                    </div>
+                  </div>
+
+                  <p class="h-2 text-uppercase">Order data</p>
+
+                  <ngb-alert [dismissible]="false">
+                    <strong>Zero weight Warning!</strong> Please check the
+                    inventories. If you have updated inventories, <a
+                      target="_blank" [routerLink]="['/users/inventories']"
+                      class="text-primary link-underline-primary">direct to
+                      inventory.</a>
+                  </ngb-alert>
+
+                </div>
                 <div class="col text-end">
                   <button mat-raised-button color="secondary"
                     class="btn btn-secondary" (click)="navigateToTab(1)">Back</button>

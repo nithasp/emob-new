@@ -1,5 +1,4 @@
-import { AfterViewInit, Component, Injectable, OnInit, ViewChild, inject, signal } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { AfterViewInit, Component, Injectable, OnInit, ViewChild } from '@angular/core';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
@@ -10,8 +9,6 @@ import {
   Attribution
 } from "ol/control";
 import * as OlProj from "ol/proj";
-import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
-import { Subscription } from 'rxjs';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import Icon from 'ol/style/Icon';
@@ -41,14 +38,11 @@ import { ChangeDetectorRef } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { DataGroup, DisplayLocationType, IconStyle, LocationType,Location } from 'src/app/models/location.model';
 import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
-import { MatDialog } from '@angular/material/dialog';
 import { DetailsDialogComponent } from '../components/details-dialog/details-dialog.component';
 import { CustomerListComponent } from '../components/customer-list/customer-list.component';
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
-/**
- * Example of a String Time adapter
- */
+
 @Injectable()
 export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
   fromModel(value: string | null): NgbTimeStruct | null {
@@ -68,6 +62,8 @@ export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
   }
 }
 
+
+
 @Component({
   selector: 'app-run',
   templateUrl: './run.component.html',
@@ -75,43 +71,40 @@ export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
   providers: [{ provide: NgbTimeAdapter, useClass: NgbTimeStringAdapter }]
 })
 export class RunComponent implements OnInit, AfterViewInit {
-
-
-  private readonly requiredColumns: Array<string> = ['ORDERID_ORG', 'CHANNEL', 'ORDERDATE', 'DELIVERYDATE', 'ADDRESS',
-    'TUMBOL', 'AUMPHER', 'PROVICE', 'ZIPCODE', 'PRODUCTID', 'PRODUCTNAME', 'QUANTITYMAIN', 'QUANTITYMINOR', 'DELIVERYDATE_CONFIRM', 'ORDER_ID']
-  public activeNavId = 1;
-  // Experiment
-  experiment = <Experiment>{};
-
   // Condition
+  public activeNavId = 1;
   public isUpload!: boolean;
-
-  preOrderFiles: File[] = [];
-  readonly panelOpenState = signal(false);
-  private readonly _formBuilder = inject(FormBuilder);
-  public map!: Map
-  public iconStyle: Partial<IconStyle> = {};
-  public vectorSource!: VectorSource;
-  public vectorLayer!: VectorLayer;
-  requiredFileType: string = '.xlsx, .xls';
-  public fileName: string = '';
-  public uploadProgress: number = -1;
-  public uploadSub!: Subscription;
-  public popUp?: Overlay;
+  public requiredFileType: string = '.xlsx, .xls';
+  private readonly requiredColumns: Array<string> = ['ORDERID_ORG', 'CHANNEL', 'ORDERDATE', 'DELIVERYDATE', 'ADDRESS',
+    'TUMBOL', 'AUMPHER', 'PROVICE', 'ZIPCODE', 'PRODUCTID', 'PRODUCTNAME', 'QUANTITYMAIN', 'QUANTITYMINOR', 'DELIVERYDATE_CONFIRM', 'ORDER_ID'];
+  
+  // map rendering
+  private map!: Map
+  private iconStyle: Partial<IconStyle> = {};
+  private vectorSource!: VectorSource;
+  private vectorLayer!: VectorLayer;
+  private popUp?: Overlay;
+  
+  // store data 
+  public experiment = <Experiment>{};
+  public preOrderFiles: File[] = [];
   public popupContent?: PreOrder;
-  value: string = 'File';
   private dataPreOrder: Array<PreOrder> = [];
-  groupedDataPreOrder: Partial<GroupedDataPreOrder> = {};
+  public groupedDataPreOrder: Partial<GroupedDataPreOrder> = {};
   public preOrdercount: number = 0;
   public uploadDataGroupCustomers?: DataGroup;
-  public countUploadedCustomers: number = 0;
   public customersLocationUpdated: Array<CustomerUpdated> = [];
+  public countUploadedCustomers: number = 0;
+  public constraintsData!: Constraint;
 
+  //display table and vitualization
+  
   displayLocationType: DisplayLocationType = { verify: false, uncertain: true, unverify: true, edit: true };
   locationTypeEnum = LocationType;
   displayedColumns: string[] = ['No', 'ORDERID_ORG', 'ADDRESS', 'AUMPHER', 'PROVINCE', 'TotalOrder'];
   dataSource = new MatTableDataSource<Customer>();
-  clickedRows = new Set<PreOrder>();
+
+  // Mat table
   @ViewChild(MatPaginator, { static: false })
   set paginator(value: MatPaginator) {
     if (this.dataSource) {
@@ -125,8 +118,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
-  constraintsData!: Constraint;
-  constructor(private readonly http: HttpClient,
+  
+  constructor(
     private readonly spinner: NgxSpinnerService,
     private readonly constraintService: ConstraintService,
     private readonly route: ActivatedRoute,
@@ -134,8 +127,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly ngbModal: NgbModal,
     private readonly toastr: ToastrService,
     private readonly preOrderService: PreOrderService,
-    private readonly cdr: ChangeDetectorRef,
-    private readonly dialog: MatDialog
+    private readonly cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -169,20 +161,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.sort; // For sort
   }
 
-  firstFormGroup = this._formBuilder.group({
-    firstCtrl: ['', Validators.required],
-  });
-  secondFormGroup = this._formBuilder.group({
-    secondCtrl: ['', Validators.required],
-  });
-  isLinear = false;
-
-  prependZero(num: number) {
-    if (num <= 9)
-      return "0" + num;
-    else
-      return num;
-  }
 
   onFileSelected(files: any) {
     console.log(files)
@@ -384,12 +362,12 @@ export class RunComponent implements OnInit, AfterViewInit {
       /** spinner ends after 5 seconds */
       this.spinner.hide();
     }, 1000);
+this.resetComponentValue();
+  }
+  private resetComponentValue(){
 
   }
-  cancelUpload() {
-    this.uploadSub.unsubscribe();
-    this.reset();
-  }
+
 
   setParameterDefault() {
     const focusedElement = document.activeElement as HTMLElement;
@@ -422,22 +400,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  reset() {
-    this.uploadProgress = -1;
-    this.uploadSub.unsubscribe();
-  }
-  private getEventMessage(event: HttpEvent<any>): number {
-
-    if (event.type == HttpEventType.UploadProgress) {
-      // Compute and show the % done:
-      const percentDone = event.total ? Math.round(100 * event.loaded / event.total) : 0;
-      return percentDone;
-    } else {
-      return 0;
-    }
-
-
-  }
+ 
 
   private initIconStyle() {
     Object.values(LocationType).forEach(type => {

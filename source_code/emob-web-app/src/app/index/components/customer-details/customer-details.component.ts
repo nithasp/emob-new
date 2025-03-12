@@ -167,7 +167,7 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
       customer.validation_type === ValidationType.NON_VALIDATED
     ) {
       location.setStyle(this.iconStyle.unverify);
-      this.locationType = LocationType.Uncertain;
+      this.locationType = LocationType.Unverify;
     }
 
     this.vectorSource.addFeature(location);

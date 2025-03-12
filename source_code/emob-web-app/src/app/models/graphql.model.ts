@@ -1,5 +1,5 @@
 import { Constraint  } from './constraint.model';
-import { Experiment } from './experiment.model';
+import { Experiment, ValidateExperiment } from './experiment.model';
 import { UploadPreOrder } from './pre-order.model';
 
 export interface Response {
@@ -13,4 +13,5 @@ export interface Response {
     experiment : Experiment
     updateParameter : Constraint
     uploadPreOrder : UploadPreOrder
+    validateExperiment : ValidateExperiment
   }

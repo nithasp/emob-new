@@ -140,6 +140,10 @@ button.link-verify {
   min-width: 280px;
 }
 
+.text-highlight{
+  background-color: #f8d7da;
+}
+
 .ol-popup:after,
 .ol-popup:before {
   top: 100%;
@@ -345,4 +349,6 @@ tr.mat-mdc-footer-row td {
   margin-left: auto;
 }
 
-
+.table-responsive {
+  overflow-x: auto;
+}
