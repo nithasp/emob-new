@@ -68,18 +68,20 @@ export interface Result {
   depots: Depot[];
 }
 export interface CustomerUpdated {
+  node_id: string;
   name: string;
   index: number;
-  latitude: number | string;
-  longitude: number | string;
+  latitude: number ;
+  longitude: number ;
 }
 
 export interface Customer {
   delivery: number | string;
   index: number;
   is_depot: boolean;
-  latitude: number | string;
-  longitude: number | string;
+  latitude: number;
+  longitude: number ;
+  metrics: Metrics | null;
   name: string;
   node_id: string;
   original_address: Address;
@@ -94,6 +96,18 @@ export interface Customer {
   volumn_delivery: number | string;
   volumn_pickup: number;
   zone: string;
+}
+
+interface Metrics {
+  excess_distance:    number;
+  excess_duration:    number;
+  excess_volumn:      number;
+  excess_weight:      number;
+  is_excess_distance: boolean;
+  is_excess_duration: boolean;
+  is_excess_volumn:   boolean;
+  is_excess_weight:   boolean;
+  is_feasible:        boolean;
 }
 
 export interface Address {

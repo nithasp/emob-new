@@ -5,7 +5,10 @@ import { map } from 'rxjs/operators';
 import gql from 'graphql-tag';
 
 import { Response } from '../models/graphql.model';
-import { Experiment } from '../models/experiment.model';
+import { Experiment, ValidateExperiment } from '../models/experiment.model';
+import { Constraint } from '../models/constraint.model';
+import { Location } from '../models/location.model';
+import { CustomerUpdated } from '../models/pre-order.model';
 
 @Injectable({
   providedIn: 'root'
@@ -73,5 +76,52 @@ export class ExperimentService {
         
       }
     }).pipe(map(result => result.data.experiment));
+  }
+  validateExperiment(runId: string,parameter:Constraint,locationUpdated:CustomerUpdated[]):Observable<ValidateExperiment>{
+    return this.apollo.mutate<Response>({
+      mutation: gql`
+      mutation validateExperiment($validateInput:ExperimentInputValidation!){
+        validateExperiment(input: $validateInput) {
+            result
+          }
+        }`,
+        variables: {
+          validateInput : { 
+            runId: runId, 
+            parameter: parameter,
+            updateLocation : {
+              customers: locationUpdated
+            }
+          }
+        }
+    }).pipe(map(result => result.data!.validateExperiment));
+
+  }
+  submitExperiment(runId: string):Observable<Experiment>{
+    return this.apollo.mutate<Response>({
+      mutation: gql`
+      mutation submitExperiment($input: ExperimentSubmitInput!){
+        submitExperiment(input: $input) {
+          runId
+          name
+          timestamp
+          timeStart
+          timeEnd
+          timeDuration
+          triggeredBy
+          status
+          run
+          groupId
+        }
+      }
+      `,
+        variables: {
+          input:{
+            runId : runId
+          }
+          
+        }
+    }).pipe(map(result => result.data!.submitExperiment));
+
   }
 }

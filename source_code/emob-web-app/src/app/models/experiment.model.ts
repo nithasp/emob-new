@@ -51,7 +51,7 @@ interface Result {
   validate: Validate;
 }
 
-interface Validate {
+export interface Validate {
   filters: Filters;
   warning: Warning;
 }

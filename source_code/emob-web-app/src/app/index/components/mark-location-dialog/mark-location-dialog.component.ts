@@ -39,7 +39,6 @@ export class MarkLocationDialogComponent implements OnInit, AfterViewInit {
   iconLocation!: Style;
   isEditLocation:boolean = false;
   messageError!: boolean;
-  overlay!: Overlay;
   vectorSource!: VectorSource;
   vectorLayer!: VectorLayer;
 
@@ -58,17 +57,9 @@ export class MarkLocationDialogComponent implements OnInit, AfterViewInit {
     });
     this.initIconStyle();
     this.initMap();
-    const container: HTMLElement = document.getElementById("popup")!;
-    this.overlay = new Overlay({
-      element: container,
-      positioning: 'top-right',
-      stopEvent: false,
-      offset: [0, -50],
-
-    });
+   
   }
   ngAfterViewInit() {
-    this.map.addOverlay(this.overlay);
     this.map.on("singleclick", event => this.markerMap(event));
     this.setLocation();
   }
@@ -142,7 +133,7 @@ export class MarkLocationDialogComponent implements OnInit, AfterViewInit {
         anchorXUnits: 'fraction',
         anchorYUnits: 'pixels',
         crossOrigin: "anonymous",
-        opacity: 0.8,
+        opacity: 1,
         src: `assets/image/position.png`
       })
     });

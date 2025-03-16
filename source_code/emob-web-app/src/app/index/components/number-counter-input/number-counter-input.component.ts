@@ -21,7 +21,9 @@ export class NumberCounterInputComponent implements ControlValueAccessor {
   @Input() inputType: string = "number";
 
 
-  onChange = (value: any) => {};
+  onChange (value: any){
+    console.log(value);
+  };
   onTouched = () => {};
   protected touched = false;
   protected disabled = false;
@@ -34,7 +36,9 @@ export class NumberCounterInputComponent implements ControlValueAccessor {
     this.markAsTouched();
     if (!this.disabled && Number(this.value)+ this.count <= this.maxValue) {
       this.value = parseInt(this.value.toString(), 10) + this.count;
-      if(this.inputType == "text"){
+      console.log(this.inputType);
+      if(this.inputType === "text"){
+        console.log("To string");
         this.onChange(String(this.value));
       }else this.onChange(this.value);
     }
@@ -44,7 +48,7 @@ export class NumberCounterInputComponent implements ControlValueAccessor {
     this.markAsTouched();
     if (!this.disabled && Number(this.value)- this.count >= this.minValue) {
       this.value = parseInt(this.value.toString(), 10) - this.count;
-      if(this.inputType == "text"){
+      if(this.inputType === "text"){
         this.onChange(String(this.value));
       }else this.onChange(this.value);
     }

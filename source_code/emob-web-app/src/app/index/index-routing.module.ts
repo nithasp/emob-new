@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { ExperimentComponent } from './experiment/experiment.component';
-import { InventoryComponent } from './inventory/inventory.component';
+import { ConfigurationComponent } from './configuration/configuration.component';
 import { RunComponent } from './run/run.component';
 import { ResultComponent } from './result/result.component';
 import { IndexComponent } from './index.component';
@@ -17,8 +17,8 @@ const routes: Routes = [
         component: ExperimentComponent
       },
       {
-        path: "inventories",
-        component: InventoryComponent
+        path: "configurations",
+        component: ConfigurationComponent
       },
       {
         path: "run/:runId",

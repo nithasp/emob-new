@@ -20,16 +20,17 @@ import VectorSource from "ol/source/Vector";
 import OSM from 'ol/source/OSM';
 import { Style } from 'ol/style';
 import { MarkLocationDialogComponent } from '../mark-location-dialog/mark-location-dialog.component';
+import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-customer-details',
   templateUrl: './customer-details.component.html',
   styleUrl: './customer-details.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.Default
 })
 export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges {
   @Input() dataPreOder!: DetailsPreOder;
   @Input() dataCustomer!: Customer;
-  @Input() locationType!: LocationType;
+  @Input() locationType: LocationType = LocationType.Verify;
   @Input() isModal: boolean =true;
   @Output() dataEmitter: EventEmitter<Location> = new EventEmitter<Location>();
   location: Location= {
@@ -47,7 +48,8 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
   private isFirstChange: boolean = true;
 
   constructor(private readonly ngbModal: NgbModal,
-    private readonly ngbModalActive: NgbActiveModal
+    private readonly ngbModalActive: NgbActiveModal,
+    private readonly toastr: ToastrService,
     ) {
      }
   ngOnInit(): void {
@@ -79,7 +81,7 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
     console.log("Onchange",changes)
     if (!this.isFirstChange) {
       if (changes['dataCustomer'].currentValue['name'] != changes['dataCustomer'].previousValue['name']) {
-        console.log("have change");
+        console.log("have change",this.locationType);
         // Detect changes to the @Input property
         this.refreshLocation();
       }
@@ -146,7 +148,9 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
       data: customer.name
 
     });
-    if(this.locationType == LocationType.Edit){
+    
+    console.log("locationTpye before checking and use icon",this.locationType);
+    if(this.locationType === LocationType.Edit && this.isModal){
       location.setStyle(this.iconStyle.edit);
       this.locationType = LocationType.Edit
     }else if (
@@ -238,13 +242,15 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
     }
     const dialogRef = this.ngbModal.open(MarkLocationDialogComponent, {
       centered: true,
+      windowClass: 'custom-modal-align-right',
       backdrop: 'static',
       keyboard:false,
       size: 'lg',
       animation: true,
       beforeDismiss: () => {
         return false;
-      }
+      },
+
 
     });
     dialogRef.componentInstance.location = {longitude:this.dataCustomer.longitude,latitude: this.dataCustomer.latitude};
@@ -257,7 +263,7 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
         this.locationType = LocationType.Edit;
         this.dataEmitter.emit(this.location);
         this.setLocation(this.dataCustomer,this.location);
-        
+        this.toastr.success("Update Location","Succeed");
         
     }).catch((error) => {
       console.error('Dialog was dismissed:', error);

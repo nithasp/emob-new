@@ -1,0 +1,144 @@
+<div class=" card mt-2 container-fluid container"
+  style="min-height:100vh;">
+  <ngx-spinner name="configuration">
+    <p class="h-3">Wait a moment ...</p>
+  </ngx-spinner>
+  <div class="row mt-4">
+    <div class="col-md-12 mb-3 text-right mt-4">
+
+      <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown">
+        <button
+          mat-raised-button 
+          
+          class=" me-2 bg-custom-secondary"
+          id="dropdownManual"
+          ngbDropdownAnchor
+          (focus)="myDrop.open()">
+          <mat-icon>upload_2</mat-icon>
+          Update
+        </button>
+        <div ngbDropdownMenu aria-labelledby="dropdownManual"
+          *ngFor="let category of configurations">
+
+          <button ngbDropdownItem [disabled]="true"> 
+            <mat-icon class="mr-2">folder</mat-icon>
+            <span class="text-capitalize font-weight-bold">
+              {{category.name}}
+            </span>
+            </button>
+          @for (item of category.children; track $index) {
+          <button ngbDropdownItem
+            (click)="openUploadFile(category.name,item.name)" class="pl-4 ">
+            <mat-icon class="icon-file mr-2">description</mat-icon>
+            <span class="text-capitalize">
+              {{item.name}}
+            </span>
+            </button>
+          }
+
+        </div>
+      </div>
+
+    </div>
+    <div class="col-md-12">
+      <div class="container-resizable">
+        <div class="resizable-div" appResizable [resizableMinWidth]="300"
+          [resizableMaxWidth]="500" style="width: 500px;">
+          <mat-card appearance="outlined" style="height: 100%;">
+            <mat-card-header class="bg-category p-3 justify-content-center">
+              <mat-card-title class="font-weight-bold">CONFIGURATIONS</mat-card-title>
+            </mat-card-header>
+            <mat-card-actions class="w-100">
+              <mat-tree #tree [dataSource]="dataSource"
+                [childrenAccessor]="childrenAccessor"
+                class="w-100">
+                <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding
+                  [class.active]="node.name === selectedNode"
+                  class="w-100"
+                  style="cursor: pointer;">
+                  <div style="display: flex; align-items: center;"
+                    (click)="onChangeFile(node.name)" placement="start"
+                    [ngbTooltip]="node.timestamp">
+                    <button mat-icon-button disabled>
+                      <div style="text-align: center;">
+                        <mat-icon class="icon-file">description</mat-icon>
+                        <div style="font-size: 10px;">Excel</div>
+                      </div>
+                    </button>
+                    <div>
+                      {{node.name}}
+                    </div>
+                  </div>
+                  <span style="flex-grow: 1;"></span>
+                  <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown">
+                    <button mat-icon-button
+                      id="dropdownManual"
+                      (focus)="myDrop.open()">
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <div ngbDropdownMenu aria-labelledby="dropdownManual">
+                      <button ngbDropdownItem>
+                        <mat-icon>upload_file</mat-icon>
+                        Update File</button>
+                      <button ngbDropdownItem>
+                        <mat-icon>download</mat-icon>
+                        Download</button>
+                    </div>
+                  </div>
+                </mat-tree-node>
+
+                <mat-tree-node *matTreeNodeDef="let node; when: hasChild"
+                  matTreeNodePadding
+                  [class.active]="node.name === selectedNode"
+                  matTreeNodeToggle [cdkTreeNodeTypeaheadLabel]="node.name"
+                  style="cursor: pointer;" placement="start"
+                  [ngbTooltip]="node.timestamp"
+                  >
+                  <button mat-icon-button matTreeNodeToggle>
+                    <mat-icon class="mat-icon-rtl-mirror">
+                      {{tree.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+                    </mat-icon>
+                  </button>
+                  <mat-icon class="icon-category mr-2">folder</mat-icon>
+                  <strong class="text-capitalize">{{node.name}}</strong>
+                </mat-tree-node>
+              </mat-tree>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+        <div class="w-100 explorer-container pl-3 border ml-2">
+          <div class="container-preview" *ngIf="!(excelData.length > 0)">
+            <mat-icon
+              style="color: gray;font-size: 250px; width: auto; height:auto;">folder_open</mat-icon>
+            <p class="h3" style="color: gray;">Select a file to preview it.</p>
+          </div>
+
+          <div class="table-responsive " *ngIf="excelData.length > 0">
+            <input type="text" [(ngModel)]="searchText" placeholder="Search..."
+              class="form-control mb-3 mt-4" />
+            <table *ngIf="excelData.length > 0"
+              class="table table-striped table-bordered">
+              <thead class="thead-dark">
+                <tr>
+                  <th *ngFor="let col of headers" scope="col">{{ col }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of excelData | filter:searchText:headers">
+                  <td *ngFor="let col of headers"
+                    [ngClass]="{
+                    'td-warning': row[col] === null || '' || row[col] === undefined
+                  }">{{ row[col] }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

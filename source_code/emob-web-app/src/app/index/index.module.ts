@@ -3,13 +3,13 @@ import { IndexRoutingModule } from './index-routing.module';
 import { ExperimentComponent } from './experiment/experiment.component';
 import { RunComponent } from './run/run.component';
 import { ResultComponent } from './result/result.component';
-import { InventoryComponent } from './inventory/inventory.component';
+import { ConfigurationComponent } from './configuration/configuration.component';
 import { MaterialModule } from '../material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavbarComponent } from './default/navbar/navbar.component';
 import { RouterLinkActive } from '@angular/router';
 import { IndexComponent } from './index.component';
-import { NgbModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule, NgbNavModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
 import { PopoverModule } from '@ngx-popovers/popover';
@@ -25,13 +25,16 @@ import { DetailsDialogComponent } from './components/details-dialog/details-dial
 import { VerifyLocationDialogComponent } from './components/verify-location-dialog/verify-location-dialog.component';
 import { MarkLocationDialogComponent } from './components/mark-location-dialog/mark-location-dialog.component';
 import { CustomerListComponent } from './components/customer-list/customer-list.component';
+import { FilterPipe } from '../directives/filter-pipe.directive';
+import { ResizableDirective } from '../directives/resizable.directive';
+import { UploadFileComponent } from './configuration/upload-file/upload-file.component';
 @NgModule({
   declarations: [
     IndexComponent,
     ExperimentComponent,
     RunComponent,
     ResultComponent,
-    InventoryComponent,
+    ConfigurationComponent,
     NavbarComponent,
     ConfirmationDialogComponent,
     DropzoneDirective,
@@ -43,7 +46,10 @@ import { CustomerListComponent } from './components/customer-list/customer-list.
     DetailsDialogComponent,
     VerifyLocationDialogComponent,
     MarkLocationDialogComponent,
-    CustomerListComponent
+    CustomerListComponent,
+    FilterPipe,
+    ResizableDirective,
+    UploadFileComponent
   ],
   imports: [
     IndexRoutingModule,
@@ -56,7 +62,8 @@ import { CustomerListComponent } from './components/customer-list/customer-list.
     CommonModule,
     PopoverModule,
     Arrow,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    NgbTooltipModule
     
   ],
   schemas :[CUSTOM_ELEMENTS_SCHEMA ],

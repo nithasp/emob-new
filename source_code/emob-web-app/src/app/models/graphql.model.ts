@@ -1,3 +1,4 @@
+import { Configuration } from './configuration.model';
 import { Constraint  } from './constraint.model';
 import { Experiment, ValidateExperiment } from './experiment.model';
 import { UploadPreOrder } from './pre-order.model';
@@ -14,4 +15,6 @@ export interface Response {
     updateParameter : Constraint
     uploadPreOrder : UploadPreOrder
     validateExperiment : ValidateExperiment
+    submitExperiment: Experiment,
+    configuration:Configuration
   }

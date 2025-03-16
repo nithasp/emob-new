@@ -18,30 +18,6 @@
     background-color: #5cb3fd;
 }
 
-.btn-faceb {
-    background: #3B5998;
-    // border-radius: 50%;
-    color: #fff;
-    font-family: "Itim", cursive;
-}
-
-.btn-google {
-    background: #dd4b39;
-    // border-radius: 50%;
-    color: #fff;
-    font-family: "Itim", cursive;
-}
-
-.fa-google {
-    background: #dd4b39;
-    color: white;
-}
-
-.fa-facebook {
-    background: #3B5998;
-    color: white;
-}
-
 .modal-header {
     border-bottom: none;
 }
@@ -79,25 +55,8 @@
     background-color: #5cb3fd;
     opacity: 1.0 !important;
 }
-
-.btn-facebook {
-    background: #3B5998;
-    border-radius: 0;
-    color: #fff;
-    border-width: 1px;
-    border-style: solid;
-}
-
-.btn-line {
-    background: #00C300;
-    border-radius: 0;
-    color: #fff;
-    border-width: 1px;
-    border-style: solid;
-}
-
 .dropdown-menu {
-    width: 150px;
+    width: 100%;
 }
 
 @media screen and (max-width: 992px) {

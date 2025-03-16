@@ -7,3 +7,9 @@
     align-items: center;
     justify-content: center;
   }
+
+  ::ng-deep .custom-modal-align-right .modal-dialog {
+    position: absolute;
+    right: 10%;
+    transform: translateY(-50%);
+  }

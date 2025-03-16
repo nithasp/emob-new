@@ -6,7 +6,7 @@
     ><mat-icon>remove</mat-icon>
     </button>
     <div class="counter-value">
-      <input  [type]="inputType" class="form-control" [(ngModel)]="value" [max]="maxValue" [min]="minValue"
+      <input  type="number" class="form-control" [(ngModel)]="value" [max]="maxValue" [min]="minValue"
       (ngModelChange)="onChange($event)">
     </div>
     <button mat-mini-fab

@@ -1,38 +1,47 @@
-<div class="align-right" >
-    <button class="btn" (click)="close()" aria-label="Close">
-        <mat-icon>clear</mat-icon>
-    </button>
+<div class="align-right">
+  <button class="btn" (click)="close()" aria-label="Close">
+    <mat-icon>clear</mat-icon>
+  </button>
 </div>
-@if(CustomersToVerify.length > 0){
+@if(customersToVerify.length > 0){
 <div class="row m-3">
-    
-        <div class="col-md-3">
-            <div class="mat-list-container">
-              <mat-list>
-                <mat-list-item *ngFor="let item of CustomersToVerify" (click)="selectCustomer(item)">
-                  {{ item.name }}
-                </mat-list-item>
-              </mat-list>
-            </div>
-          </div>
-          <div class="col-md-9">
-            <app-customer-details
-              [dataPreOder]="groupedDataPreOrder[CustomersToVerify[indexSelected].name]"
-              [dataCustomer]="CustomersToVerify[indexSelected]"
-              [locationType]="findLocationType(CustomersToVerify[indexSelected].name)"
-              [isModal]="false"
-              (dataEmitter)="receiveData($event,CustomersToVerify[indexSelected])"
-      
-            ></app-customer-details>
-          </div>
-    
-    
-  </div>
-}@else{
-    <div class="container-custom">
-        <div class="mt-5">
-            <h1>Verify Customer's location</h1>
-            <p>Empty</p>
-        </div>
+
+  <div class="col-md-2 align-self-center">
+      <div class="mat-list-container">
+        <mat-selection-list [multiple]="false" >
+
+          <mat-list-item style="cursor: pointer;" class="mt-1 border-start border-5"
+          [ngClass]="{
+            'border-warning': isUncertain(item.name),
+            'border-danger': isUnverified(item.name)
+          }"
+          *ngFor="let item of customersToVerify; let i = index"
+          (click)="selectCustomer(item)" 
+          [value]="item.name"
+          [disabled]="isDisabled(i)">
+            {{ item.name }}
+          </mat-list-item>
+        </mat-selection-list>
+
     </div>
+  </div>
+  <div class="col-md-10">
+    @if(customerSelected){
+    <app-customer-details
+      [dataPreOder]="customerSelected.dataPreOder"
+      [dataCustomer]="customerSelected.dataCustomer"
+      [locationType]="customerSelected.locationType"
+      [isModal]="false"
+      (dataEmitter)="receiveData($event,customersToVerify[selectedIndex])"></app-customer-details>
+    }
+  </div>
+
+</div>
+}@else{
+<div class="container-custom">
+  <div class="mt-5">
+    <h1>Verify Customer's location</h1>
+    <p>Empty</p>
+  </div>
+</div>
 }

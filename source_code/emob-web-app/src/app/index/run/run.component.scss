@@ -140,6 +140,7 @@ button.link-verify {
   min-width: 280px;
 }
 
+
 .text-highlight{
   background-color: #f8d7da;
 }
@@ -168,7 +169,16 @@ button.link-verify {
   left: 48px;
   margin-left: -11px;
 }
-
+.ol-popup-closer {
+  text-decoration: none;
+  position: absolute;
+  top: 2px;
+  right: 8px;
+}
+.ol-popup-closer:after {
+  content: "✖";
+  cursor: pointer;
+}
 table {
   width: 100%;
   max-width: 100%;
@@ -350,5 +360,7 @@ tr.mat-mdc-footer-row td {
 }
 
 .table-responsive {
-  overflow-x: auto;
+  height:200px;
+  width:100%;
+  overflow:auto;
 }
