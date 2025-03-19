@@ -2,7 +2,6 @@ import { Component, Inject, Input, OnInit } from '@angular/core';
 import { GuardsCheckEnd, NavigationEnd, Router, Scroll } from '@angular/router';
 import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalService } from '@azure/msal-angular';
 import { InteractionType } from '@azure/msal-browser';
-import $ from 'jquery';
 import { UserADProfile } from 'src/app/models/profile.model';
 @Component({
   selector: 'app-topbar',

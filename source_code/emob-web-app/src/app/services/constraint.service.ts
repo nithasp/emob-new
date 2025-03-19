@@ -38,8 +38,8 @@ export class ConstraintService {
   updateParameter(constraints:Constraint): Observable<Response>{
     return this.apollo.mutate<Response>({
       mutation: gql`
-      mutation updateParameter( $constraints : UpdateParameterInput!){
-        updateParameter(input: $constraints) {
+      mutation updateParameter( $constraints : ParameterInput!){
+        updateParameter(parameter: $constraints) {
           earlyDeliveryTime
           backToDepotTime
           maximumWorkDuration

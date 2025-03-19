@@ -2,5 +2,9 @@
     "docwriter.progress.trackFunctions": true,
     "docwriter.progress.trackMethods": false,
     "docwriter.progress.trackClasses": true,
-    "docwriter.progress.trackTypes": false
+    "docwriter.progress.trackTypes": false,
+    "cSpell.words": [
+        "msal",
+        "testbanpu"
+    ]
 }

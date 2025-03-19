@@ -1,16 +1,24 @@
-import { Customer, Depot } from "./pre-order.model";
+import { Customer, Depot } from './pre-order.model';
 
 export interface Experiment {
   groupId: string;
   name: string;
   run: 'Original' | 'Rerun';
   runId: string;
-  status: 'Succeeded' | 'In progress' | 'Queued' | 'Failed' | 'Canceled' | "Initializing";
+  status:StatusExperiment;
   timeDuration: string;
   timeEnd: string;
   timeStart: string;
   timestamp: string;
   triggeredBy: string;
+}
+enum StatusExperiment {
+  Succeeded = 'Succeeded',
+  InProgress = 'In Progress',
+  Queued = 'Queued',
+  Failed = 'Failed',
+  Canceled = 'Canceled',
+  Initializing = 'Initializing',
 }
 
 export interface ValidateExperiment {
@@ -37,7 +45,6 @@ export interface ValidateExperiment {
   countReroute: string;
   result: Result;
   fileUrl: FileURL;
-
 }
 interface FileURL {
   parameterUrl: string;

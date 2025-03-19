@@ -13,28 +13,41 @@ import { GraphQLModule } from "./graphql.module";
 import {provideToastr, ToastrModule} from "ngx-toastr";
 
 
-import { msalConfig, loginRequest } from './auth-config';
+import { msalConfig} from './auth-config';
 import { InteractionType, IPublicClientApplication, PublicClientApplication } from "@azure/msal-browser";
-import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalInterceptor, MsalModule, MsalRedirectComponent, MsalService } from "@azure/msal-angular";
+import { MSAL_GUARD_CONFIG, MSAL_INSTANCE, MsalBroadcastService, MsalGuardConfiguration, MsalInterceptor, MsalModule, MsalRedirectComponent, MsalService, MsalInterceptorConfiguration, MSAL_INTERCEPTOR_CONFIG, MsalGuard } from '@azure/msal-angular';
 import { RoleGuard } from "./guards/role.guard";
 import { UnauthorizedComponent } from "./unauthorized/unauthorized.component";
+import { RouterModule } from "@angular/router";
+import { environment } from "src/environments/environment";
 
-/**
- * Here we pass the configuration parameters to create an MSAL instance.
- * For more info, visit: https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-angular/docs/v2-docs/configuration.md
- */
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication(msalConfig);
 }
 
-/**
- * Set your default interaction type for MSALGuard here. If you have any
- * additional scopes you want the user to consent upon login, add them here as well.
- */
 export function MsalGuardConfigurationFactory(): MsalGuardConfiguration {
   return {
     interactionType: InteractionType.Redirect,
-    authRequest: loginRequest
+    authRequest: {
+      scopes: [...environment.apiConfig.scopes],
+    },
+    loginFailedRoute: "/unauthorized", 
+  };
+}
+export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
+  const protectedResourceMap = new Map<string, Array<string>>();
+  protectedResourceMap.set(
+    environment.apiConfig.uri,
+    environment.apiConfig.scopes
+  );
+  protectedResourceMap.set(
+    'https://graph.microsoft.com/v1.0/me',
+    ['user.read']
+  );
+
+  return {
+    interactionType: InteractionType.Redirect,
+    protectedResourceMap,
   };
 }
 
@@ -45,6 +58,7 @@ export function MsalGuardConfigurationFactory(): MsalGuardConfiguration {
   ],
   imports: [
     AppRoutingModule,
+    RouterModule.forRoot([]),
     MaterialModule,
     BrowserModule,
     BrowserAnimationsModule,
@@ -59,20 +73,9 @@ export function MsalGuardConfigurationFactory(): MsalGuardConfiguration {
       positionClass: "toast-top-right",
       timeOut: 2000,
     }),
-    MsalModule.forRoot(MSALInstanceFactory(),{
-      interactionType : InteractionType.Popup,
-      authRequest: {
-        scopes:["user.read"]
-      },
-    },
-    {
-      interactionType: InteractionType.Popup,
-      protectedResourceMap: new Map([
-        ["https://graph.microsoft.com/v1.0/me", ["user.read"]]
-      ])
-    }),
+    MsalModule
   ],
-  schemas :[CUSTOM_ELEMENTS_SCHEMA ],
+  schemas :[],
   bootstrap: [AppComponent,
     MsalRedirectComponent],
   providers: [
@@ -85,12 +88,19 @@ export function MsalGuardConfigurationFactory(): MsalGuardConfiguration {
       multi: true,
     },
     {
+      provide: MSAL_INSTANCE,
+      useFactory: MSALInstanceFactory,
+  },
+    {
       provide: MSAL_GUARD_CONFIG,
       useFactory: MsalGuardConfigurationFactory,
     },
+    {
+      provide: MSAL_INTERCEPTOR_CONFIG,
+      useFactory: MSALInterceptorConfigFactory,
+    },
     MsalService,
-    MsalBroadcastService,
-    RoleGuard
+    MsalBroadcastService
   ]
 })
 export class AppModule { }

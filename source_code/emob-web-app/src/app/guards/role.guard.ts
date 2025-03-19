@@ -6,8 +6,6 @@ import { concatMap } from "rxjs/operators";
 
 import { MsalBroadcastService, MsalGuardConfiguration, MsalService, MSAL_GUARD_CONFIG } from "@azure/msal-angular";
 import { BaseGuard } from "./base.guard";
-import { loginRequest } from "../auth-config";
-import { AccountInfo } from "@azure/msal-browser";
 
 @Injectable()
 export class RoleGuard extends BaseGuard {

@@ -89,7 +89,7 @@ export class ExperimentComponent implements AfterViewInit,OnInit {
   ngOnInit(): void {
     this.spinner.show();
     this.experimentService.getExperiments().subscribe(response => {
-      this.dataSource.data = response
+      this.dataSource.data = response;
       this.spinner.hide();
     });
       

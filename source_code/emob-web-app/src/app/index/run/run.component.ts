@@ -67,9 +67,6 @@ import { CustomerDetailsComponent } from '../components/customer-details/custome
 import { DetailsDialogComponent } from '../components/details-dialog/details-dialog.component';
 import { CustomerListComponent } from '../components/customer-list/customer-list.component';
 import { ValidateMessage } from 'src/app/models/validation-message';
-import { TRUE } from 'ol/functions';
-import { OrderData } from '../../models/validation-message';
-import { Circle } from 'ol/geom';
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
 @Injectable()
@@ -678,17 +675,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   closer?.blur();
   
  }
-  private pointMove(evt: any, element: any) {
-    let target = this.map.getTarget()!;
-    let jTarget = typeof target === 'string' ? $('#' + target) : $(target);
-    let pixel = this.map.getEventPixel(evt.originalEvent);
-    let hit = this.map.hasFeatureAtPixel(pixel);
-    if (hit) {
-      jTarget.css('cursor', 'pointer');
-    } else {
-      jTarget.css('cursor', '');
-    }
-  }
+
   /**
    * The `initMap` function initializes a map with layers, controls, and overlays in TypeScript using
    * OpenLayers library.
@@ -746,7 +733,19 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
     // display popup on click
     this.map.on('singleclick', (event) => this.popupShow(event, element));
-    this.map.on('pointermove', (event) => this.pointMove(event, element));
+    this.map.on('pointermove', (event) => this.pointMove(event));
+  }
+
+  private pointMove(evt: any): void {
+    const target = this.map.getTargetElement();
+    const pixel = this.map.getEventPixel(evt.originalEvent);
+    const hit = this.map.hasFeatureAtPixel(pixel);
+  
+    if (hit) {
+      target.style.cursor = 'pointer';
+    } else {
+      target.style.cursor = '';
+    }
   }
   private groupCustomers(result: UploadPreOrder) {
     const verify: Customer[] = [];

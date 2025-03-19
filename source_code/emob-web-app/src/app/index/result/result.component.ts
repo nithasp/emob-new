@@ -265,7 +265,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
     })
     // display popup on click
     this.map.on('click', event => this.popupShow(event, element));
-    this.map.on('pointermove', event => this.pointMove(event, element));
   }
   private popupShow(evt: any, element: any) {
     let coordinates: Coordinate;
@@ -287,17 +286,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
       console.log(this.popupContent)
     } else {
       this.popupContent = undefined;
-    }
-  }
-  private pointMove(evt: any, element: any) {
-    let target = this.map.getTarget()!;
-    let jTarget = typeof target === "string" ? $("#" + target) : $(target);
-    let pixel = this.map.getEventPixel(evt.originalEvent);
-    let hit = this.map.hasFeatureAtPixel(pixel);
-    if (hit) {
-      jTarget.css("cursor", "pointer");
-    } else {
-      jTarget.css("cursor", "");
     }
   }
 
