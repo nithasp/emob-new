@@ -41,6 +41,10 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
     environment.apiConfig.scopes
   );
   protectedResourceMap.set(
+    environment.graphqlConfig.uri,
+    environment.graphqlConfig.scopes
+  );
+  protectedResourceMap.set(
     'https://graph.microsoft.com/v1.0/me',
     ['user.read']
   );
@@ -75,7 +79,7 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
     }),
     MsalModule
   ],
-  schemas :[],
+  schemas :[CUSTOM_ELEMENTS_SCHEMA],
   bootstrap: [AppComponent,
     MsalRedirectComponent],
   providers: [
@@ -100,7 +104,8 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
       useFactory: MSALInterceptorConfigFactory,
     },
     MsalService,
-    MsalBroadcastService
+    MsalBroadcastService,
+    RoleGuard
   ]
 })
 export class AppModule { }

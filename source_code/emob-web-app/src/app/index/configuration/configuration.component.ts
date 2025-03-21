@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Categories, Configuration } from 'src/app/models/configuration.model';
+import { ActualLocation, Categories, Configuration } from 'src/app/models/configuration.model';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import * as ExcelJS from 'exceljs';
 import { formatDate } from '@angular/common';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { UploadFileComponent } from './upload-file/upload-file.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-configuration',
@@ -13,16 +14,23 @@ import { UploadFileComponent } from './upload-file/upload-file.component';
   styleUrl: './configuration.component.scss',
 })
 export class ConfigurationComponent implements OnInit {
+  
+  
+  
+  //Categories
+  public selectedNode: string | null = null;
+  public configurationsExplorer: Categories[] = [];
+  private readonly configurationAllData: { configurations: Configuration[], actualLocations: ActualLocation[] } = { configurations: [], actualLocations: [] };
   activeColor: Array<string> = [];
+  
 
+  // NgbTable
+  currentPage = 1; // Current page
+  pageSize = 60;
   public dataSource: any[] = [];
   public excelData: any[] = [];
   public headers: string[] = [];
-  public configurations: Categories[] = [];
-  private configurationData!: Configuration;
-  public searchText = '';
-  public selectedNode: string | null = null;
-  childrenAccessor = (node: Categories) => node.children ?? [];
+  public searchText = '';childrenAccessor = (node: Categories) => node.children ?? [];
 
   hasChild = (_: number, node: Categories) =>
     !!node.children && node.children.length > 0;
@@ -35,31 +43,70 @@ export class ConfigurationComponent implements OnInit {
 
   ngOnInit(): void {
     this.spinner.show();
-    this.configurationService.getConfiguration().subscribe((data) => {
+    this.configurationService.getConfigurations().subscribe((data) => {
       console.log(data);
-      this.configurationData = data;
-      const inventories: Categories[] = [];
-      data.inventories.forEach((inventory) => {
-        inventories.push({
-          name: inventory.category,
-          children: [
-            {
+      this.configurationAllData.configurations = data.configurations;
+      this.configurationAllData.actualLocations = data.actualLocations;
+      const configurationCategory: Categories[] = [];
+      // map data to tree structure
+      data.configurations.forEach((configuration) => {
+        const category = configurationCategory.find(item => item.name === configuration.category);
+        if(category) {
+          configurationCategory.find(item => item.name === configuration.category)?.children?.push({
+            name: configuration.name,
+            timestamp: formatDate(
+              configuration.timestamp,
+                  'dd-MMM-YYYY HH:mm:ss',
+                  'en-US'
+            ),
+            type: "configuration"
+          })
+        }else{
+          configurationCategory.push({
+            name: configuration.category,
+            children: [
+              {
+                timestamp: formatDate(
+                  configuration.timestamp,
+                  'dd-MMM-YYYY HH:mm:ss',
+                  'en-US'
+                ),
+                name: configuration.name,
+                type : "configuration"
+              },
+            ],
+          });
+        }
+        
+      });
+      const actualLocationList: Categories[] = [];
+      data.actualLocations.forEach((location) => {
+        actualLocationList.push({
+          name: location.year,
+          children: location.children.map((child) => ({
+            name:child.month,
+            children: child.children.map((grandChild) => ({
+              name: grandChild.fileName,
+              blobPath: grandChild.fileBlobPath,
               timestamp: formatDate(
-                inventory.timestamp,
-                'dd-MMM-YYYY',
+                grandChild.timestamp,
+                'dd-MMM-YYYY HH:mm:ss',
                 'en-US'
               ),
-              name: inventory.name,
-            },
-          ],
-        });
+              type: "actualLocation"
+            }))
+          }))
+        })
       });
-      this.configurations.push({
-        name: 'inventories',
-        children: inventories,
+
+      configurationCategory.push({
+        name: "actualLocation",
+        children: actualLocationList
       });
-      console.log(this.configurations);
-      this.dataSource = this.configurations;
+
+      this.configurationsExplorer = configurationCategory;
+      console.log(this.configurationsExplorer);
+      this.dataSource = this.configurationsExplorer;
       this.spinner.hide();
     });
   }
@@ -69,86 +116,94 @@ export class ConfigurationComponent implements OnInit {
     return this.excelData.slice(0, maxRows);
   }
 
-  onChangeFile(fileName: string) {
-    this.selectedNode = fileName;
-    const inventory = this.configurationData.inventories.find(
-      (inventory) => inventory.name === fileName
-    );
-    console.log(inventory);
-
-    if (inventory) {
-      const fileInventoryURL = inventory.fileUrl.fileInventoryUrl;
-      console.log(fileInventoryURL);
-      this.fetchAndParseExcel(fileInventoryURL);
-    }
-  }
-  fetchAndParseExcel(url: string) {
+  onChangeFile(fileName: string,type: string,blobPath:string) {
+    console.log(fileName,type,blobPath);
     this.showSpinner();
+    try{
+    this.selectedNode = fileName;
+    if (type === "actualLocation") {
+      if(blobPath) this.configurationService.getActualLocation(blobPath).subscribe((data) => {
+          console.log(data);
+          this.fetchAndParseExcel(data.children[0].children[0].fileUrl.fileActualLocationUrl);
+        this.hiddenSpinner();
+      });
+    }else if (type === "configuration") {
+      const configuration = this.configurationAllData.configurations.find(
+        (configuration) => configuration.name === fileName
+      );
+      console.log(configuration);
+  
+      if (configuration) {
+        this.configurationService.getConfiguration(configuration.id).subscribe(async (data) => {
+          console.log(data);
+        await this.fetchAndParseExcel(data.fileUrl.fileConfigurationUrl);
+
+        })
+      }
+    }
+  }catch (error) {
+    console.error(error);
+    this.hiddenSpinner();
+  }
+  
+  this.currentPage =1;
+  this.searchText ='';
+    
+  }
+
+  get paginatedData() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.excelData.slice(start, end);
+  }
+
+  async fetchAndParseExcel(url: string): Promise<void> {
     this.excelData = [];
     this.headers = [];
     try {
-      this.configurationService.getDatafromUrl(url).subscribe(
-        async (blob) => {
-          const arrayBuffer = await blob.arrayBuffer();
-          console.log('ArrayBuffer:', arrayBuffer);
-
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(arrayBuffer);
-
-          const worksheet = workbook.worksheets[0];
-          if (!worksheet) {
-            throw new Error('Worksheet not found');
+      const blob = await firstValueFrom(this.configurationService.getDatafromUrl(url));
+      const arrayBuffer = await blob.arrayBuffer();
+      console.log('ArrayBuffer:', arrayBuffer);
+  
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(arrayBuffer);
+  
+      const worksheet = workbook.worksheets[0];
+      if (!worksheet) {
+        throw new Error('Worksheet not found');
+      }else this.hiddenSpinner();
+  
+      worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
+        this.headers[colNumber - 1] = cell.value !== null ? String(cell.value) : `Column ${colNumber}`;
+      });
+  
+      worksheet.eachRow((row: any, rowIndex: any) => {
+        if (rowIndex === 1) return;
+        const rowData: any = {};
+        row.eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
+          let cellValue = cell.value;
+          if (cellValue === null) {
+            cellValue = 'New Value';
+            switch (typeof cellValue) {
+              case 'string':
+                cellValue = cellValue.trim();
+                break;
+              case 'number':
+                cellValue = Number(cellValue);
+                break;
+              case 'boolean':
+                cellValue = cellValue ? 'Yes' : 'No';
+                break;
+              default:
+                cellValue = String(cellValue);
+            }
           }
-
-          console.log('Workbook:', workbook);
-          console.log('Worksheet:', worksheet);
-
-          worksheet
-            .getRow(1)
-            .eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
-              this.headers[colNumber - 1] =
-                cell.value !== null
-                  ? String(cell.value)
-                  : `Column ${colNumber}`;
-            });
-
-          worksheet.eachRow((row: any, rowIndex: any) => {
-            if (rowIndex === 1) return;
-            const rowData: any = {};
-            row.eachCell(
-              { includeEmpty: true },
-              (cell: any, colNumber: any) => {
-                let cellValue = cell.value;
-                if (cellValue === null) {
-                  cellValue = 'New Value';
-                  switch (typeof cellValue) {
-                    case 'string':
-                      cellValue = cellValue.trim();
-                      break;
-                    case 'number':
-                      cellValue = Number(cellValue);
-                      break;
-                    case 'boolean':
-                      cellValue = cellValue ? 'Yes' : 'No';
-                      break;
-                    default:
-                      cellValue = String(cellValue);
-                  }
-                }
-                rowData[this.headers[colNumber - 1]] = cellValue;
-              }
-            );
-            this.excelData.push(rowData);
-          });
-        },
-        (error) => {
-          console.error('Error downloading file:', error);
-        }
-      );
+          rowData[this.headers[colNumber - 1]] = cellValue;
+        });
+        this.excelData.push(rowData);
+      });
     } catch (error) {
       console.error('Error fetching or parsing file:', error);
-    } finally {
-      this.hiddenSpinner();
     }
   }
 
@@ -156,23 +211,23 @@ export class ConfigurationComponent implements OnInit {
     this.spinner.show('configuration', {
       type: 'ball-beat',
       size: 'medium',
-      bdColor: 'rgba(255,255,255, .8)',
+      bdColor: 'rgba(255,255,255, .9)',
       color: 'black',
       fullScreen: false,
     });
   }
   hiddenSpinner() {
-    this.spinner.hide('configuration');
+    setTimeout(() => {
+      this.spinner.hide('configuration');
+    },1000)
   }
 
-  openUploadFile(category: string, name: string) {
+  openUploadFile(category: string, name: string,type:string) {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
     }
-    const _category = this.configurations.find((cat) => cat.name == category);
-    const _name = _category?.children?.find((cat) => cat.name == name)?.name;
-    if (_name) console.error('check before open modal', _category, _name);
+
     const dialogRef = this.ngbModal.open(UploadFileComponent, {
       centered: true,
       animation: true,
@@ -184,16 +239,51 @@ export class ConfigurationComponent implements OnInit {
       },
     });
 
-    dialogRef.componentInstance.name = _name;
-
+    dialogRef.componentInstance.category = category;
+    dialogRef.componentInstance.type = type;
+    dialogRef.componentInstance.name = name;
     dialogRef.result
-      .then((confirmed: boolean) => {
-        if (confirmed) {
-          this.showSpinner();
+      .then((file: File) => {
+        if (file) {
+          this.uploadFile(category,name,type,file);
+          
         }
       })
       .catch((error) => {
         console.error('Dialog was dismissed:', error);
       });
+   
+  }
+uploadFile(category: string, name: string,type:string,file:File){
+  console.log(category,name,type,file);
+  this.showSpinner();
+  if(type=== 'actualLocation') {
+    
+    this.configurationService.uploadActualLocation(file).subscribe(
+      response=>{
+        console.log(response);
+        this.hiddenSpinner();
+      }
+    );
+
+  }else if(type=== 'configuration') {
+    const configuration = this.configurationAllData.configurations.find((cat) => cat.name == name);
+    console.info('check before upload', configuration);
+    if (configuration) {
+
+this.configurationService.uploadConfiguration(file,configuration.category,configuration.type).subscribe(
+      response=>{
+        console.log(response);
+        this.hiddenSpinner();
+      }
+    );
+    }
+      
+
+
   }
 }
+
+
+}
+

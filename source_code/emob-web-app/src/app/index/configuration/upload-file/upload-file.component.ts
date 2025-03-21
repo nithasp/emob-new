@@ -17,6 +17,8 @@ import { DetailsDialogComponent } from '../../components/details-dialog/details-
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UploadFileComponent implements OnInit {
+  @Input() category: string = '';
+  @Input() type: string = '';
   @Input() name: string = '';
 
   public requiredFileType: string = '.xlsx, .xls';
@@ -75,13 +77,14 @@ export class UploadFileComponent implements OnInit {
       animation: true,
     });
     dialogRef.componentInstance.title = 'Upload File Confirmation';
-    dialogRef.componentInstance.question = `Confirm to upload ${file.name} to ${name} Category ?`;
-    dialogRef.componentInstance.message = `If you upload ${file.name} to the incorrect ${name} category, it will affect your route planning AI service.`;
+    dialogRef.componentInstance.question = `Confirm to upload ${file.name} to category ?`;
+    dialogRef.componentInstance.message = `If you upload ${file.name} to the incorrect category, it will affect your route planning AI service.`;
 
     dialogRef.result.then((confirmed: boolean) => {
       console.log(`uploadFile: confirmed = ${confirmed}`);
       if (confirmed) {
         console.log('confirmed');
+        this.activeModal.close(file);
       }
     });
   }

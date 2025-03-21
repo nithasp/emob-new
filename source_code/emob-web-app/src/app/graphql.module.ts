@@ -29,7 +29,7 @@ if (!environment.production) {
       useFactory: () => {
         const httpLink = inject(HttpLink);
         const httpsUrl = httpLink.create({ 
-          uri: environment.apiConfig.uri,
+          uri: environment.graphqlConfig.uri,
           extractFiles: (body: Record<string, any>) => extractFiles(body, isExtractableFile)
         
         });
@@ -45,7 +45,7 @@ if (!environment.production) {
         });
         const removeTypenameLink = removeTypenameFromVariables();
         const uploadLink = createUploadLink({
-          uri: environment.apiConfig.uri,
+          uri: environment.graphqlConfig.uri,
           extractFiles: (body: Record<string, any>) => extractFiles(body, isExtractableFile),
         });
         const authLink = httpsUrl.concat(uploadLink)

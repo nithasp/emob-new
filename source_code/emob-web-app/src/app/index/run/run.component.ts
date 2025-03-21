@@ -248,7 +248,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         });
     });
 
-    this.constraintService.getParameter().subscribe((response: Constraint) => {
+    this.constraintService.getMyParameter().subscribe((response: Constraint) => {
       this.constraintsData = { ...response };
       console.log(this.constraintsData);
     });

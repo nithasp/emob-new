@@ -5,9 +5,20 @@
         <mat-icon>add</mat-icon>
         New
       </button>
-      <button mat-raised-button  class="ml-3 bg-custom-secondary">
+      <button mat-raised-button  class="ml-3 bg-custom-secondary"
+      [hidden]="!isSelectedStatusValue('Succeeded') && !isSelectedStatusValue('Canceled')">
         <mat-icon>content_copy</mat-icon>
         Clone Previous
+      </button>
+      <button mat-raised-button  class="ml-3 bg-custom-secondary"
+      [hidden]="!isSelectedStatusValue('Canceled') && !isSelectedStatusValue('Failed')">
+        <mat-icon>replay</mat-icon>
+        Rerun
+      </button>
+      <button mat-raised-button  class="ml-3 bg-custom-secondary"
+      [hidden]="!isSelectedStatusValue('Queued')">
+        <mat-icon>block</mat-icon>
+        Cancel
       </button>
     </div>
     <div class="col-12">
@@ -20,7 +31,11 @@
           #input />
       </mat-form-field>
       <div class="text-right border-bottom">
-        <button mat-button [matMenuTriggerFor]="menu" class="table-config-menu">
+        <button mat-icon-button class="custom-icon-button mr-4"  
+        (click)="loadData()">
+          <mat-icon>refresh</mat-icon>
+        </button>
+        <button mat-button [matMenuTriggerFor]="menu">
           <mat-icon >view_list</mat-icon>
           Edit Columns
           <mat-menu #menu="matMenu">
@@ -39,16 +54,14 @@
     </div>
     <div class="col-12 ">
 
-      <div class="table-container p-md-2" style="height: 700px;">
+      <div class="table-container p-md-2 " style="height: 700px;">
+        <ngx-spinner name="experiment">
+          <p class="h-3">reloading ...</p>
+        </ngx-spinner>
         <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 "
           multiTemplateDataRows>
           <ng-container matColumnDef="select">
             <th mat-header-cell *matHeaderCellDef>
-              <mat-checkbox color="primary" (change)="$event ? toggleAllRows() : null"
-                [checked]="selection.hasValue() && isAllSelected()"
-                [indeterminate]="selection.hasValue() && !isAllSelected()"
-                [aria-label]="checkboxLabel()">
-              </mat-checkbox>
             </th>
             <td mat-cell *matCellDef="let row">
               <mat-checkbox color="primary" (click)="$event.stopPropagation()"
@@ -69,9 +82,27 @@
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
             <td mat-cell *matCellDef="let element">
-              <mat-icon class="icon-custom-primary"
-                style="float: right;">replay</mat-icon> <mat-icon
-                class="icon-custom-primary" style="float: right;">list_alt</mat-icon>
+              
+              <button mat-icon-button class="custom-icon-button"
+              placement="top"
+              [ngbTooltip]="'Consumption'">
+                <mat-icon class="icon-custom-primary" style="float: right;">
+                  receipt_long</mat-icon>
+              </button>
+              <button mat-icon-button class="custom-icon-button ml-2"
+              [hidden]="element.status !=='Failed' && element.status !=='Canceled'"
+              placement="top"
+              [ngbTooltip]="'Rerun'">
+                <mat-icon class="icon-custom-primary"
+                style="float: right;">replay</mat-icon> 
+              </button>
+              <button mat-icon-button class="custom-icon-button ml-2"
+              [hidden]="element.status !=='Queued'"
+              placement="top"
+              [ngbTooltip]="'Cancel'">
+                <mat-icon class="icon-custom-primary"
+                style="float: right;">block</mat-icon> 
+              </button>
             </td>
           </ng-container>
 
@@ -132,8 +163,16 @@
           </ng-container>
           <ng-container matColumnDef="parameter">
             <th mat-header-cell *matHeaderCellDef> Parameter </th>
-            <td mat-cell *matCellDef="let element" class="text-center">
-              <mat-icon class="icon-custom-primary">list_alt</mat-icon> </td>
+            <td mat-cell *matCellDef="let element" >
+               
+              <button mat-icon-button class="custom-icon-button ml-2"
+              
+              placement="top"
+              [ngbTooltip]="'Parameters'"
+              (click)="getParameter(element.runId)">
+              <mat-icon class="icon-custom-primary">list_alt</mat-icon>
+              </button>
+            </td>
           </ng-container>
           <ng-container matColumnDef="RunId">
             <th mat-header-cell *matHeaderCellDef> Run ID </th>
@@ -146,7 +185,7 @@
 
           <tr mat-header-row *matHeaderRowDef="getDisplayedColumns()">
           </tr>
-          <tr mat-row *matRowDef="let row; columns: getDisplayedColumns()" class="hover-row"></tr>
+          <tr mat-row *matRowDef="let row; columns: getDisplayedColumns()" class="hover-row "></tr>
 
         </table>
       </div>

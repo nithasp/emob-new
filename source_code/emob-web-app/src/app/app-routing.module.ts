@@ -2,8 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { RoleGuard } from './guards/role.guard';
 import { BrowserUtils } from '@azure/msal-browser';
-import { roles } from './auth-config';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
+import { environment } from 'src/environments/environment';
 
 export const routes: Routes = [
     {
@@ -11,7 +11,7 @@ export const routes: Routes = [
       loadChildren: () => import("./index/index.module").then(m => m.IndexModule),
       canActivate: [RoleGuard],
       data : {
-        expectedRoles: [roles.UserRole]
+        expectedRoles: [environment.roles.UserRole]
       }
     },
     { path: 'unauthorized', component: UnauthorizedComponent },

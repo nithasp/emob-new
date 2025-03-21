@@ -49,7 +49,7 @@ import { UploadFileComponent } from './configuration/upload-file/upload-file.com
     CustomerListComponent,
     FilterPipe,
     ResizableDirective,
-    UploadFileComponent
+    UploadFileComponent,
   ],
   imports: [
     IndexRoutingModule,

@@ -8,7 +8,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class DetailsDialogComponent {
   @Input() title: string = "Confirm Action";
-  @Input() message?: string | string[];
+  @Input() message?: string | string[] = 'No information';
   constructor(
     private readonly activeModal: NgbActiveModal
   ) {

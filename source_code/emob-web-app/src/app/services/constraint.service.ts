@@ -14,7 +14,7 @@ export class ConstraintService {
 
   constructor(private readonly apollo : Apollo) { }
 
-  getParameter():Observable<Constraint>{
+  getMyParameter():Observable<Constraint>{
     return this.apollo.query<Response>({
       query: gql`
       query MyParameter {
@@ -32,6 +32,30 @@ export class ConstraintService {
     `
     }).pipe(
       map(result => result.data.myParameter)
+    )
+  }
+
+  getParameter(runID:string):Observable<Constraint>{
+    return this.apollo.query<Response>({
+      query: gql`
+      query parameter($runID:String!){
+        parameter(experimentRunID: $runID) {
+          earlyDeliveryTime
+          backToDepotTime
+          maximumWorkDuration
+          numberOfVehicleAvailable
+          vehicleOrderSizeCapacity
+          maximumTravelDistance
+          serviceDurationTime
+        }
+      }
+    
+    `,
+    variables:{
+      runID:runID
+    }
+    }).pipe(
+      map(result => result.data.parameter)
     )
   }
 

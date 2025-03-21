@@ -1,4 +1,6 @@
-{
+{   
+    "typescript.validate.enable": true,
+    "typescript.tsserver.experimental.enableProjectDiagnostics": true,
     "docwriter.progress.trackFunctions": true,
     "docwriter.progress.trackMethods": false,
     "docwriter.progress.trackClasses": true,

@@ -11,6 +11,10 @@ export const environment = {
     scopes: ['ENTER_SCOPE'],
     uri: 'ENTER_URI',
   },
+  graphqlConfig {
+    scopes: ['ENTER_SCOPE'],
+    uri: 'ENTER_URI',
+  },
   roles : {
     AdminRole: "ADMIN",
     UserRole: "USER"
