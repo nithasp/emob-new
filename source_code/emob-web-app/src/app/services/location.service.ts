@@ -17,7 +17,10 @@ import { HttpClient } from '@angular/common/http';
 
 
    public getJSON(): Observable<any> {
-    return this.http.get("./assets/sample_list_of_geojson.json");
+    return this.http.get("./assets/depots_routes_geo.json");
 }
+  getReport(): Observable<any> {
+    return this.http.get('./assets/report_20250323_180154.csv', { responseType: 'text' })
+  }
   
 }

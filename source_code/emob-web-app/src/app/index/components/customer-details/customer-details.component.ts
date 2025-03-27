@@ -25,7 +25,7 @@ import { ToastrService } from 'ngx-toastr';
   selector: 'app-customer-details',
   templateUrl: './customer-details.component.html',
   styleUrl: './customer-details.component.scss',
-  changeDetection: ChangeDetectionStrategy.Default
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges {
   @Input() dataPreOder!: DetailsPreOder;

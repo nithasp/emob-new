@@ -104,3 +104,9 @@ td , th {
   width: auto; /* Adjust width if needed */
   height: auto; /* Adjust height if needed */
 }
+
+.text-table-container {
+  width: 50%;
+  margin: 0 auto; /* Horizontal centering */
+  text-align: center;
+}

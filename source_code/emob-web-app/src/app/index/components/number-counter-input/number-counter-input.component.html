@@ -1,19 +1,24 @@
 <div class="counter-container">
-    <button mat-mini-fab
+  <button mat-mini-fab
     class="mat-button"
-      (click)="remove()"
-      aria-label="Reduce counter"
-    ><mat-icon>remove</mat-icon>
-    </button>
-    <div class="counter-value">
-      <input  type="number" class="form-control" [(ngModel)]="value" [max]="maxValue" [min]="minValue"
-      (ngModelChange)="onChange($event)">
-    </div>
-    <button mat-mini-fab
-    class="mat-button"
-      (click)="add()"
-      aria-label="Increase counter"
-    ><mat-icon>add</mat-icon>
-    </button>
+    (click)="remove()"
+    aria-label="Reduce counter">
+    <mat-icon>remove</mat-icon>
+  </button>
+  <div class="counter-value">
+    <input type="number" class="form-control" [(ngModel)]="value" [max]="maxValue" [min]="minValue"
+      (ngModelChange)="onChangeValue($event)">
   </div>
+  <button mat-mini-fab
+    class="mat-button"
+    (click)="add()"
+    aria-label="Increase counter">
+    <mat-icon>add</mat-icon>
+  </button>
   
+</div>
+<ng-container *ngIf="value >= maxValue || value <= minValue">
+  <mat-error class="text-danger mt-2" [style]="{'font-size': '12px'}">
+    Minimum {{minValue}} and Maximum {{maxValue}}
+  </mat-error>
+</ng-container>

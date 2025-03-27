@@ -1,7 +1,3 @@
-export interface UploadPreOrder {
-    validateMessage: ValidateMessage;
-}
-
 export interface ValidateMessage {
     filtersMessage: FiltersMessage;
     warningMessage: WarningMessage;

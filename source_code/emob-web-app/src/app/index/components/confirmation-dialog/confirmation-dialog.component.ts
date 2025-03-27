@@ -10,6 +10,9 @@ export class ConfirmationDialogComponent implements OnInit {
   @Input() title: string = "Confirm Action";
   @Input() message?: string;
   @Input() question?: string;
+  @Input() acceptButton: string = 'Confirm';
+  @Input() disableCancelButton: boolean = false;
+
   constructor(
     private activeModal: NgbActiveModal
   ) {

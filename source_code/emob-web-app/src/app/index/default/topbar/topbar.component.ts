@@ -3,6 +3,8 @@ import { GuardsCheckEnd, NavigationEnd, Router, Scroll } from '@angular/router';
 import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalService } from '@azure/msal-angular';
 import { InteractionType } from '@azure/msal-browser';
 import { UserADProfile } from 'src/app/models/profile.model';
+import { version } from 'package.json'
+
 @Component({
   selector: 'app-topbar',
   templateUrl: './topbar.component.html',
@@ -11,6 +13,7 @@ import { UserADProfile } from 'src/app/models/profile.model';
 export class TopbarComponent implements OnInit{
   @Input() public userADprofile?: UserADProfile;
   public activeRoute: string;
+  version: string = version;
 
   constructor(
     private readonly router: Router,

@@ -1,27 +1,14 @@
 import { Customer, Depot } from './pre-order.model';
 
-export interface Experiment {
-  groupId: string;
-  name: string;
-  run: 'Original' | 'Rerun';
+export interface ExperimentState {
   runId: string;
-  status:StatusExperiment;
-  timeDuration: string;
-  timeEnd: string;
-  timeStart: string;
-  timestamp: string;
-  triggeredBy: string;
-}
-enum StatusExperiment {
-  Succeeded = 'Succeeded',
-  InProgress = 'In Progress',
-  Queued = 'Queued',
-  Failed = 'Failed',
-  Canceled = 'Canceled',
-  Initializing = 'Initializing',
+  status: string;
+  groupId: string;
+  statusCode: string;
+  message: string;
 }
 
-export interface ValidateExperiment {
+export interface Experiment {
   companyName: string;
   runId: string;
   name: string;
@@ -34,25 +21,38 @@ export interface ValidateExperiment {
   locationBlobPath: string;
   validatedBlobPath: string;
   outputRouteOptimizationBlobPath: string;
-  timeStart: string;
-  timeEnd: string;
+  timeStart: Date;
+  timeEnd: Date;
   timeDuration: string;
   triggeredBy: string;
-  status: string;
-  run: string;
+  triggeredByName: string;
+  status: StatusExperiment;
+  run: 'Original' | 'Rerun';
   groupId: string;
   countGeocoding: string;
   countReroute: string;
   result: Result;
   fileUrl: FileURL;
 }
+
+export enum StatusExperiment {
+  Succeeded = 'Succeeded',
+  InProgress = 'InProgress',
+  Queued = 'Queued',
+  Failed = 'Failed',
+  Canceled = 'Canceled',
+  Initializing = 'Initializing',
+}
+
 interface FileURL {
   parameterUrl: string;
   preOrderUrl: string;
   outputRouteOptimizationBlobPathUrl: string;
   LocationBlobPathUrl: string;
+  locationUpdateBlobPathUrl: string;
+  validatedBlobPathUrl: string;
 }
-interface Result {
+export interface Result {
   customers: Customer[];
   depots: Depot[];
   validate: Validate;

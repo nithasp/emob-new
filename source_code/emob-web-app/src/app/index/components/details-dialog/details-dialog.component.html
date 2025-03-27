@@ -8,8 +8,8 @@
     <mat-dialog-content class="ml-3">
         @if(isArray(message)){
         <div class="row">
-            <div class="col-md-6" *ngFor="let error of messageArray">
-                <p class="text-break">{{ error }}</p>
+            <div class="col-md-6" *ngFor="let mes of messageArray">
+                <p class="text-break ">{{ mes }}</p>
             </div>
         </div>
 
@@ -17,7 +17,7 @@
         <p class="text-center ml-3">{{ message }}</p>
         
         }
-            <p class="text-center ml-3 text-secondary h-2 mt-5 mb-5" [hidden]="message !=''" >No information</p>
+            <p class="text-center ml-3 text-secondary h-2 mt-5 mb-5" [hidden]="message !=''" >No Information</p>
 
         
        

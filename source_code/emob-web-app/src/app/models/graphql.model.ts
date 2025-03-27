@@ -1,26 +1,35 @@
 import { ActualLocation, Configuration } from './configuration.model';
-import { Constraint  } from './constraint.model';
-import { Experiment, ValidateExperiment } from './experiment.model';
-import { UploadPreOrder } from './pre-order.model';
+import { Constraint } from './constraint.model';
+import { Experiment, ExperimentState } from './experiment.model';
 
 export interface Response {
-    timestamp: string;
-    status_code: number;
-    status_message: string;
-    error: any;
-    myParameter : Constraint,
-    parameter: Constraint,
-    experiments : [Experiment]
-    createExperiment: Experiment
-    experiment : Experiment
-    updateParameter : Constraint
-    uploadPreOrder : UploadPreOrder
-    validateExperiment : ValidateExperiment
-    submitExperiment: Experiment,
-    configurations:[Configuration],
-    configuration : Configuration,
-    replaceTypeOfCategory: Configuration,
-    actualLocations: [ActualLocation],
-    actualLocation: ActualLocation,
-    uploadActualLocation: ActualLocation
-  }
+  timestamp: string;
+  status_code: number;
+  status_message: string;
+  errors: Error[];
+  myParameter: Constraint;
+  parameter: Constraint;
+  experiments: [Experiment];
+  createExperiment: Experiment;
+  experiment: Experiment;
+  rerunExperiment: ExperimentState;
+  cancelExperiment: ExperimentState;
+  replicateExperiment: Experiment;
+  updateParameter: Constraint;
+  uploadPreOrder: Experiment;
+  validateExperiment: Experiment;
+  submitExperiment: Experiment;
+  configurations: [Configuration];
+  configuration: Configuration;
+  replaceTypeOfCategory: Configuration;
+  actualLocations: [ActualLocation];
+  actualLocation: ActualLocation;
+  uploadActualLocation: ActualLocation;
+}
+
+export interface Error {
+  message: string;
+  timestamp: string;
+  statusCode: number;
+}
+

@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { UploadPreOrder } from '../models/pre-order.model';
 import { Response } from '../models/graphql.model';
 import gql from 'graphql-tag';
 import { Apollo } from 'apollo-angular';
+import { Experiment } from '../models/experiment.model';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,7 @@ import { Apollo } from 'apollo-angular';
 export class PreOrderService {
   constructor(private readonly apollo: Apollo) { }
 
-  uploadPreOrder(runId: string, file: File): Observable<UploadPreOrder> {
+  uploadPreOrder(runId: string, file: File): Observable<Experiment> {
     console.log("file", file);
 
     return this.apollo.mutate<Response>({

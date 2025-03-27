@@ -1,71 +1,83 @@
-::ng-deep .mat-form-field-flex>.mat-form-field-infix {
-    padding: 0.6em 0px !important;
+::ng-deep .mat-form-field-flex > .mat-form-field-infix {
+  padding: 0.6em 0px !important;
 }
-.navbar-toggler>.close {
-    display: inline;
+.navbar-toggler > .close {
+  display: inline;
+}
+.navbar-nav .dropdown-menu {
+  position: absolute;
+}
+.navbar {
+  -webkit-box-shadow: 0 8px 6px -6px #999;
+  -moz-box-shadow: 0 8px 6px -6px #999;
+  box-shadow: 0 8px 6px -6px #999;
+  /* the rest of your styling */
 }
 
-.navbar-toggler.collapsed>.close,
-.navbar-toggler:not(.collapsed)>.navbar-toggler-icon {
-    display: none;
+.navbar-nav .dropdown-menu {
+  position: absolute !important;
+}
+
+.navbar-toggler.collapsed > .close,
+.navbar-toggler:not(.collapsed) > .navbar-toggler-icon {
+  display: none;
 }
 
 .bg-alert {
-    background: #e02316ec;
+  background: #e02316ec;
 }
 
 .light-blue-backdrop {
-    background-color: #5cb3fd;
+  background-color: #5cb3fd;
 }
 
 .modal-header {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .container-inline {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
-.container-inline>* {
-    width: 100%;
+.container-inline > * {
+  width: 100%;
 }
 
 .logo {
-    font-size: 15px;
+  font-size: 15px;
 }
 
 .dropdown-toggle-custom::after {
-    display: inline-block;
-    margin-left: .255em;
-    vertical-align: .255em;
-    content: "";
-    border-top: none;
-    border-right: none;
-    border-bottom: 0;
-    border-left: none;
+  display: inline-block;
+  margin-left: 0.255em;
+  vertical-align: 0.255em;
+  content: "";
+  border-top: none;
+  border-right: none;
+  border-bottom: 0;
+  border-left: none;
 }
 
 .nav-item.active {
-    transition: border-width 0.4s linear;
-    border-bottom: solid 4px rgb(55, 28, 210);
+  transition: border-width 0.4s linear;
+  border-bottom: solid 4px #04948c;
 }
 
 .blue-backdrop.modal-backdrop {
-    background-color: #5cb3fd;
-    opacity: 1.0 !important;
+  background-color: #5cb3fd;
+  opacity: 1 !important;
 }
 .dropdown-menu {
-    width: 100%;
+  width: 100%;
 }
 
 @media screen and (max-width: 992px) {
-    .dropdown-menu {
-        width: 100%;
-    }
-    a {
-        font-family: Kanit;
-        font-size: 15px;
-    }
+  .dropdown-menu {
+    width: 100%;
+  }
+  a {
+    font-family: Kanit;
+    font-size: 15px;
+  }
 }
-

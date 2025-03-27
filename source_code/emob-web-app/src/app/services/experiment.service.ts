@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import gql from 'graphql-tag';
 
 import { Response } from '../models/graphql.model';
-import { Experiment, ValidateExperiment } from '../models/experiment.model';
+import { Experiment, ExperimentState } from '../models/experiment.model';
 import { Constraint } from '../models/constraint.model';
 import { Location } from '../models/location.model';
 import { CustomerUpdated } from '../models/pre-order.model';
@@ -29,9 +29,12 @@ export class ExperimentService {
           timeEnd
           timeDuration
           triggeredBy
+          triggeredByName
           status
           run
           groupId
+          countGeocoding
+          countReroute
         }
       }
     `,
@@ -52,20 +55,33 @@ export class ExperimentService {
     }).pipe(map(result => result.data!.createExperiment));
   }
   getExperiment(runId:string):Observable<Experiment>{
-    return this.apollo.query<Response>({
+    return this.apollo.watchQuery<Response>({
       query: gql`
       query experiment($Id:RunIdInput!){
         experiment(input: $Id) {
           runId
           name
           timestamp
-          timeStart
-          timeEnd
-          timeDuration
+          preOrderBlobPath
+          locationBlobPath
+          locationUpdateBlobPath
+          validatedBlobPath
+          parameterBlobPath
+          outputRouteOptimizationBlobPath
           triggeredBy
+          timeEnd
+          timeStart
           status
           run
           groupId
+          fileUrl {
+            parameterUrl
+            preOrderUrl
+            outputRouteOptimizationBlobPathUrl
+            LocationBlobPathUrl
+            locationUpdateBlobPathUrl
+            validatedBlobPathUrl
+          }
         }
       }
       `,
@@ -74,10 +90,11 @@ export class ExperimentService {
           runId : runId
         }
         
-      }
-    }).pipe(map(result => result.data.experiment));
+      },
+      fetchPolicy: 'cache-and-network'
+    }).valueChanges.pipe(map(result => result.data.experiment));
   }
-  validateExperiment(runId: string,parameter:Constraint,locationUpdated:CustomerUpdated[]):Observable<ValidateExperiment>{
+  validateExperiment(runId: string,parameter:Constraint,locationUpdated:CustomerUpdated[]):Observable<Experiment>{
     return this.apollo.mutate<Response>({
       mutation: gql`
       mutation validateExperiment($validateInput:ExperimentInputValidation!){
@@ -94,7 +111,12 @@ export class ExperimentService {
             }
           }
         }
-    }).pipe(map(result => result.data!.validateExperiment));
+    }).pipe(map(result => result.data!.validateExperiment),
+    catchError(error => {
+      console.error('Error occurred:', error);
+      return throwError(() => new Error('Failed to validate experiment'));
+    })
+);
 
   }
   submitExperiment(runId: string):Observable<Experiment>{
@@ -109,6 +131,7 @@ export class ExperimentService {
           timeEnd
           timeDuration
           triggeredBy
+          triggeredByName
           status
           run
           groupId
@@ -122,6 +145,65 @@ export class ExperimentService {
           
         }
     }).pipe(map(result => result.data!.submitExperiment));
+
+  }
+
+
+  rerunExperiment(runId: string):Observable<ExperimentState>{
+    return this.apollo.mutate<Response>({
+      mutation: gql`
+      mutation rerunExperiment($runId: String!){
+        rerunExperiment(runId: $runId) {
+          runId
+          message
+          statusCode
+          status
+          groupId
+        }
+      }
+      
+      `,
+        variables: {
+            runId : runId
+        }
+    }).pipe(map(result => result.data!.rerunExperiment));
+
+  }
+
+  cancelExperiment(runId: string):Observable<ExperimentState>{
+    return this.apollo.mutate<Response>({
+      mutation: gql`
+      mutation cancelExperiment($runId: String!){
+        cancelExperiment(runId: $runId) {
+          runId
+          message
+          statusCode
+          status
+          groupId
+        }
+      }
+      
+      `,
+        variables: {
+            runId : runId
+        }
+    }).pipe(map(result => result.data!.cancelExperiment));
+
+  }
+
+  replicateExperiment(runId: string):Observable<Experiment>{
+    return this.apollo.mutate<Response>({
+      mutation: gql`
+      mutation replicateExperiment($runId: String!){
+        replicateExperiment(runId: $runId) {
+          runId
+        }
+      }      
+      `,
+        variables: {
+            runId : runId
+        }
+    }).pipe(map(result => result.data!.replicateExperiment));
 
   }
 }

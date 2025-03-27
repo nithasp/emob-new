@@ -119,6 +119,7 @@ export class CustomerListComponent implements OnInit {
     this.selectedIndex =
       this.customersToVerify.findIndex((c) => c.name === customer.name) || 0;
     console.log('Selected customer:', this.selectedIndex);
+    this.selectData();
   }
 
   findLocationType(name: string): LocationType {

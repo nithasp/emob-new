@@ -1,10 +1,10 @@
-import { Component, forwardRef, Input } from '@angular/core';
+import { Component, EventEmitter, forwardRef, Input, Output } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
   selector: 'app-number-counter-input',
   templateUrl: './number-counter-input.component.html',
-  styleUrl: './number-counter-input.component.scss',
+  styleUrls: ['./number-counter-input.component.scss'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -19,61 +19,70 @@ export class NumberCounterInputComponent implements ControlValueAccessor {
   @Input() minValue: number = 100;
   @Input() count: number = 1;
   @Input() inputType: string = "number";
+  @Output() valueChange = new EventEmitter<number>();
 
-
-  onChange (value: any){
-    console.log(value);
-  };
-  onTouched = () => {};
+  onChange: any = () => {};
+  onTouched: any = () => {};
   protected touched = false;
   protected disabled = false;
 
-  valueChanged(): void {
+  onChangeValue(newValue: number): void {
+    if (newValue > this.maxValue) {
+      this.value = this.maxValue;
+    } else if (newValue < this.minValue) {
+      this.value = this.minValue;
+    } else {
+      this.value = newValue;
+    }
     this.onChange(this.value);
+    this.valueChange.emit(this.value);
   }
 
   add(): void {
     this.markAsTouched();
-    if (!this.disabled && Number(this.value)+ this.count <= this.maxValue) {
+    if (!this.disabled && Number(this.value) + this.count <= this.maxValue) {
       this.value = parseInt(this.value.toString(), 10) + this.count;
-      console.log(this.inputType);
-      if(this.inputType === "text"){
-        console.log("To string");
-        this.onChange(String(this.value));
-      }else this.onChange(this.value);
+      this.onChange(this.value);
+      this.valueChange.emit(this.value);
     }
   }
 
   remove(): void {
     this.markAsTouched();
-    if (!this.disabled && Number(this.value)- this.count >= this.minValue) {
+    if (!this.disabled && Number(this.value) - this.count >= this.minValue) {
       this.value = parseInt(this.value.toString(), 10) - this.count;
-      if(this.inputType === "text"){
-        this.onChange(String(this.value));
-      }else this.onChange(this.value);
+      this.onChange(this.value);
+      this.valueChange.emit(this.value);
     }
   }
 
-  writeValue(value: number) {
-    this.value = value;
+  writeValue(value: number): void {
+    if (value > this.maxValue) {
+      this.value = this.maxValue;
+    } else if (value < this.minValue) {
+      this.value = this.minValue;
+    } else {
+      this.value = value;
+    }
+    this.valueChange.emit(this.value);
   }
 
-  registerOnChange(onChange: (value: number) => void) {
+  registerOnChange(onChange: (value: number) => void): void {
     this.onChange = onChange;
   }
 
-  registerOnTouched(onTouched: () => void) {
+  registerOnTouched(onTouched: () => void): void {
     this.onTouched = onTouched;
   }
 
-  markAsTouched() {
+  markAsTouched(): void {
     if (!this.touched) {
       this.onTouched();
       this.touched = true;
     }
   }
 
-  setDisabledState(disabled: boolean) {
+  setDisabledState(disabled: boolean): void {
     this.disabled = disabled;
   }
 }

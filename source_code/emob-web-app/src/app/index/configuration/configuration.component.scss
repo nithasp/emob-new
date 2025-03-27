@@ -1,19 +1,5 @@
-
-.container-resizable {
-  display: flex;
-  justify-content: flex-start;
-  flex-direction: row;
-}
-
-.explorer-container {
-  height: 800px;
-  width: 100%;
-  max-width: 100%;
-  overflow: auto;
-}
-
 .table-responsive {
-  height:100%;
+  height:700px;
   width:100%;
   overflow:auto;
 }
@@ -32,7 +18,6 @@
 tr:nth-child(even) {
   background-color: #D6EEEE;
 }
-
 .container-preview {
   text-align: center;
   padding: 20px;
@@ -42,6 +27,10 @@ tr:nth-child(even) {
   justify-content: center;
   align-items: center;
 }
+.custom-overlay-container {
+  z-index: 1000; /* Adjust the value as needed */
+}
+
 
 .active {
   background-color: #d3d3d3; /* Change this to your desired color */

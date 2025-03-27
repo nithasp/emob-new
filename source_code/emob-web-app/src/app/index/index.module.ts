@@ -28,6 +28,9 @@ import { CustomerListComponent } from './components/customer-list/customer-list.
 import { FilterPipe } from '../directives/filter-pipe.directive';
 import { ResizableDirective } from '../directives/resizable.directive';
 import { UploadFileComponent } from './configuration/upload-file/upload-file.component';
+import { MapDetailsDialogComponent } from './components/map-details-dialog/map-details-dialog.component';
+import { OverlayModule } from '@angular/cdk/overlay';
+
 @NgModule({
   declarations: [
     IndexComponent,
@@ -50,6 +53,7 @@ import { UploadFileComponent } from './configuration/upload-file/upload-file.com
     FilterPipe,
     ResizableDirective,
     UploadFileComponent,
+    MapDetailsDialogComponent
   ],
   imports: [
     IndexRoutingModule,
@@ -63,7 +67,8 @@ import { UploadFileComponent } from './configuration/upload-file/upload-file.com
     PopoverModule,
     Arrow,
     NgxSpinnerModule,
-    NgbTooltipModule
+    NgbTooltipModule,
+    OverlayModule
     
   ],
   schemas :[CUSTOM_ELEMENTS_SCHEMA ],

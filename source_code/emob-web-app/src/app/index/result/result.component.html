@@ -1,109 +1,152 @@
 <div class="card mt-2 container-fluid main_container">
-    <div class="row mt-5 justify-content-center">
-        <div class="col-md-6">
-            
-                <table mat-table
-                [dataSource]="dataSource" multiTemplateDataRows
-                class="mat-elevation-z8">
-                @for (column of columnsToDisplay; track column) {
-                <ng-container matColumnDef="{{column}}">
-                    <th mat-header-cell *matHeaderCellDef> {{column}} </th>
-                    <td mat-cell *matCellDef="let element"> {{element[column]}}
-                    </td>
-                </ng-container>
+  <div class="row mt-5 justify-content-center">
+    <div class="col-md-10">
+      <div class="d-flex justify-content-between align-items-center mb-5">
+        <p class="mb-0">Duration time:
+          @if(haveTime() && experiment){
+            {{calculateDuration((experiment.timeStart), experiment.timeEnd) | date:'mm\' minutes\' ss\' seconds\''}}
+          }@else{
+            none
+          }
+          </p>
+        <div class="d-flex justify-content-center">
+          <button mat-raised-button class="bg-custom-primary btn btn-sm mr-3">
+            <mat-icon>replay</mat-icon>
+            Try to Rerun
+          </button>
+          <button mat-raised-button class="bg-custom-secondary btn btn-sm">
+            <mat-icon>download</mat-icon>
+            Routing plan
+          </button>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+          <thead class="thead-dark">
+            <tr>
+              <th *ngFor="let col of headers" scope="col"
+                class="text-capitalize">{{ col.replaceAll('_'," ") }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of paginatedData">
+              <td *ngFor="let col of headers"
+                [ngClass]="{'td-warning': row[col] === null || '' || row[col] === undefined}">
+                @if(isNumber(row[col])){
+                {{ row[col] | number:'1.0-2' }}
+                }@else{
+                {{ row[col] }}
                 }
-                <ng-container matColumnDef="expand">
-                    <th mat-header-cell *matHeaderCellDef
-                        aria-label="row actions">&nbsp;</th>
-                    <td mat-cell *matCellDef="let element">
-                        <button mat-icon-button aria-label="expand row"
-                            (click)="(expandedElement = expandedElement === element ? null : element); $event.stopPropagation()">
-                            @if (expandedElement === element) {
-                            <mat-icon>keyboard_arrow_up</mat-icon>
-                            } @else {
-                            <mat-icon>keyboard_arrow_down</mat-icon>
-                            }
-                        </button>
-                    </td>
-                </ng-container>
 
-                <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
-                <div cdkDropListGroup>
-                    <ng-container matColumnDef="expandedDetail">
-                        <td mat-cell *matCellDef="let element"
-                            [attr.colspan]="columnsToDisplayWithExpand.length">
-                            <div
-                                class="example-element-detail overflow-x-scroll"
-                                [@detailExpand]="isExpanded(element)"
-                                cdkScrollable>
-                                <div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-                                    <div
-                                        cdkDropList
-                                        [cdkDropListData]="element.DropPoints"
-                                        cdkDropListOrientation="horizontal"
-                                        class="example-list"
-                                        (cdkDropListDropped)="drop($event)">
-                                        @for (node of element.DropPoints; track node) {
-                                        <div class="example-box" cdkDrag>{{node}}</div>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </ng-container>
+      </div>
+      <ngb-pagination
+        [collectionSize]="dataSourceReport.length"
+        [(page)]="currentPage"
+        [pageSize]="pageSize"
+        [maxSize]="3"
+        [rotate]="true"
+        [boundaryLinks]="true">
+      </ngb-pagination>
+      <table mat-table [dataSource]="dataSource" multiTemplateDataRows
+        class="mat-elevation-z8" [hidden]="true">
+        <ng-container *ngFor="let column of columnsToDisplay"
+          [matColumnDef]="column">
+          <th mat-header-cell *matHeaderCellDef> {{column}} </th>
+          <td mat-cell *matCellDef="let element"> {{element[column]}}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expand">
+          <th mat-header-cell *matHeaderCellDef
+            aria-label="row actions">&nbsp;</th>
+          <td mat-cell *matCellDef="let element">
+            <button mat-icon-button aria-label="expand row"
+              (click)="toggleRow(element); $event.stopPropagation()">
+              <mat-icon *ngIf="expandedElement.includes(element)">keyboard_arrow_up</mat-icon>
+              <mat-icon *ngIf="!expandedElement.includes(element)">keyboard_arrow_down</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell *matCellDef="let element"
+            [attr.colspan]="columnsToDisplayWithExpand.length">
+            <div [@detailExpand]="isExpanded(element)">
+              <div>
+                <div *ngFor="let node of element.DropPoints"
+                  class="example-list">
+                  <div class="example-box">{{node}}</div>
                 </div>
-                <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
-                <tr mat-row
-                    *matRowDef="let element; columns: columnsToDisplayWithExpand;"
-                    class="example-element-row"
-                    [class.example-expanded-row]="expandedElement === element"
-                    (click)="toggleRow(element)">
-                </tr>
-                <tr mat-row *matRowDef="let row; columns: ['expandedDetail']"
-                    class="example-detail-row"></tr>
-            </table>
-            
-            
-            <mat-paginator [pageSizeOptions]="[5, 10, 20]"
-                 showFirstLastButtons
-                 aria-label="Select page of periodic elements">
-  </mat-paginator>
-            <!-- <mat-accordion [multi]="true">
-                <div cdkDropListGroup>
-                    @for (route of timePeriods; track $index) {
-                    <mat-expansion-panel (opened)="panelOpenState.set(true)"
-                        (closed)="panelOpenState.set(false)">
-                        <mat-expansion-panel-header>
-                            <mat-panel-title> Route #{{$index+1}} : {{$index*33/400*100 | number : '1.0-0'}} Points
-                            </mat-panel-title>
-                            <mat-panel-description>
-                          Duration xx:xx  Distance 123.32 km
-                            </mat-panel-description>
-                        </mat-expansion-panel-header>
-                        <div class="overflow-x-scroll" cdkScrollable>
+              </div>
+            </div>
+          </td>
+        </ng-container>
 
-                            <div
-                                cdkDropList
-                                [cdkDropListData]="route"
-                                cdkDropListOrientation="horizontal"
-                                class="example-list"
-                                [cdkDropListAutoScrollDisabled]="false"
-                                [cdkDropListAutoScrollStep]="35"
-                                (cdkDropListDropped)="drop($event,$index)">
-                                @for (node of route; track node) {
-                                <div class="example-box" cdkDrag>{{node}}</div>
-                                }
-                            </div>
-                        </div>
-                    </mat-expansion-panel>
-                    }
-                </div>
-            </mat-accordion> -->
-        </div>
-        <div class="col-md-6">
-            <div id="mapResult" class="map"></div>
-        </div>
+        <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
+        <tr mat-row
+          *matRowDef="let element; columns: columnsToDisplayWithExpand;"
+          [class.example-expanded-row]="expandedElement.includes(element)"
+          (click)="toggleRow(element)"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']"
+          class="example-detail-row"></tr>
+      </table>
 
+      <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
+        aria-label="Select page of periodic elements"
+        [hidden]="true"></mat-paginator>
     </div>
-</div>
+    <div class="col-md-10">
+      <div id="mapResult" class="map"></div>
+      <div id="popupMapResult" class="ol-popup">
+        <div id="popup-content" class="row justify-content-end"
+          style="font-size: smaller;" *ngIf="popupContent">
+          <p class="d-inline-block text-truncate mr-2"
+            *ngIf="popupContent?.route_index">
+            <strong>Route Index:</strong> {{popupContent?.route_index}}
+          </p>
+          <p class="d-inline-block text-truncate mr-2"
+            *ngIf="popupContent?.node_index">
+            <strong>Point Index : </strong> {{popupContent['node_index']}}
+          </p>
+          <p class="d-inline-block text-truncate mr-2"
+            *ngIf="popupContent?.route_order">
+            <strong>Route Order : </strong> {{popupContent['route_order']}}
+          </p>
+          <p class="d-inline-block text-truncate mr-2"
+            *ngIf="popupContent?.name">
+            <strong>ORDER ID : </strong> {{popupContent['name']}}
+          </p>
+          <p class="d-inline-block text-truncate mr-2"
+            *ngIf="popupContent?.num_customers">
+            <strong>Total Points : </strong>{{popupContent['num_customers']}}
+          </p>
+          <p class="d-inline-block text-truncate mr-2"
+            *ngIf="popupContent?.distance">
+            <strong>Distance : </strong> {{popupContent['distance'] | number:'1.2-2'}}
+            KM.
+          </p>
+          <p class="d-inline-block text-truncate mr-2"
+            *ngIf="popupContent?.duration">
+            <strong>Duration : </strong> {{(popupContent['duration']/60) |
+            number:'1.2-2' }} Hours.
+          </p>
+          <p class="d-inline-block text-truncate mr-2"
+            *ngIf="popupContent?.weight">
+            <strong>Weight : </strong> {{popupContent['weight'] | number:'1.2-2'}}
+            KG.
+          </p>
+          <p class="d-inline-block text-truncate mr-2"
+            *ngIf="popupContent?.zone">
+            <strong>Zone : </strong> {{popupContent['zone']}}
+          </p>
+
+        </div>
+
+      </div>
+    </div>
+  </div>

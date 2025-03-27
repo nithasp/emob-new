@@ -364,3 +364,12 @@ tr.mat-mdc-footer-row td {
   width:100%;
   overflow:auto;
 }
+
+mat-icon{
+  vertical-align: middle;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}

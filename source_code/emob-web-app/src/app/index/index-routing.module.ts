@@ -25,7 +25,7 @@ const routes: Routes = [
         component: RunComponent
       },
       {
-        path: "result",
+        path: "result/:runId",
         component: ResultComponent
       },
       {

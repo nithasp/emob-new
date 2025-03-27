@@ -12,6 +12,7 @@ import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
 import { environment } from 'src/environments/environment';
 import { HttpHeaders, provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
 import { MsalService } from '@azure/msal-angular';
+import { Error } from './models/graphql.model';
 
 if (!environment.production) {
   // Adds messages only in a dev environment
@@ -30,10 +31,14 @@ if (!environment.production) {
         const httpLink = inject(HttpLink);
         const httpsUrl = httpLink.create({ 
           uri: environment.graphqlConfig.uri,
-          extractFiles: (body: Record<string, any>) => extractFiles(body, isExtractableFile)
+          extractFiles: (body: Record<string, any>) => extractFiles(body, isExtractableFile),
+          headers: new HttpHeaders({
+            'Apollo-Require-Preflight': 'true'
+          })
+
         
         });
-        const errorLink = onError(({ graphQLErrors, networkError }) => {
+        const errorLink = onError(({ graphQLErrors, networkError, response  }) => {
           if (graphQLErrors)
             graphQLErrors.map(({ message, locations, path }) => {
               console.log(
@@ -42,11 +47,24 @@ if (!environment.production) {
               console.error("error", message);
             });
           if (networkError) console.log(`[Network error]: ${networkError}`);
+          if (response) {
+            console.error('Internal Server Error:', response);
+            response.errors?.forEach((error) => {
+              if (error.message) {
+                console.error('Internal Server Error:', error.message);
+              }
+            });
+          }
+        
         });
         const removeTypenameLink = removeTypenameFromVariables();
         const uploadLink = createUploadLink({
           uri: environment.graphqlConfig.uri,
           extractFiles: (body: Record<string, any>) => extractFiles(body, isExtractableFile),
+          headers: {
+            'Apollo-Require-Preflight': 'true'
+          }
+        
         });
         const authLink = httpsUrl.concat(uploadLink)
    

@@ -1,9 +1,10 @@
-import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { Injectable, input } from '@angular/core';
+import { HttpClient, } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Response } from '../models/graphql.model';
+import type { Error } from '../models/graphql.model';
 import { ActualLocation, Configuration } from '../models/configuration.model';
 
 @Injectable({
@@ -158,7 +159,16 @@ export class ConfigurationService {
       context: {
         useMultipart: true // Ensure multipart upload is enabled
       }
-    }).pipe(map(result => result.data!.replaceTypeOfCategory));
+    }).pipe(
+      map(result =>{
+        if (result.errors as Error[]) {
+          // Handle errors here
+          console.error(result.errors);
+          throw new Error(`${result.errors?.map(error => error.message).join(', ')}`);
+        }
+  
+        return result.data!.replaceTypeOfCategory;
+      }));
   }
 
 

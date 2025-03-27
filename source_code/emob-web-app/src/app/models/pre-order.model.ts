@@ -33,40 +33,6 @@ export interface PreOrder {
   created_date: string
 }
 
-export interface UploadPreOrder {
-  companyName: string;
-  runId: string;
-  name: string;
-  timestamp: Date;
-  preOrderBlobPath: string;
-  groupZoneBlobPath: string;
-  productMat1BlobPath: string;
-  productMat7BlobPath: string;
-  parameterBlobPath: string;
-  outputRouteOptimizationBlobPath: string;
-  timeStart: string;
-  timeEnd: string;
-  timeDuration: string;
-  triggeredBy: string;
-  status: string;
-  run: string;
-  groupId: string;
-  countGeocoding: string;
-  countReroute: string;
-  result: Result;
-  fileUrl: FileURL;
-}
-
-export interface FileURL {
-  parameterUrl: string;
-  preOrderUrl: string;
-  outputRouteOptimizationBlobPath: string;
-}
-
-export interface Result {
-  customers: Customer[];
-  depots: Depot[];
-}
 export interface CustomerUpdated {
   node_id: string;
   name: string;
