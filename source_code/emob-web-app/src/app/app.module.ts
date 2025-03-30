@@ -74,8 +74,15 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
     ToastrModule.forRoot({
       closeButton: true,
       progressBar: true,
-      positionClass: "toast-top-right",
+      positionClass: "toast-bottom-right",
+      preventDuplicates: true,
       timeOut: 2000,
+      newestOnTop: false,
+      progressAnimation: "increasing",
+      extendedTimeOut: 2000,
+      autoDismiss: true,
+      maxOpened: 5
+      
     }),
     MsalModule
   ],

@@ -4,12 +4,16 @@ import { Response } from '../models/graphql.model';
 import gql from 'graphql-tag';
 import { Apollo } from 'apollo-angular';
 import { Experiment } from '../models/experiment.model';
+import { ErrorHandlingService } from './handle-error.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PreOrderService {
-  constructor(private readonly apollo: Apollo) { }
+  constructor(
+    private readonly apollo: Apollo,
+    private readonly errorHandlingService: ErrorHandlingService
+    ) { }
 
   uploadPreOrder(runId: string, file: File): Observable<Experiment> {
     console.log("file", file);
@@ -35,6 +39,7 @@ export class PreOrderService {
       context: {
         useMultipart: true // Ensure multipart upload is enabled
       }
-    }).pipe(map(result => result.data!.uploadPreOrder));
+    }).pipe(map(result => result.data!.uploadPreOrder),
+    this.errorHandlingService.handleError);
   }
 }

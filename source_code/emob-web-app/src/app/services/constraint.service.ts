@@ -6,13 +6,16 @@ import gql from 'graphql-tag';
 
 import {Constraint } from '../models/constraint.model'
 import { Response } from '../models/graphql.model';
+import { ErrorHandlingService } from './handle-error.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConstraintService {
 
-  constructor(private readonly apollo : Apollo) { }
+  constructor(private readonly apollo : Apollo,
+    private readonly errorHandlingService: ErrorHandlingService
+    ) { }
 
   getMyParameter():Observable<Constraint>{
     return this.apollo.query<Response>({
@@ -31,7 +34,8 @@ export class ConstraintService {
     
     `
     }).pipe(
-      map(result => result.data.myParameter)
+      map(result => result.data.myParameter),
+      this.errorHandlingService.handleError
     )
   }
 
@@ -55,7 +59,8 @@ export class ConstraintService {
       runID:runID
     }
     }).pipe(
-      map(result => result.data.parameter)
+      map(result => result.data.parameter),
+      this.errorHandlingService.handleError
     )
   }
 
@@ -79,7 +84,8 @@ export class ConstraintService {
       constraints: constraints
     }
     }).pipe(
-      map(result => result.data!)
+      map(result => result.data!),
+      this.errorHandlingService.handleError
     )
   }
 }

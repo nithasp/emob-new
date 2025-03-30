@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import { Observable, throwError } from 'rxjs';
+import { Observable, ObservableInput, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import gql from 'graphql-tag';
 
@@ -9,14 +9,20 @@ import { Experiment, ExperimentState } from '../models/experiment.model';
 import { Constraint } from '../models/constraint.model';
 import { Location } from '../models/location.model';
 import { CustomerUpdated } from '../models/pre-order.model';
+import type {Error} from '../models/graphql.model';
+import { ToastrService } from 'ngx-toastr';
+import { ErrorHandlingService  } from './handle-error.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ExperimentService {
 
-  constructor(private readonly apollo : Apollo) { }
-
+  constructor(private readonly apollo : Apollo,
+    private readonly toastr: ToastrService,
+    private readonly errorHandlingService: ErrorHandlingService
+    ) { }
+  
   getExperiments():Observable<Array<Experiment>>{
     return this.apollo.watchQuery<Response>({
       query: gql`
@@ -40,8 +46,7 @@ export class ExperimentService {
     `,
     fetchPolicy: 'cache-and-network'
     }).valueChanges.pipe(
-      map(result => result.data.experiments)
-    );
+      map(result => result.data.experiments),this.errorHandlingService.handleError);
   }
 
   createExperiment():Observable<Experiment>{
@@ -52,7 +57,7 @@ export class ExperimentService {
           runId
         }
       }`
-    }).pipe(map(result => result.data!.createExperiment));
+    }).pipe(map(result => result.data!.createExperiment),this.errorHandlingService.handleError);
   }
   getExperiment(runId:string):Observable<Experiment>{
     return this.apollo.watchQuery<Response>({
@@ -92,7 +97,7 @@ export class ExperimentService {
         
       },
       fetchPolicy: 'cache-and-network'
-    }).valueChanges.pipe(map(result => result.data.experiment));
+    }).valueChanges.pipe(map(result => result.data.experiment),this.errorHandlingService.handleError);
   }
   validateExperiment(runId: string,parameter:Constraint,locationUpdated:CustomerUpdated[]):Observable<Experiment>{
     return this.apollo.mutate<Response>({
@@ -111,12 +116,7 @@ export class ExperimentService {
             }
           }
         }
-    }).pipe(map(result => result.data!.validateExperiment),
-    catchError(error => {
-      console.error('Error occurred:', error);
-      return throwError(() => new Error('Failed to validate experiment'));
-    })
-);
+    }).pipe(map(result => result.data!.validateExperiment),this.errorHandlingService.handleError);
 
   }
   submitExperiment(runId: string):Observable<Experiment>{
@@ -144,7 +144,7 @@ export class ExperimentService {
           }
           
         }
-    }).pipe(map(result => result.data!.submitExperiment));
+    }).pipe(map(result => result.data!.submitExperiment),this.errorHandlingService.handleError);
 
   }
 
@@ -166,7 +166,7 @@ export class ExperimentService {
         variables: {
             runId : runId
         }
-    }).pipe(map(result => result.data!.rerunExperiment));
+    }).pipe(map(result => result.data!.rerunExperiment),this.errorHandlingService.handleError);
 
   }
 
@@ -187,7 +187,7 @@ export class ExperimentService {
         variables: {
             runId : runId
         }
-    }).pipe(map(result => result.data!.cancelExperiment));
+    }).pipe(map(result => result.data!.cancelExperiment),this.errorHandlingService.handleError);
 
   }
 
@@ -203,7 +203,7 @@ export class ExperimentService {
         variables: {
             runId : runId
         }
-    }).pipe(map(result => result.data!.replicateExperiment));
+    }).pipe(map(result => result.data!.replicateExperiment),this.errorHandlingService.handleError);
 
   }
 }

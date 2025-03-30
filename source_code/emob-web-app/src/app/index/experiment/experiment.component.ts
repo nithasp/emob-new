@@ -1,9 +1,7 @@
-import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort, Sort } from '@angular/material/sort';
+import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import {  Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -15,6 +13,7 @@ import { DetailsDialogComponent } from '../components/details-dialog/details-dia
 import { ToastrService } from 'ngx-toastr';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
+import { finalize } from 'rxjs';
 
 
 
@@ -124,12 +123,18 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
 
   loadData(): void {
     this.showSpinner();
-    this.experimentService.getExperiments().subscribe(response => {
-      this.dataSource.data = response;
-      this.dataSource.sort = this.sort; // Ensure sort is set after data is loaded
+    this.experimentService.getExperiments().subscribe({
+      next: (response) => {
+        this.dataSource.data = response;
+        this.dataSource.sort = this.sort; // Ensure sort is set after data is loaded
+        this.hiddenSpinner();
+    },
+    error: () => {
       this.hiddenSpinner();
       
-    });
+    }
+    })
+    
   }
   ngOnDestroy(): void {
     if (this.interval) {
@@ -314,9 +319,11 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     });
   }
   hiddenSpinner() {
+    console.log('hidden spinner');
       setTimeout(() => {
         this.spinner.hide('experiment');
       },500);
+      
   }
   calculateDuration(start: Date, end: Date): number {
     if(!start || !end) return 0;

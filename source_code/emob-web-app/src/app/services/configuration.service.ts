@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 import { Response } from '../models/graphql.model';
 import type { Error } from '../models/graphql.model';
 import { ActualLocation, Configuration } from '../models/configuration.model';
+import { ErrorHandlingService } from './handle-error.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +14,8 @@ import { ActualLocation, Configuration } from '../models/configuration.model';
 export class ConfigurationService {
   constructor(
     private readonly apollo: Apollo,
-    private readonly http: HttpClient
+    private readonly http: HttpClient,
+    private readonly errorHandlingService: ErrorHandlingService
   ) {}
 
 
@@ -48,7 +50,8 @@ export class ConfigurationService {
         `,
       })
       .pipe(
-        map(result => result.data)
+        map(result => result.data),
+        this.errorHandlingService.handleError
       );
   }
 
@@ -70,7 +73,8 @@ export class ConfigurationService {
       }
     })
       .pipe(
-        map(result => result.data.configuration)
+        map(result => result.data.configuration),
+        this.errorHandlingService.handleError
       );
   }
 
@@ -131,7 +135,8 @@ export class ConfigurationService {
       context: {
         useMultipart: true // Ensure multipart upload is enabled
       }
-    }).pipe(map(result => result.data!.uploadActualLocation));
+    }).pipe(map(result => result.data!.uploadActualLocation),
+    this.errorHandlingService.handleError);
   }
 
   uploadConfiguration(file: File,category:string,type:string): Observable<Configuration> {
@@ -160,15 +165,8 @@ export class ConfigurationService {
         useMultipart: true // Ensure multipart upload is enabled
       }
     }).pipe(
-      map(result =>{
-        if (result.errors as Error[]) {
-          // Handle errors here
-          console.error(result.errors);
-          throw new Error(`${result.errors?.map(error => error.message).join(', ')}`);
-        }
-  
-        return result.data!.replaceTypeOfCategory;
-      }));
+      map(result => result.data!.replaceTypeOfCategory),
+      this.errorHandlingService.handleError);
   }
 
 
