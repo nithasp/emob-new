@@ -1,6 +1,6 @@
 {
   "name": "emob-web-app",
-  "version": "v0.2.3",
+  "version": "v0.2.4",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config src/proxy.conf.json --verbose",

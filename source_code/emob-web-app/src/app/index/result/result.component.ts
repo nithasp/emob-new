@@ -142,7 +142,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
           console.log(response);
           this.experiment = { ...response };
           this.expandedElement = [];
-          this.toastr.info('Loading Report Data', 'Please wait...');
           await this.loadReportData(response.fileUrl.outputReportUrl);
           this.spinner.hide();
           this.toastr.info('Rendering data on map', 'Please wait...');
