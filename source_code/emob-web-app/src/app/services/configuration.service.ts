@@ -2,7 +2,7 @@ import { HttpClient, } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, retry } from 'rxjs/operators';
 import { Response } from '../models/graphql.model';
 import type { Error } from '../models/graphql.model';
 import { ActualLocation, Configuration } from '../models/configuration.model';
@@ -22,6 +22,41 @@ export class ConfigurationService {
   getDatafromUrl(url:string): Observable<Blob>{
     return this.http.get(url, { responseType: 'blob' });
   }
+
+  async downloadFile(url: string): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get(url, { responseType: 'blob', observe: 'response' }).pipe(this.errorHandlingService.handleError)
+      );
+
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let fileName = 'downloadedFile';
+      if (contentDisposition) {
+        const matches = /filename="([^"]*)"/.exec(contentDisposition);
+        if (matches && matches.length > 0) {
+          fileName = matches[1];
+        }
+      }
+
+      const blob = response.body;
+      if (blob) {
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+        window.URL.revokeObjectURL(link.href);
+      } else {
+        console.error('Download failed: Blob is null');
+      }
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+  }
+
+
+
+
+
   getConfigurations(): Observable<Response> {
     return this.apollo
       .query<Response>({

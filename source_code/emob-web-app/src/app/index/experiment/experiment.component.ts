@@ -325,11 +325,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       },500);
       
   }
-  calculateDuration(start: Date, end: Date): number {
-    if(!start || !end) return 0;
-    const startTime = new Date(start).getTime();
-    const endTime = new Date(end).getTime();
-    return endTime - startTime;
-}
+
+
 
 }

@@ -1,6 +1,6 @@
 import { ActualLocation, Configuration } from './configuration.model';
 import { Constraint } from './constraint.model';
-import { Experiment, ExperimentState } from './experiment.model';
+import { DownloadResultFile, Experiment, ExperimentState } from './experiment.model';
 
 export interface Response {
   timestamp: string;
@@ -25,6 +25,7 @@ export interface Response {
   actualLocations: [ActualLocation];
   actualLocation: ActualLocation;
   uploadActualLocation: ActualLocation;
+  downloadResultFile: DownloadResultFile;
 }
 
 export interface Error {

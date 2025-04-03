@@ -737,7 +737,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       target: 'map',
       view: new View({
         center: OlProj.transform(
-          [100.4683014, 13.7248785],
+          [ 100.53139488523458,13.786463255129673],
           'EPSG:4326',
           'EPSG:3857'
         ),

@@ -79,7 +79,7 @@
             <th mat-header-cell *matHeaderCellDef> Name </th>
             <td mat-cell *matCellDef="let element"> <a
                 class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
-                (click)="selectExperiment(element)" href="" >{{element.name}}</a> </td>
+                (click)="selectExperiment(element)" href="javascript:void(0)" >{{element.name}}</a> </td>
           </ng-container>
 
           <ng-container matColumnDef="actions">
@@ -133,8 +133,8 @@
 
           <ng-container matColumnDef="TimeDuration">
             <th mat-header-cell *matHeaderCellDef> Duration </th>
-            <td mat-cell *matCellDef="let element"> {{calculateDuration((element.timeStart), element.timeEnd) 
-              | date:'mm\'m\' ss\'s\''}} </td>
+            <td mat-cell *matCellDef="let element"> {{(element.timeDuration || 0) | date:'mm\'m\' ss\'s\''}} 
+            </td>
           </ng-container>
           <ng-container matColumnDef="TriggeredBy">
             <th mat-header-cell *matHeaderCellDef> Triggered By </th>

@@ -4,15 +4,16 @@ import { Vector as VectorSource, XYZ } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { GeoJSON } from 'ol/format';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { Map, View } from 'ol';
-import { Circle, LineString } from 'ol/geom';
+import { Map, Overlay, View } from 'ol';
+import { Circle, LineString, Point } from 'ol/geom';
 import { Attribution, FullScreen, ZoomSlider,defaults as defaultControls, } from 'ol/control';
 import TileLayer from 'ol/layer/Tile';
 import * as OlProj from 'ol/proj';
 import { DragPan, MouseWheelZoom,defaults as defaultInteractions, } from 'ol/interaction';
 import { FeatureLike } from 'ol/Feature';
-import { Fill, Stroke, Style, Text } from 'ol/style';
+import { Fill, Icon, Stroke, Style, Text } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
+import { Coordinate } from 'ol/coordinate';
 @Component({
   selector: 'app-map-details-dialog',
   templateUrl: './map-details-dialog.component.html',
@@ -20,16 +21,19 @@ import CircleStyle from 'ol/style/Circle';
 })
 export class MapDetailsDialogComponent implements OnInit {
   @Input() featureCollection: any;
-
+  @Input() featureDepot: any;
   private map!: Map;
+  public popUp?: Overlay;
+  public popupContent?: any;
+  private highlightedFeatureCollectionId:number|null = null;
 
   constructor(private readonly ngbActiveModal: NgbActiveModal) {}
   ngOnInit(): void {
     console.log(this.featureCollection);
-    this.loadAndProcessGeoJSON(this.featureCollection);
+    this.loadAndProcessGeoJSON(this.featureCollection,this.featureDepot);
   }
 
-  loadAndProcessGeoJSON(item:any): void {
+  loadAndProcessGeoJSON(item:any,depot:any): void {
         const itemFeatures = new GeoJSON().readFeatures(item, {
           dataProjection: 'EPSG:4326',
           featureProjection: 'EPSG:3857',
@@ -58,10 +62,30 @@ export class MapDetailsDialogComponent implements OnInit {
       const vectorSource = new VectorSource({
         features: [...reducedItemFeatures]
     });
-    this.initMap(vectorSource);
+
+    // mapping depots for features
+      const features = new GeoJSON().readFeatures(depot, {
+        dataProjection: 'EPSG:4326',
+        featureProjection: 'EPSG:3857',
+      });
+    vectorSource.addFeatures(features);
+    console.log(features);
+    features.forEach((feature: FeatureLike) => {
+      const geometry = feature.getGeometry();
+      if (geometry?.getType() === 'Point') {
+        const coordinates = (geometry as Point).getCoordinates();
+        const [longitude, latitude] = OlProj.transform(coordinates, 'EPSG:3857', 'EPSG:4326');
+        console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+        this.initMap(vectorSource,[longitude, latitude]);
+      } else {
+        console.log('Geometry is not a Point');
+      }      
+    });
+    
+    
   }
 
-  private initMap(vectorSource: VectorSource) {
+  private initMap(vectorSource: VectorSource,latLong:number[]) {
     const vectorLayer = new VectorLayer({
       source: vectorSource,
       style: this.styleFunction.bind(this),
@@ -87,7 +111,7 @@ export class MapDetailsDialogComponent implements OnInit {
       ],
       target: 'modalMap',
       view: new View({
-        center: OlProj.fromLonLat([100.4683014, 13.7248785]),
+        center: OlProj.fromLonLat(latLong),
         zoom: 10,
         maxZoom: 17,
         minZoom: 10,
@@ -102,20 +126,107 @@ export class MapDetailsDialogComponent implements OnInit {
         new MouseWheelZoom(),
       ]),
     });
+
+    this.map.on('pointermove', this.handlePointerMove.bind(this));
+    this.map.on('pointermove', (event) => this.pointMove(event));
+
+    // Initialize overlay for popup
+    const element = document.getElementById('popupMapDeatils')!;
+    this.popUp = new Overlay({
+      element: element,
+      offset: [0, -20],
+    });
+    this.map.addOverlay(this.popUp);
     
+  }
+  private pointMove(evt: any): void {
+    const target = this.map.getTargetElement();
+    const pixel = this.map.getEventPixel(evt.originalEvent);
+    const hit = this.map.hasFeatureAtPixel(pixel);
+
+    if (hit) {
+      target.style.cursor = 'pointer';
+    } else {
+      target.style.cursor = '';
+    }
+  }
+  handlePointerMove(event: any): void {
+    let coordinates: Coordinate;
+    const feature = this.map.forEachFeatureAtPixel(
+      event.pixel,
+      function (feature) {
+        return feature;
+      }
+    )!;
+    if (feature) {
+      const geometry = feature.getGeometry();
+      if (geometry instanceof LineString) {
+        // Get the closest point on the LineString to the event's pixel location
+        coordinates = geometry.getClosestPoint(
+          this.map.getCoordinateFromPixel(event.pixel)
+        );
+        this.popupContent = feature.getProperties();
+      } else if (geometry instanceof Point) {
+        coordinates = geometry.getCoordinates();
+      } else {
+        // Handle other geometry types if needed
+        coordinates = [];
+      }
+      this.popUp?.setPosition(coordinates);
+      const properties = feature.getProperties();
+      if (properties['features'] && properties['features'].length > 0) {
+        const nestedFeatureProperties =
+          properties['features'][0].getProperties();
+        this.popupContent = nestedFeatureProperties;
+      } else {
+        this.popupContent = properties;
+      }
+      console.log(this.popupContent);
+    } else {
+      this.popUp?.setPosition(undefined);
+    }
+
+    if (feature && feature.getGeometry()?.getType() === 'LineString') {
+      this.highlightedFeatureCollectionId =
+        feature.getProperties()['route_index'];
+    } else {
+      this.highlightedFeatureCollectionId = null;
+    }
+    const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
+    vectorLayer.getSource()?.changed();
   }
   styleFunction(feature: FeatureLike): Style | Style[] | undefined{
     const geometryType = feature.getGeometry()!.getType();
-    const color = feature.getProperties()['color'];
-    const text = feature.getProperties()['route_order'];
+    const color = feature.getProperties()['color'] as string;
+    const text = feature.getProperties()['route_order'] as string;
+    const isDepot = feature.getProperties()['is_depot'] as boolean;
 
     switch (geometryType) {
       case 'Point':
-        return new Style({
+        if(isDepot){
+          return new Style({
+            image: new Icon({
+              anchor: [0.5, 0.5],
+              anchorOrigin: 'bottom-left',
+              anchorXUnits: 'fraction',
+              anchorYUnits: 'pixels',
+              crossOrigin: 'anonymous',
+              opacity: 1,
+              src: `assets/image/depot.png`,
+            }),
+            text: new Text({
+              text: text,
+              font: '15px Calibri,sans-serif',
+              fill: new Fill({
+                color: '#fff',
+              }),
+            }),
+          });
+        }else return new Style({
           image: new CircleStyle({
-            radius: text ? 15 : 20,
+            radius: 20,
             fill: new Fill({
-              color: text ? '#ffcc33' : '#000000',
+              color: '#242484',
             }),
             stroke: new Stroke({
               color: '#fff',
@@ -123,8 +234,8 @@ export class MapDetailsDialogComponent implements OnInit {
             }),
           }),
           text: new Text({
-            text: text ? text : 'Depot',
-            font: text ? '12px  Calibri,sans-serif' :'normal small-caps bold 12px Calibri,sans-serif',
+            text: text,
+            font: '15px  Calibri,sans-serif',
             fill: new Fill({
               color: '#fff',
             }),
@@ -134,7 +245,7 @@ export class MapDetailsDialogComponent implements OnInit {
       
           return new Style({
             stroke: new Stroke({
-              color: color,
+              color: '#04948c',
               width: 7
             })
           });

@@ -30,6 +30,7 @@ import { ResizableDirective } from '../directives/resizable.directive';
 import { UploadFileComponent } from './configuration/upload-file/upload-file.component';
 import { MapDetailsDialogComponent } from './components/map-details-dialog/map-details-dialog.component';
 import { OverlayModule } from '@angular/cdk/overlay';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @NgModule({
   declarations: [
@@ -68,7 +69,8 @@ import { OverlayModule } from '@angular/cdk/overlay';
     Arrow,
     NgxSpinnerModule,
     NgbTooltipModule,
-    OverlayModule
+    OverlayModule,
+    DragDropModule
     
   ],
   schemas :[CUSTOM_ELEMENTS_SCHEMA ],

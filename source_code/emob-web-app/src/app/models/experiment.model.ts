@@ -47,10 +47,12 @@ export enum StatusExperiment {
 interface FileURL {
   parameterUrl: string;
   preOrderUrl: string;
-  outputRouteOptimizationBlobPathUrl: string;
   LocationBlobPathUrl: string;
   locationUpdateBlobPathUrl: string;
   validatedBlobPathUrl: string;
+  outputGeoJsonUrl:string;
+  outputReportUrl:string;
+  outputPlanDetailUrl:string;
 }
 export interface Result {
   customers: Customer[];
@@ -77,4 +79,12 @@ interface OrderData {
 
 interface Warning {
   zero_weight: Customer[];
+}
+
+
+export interface DownloadResultFile {
+  resultFileBlobPath: string;
+  fileUrl: {
+    resultFileBlobPathUrl: string;
+  };
 }

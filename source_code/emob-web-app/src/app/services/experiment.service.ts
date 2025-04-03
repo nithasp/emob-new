@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Apollo } from 'apollo-angular';
 import { Observable, ObservableInput, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, retry } from 'rxjs/operators';
 import gql from 'graphql-tag';
 
 import { Response } from '../models/graphql.model';
-import { Experiment, ExperimentState } from '../models/experiment.model';
+import { DownloadResultFile, Experiment, ExperimentState } from '../models/experiment.model';
 import { Constraint } from '../models/constraint.model';
 import { Location } from '../models/location.model';
 import { CustomerUpdated } from '../models/pre-order.model';
@@ -82,7 +82,6 @@ export class ExperimentService {
           fileUrl {
             parameterUrl
             preOrderUrl
-            outputRouteOptimizationBlobPathUrl
             LocationBlobPathUrl
             locationUpdateBlobPathUrl
             validatedBlobPathUrl
@@ -99,6 +98,65 @@ export class ExperimentService {
       fetchPolicy: 'cache-and-network'
     }).valueChanges.pipe(map(result => result.data.experiment),this.errorHandlingService.handleError);
   }
+
+  getExperimentResult(runId:string):Observable<Experiment>{
+    return this.apollo.watchQuery<Response>({
+      query: gql`
+      query experiment($Id:RunIdInput!){
+        experiment(input: $Id) {
+          runId
+          name
+          timestamp
+          preOrderBlobPath
+          locationBlobPath
+          locationUpdateBlobPath
+          validatedBlobPath
+          parameterBlobPath
+          outputRouteOptimizationBlobPath
+          triggeredBy
+          timeEnd
+          timeStart
+          timeDuration
+          status
+          run
+          groupId
+          fileUrl {
+            parameterUrl
+            outputGeoJsonUrl
+            outputReportUrl
+          }
+        }
+      }
+      `,
+      variables : {
+        Id :{
+          runId : runId
+        }
+        
+      },
+      fetchPolicy: 'cache-and-network'
+    }).valueChanges.pipe(map(result => result.data.experiment),this.errorHandlingService.handleError);
+  }
+
+  getExperimentResultUrl(runId:string):Observable<DownloadResultFile>{
+    return this.apollo.watchQuery<Response>({
+      query: gql`
+      query downloadResultFile($runId: String!){
+        downloadResultFile(experimentRunID:$runId) {
+          resultFileBlobPath
+          fileUrl {
+            resultFileBlobPathUrl
+          }
+        }
+      }
+      `,
+      variables : {
+        runId : runId        
+      },
+      fetchPolicy: 'cache-and-network'
+    }).valueChanges.pipe(retry(3),map(result => result.data.downloadResultFile),this.errorHandlingService.handleError);
+  }
+  
   validateExperiment(runId: string,parameter:Constraint,locationUpdated:CustomerUpdated[]):Observable<Experiment>{
     return this.apollo.mutate<Response>({
       mutation: gql`

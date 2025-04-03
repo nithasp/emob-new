@@ -54,61 +54,14 @@ import { Workbook } from 'exceljs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import { Experiment } from 'src/app/models/experiment.model';
-import { routes } from '../../app-routing.module';
-
-function randomColor() {
-  let r = Math.floor(Math.random() * 256);
-  let g = Math.floor(Math.random() * 256);
-  let b = Math.floor(Math.random() * 256);
-  let color = 'rgb(' + r + ',' + g + ',' + b + ')';
-
-  return color;
-}
-
-interface RouteInfo {
-  Route: string;
-  Points: number; // Count of points
-  Duration: string;
-  Distance: number;
-  Weight: number;
-  RouteNumber: number; // Route list number
-  DropPoints: number[]; // New column for storing number list of points for drops
-}
-
-function getRandomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function getRandomDuration(): string {
-  const hours = getRandomInt(1, 5);
-  const minutes = getRandomInt(0, 59);
-  return `${hours} hours ${minutes} minutes`;
-}
-
-function generateRandomRoute(routeNumber: number): RouteInfo {
-  const pointCount = getRandomInt(5, 20); // Random count of points
-  const dropPoints = Array.from({ length: pointCount }, () =>
-    getRandomInt(1, 100)
-  ); // Generate random drop points
-  return {
-    Route: `Route ${getRandomInt(1, 100)}`,
-    Points: pointCount,
-    Duration: getRandomDuration(),
-    Distance: parseFloat((Math.random() * 200).toFixed(2)),
-    Weight: getRandomInt(300, 600),
-    RouteNumber: routeNumber,
-    DropPoints: dropPoints, // Assign the drop points
-  };
-}
-
-function generateRandomRoutes(count: number): RouteInfo[] {
-  return Array.from({ length: count }, (_, index) =>
-    generateRandomRoute(index + 1)
-  );
-}
-
-const randomRoutes = generateRandomRoutes(5);
-
+import { ConfigurationService } from 'src/app/services/configuration.service';
+import { firstValueFrom } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+import { RouteInfo } from 'src/app/models/location.model';
+import { FormControl } from '@angular/forms';
+import { MatSort } from '@angular/material/sort';
+import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
+import { DownloadResultFile } from '../../models/experiment.model';
 
 @Component({
   selector: 'app-result',
@@ -125,7 +78,6 @@ const randomRoutes = generateRandomRoutes(5);
     ]),
   ],
 })
-
 export class ResultComponent implements OnInit, AfterViewInit {
   // Map related variables
   public map!: Map;
@@ -134,24 +86,32 @@ export class ResultComponent implements OnInit, AfterViewInit {
   public popUp?: Overlay;
   public popupContent?: any;
   private dimStyle: Style;
-  private highlightedFeatureCollectionId: string | null = null;
-  private featureCollections : any[] =[];
-
-
+  private highlightedFeatureCollectionId: number | null = null;
+  private featureCollections: any[] = [];
+  private featureDepots: any[] = [];
+  public mapAlreadyRendered: boolean = false;
   readonly panelOpenState = signal(false);
-  
-  // report 
-  headers: string[] = [];
+
+  // report
+  headersReport: string[] = [];
   dataSourceReport: any[] = [];
-  currentPage: number = 1;
-  pageSize: number = 15;
 
   // Mat Table related variables
-  dataSource = new MatTableDataSource<RouteInfo>(randomRoutes);
-  columnsToDisplay = ['Route', 'Points', 'Duration', 'Distance', 'Weight'];
+  dataRouteInfo = new MatTableDataSource<RouteInfo>([]);
+  columnsToDisplay: string[] = [
+    'route_index',
+    'number_delivery_points',
+    'service_time',
+    'travel_distance',
+    'travel_duration',
+    'weight',
+  ];
+  searchControl = new FormControl();
+  selectedSearchOption: string = 'route_index';
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: Array<any> = [];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   // data store
   experiment?: Experiment;
@@ -160,68 +120,83 @@ export class ResultComponent implements OnInit, AfterViewInit {
     private readonly http: HttpClient,
     private readonly spinner: NgxSpinnerService,
     private readonly locationService: LocationService,
-    private readonly ngbModal : NgbModal,
+    private readonly ngbModal: NgbModal,
     private readonly route: ActivatedRoute,
     private readonly experimentService: ExperimentService,
-
+    private readonly configurationService: ConfigurationService,
+    private readonly toastr: ToastrService,
+    private readonly router: Router
   ) {
     this.spinner.show();
 
     this.dimStyle = new Style({
       stroke: new Stroke({
         color: 'rgba(0, 0, 0, 0.2)',
-        width: 3
-      })
+        width: 3,
+      }),
     });
   }
   ngOnInit(): void {
     this.route.params.subscribe((params: { [x: string]: string }) => {
       this.experimentService
-        .getExperiment(params['runId'])
-        .subscribe((response: Experiment) => {
+        .getExperimentResult(params['runId'])
+        .subscribe(async (response: Experiment) => {
           console.log(response);
           this.experiment = { ...response };
           this.expandedElement = [];
-          this.loadAndProcessGeoJSON();
-          this.loadReportData();
+          this.toastr.info('Loading Report Data', 'Please wait...');
+          await this.loadReportData(response.fileUrl.outputReportUrl);
+          this.toastr.info('Rendering data on map', 'Please wait...');
           this.spinner.hide();
+          await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
+          this.toastr.success('Data loaded successfully', 'Success');
         });
+      
     });
-    
   }
 
   ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+    this.searchControl.valueChanges.subscribe((searchValue) => {
+      this.applyFilter(searchValue);
+    });
   }
 
-  loadReportData() {
-    this.http.get('./assets/report_20250323_180154.xlsx', { responseType: 'arraybuffer' })
-      .subscribe(data => {
-        this.fetchAndParseExcel(data);
-      });
+  async loadReportData(url: string) {
+    const arrayBuffer = await this.fetchDataFromFileUrl(url);
+    await this.fetchAndParseExcel(arrayBuffer, 0);
+    await this.fetchAndParseExcel(arrayBuffer, 1);
   }
   calculateDuration(start: any, end: any): number {
-    if(!start || !end) return 0;
+    if (!start || !end) return 0;
     const startTime = new Date(start).getTime();
     const endTime = new Date(end).getTime();
     return endTime - startTime;
-}
+  }
 
-  async fetchAndParseExcel(data: any): Promise<void> {
+  async fetchAndParseExcel(data: any, options: any = 0): Promise<void> {
     try {
-  
       const workbook = new Workbook();
       await workbook.xlsx.load(data);
-  
-      const worksheet = workbook.worksheets[0];
+
+      const worksheet = workbook.worksheets[options];
+      const headers: any[] = [];
       if (!worksheet) {
         throw new Error('Worksheet not found');
       }
-  
-      worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
-        this.headers[colNumber - 1] = cell.value !== null ? String(cell.value) : `Column ${colNumber}`;
-      });
-  
+
+      worksheet
+        .getRow(1)
+        .eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
+          headers[colNumber - 1] =
+            cell.value !== null ? String(cell.value) : `Column ${colNumber}`;
+        });
+      if (options === 0) this.headersReport = headers;
+      // if(options === 1){
+      //   this.columnsToDisplay = headers;
+      //   this.columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
+
+      // }
+
       worksheet.eachRow((row: any, rowIndex: any) => {
         if (rowIndex === 1) return;
         const rowData: any = {};
@@ -229,90 +204,154 @@ export class ResultComponent implements OnInit, AfterViewInit {
           let cellValue = cell.value;
           if (cellValue === null) {
             cellValue = '';
-            switch (typeof cellValue) {
-              case 'string':
-                cellValue = cellValue.trim();
-                break;
-              case 'number':
-                cellValue = Number(cellValue);
-                break;
-              case 'boolean':
-                cellValue = cellValue ? 'Yes' : 'No';
-                break;
-              default:
-                cellValue = String(cellValue);
-            }
           }
-          rowData[this.headers[colNumber - 1]] = cellValue;
+          switch (typeof cellValue) {
+            case 'string':
+              cellValue = cellValue.trim();
+              break;
+            case 'number':
+              cellValue = Number(cellValue);
+              break;
+            case 'boolean':
+              cellValue = cellValue ? 'Yes' : 'No';
+              break;
+            default:
+              cellValue = String(cellValue);
+          }
+          rowData[headers[colNumber - 1]] = cellValue;
         });
-        this.dataSourceReport.push(rowData);
+        if (options === 0) this.dataSourceReport.push(rowData);
+        if (options === 1) {
+          rowData['customers_distance'] = rowData['customers_distance']
+            .split('➠')
+            .map(Number);
+          rowData['route'] = JSON.parse(rowData['route']) as number[];
+          rowData['zone'] = JSON.parse(
+            rowData['zone'].replace(/'/g, '"')
+          ) as string[];
+          console.log(rowData);
+
+          this.dataRouteInfo.data.push(rowData);
+          this.dataRouteInfo.sort = this.sort;
+          this.dataRouteInfo.paginator = this.paginator;
+          this.dataRouteInfo.filterPredicate = this.createFilter();
+        }
       });
     } catch (error) {
       console.error('Error fetching or parsing file:', error);
     }
   }
 
-  get paginatedData() {
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    return this.dataSourceReport.slice(start, end);
+  createFilter(): (data: RouteInfo, filter: string) => boolean {
+    return (data: RouteInfo, filter: string): boolean => {
+      const searchTerms = JSON.parse(filter);
+      return Object.keys(searchTerms).every((key: any) => {
+        const value = data[key as keyof RouteInfo];
+        const searchValues = searchTerms[key]
+          .split(',')
+          .map((term: string) => term.trim().toLowerCase());
+
+        if (Array.isArray(value)) {
+          return searchValues.every((searchValue: string) =>
+            value.some((item: any) =>
+              item.toString().toLowerCase().includes(searchValue)
+            )
+          );
+        } else {
+          return searchValues.some((searchValue: string) => {
+            if (searchValue === '') return false;
+            return value.toString().toLowerCase() === searchValue;
+          });
+        }
+      });
+    };
   }
 
-
-  loadAndProcessGeoJSON(): void {
-    this.locationService.getJSON().subscribe((items) => {
-      this.featureCollections = items.routes;
-      const allFeatures: Feature<Geometry>[] = [];
-      items.routes.forEach((item: any, index: number) => {
-        const itemFeatures = new GeoJSON().readFeatures(item, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: 'EPSG:3857',
-        });
-        // Reduce coordinates in LineString features by 50%
-        const reducedItemFeatures = itemFeatures.map((feature, index, arr) => {
-          const geometry = feature.getGeometry();
-          if (geometry?.getType() === 'LineString') {
-            const lineString = geometry as LineString;
-            const coordinates = lineString.getCoordinates();
-            const reducedCoordinates = coordinates.filter(
-              (_, i) => i % 10 === 0
-            ); // Keep every other coordinate
-            console.log(
-              index,
-              'Original coordinates:',
-              coordinates.length,
-              'Reduced coordinates:',
-              reducedCoordinates.length
-            );
-            lineString.setCoordinates(reducedCoordinates);
-          }
-          return feature;
-        });
-        allFeatures.push(...reducedItemFeatures);
+  private async loadAndProcessGeoJSON(url: string): Promise<void> {
+    const geoJson = await this.dataFromFileUrlToJson(url);
+    this.featureCollections = geoJson.routes;
+    this.featureDepots = geoJson.depots;
+    console.log(geoJson);
+    //mapping routes to features
+    const allFeatures: Feature<Geometry>[] = [];
+    geoJson.routes.forEach((item: any, index_: number) => {
+      const itemFeatures = new GeoJSON().readFeatures(item, {
+        dataProjection: 'EPSG:4326',
+        featureProjection: 'EPSG:3857',
       });
-
-      // Create a cluster source for point features
-      const clusterSource = new Cluster({
-        distance: 40,
-        source: new VectorSource({
-          features: allFeatures.filter(
-            (feature) => feature.getGeometry()!.getType() === 'Point'
-          ),
-        }),
+      // Reduce coordinates in LineString features by 50%
+      const reducedItemFeatures = itemFeatures.map((feature, index, arr) => {
+        const geometry = feature.getGeometry();
+        if (geometry?.getType() === 'LineString') {
+          const lineString = geometry as LineString;
+          const coordinates = lineString.getCoordinates();
+          const reducedCoordinates = coordinates.filter((_, i) => i % 10 === 0); // Keep every other coordinate
+          console.log(
+            index_,
+            'Original coordinates:',
+            coordinates.length,
+            'Reduced coordinates:',
+            reducedCoordinates.length
+          );
+          lineString.setCoordinates(reducedCoordinates);
+        }
+        return feature;
       });
-      const vectorSource = new VectorSource({
-        features: allFeatures.filter(
-          (feature) => feature.getGeometry()!.getType() !== 'Point'
-        ),
-      });
-      console.log(clusterSource);
-      const clusterLayer = new VectorLayer({
-        source: clusterSource,
-        style: this.clusterStyleFunction.bind(this),
-      });
-
-      this.initMap(clusterLayer, vectorSource);
+      allFeatures.push(...reducedItemFeatures);
     });
+
+    // Create a cluster source for point features
+    const clusterSource = new Cluster({
+      distance: 40,
+      source: new VectorSource({
+        features: allFeatures.filter(
+          (feature) => feature.getGeometry()!.getType() === 'Point'
+        ),
+      }),
+    });
+    const vectorSource = new VectorSource({
+      features: allFeatures.filter(
+        (feature) => feature.getGeometry()!.getType() !== 'Point'
+      ),
+    });
+    console.log(clusterSource);
+    const clusterLayer = new VectorLayer({
+      source: clusterSource,
+      style: this.clusterStyleFunction.bind(this),
+    });
+
+    // mapping depots for features
+    const depotFeatures: Feature<Geometry>[] = [];
+    geoJson.depots.forEach((depot: any) => {
+      const itemFeatures = new GeoJSON().readFeatures(depot, {
+        dataProjection: 'EPSG:4326',
+        featureProjection: 'EPSG:3857',
+      });
+      depotFeatures.push(...itemFeatures);
+    });
+    vectorSource.addFeatures(depotFeatures);
+
+    this.initMap(clusterLayer, vectorSource);
+    this.mapAlreadyRendered =true;
+  }
+  async fetchDataFromFileUrl(url: string) {
+    const blob = await firstValueFrom(
+      this.configurationService.getDatafromUrl(url)
+    );
+    const arrayBuffer = await blob.arrayBuffer();
+    return arrayBuffer;
+  }
+
+  async dataFromFileUrlToJson(url: string) {
+    console.log(`Fetching data from url: ${url}`);
+    const arrayBuffer = await this.fetchDataFromFileUrl(url);
+    console.log(`Fetched array buffer with length: ${arrayBuffer.byteLength}`);
+    const text = new TextDecoder().decode(arrayBuffer);
+    console.log(`Decoded text: ${text}`);
+    const jsonData = JSON.parse(text);
+    console.log(`Parsed JSON data: ${JSON.stringify(jsonData)}`);
+
+    return jsonData;
   }
 
   private initMap(clusterLayer: VectorLayer, vectorSource: VectorSource) {
@@ -329,11 +368,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
         const { signal } = abortController;
 
         fetch(src, { signal })
-          .then(response => response.blob())
-          .then(blob => {
+          .then((response) => response.blob())
+          .then((blob) => {
             imageTile.src = URL.createObjectURL(blob);
           })
-          .catch(error => {
+          .catch((error) => {
             if (error.name === 'AbortError') {
               console.log('Tile request aborted:', src);
             } else {
@@ -357,11 +396,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
             attributions:
               '&copy;<a href="https://carto.com" target="_blank"> CARTO</a>' +
               '&copy;<a href="http://openmaptiles.org/" target="_blank"> OpenMapTiles</a>' +
-              '&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank"> OpenStreetMap contributors</a>'+
+              '&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank"> OpenStreetMap contributors</a>' +
               '&copy;<a href="http://map.project-osrm.org" target="_blank"> Project OSRM contributors</a>',
             crossOrigin: 'anonymous',
             cacheSize: 500000,
-            tileLoadFunction: tileLoadFunction
+            tileLoadFunction: tileLoadFunction,
           }),
         }),
         vectorLayer,
@@ -369,7 +408,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       ],
       target: 'mapResult',
       view: new View({
-        center: OlProj.fromLonLat([100.4683014, 13.7248785]),
+        center: OlProj.fromLonLat([ 100.53139488523458,13.786463255129673]),
         zoom: 10,
         maxZoom: 17,
         minZoom: 10,
@@ -392,15 +431,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const element = document.getElementById('popupMapResult')!;
     this.popUp = new Overlay({
       element: element,
-      offset: [0,-20],
+      offset: [0, -20],
     });
     this.map.addOverlay(this.popUp);
-
-    
   }
 
   handlePointerMove(event: any): void {
-
     let coordinates: Coordinate;
     const feature = this.map.forEachFeatureAtPixel(
       event.pixel,
@@ -412,7 +448,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
       const geometry = feature.getGeometry();
       if (geometry instanceof LineString) {
         // Get the closest point on the LineString to the event's pixel location
-        coordinates = geometry.getClosestPoint(this.map.getCoordinateFromPixel(event.pixel));
+        coordinates = geometry.getClosestPoint(
+          this.map.getCoordinateFromPixel(event.pixel)
+        );
         this.popupContent = feature.getProperties();
       } else if (geometry instanceof Point) {
         coordinates = geometry.getCoordinates();
@@ -422,46 +460,61 @@ export class ResultComponent implements OnInit, AfterViewInit {
       }
       this.popUp?.setPosition(coordinates);
       const properties = feature.getProperties();
-    if (properties['features'] && properties['features'].length > 0) {
-      const nestedFeatureProperties = properties['features'][0].getProperties();
-      this.popupContent = nestedFeatureProperties;
+      if (properties['features'] && properties['features'].length > 0) {
+        const nestedFeatureProperties =
+          properties['features'][0].getProperties();
+        this.popupContent = nestedFeatureProperties;
+      } else {
+        this.popupContent = properties;
+      }
+      console.log(this.popupContent);
     } else {
-      this.popupContent = properties;
+      this.popUp?.setPosition(undefined);
     }
-    console.log(this.popupContent);
-  } else {
-    this.popUp?.setPosition(undefined);
-  }
-
 
     if (feature && feature.getGeometry()?.getType() === 'LineString') {
-      this.highlightedFeatureCollectionId = feature.getProperties()['route_index'];
+      this.highlightedFeatureCollectionId =
+        feature.getProperties()['route_index'];
     } else {
       this.highlightedFeatureCollectionId = null;
     }
     const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
     vectorLayer.getSource()?.changed();
-    const clusterLayer  = this.map.getLayers()?.item(2) as VectorLayer;
+    const clusterLayer = this.map.getLayers()?.item(2) as VectorLayer;
     clusterLayer.getSource()?.changed();
   }
   handleClick(event: any): void {
-    const feature = this.map.forEachFeatureAtPixel(event.pixel, (feature) => feature);
+    const feature = this.map.forEachFeatureAtPixel(
+      event.pixel,
+      (feature) => feature
+    );
     if (feature && feature.getGeometry()?.getType() === 'LineString') {
       const routeIndex = feature.getProperties()['route_index'];
-      const featureCollection = this.featureCollections.find((collection: any) => {
-        return collection.features.some((f: any) => f.properties.route_index === routeIndex);
-      });
-  
-      if (featureCollection) {
-        this.openModal(featureCollection);
-      }
+      let depotId: number = feature.getProperties()['depot_id'];
+      const featureCollection = this.featureCollections.find(
+        (collection: any) => {
+          return collection.features.some((f: any) => {
+            depotId = f.properties.depot_id;
+            return f.properties.route_index === routeIndex;
+          });
+        }
+      );
+    let featureDepot: any = null;
+    if (this.featureDepots.length === 1) {
+      featureDepot = this.featureDepots[0];
+    }else featureDepot = this.featureDepots.find((depot: any) => {
+      return depot.properties.depot_id === depotId;
+    });
+    if (featureCollection) {
+      this.openModal(featureCollection, featureDepot);
+    }
     }
   }
   private pointMove(evt: any): void {
     const target = this.map.getTargetElement();
     const pixel = this.map.getEventPixel(evt.originalEvent);
     const hit = this.map.hasFeatureAtPixel(pixel);
-  
+
     if (hit) {
       target.style.cursor = 'pointer';
     } else {
@@ -469,30 +522,33 @@ export class ResultComponent implements OnInit, AfterViewInit {
     }
   }
 
-  openModal(featureCollection: any): void {
-    const modalRef = this.ngbModal.open(MapDetailsDialogComponent, { 
+  openModal(featureCollection: any, featureDepot: any): void {
+    const modalRef = this.ngbModal.open(MapDetailsDialogComponent, {
       size: 'xl',
       centered: true,
       windowClass: 'custom-modal-width',
       modalDialogClass: 'custom-modal-content',
     });
     modalRef.componentInstance.featureCollection = featureCollection;
+    modalRef.componentInstance.featureDepot = featureDepot;
   }
 
-  styleFunction(feature: FeatureLike): Style | Style[] | undefined{
+  styleFunction(feature: FeatureLike): Style | Style[] | undefined {
     const geometryType = feature.getGeometry()!.getType();
     const color = feature.getProperties()['color'];
     const text = feature.getProperties()['node_index'];
     const routeIndex = feature.getProperties()['route_index'];
-
     switch (geometryType) {
       case 'Point':
         return new Style({
-          image: new Circle({
-            radius: 15,
-            fill: new Fill({
-              color: color,
-            }),
+          image: new Icon({
+            anchor: [0.5, 0.5],
+            anchorOrigin: 'bottom-left',
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'pixels',
+            crossOrigin: 'anonymous',
+            opacity: 1,
+            src: `assets/image/depot.png`,
           }),
           text: new Text({
             text: text,
@@ -507,8 +563,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
           return new Style({
             stroke: new Stroke({
               color: color,
-              width: 6
-            })
+              width: 6,
+            }),
           });
         } else if (this.highlightedFeatureCollectionId !== null) {
           return this.dimStyle;
@@ -516,8 +572,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
           return new Style({
             stroke: new Stroke({
               color: color,
-              width: 3
-            })
+              width: 3,
+            }),
           });
         }
       default:
@@ -527,42 +583,53 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   clusterStyleFunction(feature: FeatureLike): Style | Style[] {
     const features = feature.get('features');
-    const routeIndexes = features.map((f: FeatureLike) => f.getProperties()['route_index']);
-    const isHighlighted = routeIndexes.includes(this.highlightedFeatureCollectionId);
-  
+    const routeIndexes = features.map(
+      (f: FeatureLike) => f.getProperties()['route_index']
+    );
+    const isHighlighted = routeIndexes.includes(
+      this.highlightedFeatureCollectionId
+    );
+
     // Aggregate properties from individual features
     const colors = features.map((f: FeatureLike) => f.getProperties()['color']);
-    const texts = features.map((f: FeatureLike) => f.getProperties()['route_order']);
-  
+    const texts = features.map(
+      (f: FeatureLike) => f.getProperties()['route_order']
+    );
+
     // Create an array of styles for each feature
 
-      const color = colors[0] || '#3399CC'; // Default color if not specified
-      const text = texts[0] || '';
-  
-      return new Style({
-        image: new CircleStyle({
-          radius: isHighlighted ? 15 : 10,
-          fill: new Fill({
-            color: isHighlighted ? '#ffcc33' : this.highlightedFeatureCollectionId !== null ? 'rgba(0, 0, 0, 0.2)' : color, // Highlight color if part of highlighted FeatureCollection
-          }),
-          stroke: new Stroke({
-            color: '#fff',
-            width: 2,
-          }),
+    const color = colors[0] || '#3399CC'; // Default color if not specified
+    const text = texts[0] || '';
+
+    return new Style({
+      image: new CircleStyle({
+        radius: isHighlighted ? 15 : 10,
+        fill: new Fill({
+          color: isHighlighted
+            ? '#ffcc33'
+            : this.highlightedFeatureCollectionId !== null
+            ? 'rgba(0, 0, 0, 0.2)'
+            : color, // Highlight color if part of highlighted FeatureCollection
         }),
-        text: new Text({
-          text: text,
-          font: '15px Calibri,sans-serif',
-          fill: new Fill({
-            color: '#fff',
-          }),
+        stroke: new Stroke({
+          color: '#fff',
+          width: 2,
         }),
-      });
-  
+      }),
+      text: new Text({
+        text: text,
+        font: '15px Calibri,sans-serif',
+        fill: new Fill({
+          color: '#fff',
+        }),
+      }),
+    });
   }
 
   toggleRow(row: RouteInfo) {
-    const index = this.expandedElement.findIndex((x) => x.Route == row.Route);
+    const index = this.expandedElement.findIndex(
+      (x) => x.route_index == row.route_index
+    );
     if (index === -1) {
       this.expandedElement.push(row);
     } else {
@@ -571,7 +638,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   isExpanded(row: RouteInfo): string {
-    const index = this.expandedElement.findIndex((x) => x.Route == row.Route);
+    const index = this.expandedElement.findIndex(
+      (x) => x.route_index == row.route_index
+    );
     if (index === -1) {
       return 'collapsed';
     }
@@ -581,7 +650,129 @@ export class ResultComponent implements OnInit, AfterViewInit {
   isNumber(value: any): boolean {
     return !isNaN(value);
   }
-  haveTime():boolean{
-    return this.experiment?.timeStart !== null && this.experiment?.timeEnd !== null;
+  haveTime(): boolean {
+    return (
+      this.experiment?.timeStart !== null && this.experiment?.timeEnd !== null
+    );
+  }
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement)?.value || '';
+    if (filterValue || filterValue !== '') {
+      
+    
+    const filterObject = {
+      [this.selectedSearchOption]: filterValue.trim().toLowerCase(),
+    };
+    this.dataRouteInfo.filter = JSON.stringify(filterObject);
+  }else{
+    this.dataRouteInfo.filter = '';
+  }
+  }
+
+  clearFilter() {
+    this.searchControl.setValue('');
+    this.dataRouteInfo.filter = '';
+  }
+
+  setSearchOption(value: string) {
+    this.selectedSearchOption = value;
+  }
+
+  openRouteDetails(routeIndex: number): void {
+    let depotId: number | null = null;
+  
+    const collection = this.featureCollections.find((collection: any) => {
+      return collection.features.some((feature: any) => {
+        if (feature.properties.route_index === routeIndex) {
+          depotId = feature.properties.depot_id;
+          return true;
+        }
+        return false;
+      });
+    });
+  
+    if (!collection) {
+      console.error(`No feature collection found for route index ${routeIndex}`);
+      return;
+    }
+  
+    const featureDepot = this.featureDepots.length === 1
+      ? this.featureDepots[0]
+      : this.featureDepots.find((depot: any) => depot.properties.depot_id === depotId);
+  
+    if (!featureDepot) {
+      console.error(`No depot found with depot_id ${depotId}`);
+      return;
+    }
+    console.log(featureDepot,collection);
+  
+    this.openModal(collection, featureDepot);
+  }
+  
+
+  onMouseEnter(row: RouteInfo) {
+    if(!this.mapAlreadyRendered) return;
+    console.log('Mouse entered row:', row);
+    this.highlightedFeatureCollectionId = row.route_index;
+    const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
+    vectorLayer.getSource()?.changed();
+    const clusterLayer = this.map.getLayers()?.item(2) as VectorLayer;
+    clusterLayer.getSource()?.changed();
+  }
+
+  onMouseLeave(row: RouteInfo) {
+    if(!this.mapAlreadyRendered) return;
+    console.log('Mouse left row:', row);
+    this.highlightedFeatureCollectionId = null;
+    const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
+    vectorLayer.getSource()?.changed();
+    const clusterLayer = this.map.getLayers()?.item(2) as VectorLayer;
+    clusterLayer.getSource()?.changed();
+  }
+
+  openConfirmDialog(title:string,message:string,question:string, acceptButton:string ='Confirm',disableCancelButton:boolean=true) {
+    const focusedElement = document.activeElement as HTMLElement;
+    if (focusedElement) {
+      focusedElement.blur();
+    }
+    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      centered: true,
+      animation: true,
+    });
+    dialogRef.componentInstance.title = title;
+    dialogRef.componentInstance.question = question;
+    dialogRef.componentInstance.message = message;
+    dialogRef.componentInstance.acceptButton = acceptButton;
+    dialogRef.componentInstance.disableCancelButton = disableCancelButton;
+
+    return dialogRef;
+  }
+
+  tryToRerunExperiment(){
+    const dialogRef = this.openConfirmDialog('Try to Rerun experiment','Confirm to try to Rerun experiment','Are you sure to try to rerun experiment ?');
+    dialogRef.result.then((confirmed: boolean) => {
+      if(confirmed){
+        this.spinner.show();
+        this.experimentService.replicateExperiment(this.experiment!.runId).subscribe(response => {
+          this.spinner.hide();
+          this.toastr.success("Success to replicate experiment", 'Replicate Experiment');
+          this.router.navigate(['/users/run',response.runId]);
+        })
+      }
+    })
+    
+  }
+
+  downloadPlan(){
+    this.spinner.show();
+    this.experimentService.getExperimentResultUrl(this.experiment!.runId).subscribe( (response: DownloadResultFile) => {
+      this.configurationService.downloadFile(response.fileUrl.resultFileBlobPathUrl).finally(() => {
+        this.spinner.hide();
+        this.toastr.success("Success to download plan", 'Download Plan');
+      })
+      
+    })
+    
+    
   }
 }

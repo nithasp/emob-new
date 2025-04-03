@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, retry } from 'rxjs';
 import { Response } from '../models/graphql.model';
 import gql from 'graphql-tag';
 import { Apollo } from 'apollo-angular';
@@ -39,7 +39,7 @@ export class PreOrderService {
       context: {
         useMultipart: true // Ensure multipart upload is enabled
       }
-    }).pipe(map(result => result.data!.uploadPreOrder),
+    }).pipe(retry(3),map(result => result.data!.uploadPreOrder),
     this.errorHandlingService.handleError);
   }
 }
