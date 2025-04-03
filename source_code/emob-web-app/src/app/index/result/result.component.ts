@@ -24,7 +24,6 @@ import {
   Attribution,
 } from 'ol/control';
 import * as OlProj from 'ol/proj';
-import { LocationService } from 'src/app/services/location.service';
 import GeoJSON from 'ol/format/GeoJSON';
 import Overlay from 'ol/Overlay';
 import { Coordinate } from 'ol/coordinate';
@@ -119,7 +118,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
   constructor(
     private readonly http: HttpClient,
     private readonly spinner: NgxSpinnerService,
-    private readonly locationService: LocationService,
     private readonly ngbModal: NgbModal,
     private readonly route: ActivatedRoute,
     private readonly experimentService: ExperimentService,
@@ -778,7 +776,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         const blob = response.body;
         if (blob) {
           const link = document.createElement('a');
-          link.href = window.URL.createObjectURL(blob);
+          link.href = window.URL.create(blob);
           link.download = fileName;
           link.target = '_blank'; // Open in a new window
           link.click();
