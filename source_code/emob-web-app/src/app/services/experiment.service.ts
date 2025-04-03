@@ -153,7 +153,7 @@ export class ExperimentService {
       variables : {
         runId : runId        
       },
-      fetchPolicy: 'cache-and-network'
+      fetchPolicy: 'network-only'
     }).valueChanges.pipe(map(result => result.data.downloadResultFile),this.errorHandlingService.handleError);
   }
   
