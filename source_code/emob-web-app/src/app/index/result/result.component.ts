@@ -146,10 +146,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
           this.expandedElement = [];
           this.toastr.info('Loading Report Data', 'Please wait...');
           await this.loadReportData(response.fileUrl.outputReportUrl);
-          this.toastr.info('Rendering data on map', 'Please wait...');
           this.spinner.hide();
+          this.toastr.info('Rendering data on map', 'Please wait...');
           await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
-          this.toastr.success('Data loaded successfully', 'Success');
         });
       
     });
@@ -766,10 +765,33 @@ export class ResultComponent implements OnInit, AfterViewInit {
   downloadPlan(){
     this.spinner.show();
     this.experimentService.getExperimentResultUrl(this.experiment!.runId).subscribe( (response: DownloadResultFile) => {
-      this.configurationService.downloadFile(response.fileUrl.resultFileBlobPathUrl).finally(() => {
-        this.spinner.hide();
-        this.toastr.success("Success to download plan", 'Download Plan');
-      })
+      this.configurationService.downloadFile(response.fileUrl.resultFileBlobPathUrl).subscribe((response) => {
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let fileName = 'downloadedFile';
+        if (contentDisposition) {
+          const matches = /filename="([^"]*)"/.exec(contentDisposition);
+          if (matches && matches.length > 0) { 
+            fileName = matches[1];
+          }
+        }
+      
+        const blob = response.body;
+        if (blob) {
+          const link = document.createElement('a');
+          link.href = window.URL.createObjectURL(blob);
+          link.download = fileName;
+          link.target = '_blank'; // Open in a new window
+          link.click();
+          window.URL.revokeObjectURL(link.href); // Clean up
+          this.spinner.hide();
+          this.toastr.success("Success to download plan", 'Download Plan');
+        } else {
+          console.error('Download failed: Blob is null');
+          this.spinner.hide();
+        }
+      });
+      
+      
       
     })
     

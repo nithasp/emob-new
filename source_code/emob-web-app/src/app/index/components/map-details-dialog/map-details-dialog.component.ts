@@ -213,18 +213,11 @@ export class MapDetailsDialogComponent implements OnInit {
               crossOrigin: 'anonymous',
               opacity: 1,
               src: `assets/image/depot.png`,
-            }),
-            text: new Text({
-              text: text,
-              font: '15px Calibri,sans-serif',
-              fill: new Fill({
-                color: '#fff',
-              }),
-            }),
+            })          
           });
         }else return new Style({
           image: new CircleStyle({
-            radius: 20,
+            radius: 15,
             fill: new Fill({
               color: '#242484',
             }),
