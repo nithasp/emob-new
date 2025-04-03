@@ -782,9 +782,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
           link.download = fileName;
           link.target = '_blank'; // Open in a new window
           link.click();
-          window.URL.revokeObjectURL(link.href); // Clean up
           this.spinner.hide();
           this.toastr.success("Success to download plan", 'Download Plan');
+          window.URL.revokeObjectURL(link.href); // Clean up
         } else {
           console.error('Download failed: Blob is null');
           this.spinner.hide();

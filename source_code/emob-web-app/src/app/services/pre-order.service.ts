@@ -39,7 +39,7 @@ export class PreOrderService {
       context: {
         useMultipart: true // Ensure multipart upload is enabled
       }
-    }).pipe(retry(3),map(result => result.data!.uploadPreOrder),
+    }).pipe(map(result => result.data!.uploadPreOrder),
     this.errorHandlingService.handleError);
   }
 }

@@ -154,7 +154,7 @@ export class ExperimentService {
         runId : runId        
       },
       fetchPolicy: 'cache-and-network'
-    }).valueChanges.pipe(retry(3),map(result => result.data.downloadResultFile),this.errorHandlingService.handleError);
+    }).valueChanges.pipe(map(result => result.data.downloadResultFile),this.errorHandlingService.handleError);
   }
   
   validateExperiment(runId: string,parameter:Constraint,locationUpdated:CustomerUpdated[]):Observable<Experiment>{
