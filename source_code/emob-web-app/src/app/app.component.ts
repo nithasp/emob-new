@@ -44,13 +44,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.authService.initialize()
       .subscribe(x => {
 
-        this.authService.instance.enableAccountStorageEvents(); // Optional - This will enable ACCOUNT_ADDED and ACCOUNT_REMOVED events emitted when a user logs in or out of another tab or window
-
-        /**
-         * You can subscribe to MSAL events as shown below. For more info,
-         * visit: https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-angular/docs/v2-docs/events.md
-         */
-
+        this.authService.instance.enableAccountStorageEvents();
         this.msalBroadcastService.msalSubject$
           .pipe(
             filter((msg: EventMessage) => msg.eventType === EventType.ACCOUNT_ADDED || msg.eventType === EventType.ACCOUNT_REMOVED),
@@ -79,12 +73,10 @@ export class AppComponent implements OnInit, OnDestroy {
      * Note: Basic usage demonstrated. Your app may require more complicated account selection logic
      */
     let activeAccount = this.authService.instance.getActiveAccount();
-    console.log(activeAccount);
     this.userADProfile = {name:activeAccount?.name ?? null,
       tenantId:activeAccount?.tenantId ?? null,
       username:activeAccount?.username ?? null
     };
-    this.getClaims(activeAccount?.idTokenClaims);
 
     if (!activeAccount && this.authService.instance.getAllAccounts().length > 0) {
       let accounts = this.authService.instance.getAllAccounts();
@@ -92,37 +84,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.authService.instance.setActiveAccount(accounts[0]);
     }
   }
-  getClaims(claims: any) {
-    if (claims) {
-      const claimsTable = createClaimsTable(claims);
-      console.log(claimsTable);
-    }
-  }
-  login() {
-    if (this.msalGuardConfig.interactionType === InteractionType.Popup) {
-      if (this.msalGuardConfig.authRequest) {
-        this.authService.loginPopup({
-          ...this.msalGuardConfig.authRequest,
-        } as PopupRequest)
-          .subscribe((response: AuthenticationResult) => {
-            this.authService.instance.setActiveAccount(response.account);
-          });
-      } else {
-        this.authService.loginPopup()
-          .subscribe((response: AuthenticationResult) => {
-            this.authService.instance.setActiveAccount(response.account);
-          });
-      }
-    } else {
-      if (this.msalGuardConfig.authRequest) {
-        this.authService.loginRedirect({
-          ...this.msalGuardConfig.authRequest,
-        } as RedirectRequest);
-      } else {
-        this.authService.loginRedirect();
-      }
-    }
-  }
+
   
   @HostListener("window:scroll")
   checkScroll() {

@@ -531,7 +531,9 @@
                 <div class="col text-start">
                   <button mat-raised-button
                     class="bg-custom-secondary"
-                    (click)="setParameterDefault()">Set Default</button>
+                    (click)="setParameterDefault()">
+                    <mat-icon>published_with_changes</mat-icon>
+                    Set Default</button>
                 </div>
                 <div class="col text-end">
                   <button mat-raised-button color="secondary"
@@ -540,7 +542,7 @@
                     Back</button>
                   <button mat-raised-button class="bg-custom-primary pr-3"
                     (click)="validateExperimentPreOrder()">
-                    <mat-icon>published_with_changes</mat-icon>
+                    <mat-icon>rule</mat-icon>
                     {{haveUpdateAfterValidated && haveValidated ? 'Revalidate' : 'Validate'}}</button>
                 </div>
               </div>
@@ -569,11 +571,22 @@
                       will filter and eliminate any invalid order data</strong>
                     before the AI service can continue with route planning.
                   </ngb-alert>
-                  <p class="h-2 text-uppercase">filter and eliminate any invalid
-                    order data</p>
+                  There is correct order information.
+                  }@else {
+                    <ngb-alert type="success" [dismissible]="false" class="mt-5 mb-5">
+                      <strong class="h-2">verification is correct!</strong>
+                      Pre-order verification is correct. You can continue to route your plan
+                    </ngb-alert>
                   }
                   <!-- validate -->
-
+                  @if(validateExperiment &&
+                  validateExperiment.filters.constraints.over_distance.length >0 &&
+                  validateExperiment.filters.constraints.over_weight.length > 0 &&
+                  validateExperiment.filters.order_data.invalid_coordinate.length
+                  > 0){
+                     <p class="h-2 text-capitalize">Filter and eliminate any invalid
+                      order data</p>
+                  }                 
                   @if(validateExperiment &&
                   validateExperiment.filters.constraints.over_distance.length >0
                   && isValidateShowMessage.validate.overDistance){
@@ -608,7 +621,7 @@
                         <tbody>
                           <tr
                             *ngFor="let item of validateExperiment.filters.constraints.over_distance">
-                            <th scope="row">Over Weight</th>
+                            <th scope="row">Over Distance</th>
                             <td>{{(item.metrics!.excess_distance/100) | number:
                               '2.0-2'}} KM.</td>
                             <td>{{item.name}}</td>
@@ -730,22 +743,70 @@
                         (pageChange)="refreshValidationTable()">
                       </ngb-pagination>
                     </div>
-                  </div>
+                </div>
                   }
 
                   @if(validateExperiment &&
                   validateExperiment.warning.zero_weight.length > 0){
 
-                  <p class="h-2 text-uppercase">Order data</p>
+                  <p class="h-2 text-capitalize">Order data</p>
                   <ngb-alert [dismissible]="false">
                     <strong>{{validateMessage.warningMessage.zeroWeight.title}}
                     </strong>
-                    {{validateMessage.warningMessage.zeroWeight.message }}<a
+                    {{validateMessage.warningMessage.zeroWeight.message }}
+                    <a
                       target="_blank" [routerLink]="['/users/inventories']"
                       class="link link-primary link-opacity-75-hover">direct to
                       inventory.</a>
+                      <button
+                      type="button"
+                      class="link link-primary link-opacity-75-hover"
+                      (click)="collapseZeroWeight.toggle()"
+                      [attr.aria-expanded]="!ngbZeroWeightCollapse"
+                      aria-controls="collapseExample">
+                      Show details
+                    </button>
                   </ngb-alert>
+                  <div class="mb-3" #collapseZeroWeight="ngbCollapse"
+                  [(ngbCollapse)]="ngbZeroWeightCollapse">
+                    <div class="table-responsive">
+                      <table class="table table-striped">
+                        <thead>
+                          <tr>
+                            <th scope="col">ORDER ID</th>
+                            <th scope="col">PRODUCT ID (ZERO WEIGHT)</th>
+                            <th scope="col">PRODUCT ID (MISSING)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let item of validateExperiment.warning.zero_weight"
+                            (click)="openCustomerOrderDetails(item)"
+                            style="cursor: pointer;">
+                            <td>{{item.name}}</td>
+                            <td>{{item.metrics?.product_ids?.join(', ')}}</td>
+                            <td>{{item.metrics?.missing_product_ids?.join(', ')}}</td>
+
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="d-flex justify-content-between p-2">
+                      <ngb-pagination
+                        [collectionSize]="ngbValidationTableCollectionSize"
+                        [(page)]="page"
+                        [pageSize]="pageSize"
+                        (pageChange)="refreshValidationTable()">
+                      </ngb-pagination>
+                    </div>
+                </div>
                   }
+                </div>
+                <div class="col text-start">
+                  <button mat-raised-button
+                    class="bg-custom-secondary"
+                    (click)="exportValidationData()">
+                    <mat-icon>download</mat-icon>
+                    Export invalid and warning</button>
                 </div>
                 <div class="col text-end">
                   <button mat-raised-button color="secondary"
@@ -759,7 +820,7 @@
                     <button mat-raised-button class="bg-custom-primary pr-3"
                     (click)="validateExperimentPreOrder()" 
                     *ngIf="haveUpdateAfterValidated && haveValidated">
-                    <mat-icon>published_with_changes</mat-icon>
+                    <mat-icon>rule</mat-icon>
                     Revalidate</button>
                 </div>
               </div>

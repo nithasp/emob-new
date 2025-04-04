@@ -15,7 +15,7 @@
           <mat-icon>upload_2</mat-icon>
           Update
         </button>
-        <div   ngbDropdownMenu aria-labelledby="dropdownManual">
+        <div ngbDropdownMenu aria-labelledby="dropdownManual">
           @for(category of configurationsExplorer; track $index){
 
           <button ngbDropdownItem [disabled]="category.name != 'actualLocation'"
@@ -42,86 +42,89 @@
       </div>
 
     </div>
-    <div class="col-md-4 border" style="height: 800px; overflow-y: auto; overflow-x: auto;">
-        <div class="bg-category w-100" style="text-align: center;">
-          <p class="font-weight-bold h3 p-3">CONFIGURATIONS</p>
+    <div class="col-md-4 border"
+      style="height: 800px; overflow-y: auto; overflow-x: auto;">
+      <div class="bg-category w-100" style="text-align: center;">
+        <p class="font-weight-bold h3 p-3">CONFIGURATIONS</p>
       </div>
-          <mat-tree #tree [dataSource]="dataSource"
-            [childrenAccessor]="childrenAccessor"
-            >
-            <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding
-              [class.active]="node.name === selectedNode"
-              style="cursor: pointer;">
-              @if( (configurationAllData.actualLocations.length > 0 && node.type === 'actualLocation') || node.type === 'configuration' ){
-              <div style="display: flex; align-items: center;"
-                (click)="onChangeFile(node.name,node.type,node.blobPath)"
-                placement="top"
-                [ngbTooltip]="node.timestamp">
-                <button mat-icon-button disabled>
-                  <div style="text-align: center;">
-                    <mat-icon class="icon-file">description</mat-icon>
-                    <div style="font-size: 10px;">Excel</div>
-                  </div>
-                </button>
-                <div>
-                  {{node.name}}
-                </div>
+      <mat-tree #tree [dataSource]="dataSource"
+        [childrenAccessor]="childrenAccessor">
+        <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding
+          [class.active]="node.name === selectedNode"
+          style="cursor: pointer;">
+          @if( (configurationAllData.actualLocations.length > 0 && node.type ===
+          'actualLocation') || node.type === 'configuration' ){
+          <div style="display: flex; align-items: center;"
+            (click)="onChangeFile(node.name,node.type,node.blobPath)"
+            placement="top"
+            [ngbTooltip]="node.timestamp">
+            <button mat-icon-button disabled>
+              <div style="text-align: center;">
+                <mat-icon class="icon-file">description</mat-icon>
+                <div style="font-size: 10px;">Excel</div>
               </div>
-              <span style="flex-grow: 1;"></span>
-              <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown">
-                <button mat-icon-button
-                  id="dropdown1"
-                  (focus)="myDrop.open()">
-                  <mat-icon>more_vert</mat-icon>
-                </button>
-                <div  ngbDropdownMenu aria-labelledby="dropdown1" x-placement="bottom-left" style="margin-left: -100px;">
-                  <button ngbDropdownItem
-                    [hidden]="node.type === 'actualLocation'"
-                    (click)="openUploadFile(node.category,node.name,node.type)">
-                    <mat-icon>upload_file</mat-icon>
-                    Update File</button>
-                  <button ngbDropdownItem>
-                    <mat-icon>download</mat-icon>
-                    Download</button>
-                </div>
-              </div>
-            }
-            </mat-tree-node>
+            </button>
+            <div>
+              {{node.name}}
+            </div>
+          </div>
+          <span style="flex-grow: 1;"></span>
+          <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown">
+            <button mat-icon-button
+              id="dropdown1"
+              (focus)="myDrop.open()">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <div ngbDropdownMenu aria-labelledby="dropdown1"
+              x-placement="bottom-left" style="margin-left: -100px;">
+              <button ngbDropdownItem
+                [hidden]="node.type === 'actualLocation'"
+                (click)="openUploadFile(node.category,node.name,node.type)">
+                <mat-icon>upload_file</mat-icon>
+                Update File</button>
+              <button ngbDropdownItem
+                (click)="getFileUrl(node.name,node.type,node.blobPath)">
+                <mat-icon>download</mat-icon>
+                Download</button>
+            </div>
+          </div>
+          }
+        </mat-tree-node>
 
-            <mat-tree-node *matTreeNodeDef="let node; when: hasChild"
-              [cdkTreeNodeTypeaheadLabel]="node.name"
-              style="cursor: pointer;" placement="end"
-              [ngbTooltip]="node.timestamp">
-              <div
-                matTreeNodeToggle
-                matTreeNodePadding
-                [class.active]="node.name === selectedNode">
-                <button mat-icon-button matTreeNodeToggle>
-                  <mat-icon class="mat-icon-rtl-mirror">
-                    {{tree.isExpanded(node) ? 'expand_more' :
-                    'chevron_right'}}
-                  </mat-icon>
-                </button>
-                <mat-icon class="icon-category mr-2">folder</mat-icon>
-                <strong class="text-capitalize">{{node.name}}</strong>
-              </div>
+        <mat-tree-node *matTreeNodeDef="let node; when: hasChild"
+          [cdkTreeNodeTypeaheadLabel]="node.name"
+          style="cursor: pointer;" placement="end"
+          [ngbTooltip]="node.timestamp">
+          <div
+            matTreeNodeToggle
+            matTreeNodePadding
+            [class.active]="node.name === selectedNode">
+            <button mat-icon-button matTreeNodeToggle>
+              <mat-icon class="mat-icon-rtl-mirror">
+                {{tree.isExpanded(node) ? 'expand_more' :
+                'chevron_right'}}
+              </mat-icon>
+            </button>
+            <mat-icon class="icon-category mr-2">folder</mat-icon>
+            <strong class="text-capitalize">{{node.name}}</strong>
+          </div>
 
-              <div class="d-inline-block ml-5" ngbDropdown #myDrop="ngbDropdown"
-                *ngIf="node.name === 'actualLocation'">
-                <button mat-icon-button
-                  id="dropdownManual"
-                  (focus)="myDrop.open()">
-                  <mat-icon>more_vert</mat-icon>
-                </button>
-                <div  ngbDropdownMenu aria-labelledby="dropdownManual">
-                  <button ngbDropdownItem
-                    (click)="openUploadFile(node.name,node.name,'actualLocation')">
-                    <mat-icon>upload_file</mat-icon>
-                    Update File</button>
-                </div>
-              </div>
-            </mat-tree-node>
-          </mat-tree>
+          <div class="d-inline-block ml-5" ngbDropdown #myDrop="ngbDropdown"
+            *ngIf="node.name === 'actualLocation'">
+            <button mat-icon-button
+              id="dropdownManual"
+              (focus)="myDrop.open()">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <div ngbDropdownMenu aria-labelledby="dropdownManual">
+              <button ngbDropdownItem
+                (click)="openUploadFile(node.name,node.name,'actualLocation')">
+                <mat-icon>upload_file</mat-icon>
+                Update File</button>
+            </div>
+          </div>
+        </mat-tree-node>
+      </mat-tree>
     </div>
     <div class="col-md-8 pl-3 border">
       <div class="container-preview"
@@ -158,7 +161,8 @@
         </table>
 
       </div>
-      <ngb-pagination class="mt-3" *ngIf="(excelData.length > 0) && (selectedNode)"
+      <ngb-pagination class="mt-3"
+        *ngIf="(excelData.length > 0) && (selectedNode)"
         [collectionSize]="excelData.length"
         [(page)]="currentPage"
         [pageSize]="pageSize"

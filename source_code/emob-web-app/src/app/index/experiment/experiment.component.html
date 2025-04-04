@@ -9,7 +9,7 @@
       [hidden]="!isSelectedStatusValue('InProgress') && !isSelectedStatusValue('Succeeded') && !isSelectedStatusValue('Canceled')"
       (click)="tryToRerunExperiment(selection.selected[0])">
         <mat-icon>content_copy</mat-icon>
-        Clone Previous
+        Try to Rerun
       </button>
       <button mat-raised-button  class="ml-3 bg-custom-primary"
       [hidden]="!isSelectedStatusValue('Canceled') && !isSelectedStatusValue('Failed')"

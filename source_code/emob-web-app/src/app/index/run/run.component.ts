@@ -43,7 +43,12 @@ import Style from 'ol/style/Style';
 import { ConstraintService } from 'src/app/services/constraint.service';
 import { Constraint } from 'src/app/models/constraint.model';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Experiment, Result, StatusExperiment, Validate } from 'src/app/models/experiment.model';
+import {
+  Experiment,
+  Result,
+  StatusExperiment,
+  Validate,
+} from 'src/app/models/experiment.model';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import {
   NgbTimeStruct,
@@ -70,6 +75,7 @@ import { UserMSGraphService } from 'src/app/services/user.service';
 import { firstValueFrom } from 'rxjs';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import { DataService } from 'src/app/services/data.service';
+import { ExportFileService } from 'src/app/services/export-file.service';
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
 @Injectable()
@@ -102,7 +108,10 @@ export class RunComponent implements OnInit, AfterViewInit {
   public activeNavId = 1;
   public isUpload!: boolean;
   public requiredFileType: string = '.xlsx, .xls';
-  readonly validTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'];
+  readonly validTypes = [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel',
+  ];
   private readonly requiredColumns: Array<string> = [
     'ORDERID_ORG',
     'CHANNEL',
@@ -120,47 +129,51 @@ export class RunComponent implements OnInit, AfterViewInit {
     'DELIVERYDATE_CONFIRM',
     'ORDER_ID',
   ];
-  public haveUpdateAfterValidated:boolean = false;
+  public haveUpdateAfterValidated: boolean = false;
   haveValidated = false;
   public isValidateShowMessage = {
-    OrderData:{
-      invalidCoordinate: true
-    },
-    parameter:{
-      overDistance:true,
-      overWeight:true
-    },
-    validate:{
+    OrderData: {
       invalidCoordinate: true,
-      overDistance:true,
-      overWeight:true
-    }
-  };
-  public validateMessage : ValidateMessage = {
-    filtersMessage:{
-      constraints:{
-        overDistance:{
-          title:"Over distance Warning!",
-          message:"Please check, the vehicle order-size capacity parameter of your constraint."
-        },
-        overWeight:{
-          title: "Over weight Warning!",
-          message: "Please check, the maximum travel distance parameter of your constraint."
-        }
-      },
-      orderData:{
-        invalidCoordinate:{
-          title:"Unverify coordinate danger!",
-          message:"Please check the order information, there are incorrect coordinates."
-        }
-      }
     },
-    warningMessage:{
-      zeroWeight:{
-        title:"Zero weight Warning!",
-        message:"Please check the inventories. If you have updated inventories,"
-      }
-    }
+    parameter: {
+      overDistance: true,
+      overWeight: true,
+    },
+    validate: {
+      invalidCoordinate: true,
+      overDistance: true,
+      overWeight: true,
+    },
+  };
+  public validateMessage: ValidateMessage = {
+    filtersMessage: {
+      constraints: {
+        overDistance: {
+          title: 'Over distance Warning!',
+          message:
+            'Please check, the vehicle order-size capacity parameter of your constraint.',
+        },
+        overWeight: {
+          title: 'Over weight Warning!',
+          message:
+            'Please check, the maximum travel distance parameter of your constraint.',
+        },
+      },
+      orderData: {
+        invalidCoordinate: {
+          title: 'Unverify coordinate danger!',
+          message:
+            'Please check the order information, there are incorrect coordinates.',
+        },
+      },
+    },
+    warningMessage: {
+      zeroWeight: {
+        title: 'Zero weight Warning!',
+        message:
+          'Please check the inventories. If you have updated inventories,',
+      },
+    },
   };
 
   // map rendering
@@ -170,13 +183,13 @@ export class RunComponent implements OnInit, AfterViewInit {
   private vectorSourceDepot!: VectorSource;
   private vectorLayer!: VectorLayer;
   private vectorLayerDepot!: VectorLayer;
-  
+
   private popUp?: Overlay;
 
   // store data
   public experiment = <Experiment>{};
   public preOrderFiles: File[] = [];
-  public popupContent?:{data : Customer, isDepot: boolean }|null;
+  public popupContent?: { data: Customer; isDepot: boolean } | null;
   private dataPreOrder: Array<PreOrder> = [];
   public groupedDataPreOrder: Partial<GroupedDataPreOrder> = {};
   public preOrderCount: number = 0;
@@ -184,7 +197,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   public customersLocationUpdated: Array<CustomerUpdated> = [];
   public countUploadedCustomers: number = 0;
   public constraintsData!: Constraint;
-  public validateExperiment:Validate | null =null;
+  public validateExperiment: Validate | null = null;
 
   //display table and virtualization
 
@@ -207,13 +220,14 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   // NgbTable
   page = 1;
-	pageSize = 10;
-	ngbValidationTableCollectionSize = 0;
-  validateDataTable: Customer[]=[];
+  pageSize = 10;
+  ngbValidationTableCollectionSize = 0;
+  validateDataTable: Customer[] = [];
 
-  // Ngbcollapse 
+  // Ngbcollapse
   ngbOverDistanceCollapse = true;
   ngbOverWeightCollapse = true;
+  ngbZeroWeightCollapse = true;
   ngbUnverifyCollapse = true;
 
   // Mat table
@@ -242,9 +256,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly router: Router,
     private readonly userMsGraphService: UserMSGraphService,
     private readonly configurationService: ConfigurationService,
-    private readonly dataService: DataService
-  ) {
-  }
+    private readonly dataService: DataService,
+    private readonly exportService: ExportFileService
+  ) {}
 
   ngOnInit(): void {
     this.spinner.show();
@@ -254,38 +268,49 @@ export class RunComponent implements OnInit, AfterViewInit {
         .subscribe((response: Experiment) => {
           this.experiment = { ...response };
 
-          this.userMsGraphService.getUserId().subscribe((userId: string | null) => {
-            if(this.experiment.status !== StatusExperiment.Initializing){
-              this.openConfirmDialog("Warning","You are not the creator of this experiment have been initialized","We will to go back to the experiments page?","Acknowledge",true).result.then(confirmed => {
-                this.spinner.hide();
-                this.router.navigate(['/users/experiment']);
-              });
-            }
-            if(userId !== this.experiment.triggeredBy){
-
-              this.openConfirmDialog("Warning","You are not the creator of this experiment","We will to go back to the experiments page?","Acknowledge",true).result.then(confirmed => {
-                this.spinner.hide();
-                this.router.navigate(['/users/experiment']);
-              })
-              
-              
-            }
-              if(!this.experiment.preOrderBlobPath){
-                this.initializeDefaultParameter();
-              }else{
-                this.initializeDataFromExperiment(this.experiment).finally(()=>{
-                  
-                  setTimeout(() => {
-                    this.toastr.success("Success to load experiment",this.experiment.name);
-                    this.spinner.hide();
-                  }, 500);
+          this.userMsGraphService
+            .getUserId()
+            .subscribe((userId: string | null) => {
+              if (this.experiment.status !== StatusExperiment.Initializing) {
+                this.openConfirmDialog(
+                  'Warning',
+                  'You are not the creator of this experiment have been initialized',
+                  'We will to go back to the experiments page?',
+                  'Acknowledge',
+                  true
+                ).result.then((confirmed) => {
+                  this.spinner.hide();
+                  this.router.navigate(['/users/experiment']);
                 });
-                
               }
-          })
-
-          
-          
+              if (userId !== this.experiment.triggeredBy) {
+                this.openConfirmDialog(
+                  'Warning',
+                  'You are not the creator of this experiment',
+                  'We will to go back to the experiments page?',
+                  'Acknowledge',
+                  true
+                ).result.then((confirmed) => {
+                  this.spinner.hide();
+                  this.router.navigate(['/users/experiment']);
+                });
+              }
+              if (!this.experiment.preOrderBlobPath) {
+                this.initializeDefaultParameter();
+              } else {
+                this.initializeDataFromExperiment(this.experiment).finally(
+                  () => {
+                    setTimeout(() => {
+                      this.toastr.success(
+                        'Success to load experiment',
+                        this.experiment.name
+                      );
+                      this.spinner.hide();
+                    }, 500);
+                  }
+                );
+              }
+            });
         });
     });
 
@@ -297,97 +322,124 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.sort; // For sort
   }
 
-  async initializeDataFromExperiment(experiment: Experiment){
-    console.log("initialize Data From Experiment's historical",experiment);
+  async initializeDataFromExperiment(experiment: Experiment) {
+    console.log("initialize Data From Experiment's historical", experiment);
     // Load Parameter
-    if(experiment.parameterBlobPath){
-      this.dataFromFileUrlToJson(experiment.fileUrl.parameterUrl).then((response: Constraint) => {
-        console.log("Constraint",response);
-        this.constraintsData = { ...response };
-        console.log(this.constraintsData);
-      })
-    }else{
+    if (experiment.parameterBlobPath) {
+      this.dataFromFileUrlToJson(experiment.fileUrl.parameterUrl).then(
+        (response: Constraint) => {
+          console.log('Constraint', response);
+          this.constraintsData = { ...response };
+          console.log(this.constraintsData);
+        }
+      );
+    } else {
       this.initializeDefaultParameter();
     }
-    
-    this.toastr.info("Loading PreOrder Data","Please wait...");
+
+    this.toastr.info('Loading PreOrder Data', 'Please wait...');
     // Load PreOrder
-    const isLoadPrOrder = await this.dataFromFileUrlToExcel(experiment.fileUrl.preOrderUrl);
-    console.log("isLoadPrOrder",isLoadPrOrder);
-    if(!isLoadPrOrder){
-      this.toastr.warning("Can not load Data","Please reupload Pre-order file again");
+    const isLoadPrOrder = await this.dataFromFileUrlToExcel(
+      experiment.fileUrl.preOrderUrl
+    );
+    console.log('isLoadPrOrder', isLoadPrOrder);
+    if (!isLoadPrOrder) {
+      this.toastr.warning(
+        'Can not load Data',
+        'Please reupload Pre-order file again'
+      );
     }
-    this.toastr.info("Loading Geo Location Data","Please wait...");
+    this.toastr.info('Loading Geo Location Data', 'Please wait...');
     // load geocoding location
-    await this.dataFromFileUrlToJson(experiment.fileUrl.LocationBlobPathUrl).then((response:Result)=>{
-      console.log("Result",response);
-      this.groupingCustomer(response.customers,response.depots);
-      
+    await this.dataFromFileUrlToJson(
+      experiment.fileUrl.LocationBlobPathUrl
+    ).then((response: Result) => {
+      console.log('Result', response);
+      this.groupingCustomer(response.customers, response.depots);
     });
-    if(experiment.fileUrl.locationUpdateBlobPathUrl){
-      this.toastr.info("Loading modified geo-location data.","Please wait...");
+    if (experiment.fileUrl.locationUpdateBlobPathUrl) {
+      this.toastr.info('Loading modified geo-location data.', 'Please wait...');
       // load geocoding location edited
-      await this.dataFromFileUrlToJson(experiment.fileUrl.locationUpdateBlobPathUrl).then((response:{customers:CustomerUpdated[]})=>{
+      await this.dataFromFileUrlToJson(
+        experiment.fileUrl.locationUpdateBlobPathUrl
+      ).then((response: { customers: CustomerUpdated[] }) => {
         this.updateCustomerGroup(response.customers);
-        this.dataService.getData(experiment.runId).subscribe((data: CustomerUpdated[]) => {
-          console.log("data user edited location",data);
-          const newData = data.filter(newItem => 
-            !this.customersLocationUpdated.some(existingItem => existingItem.index === newItem.index && existingItem.name === newItem.name)
-          );
-          console.log(newData);
-          if(newData.length > 0){
-            this.toastr.info("There are "+newData.length+" new data from user edited location in session","Please wait...");
-            this.haveUpdateAfterValidated = true;
-          }
-          this.updateCustomerGroup(newData);
-        });
-        
-  
-      })
+        this.dataService
+          .getData(experiment.runId)
+          .subscribe((data: CustomerUpdated[]) => {
+            console.log('data user edited location', data);
+            if (data && data.length > 0) {
+              const newData = data.filter(
+                (newItem) =>
+                  !this.customersLocationUpdated.some(
+                    (existingItem) =>
+                      existingItem.index === newItem.index &&
+                      existingItem.name === newItem.name
+                  )
+              );
+              console.log(newData);
+              if (newData.length > 0) {
+                this.toastr.info(
+                  'There are ' +
+                    newData.length +
+                    ' new data from user edited location in session',
+                  'Please wait...'
+                );
+                this.haveUpdateAfterValidated = true;
+              }
+              this.updateCustomerGroup(newData);
+            }
+          });
+      });
     }
-   
-    if(experiment.fileUrl.validatedBlobPathUrl){
-       // load validation data
-    this.toastr.info("Loading Validation Data","Please wait...");
-    await this.dataFromFileUrlToJson(experiment.fileUrl.validatedBlobPathUrl).then((response:Result)=>{
-      console.log("Result",response);
-      this.validateExperiment =  response.validate;
-        this.ngbValidationTableCollectionSize = this.validateExperiment.filters.order_data.invalid_coordinate.length;
-        this.refreshValidationTable();      
+
+    if (experiment.fileUrl.validatedBlobPathUrl) {
+      // load validation data
+      this.toastr.info('Loading Validation Data', 'Please wait...');
+      await this.dataFromFileUrlToJson(
+        experiment.fileUrl.validatedBlobPathUrl
+      ).then((response: Result) => {
+        console.log('Result', response);
+        this.validateExperiment = response.validate;
+        this.ngbValidationTableCollectionSize =
+          this.validateExperiment.filters.order_data.invalid_coordinate.length;
+        this.refreshValidationTable();
         this.haveValidated = true;
         this.isValidateShowMessage = {
-          OrderData:{
-            invalidCoordinate: true
-          },
-          parameter:{
-            overDistance:true,
-            overWeight:true
-          },
-          validate:{
+          OrderData: {
             invalidCoordinate: true,
-            overDistance:true,
-            overWeight:true
-          }
+          },
+          parameter: {
+            overDistance: true,
+            overWeight: true,
+          },
+          validate: {
+            invalidCoordinate: true,
+            overDistance: true,
+            overWeight: true,
+          },
         };
-      
-    })
+      });
     }
-   
   }
-  initializeDefaultParameter(){
-      this.constraintService.getMyParameter().subscribe((response: Constraint) => {
+  initializeDefaultParameter() {
+    this.constraintService
+      .getMyParameter()
+      .subscribe((response: Constraint) => {
         this.constraintsData = { ...response };
         console.log(this.constraintsData);
         this.spinner.hide();
       });
   }
   refreshValidationTable() {
-		this.validateDataTable = this.validateExperiment?.filters?.order_data?.invalid_coordinate.map((customer, i) => ({ id: i + 1, ...customer })).slice(
-			(this.page - 1) * this.pageSize,
-			(this.page - 1) * this.pageSize + this.pageSize,
-		)||[];
-
-	}
+    this.validateDataTable =
+      this.validateExperiment?.filters?.order_data?.invalid_coordinate
+        .map((customer, i) => ({ id: i + 1, ...customer }))
+        .slice(
+          (this.page - 1) * this.pageSize,
+          (this.page - 1) * this.pageSize + this.pageSize
+        ) || [];
+  }
   onFileSelected(files: any) {
     console.log(files);
     let file: File;
@@ -405,16 +457,17 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
     if (file) {
       if (!this.validTypes.includes(file.type)) {
-        this.showInvalidModal("File Invalid","Please select an Excel file (.xlsx or .xls)");
-      this.toastr.error('File Invalid:', file.type);
-       } else {
-         // Proceed with file processing
-         this.uploadFile(file);
-       }
+        this.showInvalidModal(
+          'File Invalid',
+          'Please select an Excel file (.xlsx or .xls)'
+        );
+        this.toastr.error('File Invalid:', file.type);
+      } else {
+        // Proceed with file processing
+        this.uploadFile(file);
+      }
     }
   }
-
-
 
   /**
    * The function `groupDataById` in TypeScript groups data by a specified ID, department, aumpher, and
@@ -470,11 +523,14 @@ export class RunComponent implements OnInit, AfterViewInit {
         .then((confirmed: boolean) => {
           if (confirmed) {
             this.spinner.show();
-            
+
             this.preOrderService
               .uploadPreOrder(this.experiment.runId, file)
               .subscribe((response: Experiment) => {
-                this.groupingCustomer(response.result.customers,response.result.depots);
+                this.groupingCustomer(
+                  response.result.customers,
+                  response.result.depots
+                );
                 this.preOrderFiles.push(file);
                 this.experiment.name = response.name;
                 this.spinner.hide();
@@ -508,9 +564,20 @@ export class RunComponent implements OnInit, AfterViewInit {
     event.target.value = null;
   }
   deleteFileInList(index: number) {
-    if(this.experiment.run !== 'Original' && this.experiment.status !== StatusExperiment.Initializing){
-      this.toastr.warning("Can not delete file","This experiment is Original of Parent Experiment");
-      this.openConfirmDialog("Can not delete file","This experiment is Original of Parent Experiment","If you need to rewrite file, please new Experiment.","Acknowledge");
+    if (
+      this.experiment.run !== 'Original' &&
+      this.experiment.status !== StatusExperiment.Initializing
+    ) {
+      this.toastr.warning(
+        'Can not delete file',
+        'This experiment is Original of Parent Experiment'
+      );
+      this.openConfirmDialog(
+        'Can not delete file',
+        'This experiment is Original of Parent Experiment',
+        'If you need to rewrite file, please new Experiment.',
+        'Acknowledge'
+      );
       return;
     }
     this.spinner.show();
@@ -525,13 +592,12 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.resetComponentValue();
   }
   private resetComponentValue() {
-    
     this.popupContent = null;
     this.groupedDataPreOrder = {};
     this.preOrderCount = 0;
     this.uploadDataGroupCustomers = null;
     this.customersLocationUpdated = [];
-    this.countUploadedCustomers= 0;
+    this.countUploadedCustomers = 0;
     this.validateExperiment = null;
   }
 
@@ -546,7 +612,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
     dialogRef.componentInstance.title = 'Update Parameter Confirmation';
     dialogRef.componentInstance.question = 'Confirm to set default Parameter ?';
-    dialogRef.componentInstance.message = 'To set a default parameter, you can use it to submit an experiment in the future.';
+    dialogRef.componentInstance.message =
+      'To set a default parameter, you can use it to submit an experiment in the future.';
 
     dialogRef.result
       .then((confirmed: boolean) => {
@@ -612,30 +679,25 @@ export class RunComponent implements OnInit, AfterViewInit {
         src: `assets/image/depot.png`,
       }),
     });
-    
-    depots.forEach(depot =>{
+
+    depots.forEach((depot) => {
       if (depot.latitude && depot.longitude) {
         const location: Feature = new Feature({
           geometry: new Point(
-            OlProj.fromLonLat([
-              Number(depot.longitude),
-              Number(depot.latitude),
-            ])
+            OlProj.fromLonLat([Number(depot.longitude), Number(depot.latitude)])
           ),
-         
-            data:{data : depot,
-            isDepot: true,}
+
+          data: { data: depot, isDepot: true },
         });
         location.setStyle(iconLocation);
         this.vectorSourceDepot.addFeature(location);
       }
     });
-    
   }
   private loadLocation(uploadDataGroupCustomers: DataGroup) {
     this.vectorSource.clear();
-    Object.keys(uploadDataGroupCustomers).forEach((key:string) => {
-      if(this.displayLocationType[key as keyof DisplayLocationType]){
+    Object.keys(uploadDataGroupCustomers).forEach((key: string) => {
+      if (this.displayLocationType[key as keyof DisplayLocationType]) {
         uploadDataGroupCustomers[key as keyof DataGroup].customers.forEach(
           (customer) => {
             if (customer.latitude && customer.longitude) {
@@ -646,10 +708,8 @@ export class RunComponent implements OnInit, AfterViewInit {
                     Number(customer.latitude),
                   ])
                 ),
-                
-                  data:{data : customer,
-                  isDepot: false,}
-               
+
+                data: { data: customer, isDepot: false },
               });
               location.setStyle(
                 this.iconStyle[
@@ -661,9 +721,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           }
         );
       }
-      
     });
-    
   }
 
   private popupShow(evt: any, element: any) {
@@ -682,21 +740,20 @@ export class RunComponent implements OnInit, AfterViewInit {
         // Handle GeometryCollection or other types if needed
         coordinates = [];
       }
-      console.log(coordinates,feature);
+      console.log(coordinates, feature);
       this.popUp?.setPosition(coordinates);
-      
+
       this.popupContent = feature.get('data');
       console.log(this.popupContent);
-    }else{
+    } else {
       this.popUp?.setPosition(undefined);
     }
   }
- closePopupMapShow(){
-  this.popUp?.setPosition(undefined);
-  const closer = document.getElementById('popup-closer');
-  closer?.blur();
-  
- }
+  closePopupMapShow() {
+    this.popUp?.setPosition(undefined);
+    const closer = document.getElementById('popup-closer');
+    closer?.blur();
+  }
   private initMap() {
     this.vectorSource = new VectorSource({});
     this.vectorSourceDepot = new VectorSource({});
@@ -732,12 +789,12 @@ export class RunComponent implements OnInit, AfterViewInit {
           }),
         }),
         this.vectorLayer,
-        this.vectorLayerDepot
+        this.vectorLayerDepot,
       ],
       target: 'map',
       view: new View({
         center: OlProj.transform(
-          [ 100.53139488523458,13.786463255129673],
+          [100.53139488523458, 13.786463255129673],
           'EPSG:4326',
           'EPSG:3857'
         ),
@@ -772,7 +829,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     const target = this.map.getTargetElement();
     const pixel = this.map.getEventPixel(evt.originalEvent);
     const hit = this.map.hasFeatureAtPixel(pixel);
-  
+
     if (hit) {
       target.style.cursor = 'pointer';
     } else {
@@ -824,7 +881,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    console.log('filterValue',filterValue);
+    console.log('filterValue', filterValue);
     this.dataSource.filter = filterValue.trim().toLowerCase();
 
     if (this.dataSource.paginator) {
@@ -888,13 +945,13 @@ export class RunComponent implements OnInit, AfterViewInit {
     const existingIndex = this.customersLocationUpdated.findIndex(
       (item) => item.index === customer.index && item.name === customer.name
     );
-    
+
     if (existingIndex !== -1) {
       modalRef.componentInstance.locationType = LocationType.Edit;
     }
-    modalRef.componentInstance.dataPreOder =  this.groupedDataPreOrder[customer.name];
+    modalRef.componentInstance.dataPreOder =
+      this.groupedDataPreOrder[customer.name];
     modalRef.componentInstance.dataCustomer = customer;
-    
 
     console.log('customer details previous', customer);
     modalRef.result.then((locationUpdated: Location) => {
@@ -924,7 +981,10 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
         this.moveCustomerToEdit(customer, locationUpdated);
         this.haveUpdateAfterValidated = true;
-        this.dataService.saveData(this.experiment.runId,this.customersLocationUpdated);
+        this.dataService.saveData(
+          this.experiment.runId,
+          this.customersLocationUpdated
+        );
       }
     });
   }
@@ -948,9 +1008,12 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     modalRef.result.then((locationUpdated: Array<CustomerUpdated>) => {
       this.updateCustomerGroup(locationUpdated);
-      if(locationUpdated.length > 0) this.haveUpdateAfterValidated = true;
-      
-      this.dataService.saveData(this.experiment.runId,this.customersLocationUpdated);
+      if (locationUpdated.length > 0) this.haveUpdateAfterValidated = true;
+
+      this.dataService.saveData(
+        this.experiment.runId,
+        this.customersLocationUpdated
+      );
     });
   }
 
@@ -1024,59 +1087,60 @@ export class RunComponent implements OnInit, AfterViewInit {
     return this.groupedDataPreOrder[orderId]?.details.length;
   }
 
-  validateExperimentPreOrder(){
+  validateExperimentPreOrder() {
     this.showSpinner();
-    this.experimentService.validateExperiment(
-      this.experiment.runId,
-      this.constraintsData,
-      this.customersLocationUpdated
-      ).subscribe({
-        next: (result)=>{
-        this.haveUpdateAfterValidated = false;
-        console.log(result);
-        this.validateExperiment =  result.result.validate;
-        this.ngbValidationTableCollectionSize = this.validateExperiment.filters.order_data.invalid_coordinate.length;
-        this.dataService.clearData(this.experiment.runId);
-        this.refreshValidationTable();
-        this.navigateToTab(3);
-        
-      },
-      error: console.error,
-      complete: () => {
-        this.haveValidated = true;
-        this.isValidateShowMessage = {
-          OrderData:{
-            invalidCoordinate: true
-          },
-          parameter:{
-            overDistance:true,
-            overWeight:true
-          },
-          validate:{
-            invalidCoordinate: true,
-            overDistance:true,
-            overWeight:true
-          }
-        };
-        this.hiddenSpinner();
-      }});
-
+    this.experimentService
+      .validateExperiment(
+        this.experiment.runId,
+        this.constraintsData,
+        this.customersLocationUpdated
+      )
+      .subscribe({
+        next: (result) => {
+          this.haveUpdateAfterValidated = false;
+          console.log(result);
+          this.validateExperiment = result.result.validate;
+          this.ngbValidationTableCollectionSize =
+            this.validateExperiment.filters.order_data.invalid_coordinate.length;
+          this.dataService.clearData(this.experiment.runId);
+          this.refreshValidationTable();
+          this.navigateToTab(3);
+        },
+        error: console.error,
+        complete: () => {
+          this.haveValidated = true;
+          this.isValidateShowMessage = {
+            OrderData: {
+              invalidCoordinate: true,
+            },
+            parameter: {
+              overDistance: true,
+              overWeight: true,
+            },
+            validate: {
+              invalidCoordinate: true,
+              overDistance: true,
+              overWeight: true,
+            },
+          };
+          this.hiddenSpinner();
+        },
+      });
   }
-  showSpinner(){
-    this.spinner.show("run", {
-      type: "ball-beat",
-      size: "medium",
-      bdColor: "rgba(255,255,255, .8)",
-      color: "black",
+  showSpinner() {
+    this.spinner.show('run', {
+      type: 'ball-beat',
+      size: 'medium',
+      bdColor: 'rgba(255,255,255, .8)',
+      color: 'black',
       fullScreen: true,
-
     });
   }
-  hiddenSpinner(){
-    this.spinner.hide("run");
+  hiddenSpinner() {
+    this.spinner.hide('run');
   }
 
-  routePlanning(){
+  routePlanning() {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -1087,27 +1151,28 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
     dialogRef.componentInstance.title = 'Experiment Confirmation';
     dialogRef.componentInstance.question = 'Confirm to submit experiment ?';
-    dialogRef.componentInstance.message = 'Submitting an experiment to the AI service takes 5 to 10 minutes.';
+    dialogRef.componentInstance.message =
+      'Submitting an experiment to the AI service takes 5 to 10 minutes.';
 
     dialogRef.result
       .then((confirmed: boolean) => {
         if (confirmed) {
           this.showSpinner();
-    this.experimentService.submitExperiment(
-      this.experiment.runId
-      ).subscribe({
-        next: (result)=>{
-        console.log(result);
-        this.toastr.success("Submit Experiment","Succeed");
-        this.router.navigate(["/users/experiments"]);
-        
-      },
-      error: (err)=>{
-        this.toastr.error("submit experiment","Failed");
-      },
-      complete: () => {
-        this.hiddenSpinner();
-      }});
+          this.experimentService
+            .submitExperiment(this.experiment.runId)
+            .subscribe({
+              next: (result) => {
+                console.log(result);
+                this.toastr.success('Submit Experiment', 'Succeed');
+                this.router.navigate(['/users/experiments']);
+              },
+              error: (err) => {
+                this.toastr.error('submit experiment', 'Failed');
+              },
+              complete: () => {
+                this.hiddenSpinner();
+              },
+            });
         }
       })
       .catch((error) => {
@@ -1115,7 +1180,13 @@ export class RunComponent implements OnInit, AfterViewInit {
       });
   }
 
-  openConfirmDialog(title:string,message:string,question:string, acceptButton:string ='Confirm',disableCancelButton:boolean=true) {
+  openConfirmDialog(
+    title: string,
+    message: string,
+    question: string,
+    acceptButton: string = 'Confirm',
+    disableCancelButton: boolean = true
+  ) {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -1132,14 +1203,15 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     return dialogRef;
   }
-  async fetchDataFromFileUrl(url:string) {
-    const blob = await firstValueFrom(this.configurationService.getDatafromUrl(url));
+  async fetchDataFromFileUrl(url: string) {
+    const blob = await firstValueFrom(
+      this.configurationService.getDatafromUrl(url)
+    );
     const arrayBuffer = await blob.arrayBuffer();
     return arrayBuffer;
-
   }
 
-  async dataFromFileUrlToJson(url:string){
+  async dataFromFileUrlToJson(url: string) {
     console.log(`Fetching data from url: ${url}`);
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
     console.log(`Fetched array buffer with length: ${arrayBuffer.byteLength}`);
@@ -1155,9 +1227,14 @@ export class RunComponent implements OnInit, AfterViewInit {
       const arrayBuffer = await this.fetchDataFromFileUrl(url);
       const isReadExcel = await this.readExcel(arrayBuffer);
       const fileName = 'PreOrder.xlsx';
-      const mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      const mimeType =
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-      const file :File = this.arrayBufferToFile(arrayBuffer,fileName,mimeType);
+      const file: File = this.arrayBufferToFile(
+        arrayBuffer,
+        fileName,
+        mimeType
+      );
       this.preOrderFiles.push(file);
       return isReadExcel;
     } catch (error) {
@@ -1166,12 +1243,11 @@ export class RunComponent implements OnInit, AfterViewInit {
       return false;
     }
   }
-  
-  
+
   private async processExcelFile(file: File): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
       const reader = new FileReader();
-  
+
       reader.onload = async (e: any) => {
         try {
           const arrayBuffer = e.target.result;
@@ -1183,34 +1259,35 @@ export class RunComponent implements OnInit, AfterViewInit {
           resolve(false);
         }
       };
-  
+
       reader.onerror = (error) => {
         console.error('File reading error:', error);
         this.toastr.error('Cannot read file');
         reject(false);
       };
-  
+
       reader.readAsArrayBuffer(file);
     });
   }
-  
 
-  appendExcelData(preOrderData: PreOrder[],worksheet: ExcelJS.Worksheet): boolean{
-        const columnNames = (
-          worksheet.getRow(1).values as (string | undefined)[]
-        ).filter((value) => typeof value === 'string');
-        console.log('Columns in excel file:', columnNames);
-        
-        if (this.validateData(columnNames)) {
-          this.dataPreOrder = preOrderData;
-          this.preOrderCount = this.dataPreOrder.length;
-          this.groupDataById();
-          return true;
-        } else {
-          this.toastr.error('Data validation failed');
-          return false;
-        }
+  appendExcelData(
+    preOrderData: PreOrder[],
+    worksheet: ExcelJS.Worksheet
+  ): boolean {
+    const columnNames = (
+      worksheet.getRow(1).values as (string | undefined)[]
+    ).filter((value) => typeof value === 'string');
+    console.log('Columns in excel file:', columnNames);
 
+    if (this.validateData(columnNames)) {
+      this.dataPreOrder = preOrderData;
+      this.preOrderCount = this.dataPreOrder.length;
+      this.groupDataById();
+      return true;
+    } else {
+      this.toastr.error('Data validation failed');
+      return false;
+    }
   }
 
   async readExcel(arrayBuffer: ArrayBuffer): Promise<boolean> {
@@ -1219,18 +1296,21 @@ export class RunComponent implements OnInit, AfterViewInit {
       await workbook.xlsx.load(arrayBuffer);
       const data: PreOrder[] = [];
       console.log('Worksheet length:', workbook.worksheets.length);
-  
-      const worksheet = workbook.getWorksheet(1) || workbook.getWorksheet('PreOrder');
+
+      const worksheet =
+        workbook.getWorksheet(1) || workbook.getWorksheet('PreOrder');
       if (!worksheet) {
         this.toastr.warning('Worksheet not found');
         return false;
       }
-  
+
       worksheet.eachRow((row, rowNumber) => {
-        if (rowNumber > 1) { // Assuming the first row is the header
+        if (rowNumber > 1) {
+          // Assuming the first row is the header
           const rowData: any = {};
           row.eachCell((cell, colNumber) => {
-            const header = worksheet.getRow(1).getCell(colNumber).value as string;
+            const header = worksheet.getRow(1).getCell(colNumber)
+              .value as string;
             rowData[header] = cell.value;
           });
           // Correcting the user input template word
@@ -1239,108 +1319,160 @@ export class RunComponent implements OnInit, AfterViewInit {
           data.push(rowData as PreOrder);
         }
       });
-      
-      return this.appendExcelData(data,worksheet);
+
+      return this.appendExcelData(data, worksheet);
     } catch (error) {
       console.error('Error reading Excel file:', error);
       this.toastr.error('Failed to read Excel file');
       return false;
     }
   }
-  
-  arrayBufferToFile(arrayBuffer: ArrayBuffer, fileName: string, mimeType: string): File {
+
+  arrayBufferToFile(
+    arrayBuffer: ArrayBuffer,
+    fileName: string,
+    mimeType: string
+  ): File {
     const blob = new Blob([arrayBuffer], { type: mimeType });
     return new File([blob], fileName, { type: mimeType });
   }
-  
-  updateCustomerGroup(customers:Array<CustomerUpdated>){
+
+  updateCustomerGroup(customers: Array<CustomerUpdated>) {
     console.log('new value customer details', customers);
     customers.forEach((item) => {
-        const existingIndex = this.customersLocationUpdated.findIndex(
-          (i) => i.index === item.index && i.name === item.name
+      const existingIndex = this.customersLocationUpdated.findIndex(
+        (i) => i.index === item.index && i.name === item.name
+      );
+      if (existingIndex !== -1) {
+        // Replace the existing entry
+        this.customersLocationUpdated[existingIndex] = item;
+      } else {
+        // Add a new entry
+        this.customersLocationUpdated.push(item);
+      }
+
+      // Find and remove the customer from uncertain
+      const uncertainIndex =
+        this.uploadDataGroupCustomers!.uncertain.customers.findIndex(
+          (c) => c.name === item.name
         );
-        if (existingIndex !== -1) {
-          // Replace the existing entry
-          this.customersLocationUpdated[existingIndex] = item;
-        } else {
-          // Add a new entry
-          this.customersLocationUpdated.push(item);
-        }
-
-        // Find and remove the customer from uncertain
-        const uncertainIndex =
-          this.uploadDataGroupCustomers!.uncertain.customers.findIndex(
-            (c) => c.name === item.name
-          );
-        // Find and remove the customer from unverify
-        const unverifyIndex =
-          this.uploadDataGroupCustomers!.unverify.customers.findIndex(
-            (c) => c.name === item.name
-          );
-        if (uncertainIndex !== -1) {
-          this.moveCustomerToEdit(
-            this.uploadDataGroupCustomers!.uncertain.customers[uncertainIndex],
-            {
-              longitude: Number(item.longitude),
-              latitude: Number(item.latitude),
-            }
-          );
-        } else if (unverifyIndex !== -1) {
-          this.moveCustomerToEdit(
-            this.uploadDataGroupCustomers!.unverify.customers[unverifyIndex],
-            {
-              longitude: Number(item.longitude),
-              latitude: Number(item.latitude),
-            }
-          );
-        }
-      });
+      // Find and remove the customer from unverify
+      const unverifyIndex =
+        this.uploadDataGroupCustomers!.unverify.customers.findIndex(
+          (c) => c.name === item.name
+        );
+      if (uncertainIndex !== -1) {
+        this.moveCustomerToEdit(
+          this.uploadDataGroupCustomers!.uncertain.customers[uncertainIndex],
+          {
+            longitude: Number(item.longitude),
+            latitude: Number(item.latitude),
+          }
+        );
+      } else if (unverifyIndex !== -1) {
+        this.moveCustomerToEdit(
+          this.uploadDataGroupCustomers!.unverify.customers[unverifyIndex],
+          {
+            longitude: Number(item.longitude),
+            latitude: Number(item.latitude),
+          }
+        );
+      }
+    });
   }
-  groupingCustomer(customers:Customer[],depots:Depot[]){
+  groupingCustomer(customers: Customer[], depots: Depot[]) {
     this.countUploadedCustomers = customers.length;
-      const groupedCustomer = this.groupCustomers(customers);
-      console.log("groupedCustomer",groupedCustomer);
-      this.uploadDataGroupCustomers = {
-        verify: {
-          customers: groupedCustomer.verify,
-          type: LocationType.Verify,
-        },
-        uncertain: {
-          customers: groupedCustomer.uncertain,
-          type: LocationType.Uncertain,
-        },
-        unverify: {
-          customers: groupedCustomer.unverify,
-          type: LocationType.Unverify,
-        },
-        edit: {
-          customers: [],
-          type: LocationType.Edit,
-        },
-      };
-      console.log('prepared uploadDataGroupCustomers',this.uploadDataGroupCustomers);
-      this.reInitializeDataTable();
-      this.loadLocation(this.uploadDataGroupCustomers);
-      this.loadLocationDepot(depots);
-      console.log(this.uploadDataGroupCustomers);
-      this.isUpload = true;
-
+    const groupedCustomer = this.groupCustomers(customers);
+    console.log('groupedCustomer', groupedCustomer);
+    this.uploadDataGroupCustomers = {
+      verify: {
+        customers: groupedCustomer.verify,
+        type: LocationType.Verify,
+      },
+      uncertain: {
+        customers: groupedCustomer.uncertain,
+        type: LocationType.Uncertain,
+      },
+      unverify: {
+        customers: groupedCustomer.unverify,
+        type: LocationType.Unverify,
+      },
+      edit: {
+        customers: [],
+        type: LocationType.Edit,
+      },
+    };
+    console.log(
+      'prepared uploadDataGroupCustomers',
+      this.uploadDataGroupCustomers
+    );
+    this.reInitializeDataTable();
+    this.loadLocation(this.uploadDataGroupCustomers);
+    this.loadLocationDepot(depots);
+    console.log(this.uploadDataGroupCustomers);
+    this.isUpload = true;
   }
   isOriginalExperiment(): boolean {
     return this.experiment.run === 'Original';
   }
-  
+
   onValueChange(newValue: number, property: keyof Constraint): void {
     this.updateConstraint(this.constraintsData, property, newValue);
     console.log(`${property} changed to:`, newValue);
     this.haveUpdateAfterValidated = true;
   }
 
-
-  updateConstraint<K extends keyof Constraint>(obj: Constraint, key: K, value: Constraint[K]): void {
+  updateConstraint<K extends keyof Constraint>(
+    obj: Constraint,
+    key: K,
+    value: Constraint[K]
+  ): void {
     obj[key] = value;
   }
-  
 
-
+  exportValidationData() {
+    const files: Array<{ data: any; name: string }> = [];
+    if (
+      this.validateExperiment?.filters.order_data &&
+      this.validateExperiment?.filters.order_data.invalid_coordinate.length > 0
+    ) {
+      files.push({
+        data: this.validateExperiment?.warning.zero_weight.map(
+          (customer, i) => ({
+            index: i + 1,
+            ORDER_ID: customer.name,
+            ADDRESS: customer.original_address.address,
+            SUBDISTRICT: customer.original_address.subdistrict,
+            DISTRICT: customer.original_address.district,
+            PROVINCE: customer.original_address.province,
+          })
+        ),
+        name:
+          'Remove_Order_' + this.experiment.name + '_' + this.experiment.runId,
+      });
+    }
+    if (
+      this.validateExperiment?.warning &&
+      this.validateExperiment?.warning.zero_weight.length > 0
+    ) {
+      console.log(this.validateExperiment?.warning.zero_weight);
+      files.push({
+        data: this.validateExperiment?.warning.zero_weight.map(
+          (customer, i) => ({
+            index: i + 1,
+            ORDER_ID: customer.name,
+            PRODUCT_ID_ZERO_WEIGHT: customer.metrics?.product_ids.join(','),
+            PRODUCT_ID_MISSING: customer.metrics?.missing_product_ids.join(','),
+          })
+        ),
+        name:
+          'Zero_Weight_' + this.experiment.name + '_' + this.experiment.runId,
+      });
+    }
+    console.log(files);
+    this.exportService.exportMultipleCsv(
+      files.map((file) => file.data),
+      files.map((file) => file.name)
+    );
+  }
 }

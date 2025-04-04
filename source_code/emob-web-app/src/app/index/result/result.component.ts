@@ -758,6 +758,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     
   }
 
+
   downloadPlan(){
     this.spinner.show();
     this.experimentService.getExperimentResultUrl(this.experiment!.runId).subscribe( (response: DownloadResultFile) => {

@@ -74,6 +74,9 @@ interface Metrics {
   is_excess_volumn:   boolean;
   is_excess_weight:   boolean;
   is_feasible:        boolean;
+  is_missing_product: boolean;
+  missing_product_ids: string[];
+  product_ids:        string[];
 }
 
 export interface Address {

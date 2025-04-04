@@ -256,27 +256,45 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   retryExperiment(experiment: Experiment){
-    this.showSpinner();
-    this.experimentService.rerunExperiment(experiment.runId).subscribe(response => {
-      this.hiddenSpinner();
-      this.toastr.success(response.message, 'Rerun Experiment');
-    })
+    const dialogRef = this.openConfirmDialog('Retry experiment','Confirm to retry experiment','Are you sure to retry experiment ?');
+    dialogRef.result.then((confirmed: boolean) => {
+      if(confirmed){
+        this.spinner.show();
+        this.experimentService.rerunExperiment(experiment.runId).subscribe(response => {
+          this.spinner.hide();
+          this.toastr.success(response.message, 'Rerun Experiment');
+        })
+      }
+    });
+    
   }
   tryToRerunExperiment(experiment: Experiment){
-    this.showSpinner();
+    const dialogRef = this.openConfirmDialog('Try to Rerun experiment','Confirm to try to Rerun experiment','Are you sure to try to rerun experiment ?');
+    dialogRef.result.then((confirmed: boolean) => {
+      if(confirmed){
+        this.spinner.show();
     this.experimentService.replicateExperiment(experiment.runId).subscribe(response => {
-      this.hiddenSpinner();
+      this.spinner.hide();
       this.toastr.success("Success to replicate experiment", 'Replicate Experiment');
       this.router.navigate(['/users/run',response.runId]);
     })
+      }
+    })
+    
   }
 
   cancelExperiment(experiment: Experiment){
-    this.showSpinner();
-    this.experimentService.cancelExperiment(experiment.runId).subscribe(response => {
-      this.hiddenSpinner();
-      this.toastr.info(response.message, 'Cancel Experiment');
+    const dialogRef = this.openConfirmDialog('Cancel experiment','Confirm to cancel experiment','Are you sure to cancel experiment ?');
+    dialogRef.result.then((confirmed: boolean) => {
+      if(confirmed){
+        this.spinner.show();
+        this.experimentService.cancelExperiment(experiment.runId).subscribe(response => {
+          this.spinner.hide();
+          this.toastr.info(response.message, 'Cancel Experiment');
+        })
+      }
     })
+    
   }
   selectExperiment(experiment:Experiment){
     this.spinner.show();
