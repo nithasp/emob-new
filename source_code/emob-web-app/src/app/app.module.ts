@@ -20,7 +20,6 @@ import { RoleGuard } from "./guards/role.guard";
 import { UnauthorizedComponent } from "./unauthorized/unauthorized.component";
 import { RouterModule } from "@angular/router";
 import { environment } from "src/environments/environment";
-import { RetryInterceptor } from "./retry-interceptor";
 
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication(msalConfig);
@@ -97,11 +96,6 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
     {
       provide: HTTP_INTERCEPTORS,
       useClass: MsalInterceptor,
-      multi: true,
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: RetryInterceptor,
       multi: true,
     },
     {

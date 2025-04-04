@@ -134,7 +134,7 @@ export class ExperimentService {
         }
         
       },
-      fetchPolicy: 'cache-and-network'
+      fetchPolicy: 'network-only'
     }).valueChanges.pipe(map(result => result.data.experiment),this.errorHandlingService.handleError);
   }
 

@@ -7,6 +7,7 @@ import { formatDate } from '@angular/common';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { UploadFileComponent } from './upload-file/upload-file.component';
 import { firstValueFrom } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-configuration',
@@ -20,7 +21,7 @@ export class ConfigurationComponent implements OnInit {
   //Categories
   public selectedNode: string | null = null;
   public configurationsExplorer: Categories[] = [];
-  private readonly configurationAllData: { configurations: Configuration[], actualLocations: ActualLocation[] } = { configurations: [], actualLocations: [] };
+  public readonly configurationAllData: { configurations: Configuration[], actualLocations: ActualLocation[] } = { configurations: [], actualLocations: [] };
   activeColor: Array<string> = [];
   
 
@@ -38,10 +39,17 @@ export class ConfigurationComponent implements OnInit {
   constructor(
     private readonly configurationService: ConfigurationService,
     private readonly spinner: NgxSpinnerService,
-    private readonly ngbModal: NgbModal
+    private readonly ngbModal: NgbModal,
+    private readonly toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
+    this.loadDataConfiguration();
+    
+  }
+  // Limit the number of rows displayed
+
+  private loadDataConfiguration() {
     this.spinner.show();
     this.configurationService.getConfigurations().subscribe((data) => {
       console.log(data);
@@ -79,38 +87,35 @@ export class ConfigurationComponent implements OnInit {
         }
         
       });
-      const actualLocationList: Categories[] = [];
-      data.actualLocations.forEach((location) => {
-        actualLocationList.push({
-          name: location.year,
-          children: location.children.map((child) => ({
-            name:child.month,
-            children: child.children.map((grandChild) => ({
-              name: grandChild.fileName,
-              blobPath: grandChild.fileBlobPath,
-              timestamp: formatDate(
-                grandChild.timestamp,
-                'dd-MMM-YYYY HH:mm:ss',
-                'en-US'
-              ),
-              type: "actualLocation"
+        const actualLocationList: Categories[] = [];
+        data.actualLocations.forEach((location) => {
+          actualLocationList.push({
+            name: location.year,
+            children: location.children.map((child) => ({
+              name:child.month,
+              children: child.children.map((grandChild) => ({
+                name: grandChild.fileName,
+                blobPath: grandChild.fileBlobPath,
+                timestamp: formatDate(
+                  grandChild.timestamp,
+                  'dd-MMM-YYYY HH:mm:ss',
+                  'en-US'
+                ),
+                type: "actualLocation"
+              }))
             }))
-          }))
-        })
-      });
-
-      configurationCategory.push({
-        name: "actualLocation",
-        children: actualLocationList
-      });
-
+          })
+        });
+        configurationCategory.push({
+          name: "actualLocation",
+          children: actualLocationList
+        });
       this.configurationsExplorer = configurationCategory;
       console.log(this.configurationsExplorer);
       this.dataSource = this.configurationsExplorer;
       this.spinner.hide();
     });
   }
-  // Limit the number of rows displayed
   get limitedExcelData() {
     const maxRows = 10; // Set the maximum number of rows to display
     return this.excelData.slice(0, maxRows);
@@ -219,7 +224,7 @@ export class ConfigurationComponent implements OnInit {
   hiddenSpinner() {
     setTimeout(() => {
       this.spinner.hide('configuration');
-    },1000)
+    },500)
   }
 
   openUploadFile(category: string, name: string,type:string) {
@@ -262,6 +267,8 @@ uploadFile(category: string, name: string,type:string,file:File){
     this.configurationService.uploadActualLocation(file).subscribe(
       response=>{
         console.log(response);
+        this.loadDataConfiguration();
+        this.toastr.success('File uploaded successfully','Actual Location');
         this.hiddenSpinner();
       }
     );
@@ -274,6 +281,8 @@ uploadFile(category: string, name: string,type:string,file:File){
 this.configurationService.uploadConfiguration(file,configuration.category,configuration.type).subscribe(
       response=>{
         console.log(response);
+        this.loadDataConfiguration();
+        this.toastr.success('File uploaded successfully',configuration.category);
         this.hiddenSpinner();
       }
     );

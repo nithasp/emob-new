@@ -33,7 +33,7 @@ export class ConfigurationService {
 
   getConfigurations(): Observable<Response> {
     return this.apollo
-      .query<Response>({
+      .watchQuery<Response>({
         query: gql`
                   
           {
@@ -57,8 +57,9 @@ export class ConfigurationService {
           }
           }
         `,
-      })
-      .pipe(
+        fetchPolicy: 'cache-and-network',
+        notifyOnNetworkStatusChange: true
+      }).valueChanges.pipe(
         map(result => result.data),
         this.errorHandlingService.handleError
       );

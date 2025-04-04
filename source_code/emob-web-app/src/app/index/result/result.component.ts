@@ -144,7 +144,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
           this.expandedElement = [];
           await this.loadReportData(response.fileUrl.outputReportUrl);
           this.spinner.hide();
-          this.toastr.info('Rendering data on map', 'Please wait...');
           await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
         });
       
@@ -775,7 +774,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         const blob = response.body;
         if (blob) {
           const link = document.createElement('a');
-          link.href = window.URL.create(blob);
+          link.href = window.URL.createObjectURL(blob);
           link.download = fileName;
           link.target = '_blank'; // Open in a new window
           link.click();

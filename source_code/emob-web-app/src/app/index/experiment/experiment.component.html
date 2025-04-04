@@ -34,9 +34,10 @@
           #input />
       </mat-form-field>
       <div class="text-right border-bottom">
-        <button mat-icon-button class="custom-icon-button mr-4"  
+        <button mat-button   
         (click)="loadData()">
           <mat-icon>refresh</mat-icon>
+          Refresh
         </button>
         <button mat-button [matMenuTriggerFor]="menu">
           <mat-icon >view_list</mat-icon>
@@ -61,11 +62,9 @@
         <ngx-spinner name="experiment">
           <p class="h-3">Reloading ...</p>
         </ngx-spinner>
-        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 "
-          multiTemplateDataRows>
+        <table mat-table  [dataSource]="dataSource" class="mat-elevation-z8 ">
           <ng-container matColumnDef="select">
-            <th mat-header-cell *matHeaderCellDef>
-            </th>
+            <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let row">
               <mat-checkbox color="primary" (click)="$event.stopPropagation()"
                 (change)="$event ? selection.toggle(row) : null"
@@ -205,9 +204,7 @@
       </div>
       <mat-paginator
         [pageSize]="10"
-        [pageSizeOptions]="[10,20,40,50]"
-        showFirstLastButtons
-        aria-label="Select page of periodic elements">
+        [pageSizeOptions]="[10,20,40,50]">
       </mat-paginator>
 
     </div>

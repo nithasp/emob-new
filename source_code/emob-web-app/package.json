@@ -1,16 +1,17 @@
 {
   "name": "emob-web-app",
-  "version": "v0.2.4",
+  "version": "v0.2.5",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config src/proxy.conf.json --verbose",
     "start:dev": "ng serve --configuration=development",
     "build:dev": "ng build --configuration=development --aot --progress",
-    "build:test": "ng build --configuration=test --aot  --optimization --progress",
-    "build": "ng build --prod --aot  --optimization --progress",
-    "watch": "ng build --watch --configuration development",
+    "build:test": "ng build --configuration=test --aot --optimization --progress",
+    "build:prod": "ng build --configuration=production --aot --optimization --progress",
+    "build": "ng build --configuration=production --aot --optimization --progress",
+    "watch": "ng build --watch --configuration=development",
     "test": "ng test"
-  },
+  },  
   "private": true,
   "dependencies": {
     "@angular/animations": "^18.2.13",

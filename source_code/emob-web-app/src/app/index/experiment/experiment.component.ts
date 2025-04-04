@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -13,7 +13,6 @@ import { DetailsDialogComponent } from '../components/details-dialog/details-dia
 import { ToastrService } from 'ngx-toastr';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
-import { finalize } from 'rxjs';
 
 
 
@@ -95,7 +94,6 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
   dataSource = new MatTableDataSource<Experiment>([]);
   selection = new SelectionModel<Experiment>(false);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
   constructor(
     private readonly experimentService : ExperimentService,
     private readonly constraintService: ConstraintService,
@@ -108,16 +106,14 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
   ngOnInit(): void {
     this.spinner.show();
     this.loadData();
-    this.interval = setInterval(() => {
-      this.loadData();
-    }, 30000); // 30 seconds
     this.spinner.hide();
   }
 
   ngAfterViewInit() {
-    this.dataSource.sort = this.sort;
-    this.dataSource.paginator = this.paginator;
-    
+        this.dataSource.paginator = this.paginator;
+    this.interval = setInterval(() => {
+      this.loadData();
+    }, 45000); // 30 seconds
   }
 
 
@@ -126,7 +122,8 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     this.experimentService.getExperiments().subscribe({
       next: (response) => {
         this.dataSource.data = response;
-        this.dataSource.sort = this.sort; // Ensure sort is set after data is loaded
+        this.dataSource.paginator = this.paginator;
+        
         this.hiddenSpinner();
     },
     error: () => {

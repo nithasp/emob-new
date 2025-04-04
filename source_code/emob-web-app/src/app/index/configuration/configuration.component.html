@@ -42,21 +42,20 @@
       </div>
 
     </div>
-    <div class="col-md-4" style="font-size: 10px;height: 800px; overflow-y: auto; overflow-x: hidden;">
-      <mat-card >
-        <mat-card-header class="bg-category p-3 justify-content-center">
-          <mat-card-title class="font-weight-bold">CONFIGURATIONS</mat-card-title>
-        </mat-card-header>
-        <mat-card-actions>
+    <div class="col-md-4 border" style="height: 800px; overflow-y: auto; overflow-x: auto;">
+        <div class="bg-category w-100" style="text-align: center;">
+          <p class="font-weight-bold h3 p-3">CONFIGURATIONS</p>
+      </div>
           <mat-tree #tree [dataSource]="dataSource"
             [childrenAccessor]="childrenAccessor"
             >
             <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding
               [class.active]="node.name === selectedNode"
               style="cursor: pointer;">
+              @if( (configurationAllData.actualLocations.length > 0 && node.type === 'actualLocation') || node.type === 'configuration' ){
               <div style="display: flex; align-items: center;"
                 (click)="onChangeFile(node.name,node.type,node.blobPath)"
-                placement="end"
+                placement="top"
                 [ngbTooltip]="node.timestamp">
                 <button mat-icon-button disabled>
                   <div style="text-align: center;">
@@ -86,6 +85,7 @@
                     Download</button>
                 </div>
               </div>
+            }
             </mat-tree-node>
 
             <mat-tree-node *matTreeNodeDef="let node; when: hasChild"
@@ -122,8 +122,6 @@
               </div>
             </mat-tree-node>
           </mat-tree>
-        </mat-card-actions>
-      </mat-card>
     </div>
     <div class="col-md-8 pl-3 border">
       <div class="container-preview"
