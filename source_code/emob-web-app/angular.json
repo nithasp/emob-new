@@ -21,7 +21,8 @@
               "lerc",
               "exceljs",
               "extract-files",
-              "xml-utils"
+              "xml-utils",
+              "file-saver"
 
             ],
             "outputPath": "dist/emob-web-app",

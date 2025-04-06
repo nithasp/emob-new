@@ -13,6 +13,7 @@ import { DetailsDialogComponent } from '../components/details-dialog/details-dia
 import { ToastrService } from 'ngx-toastr';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
+import { distinctUntilChanged } from 'rxjs';
 
 
 
@@ -298,12 +299,13 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
   }
   selectExperiment(experiment:Experiment){
     this.spinner.show();
+    console.log("select experiment",experiment);
     if(experiment.status === 'Initializing'){
       this.userMsGraphService.getUserId().subscribe((userId) => {
         this.spinner.hide();
         console.log('compare user id',userId,experiment.triggeredBy);
         if(userId === experiment.triggeredBy){
-          
+          console.log("open run experiment");
           this.router.navigate(['/users/run',experiment.runId]);
           this.toastr.info("opening experiment",experiment.name);
         }else{
@@ -312,6 +314,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
         }
       });
     }else if (experiment.status === 'Succeeded'){
+      console.log("open result experiment");
       this.router.navigate(['/users/result',experiment.runId]);
     }else{
       

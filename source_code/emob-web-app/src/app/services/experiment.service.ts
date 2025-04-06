@@ -60,7 +60,7 @@ export class ExperimentService {
     }).pipe(map(result => result.data!.createExperiment),this.errorHandlingService.handleError);
   }
   getExperiment(runId:string):Observable<Experiment>{
-    return this.apollo.watchQuery<Response>({
+    return this.apollo.query<Response>({
       query: gql`
       query experiment($Id:RunIdInput!){
         experiment(input: $Id) {
@@ -95,12 +95,12 @@ export class ExperimentService {
         }
         
       },
-      fetchPolicy: 'cache-and-network'
-    }).valueChanges.pipe(map(result => result.data.experiment),this.errorHandlingService.handleError);
+      fetchPolicy: 'network-only'
+    }).pipe(map(result => result.data.experiment),this.errorHandlingService.handleError);
   }
 
   getExperimentResult(runId:string):Observable<Experiment>{
-    return this.apollo.watchQuery<Response>({
+    return this.apollo.query<Response>({
       query: gql`
       query experiment($Id:RunIdInput!){
         experiment(input: $Id) {
@@ -135,11 +135,11 @@ export class ExperimentService {
         
       },
       fetchPolicy: 'network-only'
-    }).valueChanges.pipe(map(result => result.data.experiment),this.errorHandlingService.handleError);
+    }).pipe(map(result => result.data.experiment),this.errorHandlingService.handleError);
   }
 
   getExperimentResultUrl(runId:string):Observable<DownloadResultFile>{
-    return this.apollo.watchQuery<Response>({
+    return this.apollo.query<Response>({
       query: gql`
       query downloadResultFile($runId: String!){
         downloadResultFile(experimentRunID:$runId) {
@@ -154,7 +154,7 @@ export class ExperimentService {
         runId : runId        
       },
       fetchPolicy: 'network-only'
-    }).valueChanges.pipe(map(result => result.data.downloadResultFile),this.errorHandlingService.handleError);
+    }).pipe(map(result => result.data.downloadResultFile),this.errorHandlingService.handleError);
   }
   
   validateExperiment(runId: string,parameter:Constraint,locationUpdated:CustomerUpdated[]):Observable<Experiment>{

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   OnInit,
   signal,
@@ -54,7 +55,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import { Experiment } from 'src/app/models/experiment.model';
 import { ConfigurationService } from 'src/app/services/configuration.service';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, take } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { RouteInfo } from 'src/app/models/location.model';
 import { FormControl } from '@angular/forms';
@@ -135,9 +136,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
     });
   }
   ngOnInit(): void {
-    this.route.params.subscribe((params: { [x: string]: string }) => {
+    this.route.params.pipe(take(1)).subscribe((params: { [x: string]: string }) => {
       this.experimentService
-        .getExperimentResult(params['runId'])
+        .getExperimentResult(params['experimentId'])
         .subscribe(async (response: Experiment) => {
           console.log(response);
           this.experiment = { ...response };

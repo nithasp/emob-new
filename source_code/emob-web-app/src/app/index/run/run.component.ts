@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   Injectable,
   OnInit,
@@ -72,7 +73,7 @@ import { DetailsDialogComponent } from '../components/details-dialog/details-dia
 import { CustomerListComponent } from '../components/customer-list/customer-list.component';
 import { ValidateMessage } from 'src/app/models/validation-message';
 import { UserMSGraphService } from 'src/app/services/user.service';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, take } from 'rxjs';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import { DataService } from 'src/app/services/data.service';
 import { ExportFileService } from 'src/app/services/export-file.service';
@@ -101,7 +102,7 @@ export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
   selector: 'app-run',
   templateUrl: './run.component.html',
   styleUrl: './run.component.scss',
-  providers: [{ provide: NgbTimeAdapter, useClass: NgbTimeStringAdapter }],
+  providers: [{ provide: NgbTimeAdapter, useClass: NgbTimeStringAdapter }]
 })
 export class RunComponent implements OnInit, AfterViewInit {
   // Condition
@@ -262,7 +263,8 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.spinner.show();
-    this.route.params.subscribe((params: { [x: string]: string }) => {
+    this.route.params.pipe(take(1)).subscribe((params: { [x: string]: string }) => {
+      console.log(params);
       this.experimentService
         .getExperiment(params['runId'])
         .subscribe((response: Experiment) => {
@@ -274,13 +276,13 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (this.experiment.status !== StatusExperiment.Initializing) {
                 this.openConfirmDialog(
                   'Warning',
-                  'You are not the creator of this experiment have been initialized',
+                  `this experiment have been ${this.experiment.status} `,
                   'We will to go back to the experiments page?',
                   'Acknowledge',
                   true
                 ).result.then((confirmed) => {
                   this.spinner.hide();
-                  this.router.navigate(['/users/experiment']);
+                  this.router.navigate(['/users/experiments']);
                 });
               }
               if (userId !== this.experiment.triggeredBy) {
@@ -292,7 +294,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                   true
                 ).result.then((confirmed) => {
                   this.spinner.hide();
-                  this.router.navigate(['/users/experiment']);
+                  this.router.navigate(['/users/experiments']);
                 });
               }
               if (!this.experiment.preOrderBlobPath) {
@@ -1216,9 +1218,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
     console.log(`Fetched array buffer with length: ${arrayBuffer.byteLength}`);
     const text = new TextDecoder().decode(arrayBuffer);
-    console.log(`Decoded text: ${text}`);
     const jsonData = JSON.parse(text);
-    console.log(`Parsed JSON data: ${JSON.stringify(jsonData)}`);
 
     return jsonData;
   }
