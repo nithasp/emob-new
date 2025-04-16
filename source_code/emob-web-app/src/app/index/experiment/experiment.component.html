@@ -18,7 +18,7 @@
         Retry
       </button>
       <button mat-raised-button  class="ml-3 bg-custom-primary"
-      [hidden]="!isSelectedStatusValue('Queued')"
+      [hidden]="true"
       (click)="cancelExperiment(selection.selected[0])">
         <mat-icon>block</mat-icon>
         Cancel
@@ -101,10 +101,10 @@
                 style="float: right;">replay</mat-icon> 
               </button>
               <button mat-icon-button class="custom-icon-button ml-2"
-              [hidden]="element.status !=='Queued'"
+              [hidden]="true"
               placement="top"
               [ngbTooltip]="'Cancel'"
-              (click)="cancelExperiment(element)">
+              (click)="cancelExperiment(element)" >
                 <mat-icon class="icon-custom-primary"
                 style="float: right;">block</mat-icon> 
               </button>

@@ -16,8 +16,7 @@
               @if(validateExperiment &&
               validateExperiment.filters.order_data.invalid_coordinate.length >
               0 && isValidateShowMessage.OrderData.invalidCoordinate){
-              <ngb-alert type="danger"
-                (closed)="isValidateShowMessage.OrderData.invalidCoordinate = false">
+              <ngb-alert type="danger" [dismissible]="false">
                 <strong>{{validateMessage.filtersMessage.orderData.invalidCoordinate.title}}
                 </strong>
                 {{validateMessage.filtersMessage.orderData.invalidCoordinate.message}}
@@ -212,7 +211,7 @@
                       <div class="address-container">
                         <span>{{ element.original_address.address |
                           truncate:[70, '...'] }}</span>
-                        <button class="btn btn-sm align-right"
+                        <!-- <button class="btn btn-sm align-right"
                           *ngIf="isUnverified(element.name) || isUncertain(element.name)"
                           mat-button
                           [ngClass]="{
@@ -220,7 +219,7 @@
                             'btn-outline-danger': isUnverified(element.name)
                           }">
                           Verify
-                        </button>
+                        </button> -->
                       </div>
                     </td>
                   </ng-container>
@@ -293,8 +292,7 @@
               @if(validateExperiment &&
               validateExperiment.filters.constraints.over_distance.length >0 &&
               isValidateShowMessage.parameter.overDistance){
-              <ngb-alert type="danger"
-                (closed)="isValidateShowMessage.parameter.overDistance = false">
+              <ngb-alert type="danger" [dismissible]="false" >
                 <strong>{{validateMessage.filtersMessage.constraints.overDistance.title}}
                 </strong>
                 {{validateMessage.filtersMessage.constraints.overDistance.message}}
@@ -303,8 +301,7 @@
               @if(validateExperiment &&
               validateExperiment.filters.constraints.over_weight.length > 0 &&
               isValidateShowMessage.parameter.overWeight){
-              <ngb-alert type="danger"
-                (closed)="isValidateShowMessage.parameter.overWeight = false">
+              <ngb-alert type="danger" [dismissible]="false">
                 <strong>{{validateMessage.filtersMessage.constraints.overWeight.title}}
                 </strong>
                 {{validateMessage.filtersMessage.constraints.overWeight.message}}
@@ -313,7 +310,12 @@
               <mat-accordion [multi]="true">
                 <mat-expansion-panel [expanded]="true">
                   <mat-expansion-panel-header>
-                    <mat-panel-title> Generals</mat-panel-title>
+                    <mat-panel-title> Generals
+                      <mat-error class="text-danger ml-3" style="font-size: 12px;" *ngIf="constraintsData.earlyDeliveryTime > constraintsData.backToDepotTime">
+                        *** Early delivery Time should be less than back to depot
+                      </mat-error>
+                    </mat-panel-title>
+                    
                   </mat-expansion-panel-header>
                   <ul class="list-unstyled">
                     <li>
@@ -323,6 +325,7 @@
                               <button class="link link-primary">
                                 {{constraintsData.earlyDeliveryTime}}
                               </button>
+                              
                               <ng-template ngx-popover-template>
                                 <div class="card p-3">
                                   <div class="card-body p-2">
@@ -373,7 +376,7 @@
                                   <div class="card-body p-2">
                                     <p class="card-title">Maximum work duration
                                       (0 -
-                                      24 Hrs): </p>
+                                      23 Hrs): </p>
                                     <ngb-timepicker
                                       [(ngModel)]="constraintsData.maximumWorkDuration" 
                                       key/>
@@ -496,7 +499,7 @@
                     <li>
                       <ul>
                         <li>
-                          <p>Service duration time is
+                          <p>Service time is
                             <ngx-popover [placement]="'bottom-start'"><button
                                 class="link link-primary link-opacity-75-hover">{{constraintsData.serviceDurationTime
                                 | timeFormat}}</button>
@@ -533,7 +536,7 @@
                     class="bg-custom-secondary"
                     (click)="setParameterDefault()">
                     <mat-icon>published_with_changes</mat-icon>
-                    Set Default</button>
+                    Set As Default</button>
                 </div>
                 <div class="col text-end">
                   <button mat-raised-button color="secondary"
@@ -571,7 +574,6 @@
                       will filter and eliminate any invalid order data</strong>
                     before the AI service can continue with route planning.
                   </ngb-alert>
-                  There is correct order information.
                   }@else {
                     <ngb-alert type="success" [dismissible]="false" class="mt-5 mb-5">
                       <strong class="h-2">verification is correct!</strong>
@@ -579,19 +581,20 @@
                     </ngb-alert>
                   }
                   <!-- validate -->
-                  @if(validateExperiment &&
-                  validateExperiment.filters.constraints.over_distance.length >0 &&
-                  validateExperiment.filters.constraints.over_weight.length > 0 &&
+                  @if(validateExperiment && (
+                  validateExperiment.filters.constraints.over_distance.length >0 ||
+                  validateExperiment.filters.constraints.over_weight.length > 0 ||
                   validateExperiment.filters.order_data.invalid_coordinate.length
-                  > 0){
-                     <p class="h-2 text-capitalize">Filter and eliminate any invalid
+                  > 0) ){
+                     <p class="h-2 mb-2">Filter and eliminate any invalid
                       order data</p>
-                  }                 
+                  }@else {
+                    <p class="mt-2 mb-2">There is valid order data.</p>
+                  }                
                   @if(validateExperiment &&
                   validateExperiment.filters.constraints.over_distance.length >0
                   && isValidateShowMessage.validate.overDistance){
-                  <ngb-alert type="danger"
-                    (closed)="isValidateShowMessage.validate.overDistance = false">
+                  <ngb-alert type="danger" [dismissible]="false">
                     <strong>{{validateMessage.filtersMessage.constraints.overDistance.title}}</strong>
                     {{validateMessage.filtersMessage.constraints.overDistance.message}}
                     <button
@@ -610,7 +613,7 @@
                         <thead>
                           <tr><th scope="col">FILTER TYPE</th>
                             <th scope="col">ORDER ID</th>
-                            <th scope="col">QUANTITY</th>
+                            <th scope="col">DISTANCE</th>
                             <th scope="col">ADDRESS</th>
                             <th scope="col">TAMBOL</th>
                             <th scope="col">AMPHOR</th>
@@ -622,9 +625,9 @@
                           <tr
                             *ngFor="let item of validateExperiment.filters.constraints.over_distance">
                             <th scope="row">Over Distance</th>
+                            <td>{{item.name}}</td>
                             <td>{{(item.metrics!.excess_distance/100) | number:
                               '2.0-2'}} KM.</td>
-                            <td>{{item.name}}</td>
                             <td>{{ item.original_address.address | truncate:[70,
                               '...'] }}</td>
                             <td>{{item.original_address.subdistrict}}</td>
@@ -641,8 +644,7 @@
                   @if(validateExperiment &&
                   validateExperiment.filters.constraints.over_weight.length > 0
                   && isValidateShowMessage.validate.overWeight){
-                  <ngb-alert type="danger"
-                    (closed)="isValidateShowMessage.validate.overWeight = false">
+                  <ngb-alert type="danger" [dismissible]="false">
                     <strong>{{validateMessage.filtersMessage.constraints.overWeight.title}}</strong>
                     {{validateMessage.filtersMessage.constraints.overWeight.message}}
                     <button
@@ -673,9 +675,10 @@
                           <tr
                             *ngFor="let item of validateExperiment.filters.constraints.over_weight">
                             <th scope="row">Over Weight</th>
+                            <td>{{item.name}}</td>
                             <td>{{item.metrics?.excess_weight | number: '2.0-2'}}
                               KG.</td>
-                            <td>{{item.name}}</td>
+                            
                             <td>{{ item.original_address.address | truncate:[70,
                               '...'] }}</td>
                             <td>{{item.original_address.subdistrict}}</td>
@@ -691,8 +694,7 @@
                   @if(validateExperiment &&
                   validateExperiment.filters.order_data.invalid_coordinate.length
                   > 0 && isValidateShowMessage.validate.invalidCoordinate){
-                  <ngb-alert type="danger"
-                    (closed)="isValidateShowMessage.validate.invalidCoordinate= false">
+                  <ngb-alert type="danger" [dismissible]="false">
                     <strong>{{validateMessage.filtersMessage.orderData.invalidCoordinate.title}}
                     </strong>
                     {{validateMessage.filtersMessage.orderData.invalidCoordinate.message}}

@@ -121,10 +121,10 @@
                     <div class="input-group input-group-sm mb-3">
                         <div class="input-group-prepend">
                             <span
-                                class="input-group-text bg-primary bg-gradient text-white"
+                                class="input-group-text bg-secondary bg-gradient text-white"
                                 style="width: fit-content;">Latitude</span>
                         </div>
-                        <input type="text" class="form-control bg-white"
+                        <input type="text" class="form-control bg-light"
                             [(ngModel)]="location.latitude" disabled>
                     </div>
                 </div>
@@ -132,10 +132,10 @@
                     <div class="input-group input-group-sm mb-3">
                         <div class="input-group-prepend ">
                             <span
-                                class="input-group-text bg-primary bg-gradient text-white"
+                                class="input-group-text bg-secondary bg-gradient text-white"
                                 style="width: fit-content;">Longitude</span>
                         </div>
-                        <input type="text" class="form-control bg-white"
+                        <input type="text" class="form-control bg-light"
                         [(ngModel)]="location.longitude" disabled>
                     </div>
                 </div>
@@ -144,7 +144,12 @@
                     <button mat-raised-button class="bg-custom-primary"
                         (click)="markLocation()">
                         <mat-icon>edit_location_alt</mat-icon>
-                        Update</button>
+                        @if (isEdited()) {
+                            Update Again
+                        }@else {
+                            Update
+                        }
+                        </button>
                 </div>
                 }
 

@@ -99,7 +99,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   // Mat Table related variables
   dataRouteInfo = new MatTableDataSource<RouteInfo>([]);
   columnsToDisplay: string[] = [
-    'route_index',
+    'route_label',
     'number_delivery_points',
     'service_time',
     'travel_distance',
@@ -130,7 +130,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     this.dimStyle = new Style({
       stroke: new Stroke({
-        color: 'rgba(0, 0, 0, 0.2)',
+        color: 'rgba(0, 0, 0, 0.1)',
         width: 3,
       }),
     });
@@ -216,6 +216,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
           }
           rowData[headers[colNumber - 1]] = cellValue;
         });
+        console.log(rowData);
         if (options === 0) this.dataSourceReport.push(rowData);
         if (options === 1) {
           rowData['customers_distance'] = rowData['customers_distance']
@@ -480,29 +481,35 @@ export class ResultComponent implements OnInit, AfterViewInit {
     clusterLayer.getSource()?.changed();
   }
   handleClick(event: any): void {
+    let depotStartId: number | null = null;
+    let depotEndId: number | null = null;
+
     const feature = this.map.forEachFeatureAtPixel(
       event.pixel,
       (feature) => feature
     );
     if (feature && feature.getGeometry()?.getType() === 'LineString') {
       const routeIndex = feature.getProperties()['route_index'];
-      let depotId: number = feature.getProperties()['depot_id'];
+      depotStartId = feature.getProperties()['start_depot_id'];
+      depotEndId = feature.getProperties()['end_depot_id'];
       const featureCollection = this.featureCollections.find(
         (collection: any) => {
           return collection.features.some((f: any) => {
-            depotId = f.properties.depot_id;
             return f.properties.route_index === routeIndex;
           });
         }
       );
-    let featureDepot: any = null;
-    if (this.featureDepots.length === 1) {
-      featureDepot = this.featureDepots[0];
-    }else featureDepot = this.featureDepots.find((depot: any) => {
-      return depot.properties.depot_id === depotId;
-    });
+      const featureDepots:any[] = [];
+      if(this.featureDepots.length === 1){
+        featureDepots.push(this.featureDepots[0]);
+      }{
+      const matchingDepots = this.featureDepots.filter((depot: any) => 
+        [depotStartId, depotEndId].includes(depot.properties.depot_id)
+      );
+      featureDepots.push(...matchingDepots);
+      }
     if (featureCollection) {
-      this.openModal(featureCollection, featureDepot);
+      this.openModal(featureCollection, featureDepots);
     }
     }
   }
@@ -518,7 +525,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     }
   }
 
-  openModal(featureCollection: any, featureDepot: any): void {
+  openModal(featureCollection: any, featureDepots: any[]): void {
     const modalRef = this.ngbModal.open(MapDetailsDialogComponent, {
       size: 'xl',
       centered: true,
@@ -526,7 +533,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       modalDialogClass: 'custom-modal-content',
     });
     modalRef.componentInstance.featureCollection = featureCollection;
-    modalRef.componentInstance.featureDepot = featureDepot;
+    modalRef.componentInstance.featureDepots = featureDepots;
   }
 
   styleFunction(feature: FeatureLike): Style | Style[] | undefined {
@@ -604,7 +611,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
           color: isHighlighted
             ? '#ffcc33'
             : this.highlightedFeatureCollectionId !== null
-            ? 'rgba(0, 0, 0, 0.2)'
+            ? 'rgba(0, 0, 0, 0.1)'
             : color, // Highlight color if part of highlighted FeatureCollection
         }),
         stroke: new Stroke({
@@ -675,12 +682,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   openRouteDetails(routeIndex: number): void {
-    let depotId: number | null = null;
+    let depotStartId: number | null = null;
+    let depotEndId: number | null = null;
   
     const collection = this.featureCollections.find((collection: any) => {
       return collection.features.some((feature: any) => {
         if (feature.properties.route_index === routeIndex) {
-          depotId = feature.properties.depot_id;
+          depotStartId =  feature.properties.start_depot_id;
+          depotEndId =  feature.properties.end_depot_id;
           return true;
         }
         return false;
@@ -691,18 +700,25 @@ export class ResultComponent implements OnInit, AfterViewInit {
       console.error(`No feature collection found for route index ${routeIndex}`);
       return;
     }
+    const featureDepots:any[] = [];
+    if(this.featureDepots.length === 1){
+      featureDepots.push(this.featureDepots[0]);
+    }{
+      
+    const matchingDepots = this.featureDepots.filter((depot: any) => 
+      [depotStartId, depotEndId].includes(depot.properties.depot_id)
+    );
+    featureDepots.push(...matchingDepots);
+    }
+    
   
-    const featureDepot = this.featureDepots.length === 1
-      ? this.featureDepots[0]
-      : this.featureDepots.find((depot: any) => depot.properties.depot_id === depotId);
-  
-    if (!featureDepot) {
-      console.error(`No depot found with depot_id ${depotId}`);
+    if (!featureDepots) {
+      console.error(`No depot found with depot_id ${depotStartId} : ${depotEndId}`);
       return;
     }
-    console.log(featureDepot,collection);
+    console.log(featureDepots,collection);
   
-    this.openModal(collection, featureDepot);
+    this.openModal(collection, featureDepots);
   }
   
 

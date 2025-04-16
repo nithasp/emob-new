@@ -1,6 +1,20 @@
 <div id="markLocationMap" class="map"></div>
 <div class="m-3 row justify-content-sm-center">
-    <mat-error *ngIf="messageError">Please mark location on map or Input Latitude and Longtitude</mat-error>
+    @if(address){
+        <div class="col-sm-12">
+            <div class="input-group input-group-sm mb-3">
+                <div class="input-group-prepend" style="height: 100px;">
+                    <span class="input-group-text"
+                        style="height: 100px;display: flex;align-items: center;">ADDRESS</span>
+                </div>
+                <textarea class="form-control bg-white" aria-label="Small"
+                    aria-describedby="inputGroup-sizing-sm" rows="3"
+                    [value]="address"
+                    style="height: 100px; overflow: auto;" disabled></textarea>
+            </div>
+        </div>  
+    }
+     
     <div class="col-sm-5">
         <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
@@ -23,10 +37,13 @@
             [(ngModel)]="location.longitude">
         </div>
     </div>
+    
     <div class="col-sm-2">
-        <button mat-mini-fab (click)="updateLocation()" class="center-icon-button bg-custom-primary">
+        <button mat-mini-fab placement="top" ngbTooltip="sync Latitude and Longitude to Map" (click)="updateLocation()" class="center-icon-button bg-custom-primary">
             <mat-icon>sync</mat-icon>
           </button> 
     </div>
+    <mat-error *ngIf="messageError" class="mb-2 mt-2">Please mark location on map or Input Latitude and Longtitude</mat-error>
     <button mat-flat-button class="bg-custom-primary col-sm-2 btn-block" (click)="closeLocation()">Confirm</button>
+    <button mat-flat-button class="mt-0 ml-3 col-sm-2 btn-block" (click)="cancel()">Cancel</button>
 </div>

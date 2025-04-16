@@ -58,7 +58,11 @@ export interface RouteInfo {
     number_of_replace_types: string;
     number_of_validate_types: string;
     number_zone: number;
+    node_id:string;
+    node_index:number;
+    node_label:number;
     route: number[];
+    route_label: number;
     route_index: number;
     service_time: number;
     total_customers_distance: number;

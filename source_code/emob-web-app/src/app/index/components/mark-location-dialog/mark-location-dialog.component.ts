@@ -43,6 +43,7 @@ export class MarkLocationDialogComponent implements OnInit, AfterViewInit {
   vectorLayer!: VectorLayer;
 
   @Input() location!: Location;
+  @Input() address :string|null = null;
   constructor(
     private readonly activeModal: NgbActiveModal
   ) { }
@@ -151,5 +152,9 @@ export class MarkLocationDialogComponent implements OnInit, AfterViewInit {
     }
 
     this.activeModal.close(this.location);
+  }
+
+  cancel(){
+    this.activeModal.close(null);
   }
 }

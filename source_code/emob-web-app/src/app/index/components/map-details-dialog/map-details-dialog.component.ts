@@ -21,7 +21,7 @@ import { Coordinate } from 'ol/coordinate';
 })
 export class MapDetailsDialogComponent implements OnInit {
   @Input() featureCollection: any;
-  @Input() featureDepot: any;
+  @Input() featureDepots: any[] =[];
   private map!: Map;
   public popUp?: Overlay;
   public popupContent?: any;
@@ -30,10 +30,10 @@ export class MapDetailsDialogComponent implements OnInit {
   constructor(private readonly ngbActiveModal: NgbActiveModal) {}
   ngOnInit(): void {
     console.log(this.featureCollection);
-    this.loadAndProcessGeoJSON(this.featureCollection,this.featureDepot);
+    this.loadAndProcessGeoJSON(this.featureCollection,this.featureDepots);
   }
 
-  loadAndProcessGeoJSON(item:any,depot:any): void {
+  loadAndProcessGeoJSON(item:any,depots:any[]): void {
         const itemFeatures = new GeoJSON().readFeatures(item, {
           dataProjection: 'EPSG:4326',
           featureProjection: 'EPSG:3857',
@@ -64,28 +64,21 @@ export class MapDetailsDialogComponent implements OnInit {
     });
 
     // mapping depots for features
+    depots.forEach((depot: any) => {
       const features = new GeoJSON().readFeatures(depot, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
       });
     vectorSource.addFeatures(features);
-    console.log(features);
-    features.forEach((feature: FeatureLike) => {
-      const geometry = feature.getGeometry();
-      if (geometry?.getType() === 'Point') {
-        const coordinates = (geometry as Point).getCoordinates();
-        const [longitude, latitude] = OlProj.transform(coordinates, 'EPSG:3857', 'EPSG:4326');
-        console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
-        this.initMap(vectorSource,[longitude, latitude]);
-      } else {
-        console.log('Geometry is not a Point');
-      }      
-    });
+      
+    })
+
+    this.initMap(vectorSource);
     
     
   }
 
-  private initMap(vectorSource: VectorSource,latLong:number[]) {
+  private initMap(vectorSource: VectorSource) {
     const vectorLayer = new VectorLayer({
       source: vectorSource,
       style: this.styleFunction.bind(this),
@@ -111,7 +104,7 @@ export class MapDetailsDialogComponent implements OnInit {
       ],
       target: 'modalMap',
       view: new View({
-        center: OlProj.fromLonLat(latLong),
+        center: OlProj.fromLonLat([ 100.53139488523458,13.786463255129673]),
         zoom: 10,
         maxZoom: 17,
         minZoom: 10,

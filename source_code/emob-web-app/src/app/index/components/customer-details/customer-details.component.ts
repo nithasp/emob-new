@@ -254,16 +254,19 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
 
     });
     dialogRef.componentInstance.location = {longitude:this.dataCustomer.longitude,latitude: this.dataCustomer.latitude};
+    dialogRef.componentInstance.address = this.dataCustomer.original_address.address;
 
     dialogRef.result.then((result:any) => {
       
-        console.log(result);
-        this.location.latitude = Number(result.latitude);
-        this.location.longitude = Number(result.longitude);
-        this.locationType = LocationType.Edit;
-        this.dataEmitter.emit(this.location);
-        this.setLocation(this.dataCustomer,this.location);
-        this.toastr.success("Update Location","Succeed");
+        if(result){
+          console.log(result);
+          this.location.latitude = Number(result.latitude);
+          this.location.longitude = Number(result.longitude);
+          this.locationType = LocationType.Edit;
+          this.dataEmitter.emit(this.location);
+          this.setLocation(this.dataCustomer,this.location);
+          this.toastr.success("Update Location","Succeed");
+      }
         
     }).catch((error) => {
       console.error('Dialog was dismissed:', error);

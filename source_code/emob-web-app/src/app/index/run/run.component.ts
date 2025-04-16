@@ -152,12 +152,12 @@ export class RunComponent implements OnInit, AfterViewInit {
         overDistance: {
           title: 'Over distance Warning!',
           message:
-            'Please check, the vehicle order-size capacity parameter of your constraint.',
+          'Please check, the maximum travel distance parameter of your constraint.',
         },
         overWeight: {
           title: 'Over weight Warning!',
           message:
-            'Please check, the maximum travel distance parameter of your constraint.',
+          'Please check, the vehicle order-size capacity parameter of your constraint.',
         },
       },
       orderData: {
@@ -1090,6 +1090,12 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   validateExperimentPreOrder() {
+
+    if(this.constraintsData.earlyDeliveryTime > this.constraintsData.backToDepotTime){
+      this.showInvalidModal('INVALID : Early Delivery Time', 'Early Delivery Time must be less than Back to Depot Time');
+      return;
+
+    }
     this.showSpinner();
     this.experimentService
       .validateExperiment(
@@ -1154,7 +1160,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     dialogRef.componentInstance.title = 'Experiment Confirmation';
     dialogRef.componentInstance.question = 'Confirm to submit experiment ?';
     dialogRef.componentInstance.message =
-      'Submitting an experiment to the AI service takes 5 to 10 minutes.';
+      'Submitting an experiment to the AI service will start the planning process.';
 
     dialogRef.result
       .then((confirmed: boolean) => {
