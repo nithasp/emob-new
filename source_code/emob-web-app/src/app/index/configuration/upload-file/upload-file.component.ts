@@ -33,20 +33,6 @@ export class UploadFileComponent implements OnInit {
     'application/vnd.ms-excel',
   ];
 
-  private readonly expectedHeaders = [
-    'Material',
-    'Material Number',
-    'หน่วยใหญ่\nQUANTITYMAIN\t',
-    'หน่วยเล็ก\nQUANTITYMINOR',
-    'Sale Unit',
-    'InnerPack',
-    'NET_VOLUME (KG) / Piece',
-    'PROD_SIZE (g) /  Piece',
-    'Length',
-    'Width',
-    'Height',
-  ];
-
   constructor(
     private readonly toastr: ToastrService,
     public readonly activeModal: NgbActiveModal,
@@ -54,7 +40,7 @@ export class UploadFileComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('headersColumns', this.headersColumns);
+     
   }
 
   onFileSelected(files: any) {
