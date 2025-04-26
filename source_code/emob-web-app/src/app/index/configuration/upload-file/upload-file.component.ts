@@ -6,9 +6,14 @@ import {
 } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
-import { Categories } from 'src/app/models/configuration.model';
+import {
+  ActualLocation,
+  Categories,
+  Configuration,
+} from 'src/app/models/configuration.model';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import { DetailsDialogComponent } from '../../components/details-dialog/details-dialog.component';
+import * as ExcelJS from 'exceljs';
 
 @Component({
   selector: 'app-upload-file',
@@ -20,19 +25,40 @@ export class UploadFileComponent implements OnInit {
   @Input() category: string = '';
   @Input() type: string = '';
   @Input() name: string = '';
+  @Input() headersColumns: string[] = [];
 
   public requiredFileType: string = '.xlsx, .xls';
-  private readonly validTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'];
+  private readonly validTypes = [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel',
+  ];
+
+  private readonly expectedHeaders = [
+    'Material',
+    'Material Number',
+    'หน่วยใหญ่\nQUANTITYMAIN\t',
+    'หน่วยเล็ก\nQUANTITYMINOR',
+    'Sale Unit',
+    'InnerPack',
+    'NET_VOLUME (KG) / Piece',
+    'PROD_SIZE (g) /  Piece',
+    'Length',
+    'Width',
+    'Height',
+  ];
 
   constructor(
     private readonly toastr: ToastrService,
     public readonly activeModal: NgbActiveModal,
     private readonly ngbModal: NgbModal
   ) {}
-  ngOnInit(): void {}
+
+  ngOnInit(): void {
+    console.log('headersColumns', this.headersColumns);
+  }
 
   onFileSelected(files: any) {
-    console.log(files);
+    console.log('onFileSelected', files);
     let file: File;
     if (files instanceof FileList) {
       file = files[0];
@@ -48,12 +74,14 @@ export class UploadFileComponent implements OnInit {
     }
     if (file) {
       if (!this.validTypes.includes(file.type)) {
-       this.alertInvalidation("File Invalid","Please select an Excel file (.xlsx or .xls)");
+        this.alertInvalidation(
+          'File Invalid',
+          'Please select an Excel file (.xlsx or .xls)'
+        );
       } else {
         // Proceed with file processing
         this.uploadFile(file);
       }
-      
     }
   }
 
@@ -66,29 +94,68 @@ export class UploadFileComponent implements OnInit {
    * If the user confirms, then the file is uploaded to the server.
    * @param file The file to be uploaded.
    */
-  uploadFile(file: File) {
-    console.log(`uploadFile: file = ${file.name}`);
-    const focusedElement = document.activeElement as HTMLElement;
-    if (focusedElement) {
-      focusedElement.blur();
+
+  private async uploadFile(file: File) {
+    const buffer = await file.arrayBuffer();
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer);
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      this.alertInvalidation('Invalid File', 'Could not read any worksheet.');
+      return;
     }
+
+    const normalize = (s: string) =>
+      s.trim().toLowerCase().replace(/\s+/g, '_');
+
+    const rawActual: string[] = (worksheet.getRow(1).values as any[])
+      .slice(1)
+      .map((h) => (h ?? '').toString())
+      .filter((cell) => cell.trim() !== '' && cell !== 'Unnamed: 0');
+
+    const rawExpected: string[] = [...this.headersColumns];
+
+    const actualNorm = rawActual.map(normalize);
+    const expectedNorm = rawExpected.map(normalize);
+
+    const missingNorm = expectedNorm.filter((exp) => !actualNorm.includes(exp));
+    if (missingNorm.length) {
+      const missingRaw = rawExpected.filter((h) =>
+        missingNorm.includes(normalize(h))
+      );
+
+      this.alertInvalidation(
+        'Header Columns ไม่ถูกต้อง',
+        `Column ที่ต้องการ:<br>${rawExpected.join(' | ')}<br><br>` +
+          `Column ที่ได้รับ:<br>${rawActual.join(' | ')}<br><br>` +
+          `Column ที่ขาดไป:<br>${missingRaw.join(' | ')}<br><br>`
+      );
+      return;
+    }
+
+    const extraNorm = actualNorm.filter((act) => !expectedNorm.includes(act));
+    if (extraNorm.length) {
+      const extraRaw = rawActual.filter((h) =>
+        extraNorm.includes(normalize(h))
+      );
+    }
+
     const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
       centered: true,
       animation: true,
     });
     dialogRef.componentInstance.title = 'Upload File Confirmation';
-    dialogRef.componentInstance.question = `Confirm to upload ${file.name} to category ?`;
+    dialogRef.componentInstance.question = `Confirm uploading ${file.name} to category?`;
     dialogRef.componentInstance.message = `If you upload ${file.name} to the incorrect category, it will affect your route planning AI service.`;
 
     dialogRef.result.then((confirmed: boolean) => {
-      console.log(`uploadFile: confirmed = ${confirmed}`);
       if (confirmed) {
-        console.log('confirmed');
         this.activeModal.close(file);
       }
     });
   }
-  alertInvalidation(title:string,message:string | string[]) {
+
+  alertInvalidation(title: string, message: string | string[]) {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();

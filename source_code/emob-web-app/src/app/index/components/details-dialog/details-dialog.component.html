@@ -14,8 +14,8 @@
         </div>
 
         }@else if (isString(message)) {
-        <p class="text-center ml-3">{{ message }}</p>
-        
+        <!-- <p class="text-center ml-3">{{ message }}</p> -->
+        <p [innerHTML]="message"></p>
         }
             <p class="text-center ml-3 text-secondary h-2 mt-5 mb-5" [hidden]="message !=''" >No Information</p>
 

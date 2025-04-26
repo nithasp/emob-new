@@ -55,7 +55,7 @@ export class ConfigurationComponent implements OnInit {
   private loadDataConfiguration() {
     this.spinner.show();
     this.configurationService.getConfigurations().subscribe((data) => {
-      console.log(data);
+  
       this.configurationAllData.configurations = data.configurations;
       this.configurationAllData.actualLocations = data.actualLocations;
       const configurationCategory: Categories[] = [];
@@ -244,6 +244,11 @@ export class ConfigurationComponent implements OnInit {
   }
 
   openUploadFile(category: string, name: string, type: string) {
+    console.log('openUploadFile', category, name, type);
+    console.log('name', name);
+
+
+
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -263,6 +268,12 @@ export class ConfigurationComponent implements OnInit {
     dialogRef.componentInstance.category = category;
     dialogRef.componentInstance.type = type;
     dialogRef.componentInstance.name = name;
+    if (type === 'configuration') {
+      const cfg: any = this.configurationAllData.configurations
+        .find(c => c.name === name);
+      dialogRef.componentInstance.headersColumns = cfg?.columns ?? [];
+    }
+
     dialogRef.result
       .then((file: File) => {
         if (file) {

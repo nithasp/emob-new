@@ -1,4 +1,4 @@
-import { HttpClient, HttpResponse, } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { Observable } from 'rxjs';
@@ -18,24 +18,18 @@ export class ConfigurationService {
     private readonly errorHandlingService: ErrorHandlingService
   ) {}
 
-
-  getDatafromUrl(url:string): Observable<Blob>{
+  getDatafromUrl(url: string): Observable<Blob> {
     return this.http.get(url, { responseType: 'blob' });
   }
 
-   downloadFile(url: string): Observable<HttpResponse<Blob>> {
+  downloadFile(url: string): Observable<HttpResponse<Blob>> {
     return this.http.get(url, { responseType: 'blob', observe: 'response' });
   }
-
-
-
-
 
   getConfigurations(): Observable<Response> {
     return this.apollo
       .watchQuery<Response>({
         query: gql`
-                  
           {
             configurations {
               id
@@ -43,142 +37,150 @@ export class ConfigurationService {
               name
               category
               type
+              columns
             }
             actualLocations {
               year
               children {
                 month
                 children {
-                fileName
-                timestamp
-                fileBlobPath
+                  fileName
+                  timestamp
+                  fileBlobPath
+                }
               }
             }
-          }
           }
         `,
         fetchPolicy: 'cache-and-network',
-        notifyOnNetworkStatusChange: true
-      }).valueChanges.pipe(
-        map(result => result.data),
+        notifyOnNetworkStatusChange: true,
+      })
+      .valueChanges.pipe(
+        map((result) => result.data),
         this.errorHandlingService.handleError
       );
   }
 
-  getConfiguration(id:string): Observable<Configuration> {
+  getConfiguration(id: string): Observable<Configuration> {
     return this.apollo
       .query<Response>({
         query: gql`
-        query configuration($id:String!) {
-                configuration(id:$id) {
-                  fileUrl {
-                    fileConfigurationUrl
-                  }
-                }
+          query configuration($id: String!) {
+            configuration(id: $id) {
+              fileUrl {
+                fileConfigurationUrl
               }
-
+            }
+          }
         `,
-        variables:{
-            id:id,
-      }
-    })
+        variables: {
+          id: id,
+        },
+      })
       .pipe(
-        map(result => result.data.configuration),
+        map((result) => result.data.configuration),
         this.errorHandlingService.handleError
       );
   }
 
-  getActualLocation(blobPath:string): Observable<ActualLocation>{
-    return this.apollo.query<Response>({
-      query: gql`
-        query actualLocation($input:String!){
-          actualLocation(blobPath: $input) {
-            year
-            children {
-              month
-              children{
-              fileName
-              fileBlobPath
-              timestamp
-              fileUrl {
-                fileActualLocationUrl
+  getActualLocation(blobPath: string): Observable<ActualLocation> {
+    return this.apollo
+      .query<Response>({
+        query: gql`
+          query actualLocation($input: String!) {
+            actualLocation(blobPath: $input) {
+              year
+              children {
+                month
+                children {
+                  fileName
+                  fileBlobPath
+                  timestamp
+                  fileUrl {
+                    fileActualLocationUrl
+                  }
+                }
               }
             }
           }
-        }
-          }
-      `,
-      variables: {
-        input: blobPath
-      }
-    }).pipe(
-      map(result => result.data.actualLocation)
-    );
+        `,
+        variables: {
+          input: blobPath,
+        },
+      })
+      .pipe(map((result) => result.data.actualLocation));
   }
-
 
   uploadActualLocation(file: File): Observable<ActualLocation> {
-    console.log("file", file);
+    console.log('file', file);
 
-    return this.apollo.mutate<Response>({
-      mutation: gql`
-      mutation uploadActualLocation($input: Upload!){
-        uploadActualLocation(file: $input) {
-          year
-          children {
-            month
-            children{
-              fileName
-              fileBlobPath
-              timestamp
-              fileUrl {
-                fileActualLocationUrl
+    return this.apollo
+      .mutate<Response>({
+        mutation: gql`
+          mutation uploadActualLocation($input: Upload!) {
+            uploadActualLocation(file: $input) {
+              year
+              children {
+                month
+                children {
+                  fileName
+                  fileBlobPath
+                  timestamp
+                  fileUrl {
+                    fileActualLocationUrl
+                  }
+                }
               }
             }
           }
-        }
-      }
-      `,
-      variables: {
-        input: file
-      },
-      context: {
-        useMultipart: true // Ensure multipart upload is enabled
-      }
-    }).pipe(map(result => result.data!.uploadActualLocation),
-    this.errorHandlingService.handleError);
+        `,
+        variables: {
+          input: file,
+        },
+        context: {
+          useMultipart: true, // Ensure multipart upload is enabled
+        },
+      })
+      .pipe(
+        map((result) => result.data!.uploadActualLocation),
+        this.errorHandlingService.handleError
+      );
   }
 
-  uploadConfiguration(file: File,category:string,type:string): Observable<Configuration> {
-    return this.apollo.mutate<Response>({
-      mutation: gql`
-      mutation replaceTypeOfCategory($input:replaceCategoryInput!){
-        replaceTypeOfCategory(input:$input) {
-          companyName
-          id
-          timestamp
-          name
-          category
-          type
-          fileBlobPath
-        }
-      }
-      `,
-      variables: {
-        input : {
-          file: file,
-          category: category,
-          type: type
-        }
-      },
-      context: {
-        useMultipart: true // Ensure multipart upload is enabled
-      }
-    }).pipe(
-      map(result => result.data!.replaceTypeOfCategory),
-      this.errorHandlingService.handleError);
+  uploadConfiguration(
+    file: File,
+    category: string,
+    type: string
+  ): Observable<Configuration> {
+    return this.apollo
+      .mutate<Response>({
+        mutation: gql`
+          mutation replaceTypeOfCategory($input: replaceCategoryInput!) {
+            replaceTypeOfCategory(input: $input) {
+              companyName
+              id
+              timestamp
+              name
+              category
+              type
+              fileBlobPath
+            }
+          }
+        `,
+        variables: {
+          input: {
+            file: file,
+            category: category,
+            type: type,
+          },
+        },
+        context: {
+          useMultipart: true, // Ensure multipart upload is enabled
+        },
+      })
+      .pipe(
+        map((result) => result.data!.replaceTypeOfCategory),
+        this.errorHandlingService.handleError
+      );
   }
-
-
 }
-
