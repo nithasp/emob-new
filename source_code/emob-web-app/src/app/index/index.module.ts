@@ -32,6 +32,7 @@ import { MapDetailsDialogComponent } from './components/map-details-dialog/map-d
 import { OverlayModule } from '@angular/cdk/overlay';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ParametersDialogComponent } from './components/parameters-dialog/parameters-dialog.component';
+import { ConsumptionDialogComponent } from './components/consumption-dialog/consumption-dialog.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +57,8 @@ import { ParametersDialogComponent } from './components/parameters-dialog/parame
     ResizableDirective,
     UploadFileComponent,
     MapDetailsDialogComponent,
-    ParametersDialogComponent
+    ParametersDialogComponent,
+    ConsumptionDialogComponent
   ],
   imports: [
     IndexRoutingModule,

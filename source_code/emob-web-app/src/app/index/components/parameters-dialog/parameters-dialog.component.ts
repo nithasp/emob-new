@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { Constraint } from 'src/app/models/constraint.model';
-import { Vehicle } from 'src/app/models/vehicle.model';
+import { TimingAndCapacity } from 'src/app/models/constraint.model';
 
 @Component({
   selector: 'app-parameters-dialog',
@@ -9,28 +8,21 @@ import { Vehicle } from 'src/app/models/vehicle.model';
   styleUrl: './parameters-dialog.component.scss',
 })
 export class ParametersDialogComponent implements OnInit {
-  @Input() paramsVehicle: Constraint = {
-    availableCar: 0,
-    limitVehicleCapacity: 0,
-    deliveryTime: '',
+  @Input() paramsVehicle: TimingAndCapacity = {
     backToDepotTime: '',
-    maxTravelDistance: 0,
-    MaxWorkDuration: 0,
     earlyDeliveryTime: '',
-    maximumWorkDuration: '',
     numberOfVehicleAvailable: 0,
     vehicleOrderSizeCapacity: 0,
     maximumTravelDistance: 0,
-    serviceDurationTime: ''
+    serviceDurationTime: '',
+    maximumWorkDuration: ''
   };
 
   constructor(private readonly activeModal: NgbActiveModal) {
      
   }
 
-  ngOnInit(): void {
-    console.log('this.paramsVehicle', this.paramsVehicle);
-  }
+  ngOnInit(): void {}
 
   onCancleClick() {
     this.activeModal.close(false);

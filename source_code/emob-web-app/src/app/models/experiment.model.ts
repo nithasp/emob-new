@@ -29,8 +29,8 @@ export interface Experiment {
   status: StatusExperiment;
   run: 'Original' | 'Rerun';
   groupId: string;
-  countGeocoding: string;
-  countReroute: string;
+  countGeocoding: number;
+  countReroute: number;
   result: Result;
   fileUrl: FileURL;
 }
@@ -88,3 +88,5 @@ export interface DownloadResultFile {
     resultFileBlobPathUrl: string;
   };
 }
+
+export interface ExperimentCounts extends Pick<Experiment, 'countGeocoding' | 'countReroute'> {}
