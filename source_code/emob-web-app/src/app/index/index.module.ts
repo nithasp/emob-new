@@ -31,6 +31,7 @@ import { UploadFileComponent } from './configuration/upload-file/upload-file.com
 import { MapDetailsDialogComponent } from './components/map-details-dialog/map-details-dialog.component';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { ParametersDialogComponent } from './components/parameters-dialog/parameters-dialog.component';
 
 @NgModule({
   declarations: [
@@ -54,7 +55,8 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     FilterPipe,
     ResizableDirective,
     UploadFileComponent,
-    MapDetailsDialogComponent
+    MapDetailsDialogComponent,
+    ParametersDialogComponent
   ],
   imports: [
     IndexRoutingModule,

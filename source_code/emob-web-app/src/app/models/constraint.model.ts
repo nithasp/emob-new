@@ -1,4 +1,9 @@
 export interface Constraint {
+    MaxWorkDuration: number;
+    maxTravelDistance: number;
+    deliveryTime: string;
+    limitVehicleCapacity: number;
+    availableCar: number;
     earlyDeliveryTime: string;
     backToDepotTime : string;
     maximumWorkDuration: string;
