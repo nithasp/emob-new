@@ -111,12 +111,29 @@ export class UploadFileComponent implements OnInit {
         missingNorm.includes(normalize(h))
       );
 
+      // this.alertInvalidation(
+      //   'Header Columns are incorrect.',
+      //   `Expected Columns:<br>${rawExpected.join(', ')}<br><br>` +
+      //     `Received Columns:<br>${rawActual.join(', ')}<br><br>` +
+      //     `Missing Columns:<br>${missingRaw.join(', ')}<br><br>`
+      // );
+
       this.alertInvalidation(
         'Header Columns are incorrect.',
-        `Expected Columns:<br>${rawExpected.join(', ')}<br><br>` +
-          `Received Columns:<br>${rawActual.join(', ')}<br><br>` +
-          `Missing Columns:<br>${missingRaw.join(', ')}<br><br>`
+        `<div>
+          <div class="mb-1">
+            <p class="mb-0">Missing Columns:</p>
+            <p>${missingRaw.join(', ')}</p>
+          </div>
+          <div class="text-muted small">
+            <p class="mb-0">Expected Columns:</p>
+            <p>${rawExpected.join(', ')}</p>
+          </div>
+        </div>`
       );
+      
+      
+
       return;
     }
 
