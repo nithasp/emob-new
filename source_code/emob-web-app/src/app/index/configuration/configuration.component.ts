@@ -118,7 +118,7 @@ export class ConfigurationComponent implements OnInit {
       });
       this.configurationsExplorer = configurationCategory;
       console.log(this.configurationsExplorer);
-      this.dataSource = this.configurationsExplorer;
+      this.dataSource = this.configurationsExplorer.filter(item => item.name !== 'actualLocation');
       this.spinner.hide();
     });
   }
