@@ -39,9 +39,7 @@ export class UploadFileComponent implements OnInit {
     private readonly ngbModal: NgbModal
   ) {}
 
-  ngOnInit(): void {
-     
-  }
+  ngOnInit(): void {}
 
   onFileSelected(files: any) {
     console.log('onFileSelected', files);
@@ -104,6 +102,9 @@ export class UploadFileComponent implements OnInit {
     const actualNorm = rawActual.map(normalize);
     const expectedNorm = rawExpected.map(normalize);
 
+    console.log('actualNorm', actualNorm);
+    console.log('expectedNorm', expectedNorm);
+
     const missingNorm = expectedNorm.filter((exp) => !actualNorm.includes(exp));
     if (missingNorm.length) {
       const missingRaw = rawExpected.filter((h) =>
@@ -111,10 +112,10 @@ export class UploadFileComponent implements OnInit {
       );
 
       this.alertInvalidation(
-        'Header Columns ไม่ถูกต้อง',
-        `Column ที่ต้องการ:<br>${rawExpected.join(' | ')}<br><br>` +
-          `Column ที่ได้รับ:<br>${rawActual.join(' | ')}<br><br>` +
-          `Column ที่ขาดไป:<br>${missingRaw.join(' | ')}<br><br>`
+        'Header Columns are incorrect.',
+        `Expected Columns:<br>${rawExpected.join(', ')}<br><br>` +
+          `Received Columns:<br>${rawActual.join(', ')}<br><br>` +
+          `Missing Columns:<br>${missingRaw.join(', ')}<br><br>`
       );
       return;
     }
