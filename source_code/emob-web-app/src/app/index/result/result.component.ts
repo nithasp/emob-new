@@ -147,73 +147,98 @@ export class ResultComponent implements OnInit, AfterViewInit {
     });
   }
   ngOnInit(): void {
-    this.route.params.pipe(take(1)).subscribe((params: { [x: string]: string }) => {
-      this.experimentService
-        .getExperimentResult(params['experimentId'])
-        .subscribe(async (response: Experiment) => {
-          console.log(response);
-          this.experiment = { ...response };
-          this.expandedElement = [];
-          await this.loadReportData(response.fileUrl.outputReportUrl);
-          this.spinner.hide();
-          await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
+    this.route.params
+      .pipe(take(1))
+      .subscribe((params: { [x: string]: string }) => {
+        this.experimentService
+          .getExperimentResult(params['experimentId'])
+          .subscribe(async (response: Experiment) => {
+            console.log(response);
+            this.experiment = { ...response };
+            this.expandedElement = [];
+            await this.loadReportData(response.fileUrl.outputReportUrl);
+            this.spinner.hide();
+            await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
 
-          this.dataRouteInfo.filterPredicate = this.filterPredicate.bind(this);
-
-          console.log('this.dataRouteInfo', this.dataRouteInfo.data);
-        });
-
-    });
+            this.dataRouteInfo.filterPredicate =
+              this.filterPredicate.bind(this);
+          });
+      });
   }
 
   ngAfterViewInit(): void {
-    // keep listening for control changes too if you like…
-    this.searchControl.valueChanges.subscribe(v => this.applyFilter(v));
+    this.searchControl.valueChanges.subscribe((v) => this.applyFilter(v));
   }
 
-  private filterPredicate(data: RouteInfo, filter: string): boolean {
+  filterPredicate(data: RouteInfo, filter: string): boolean {
     if (!filter) return true;
-
-    // we only ever store one key at a time
-    const { column, value } = JSON.parse(filter) as { column: string; value: string };
-    const raw = data[column as keyof RouteInfo];
-    const cell = raw == null ? '' : raw.toString().toLowerCase();
-    const search = value.toLowerCase();
-
-    return this.evaluateFilter(cell, search);
+    const { column, value } = JSON.parse(filter) as {
+      column: string;
+      value: string;
+    };
+    const rawValue = data[column as keyof RouteInfo];
+    return this.evaluateFilter(column, rawValue, value);
   }
 
-  private evaluateFilter(cell: string, search: string): boolean {
-    switch (this.selectedFilterCriteria) {
+  evaluateFilter(column: string, rawValue: any, searchValue: string): boolean {
+    const crit = this.selectedFilterCriteria;
+    const search = searchValue.trim().toLowerCase();
+
+    let displayValue: number | string;
+    switch (column) {
+      case 'service_time':
+        displayValue = Number(rawValue) / 60;
+        break;
+
+      case 'travel_duration':
+        displayValue = Number((Number(rawValue) / 60).toFixed(2));
+        break;
+
+      case 'travel_distance':
+        displayValue = Math.round(Number(rawValue));
+        break;
+
+      case 'weight':
+        displayValue = Math.round(Number(rawValue));
+        break;
+
+      default:
+        displayValue = rawValue;
+    }
+
+    const dvStr = displayValue.toString().toLowerCase();
+    const dvNum =
+      typeof displayValue === 'number' ? displayValue : Number(dvStr);
+
+    switch (crit) {
       case 'equal':
-        return cell === search;
+        return !isNaN(dvNum) ? dvNum === Number(search) : dvStr === search;
 
       case 'does_not_equal':
-        return cell !== search;
+        return !isNaN(dvNum) ? dvNum !== Number(search) : dvStr !== search;
 
       case 'contains':
-        return cell.includes(search);
+        return dvStr.includes(search);
 
       case 'does_not_contain':
-        return !cell.includes(search);
+        return !dvStr.includes(search);
 
       case 'starts_with':
-        return cell.startsWith(search);
+        return dvStr.startsWith(search);
 
       case 'does_not_start_with':
-        return !cell.startsWith(search);
+        return !dvStr.startsWith(search);
 
       case 'ends_with':
-        return cell.endsWith(search);
+        return dvStr.endsWith(search);
 
       case 'does_not_end_with':
-        return !cell.endsWith(search);
+        return !dvStr.endsWith(search);
 
       default:
         return false;
     }
   }
-
 
   async loadReportData(url: string) {
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
@@ -560,7 +585,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
       const featureDepots: any[] = [];
       if (this.featureDepots.length === 1) {
         featureDepots.push(this.featureDepots[0]);
-      } {
+      }
+      {
         const matchingDepots = this.featureDepots.filter((depot: any) =>
           [depotStartId, depotEndId].includes(depot.properties.depot_id)
         );
@@ -669,8 +695,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
           color: isHighlighted
             ? '#ffcc33'
             : this.highlightedFeatureCollectionId !== null
-              ? 'rgba(0, 0, 0, 0.1)'
-              : color, // Highlight color if part of highlighted FeatureCollection
+            ? 'rgba(0, 0, 0, 0.1)'
+            : color, // Highlight color if part of highlighted FeatureCollection
         }),
         stroke: new Stroke({
           color: '#fff',
@@ -718,15 +744,16 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   applyFilter(event: Event | string): void {
-    const input = typeof event === 'string'
-      ? event
-      : (event.target as HTMLInputElement).value;
+    const input =
+      typeof event === 'string'
+        ? event
+        : (event.target as HTMLInputElement).value;
 
     const trimmed = input.trim();
     if (trimmed) {
       this.dataRouteInfo.filter = JSON.stringify({
         column: this.selectedSearchOption,
-        value: trimmed
+        value: trimmed,
       });
     } else {
       this.dataRouteInfo.filter = '';
@@ -740,15 +767,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   setSearchOption(value: string) {
     this.selectedSearchOption = value;
-    this.clearFilter(); // reset old filter
+    this.clearFilter();
   }
 
   setSelectedFilterCriteria(value: string) {
     this.selectedFilterCriteria = value;
-    // you could re-apply the filter under new criteria:
     this.applyFilter(this.searchControl.value || '');
   }
-
 
   openRouteDetails(routeIndex: number): void {
     let depotStartId: number | null = null;
@@ -766,30 +791,32 @@ export class ResultComponent implements OnInit, AfterViewInit {
     });
 
     if (!collection) {
-      console.error(`No feature collection found for route index ${routeIndex}`);
+      console.error(
+        `No feature collection found for route index ${routeIndex}`
+      );
       return;
     }
     const featureDepots: any[] = [];
     if (this.featureDepots.length === 1) {
       featureDepots.push(this.featureDepots[0]);
-    } {
-
+    }
+    {
       const matchingDepots = this.featureDepots.filter((depot: any) =>
         [depotStartId, depotEndId].includes(depot.properties.depot_id)
       );
       featureDepots.push(...matchingDepots);
     }
 
-
     if (!featureDepots) {
-      console.error(`No depot found with depot_id ${depotStartId} : ${depotEndId}`);
+      console.error(
+        `No depot found with depot_id ${depotStartId} : ${depotEndId}`
+      );
       return;
     }
     console.log(featureDepots, collection);
 
     this.openModal(collection, featureDepots);
   }
-
 
   onMouseEnter(row: RouteInfo) {
     if (!this.mapAlreadyRendered) return;
@@ -811,7 +838,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
     clusterLayer.getSource()?.changed();
   }
 
-  openConfirmDialog(title: string, message: string, question: string, acceptButton: string = 'Confirm', disableCancelButton: boolean = true) {
+  openConfirmDialog(
+    title: string,
+    message: string,
+    question: string,
+    acceptButton: string = 'Confirm',
+    disableCancelButton: boolean = true
+  ) {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -830,56 +863,62 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   tryToRerunExperiment() {
-    const dialogRef = this.openConfirmDialog('Try to Rerun experiment', 'Confirm to try to Rerun experiment', 'Are you sure to try to rerun experiment ?');
+    const dialogRef = this.openConfirmDialog(
+      'Try to Rerun experiment',
+      'Confirm to try to Rerun experiment',
+      'Are you sure to try to rerun experiment ?'
+    );
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
         this.spinner.show();
-        this.experimentService.replicateExperiment(this.experiment!.runId).subscribe(response => {
-          this.spinner.hide();
-          this.toastr.success("Success to replicate experiment", 'Replicate Experiment');
-          this.router.navigate(['/users/run', response.runId]);
-        })
+        this.experimentService
+          .replicateExperiment(this.experiment!.runId)
+          .subscribe((response) => {
+            this.spinner.hide();
+            this.toastr.success(
+              'Success to replicate experiment',
+              'Replicate Experiment'
+            );
+            this.router.navigate(['/users/run', response.runId]);
+          });
       }
-    })
-
+    });
   }
-
 
   downloadPlan() {
     this.spinner.show();
-    this.experimentService.getExperimentResultUrl(this.experiment!.runId).subscribe((response: DownloadResultFile) => {
-      this.configurationService.downloadFile(response.fileUrl.resultFileBlobPathUrl).subscribe((response) => {
-        const contentDisposition = response.headers.get('Content-Disposition');
-        let fileName = 'downloadedFile';
-        if (contentDisposition) {
-          const matches = /filename="([^"]*)"/.exec(contentDisposition);
-          if (matches && matches.length > 0) {
-            fileName = matches[1];
-          }
-        }
+    this.experimentService
+      .getExperimentResultUrl(this.experiment!.runId)
+      .subscribe((response: DownloadResultFile) => {
+        this.configurationService
+          .downloadFile(response.fileUrl.resultFileBlobPathUrl)
+          .subscribe((response) => {
+            const contentDisposition = response.headers.get(
+              'Content-Disposition'
+            );
+            let fileName = 'downloadedFile';
+            if (contentDisposition) {
+              const matches = /filename="([^"]*)"/.exec(contentDisposition);
+              if (matches && matches.length > 0) {
+                fileName = matches[1];
+              }
+            }
 
-        const blob = response.body;
-        if (blob) {
-          const link = document.createElement('a');
-          link.href = window.URL.createObjectURL(blob);
-          link.download = fileName;
-          link.target = '_blank'; // Open in a new window
-          link.click();
-          this.spinner.hide();
-          this.toastr.success("Success to download plan", 'Download Plan');
-          window.URL.revokeObjectURL(link.href); // Clean up
-        } else {
-          console.error('Download failed: Blob is null');
-          this.spinner.hide();
-        }
+            const blob = response.body;
+            if (blob) {
+              const link = document.createElement('a');
+              link.href = window.URL.createObjectURL(blob);
+              link.download = fileName;
+              link.target = '_blank'; // Open in a new window
+              link.click();
+              this.spinner.hide();
+              this.toastr.success('Success to download plan', 'Download Plan');
+              window.URL.revokeObjectURL(link.href); // Clean up
+            } else {
+              console.error('Download failed: Blob is null');
+              this.spinner.hide();
+            }
+          });
       });
-
-
-
-    })
-
-
   }
-
-
 }
