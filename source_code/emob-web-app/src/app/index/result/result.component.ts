@@ -157,16 +157,63 @@ export class ResultComponent implements OnInit, AfterViewInit {
           await this.loadReportData(response.fileUrl.outputReportUrl);
           this.spinner.hide();
           await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
+
+          this.dataRouteInfo.filterPredicate = this.filterPredicate.bind(this);
+
+          console.log('this.dataRouteInfo', this.dataRouteInfo.data);
         });
 
     });
   }
 
   ngAfterViewInit(): void {
-    this.searchControl.valueChanges.subscribe((searchValue) => {
-      this.applyFilter(searchValue);
-    });
+    // keep listening for control changes too if you like…
+    this.searchControl.valueChanges.subscribe(v => this.applyFilter(v));
   }
+
+  private filterPredicate(data: RouteInfo, filter: string): boolean {
+    if (!filter) return true;
+
+    // we only ever store one key at a time
+    const { column, value } = JSON.parse(filter) as { column: string; value: string };
+    const raw = data[column as keyof RouteInfo];
+    const cell = raw == null ? '' : raw.toString().toLowerCase();
+    const search = value.toLowerCase();
+
+    return this.evaluateFilter(cell, search);
+  }
+
+  private evaluateFilter(cell: string, search: string): boolean {
+    switch (this.selectedFilterCriteria) {
+      case 'equal':
+        return cell === search;
+
+      case 'does_not_equal':
+        return cell !== search;
+
+      case 'contains':
+        return cell.includes(search);
+
+      case 'does_not_contain':
+        return !cell.includes(search);
+
+      case 'starts_with':
+        return cell.startsWith(search);
+
+      case 'does_not_start_with':
+        return !cell.startsWith(search);
+
+      case 'ends_with':
+        return cell.endsWith(search);
+
+      case 'does_not_end_with':
+        return !cell.endsWith(search);
+
+      default:
+        return false;
+    }
+  }
+
 
   async loadReportData(url: string) {
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
@@ -669,15 +716,18 @@ export class ResultComponent implements OnInit, AfterViewInit {
       this.experiment?.timeStart !== null && this.experiment?.timeEnd !== null
     );
   }
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement)?.value || '';
-    if (filterValue || filterValue !== '') {
 
+  applyFilter(event: Event | string): void {
+    const input = typeof event === 'string'
+      ? event
+      : (event.target as HTMLInputElement).value;
 
-      const filterObject = {
-        [this.selectedSearchOption]: filterValue.trim().toLowerCase(),
-      };
-      this.dataRouteInfo.filter = JSON.stringify(filterObject);
+    const trimmed = input.trim();
+    if (trimmed) {
+      this.dataRouteInfo.filter = JSON.stringify({
+        column: this.selectedSearchOption,
+        value: trimmed
+      });
     } else {
       this.dataRouteInfo.filter = '';
     }
@@ -690,11 +740,15 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   setSearchOption(value: string) {
     this.selectedSearchOption = value;
+    this.clearFilter(); // reset old filter
   }
 
   setSelectedFilterCriteria(value: string) {
     this.selectedFilterCriteria = value;
+    // you could re-apply the filter under new criteria:
+    this.applyFilter(this.searchControl.value || '');
   }
+
 
   openRouteDetails(routeIndex: number): void {
     let depotStartId: number | null = null;
