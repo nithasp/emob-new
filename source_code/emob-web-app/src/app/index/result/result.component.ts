@@ -27,7 +27,7 @@ import {
 import * as OlProj from 'ol/proj';
 import GeoJSON from 'ol/format/GeoJSON';
 import Overlay from 'ol/Overlay';
-import { Coordinate } from 'ol/coordinate';
+import { Coordinate, equals } from 'ol/coordinate';
 
 import {
   animate,
@@ -98,6 +98,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   // Mat Table related variables
   dataRouteInfo = new MatTableDataSource<RouteInfo>([]);
+  searchControl = new FormControl();
   columnsToDisplay: string[] = [
     'route_label',
     'number_delivery_points',
@@ -106,7 +107,17 @@ export class ResultComponent implements OnInit, AfterViewInit {
     'travel_duration',
     'weight',
   ];
-  searchControl = new FormControl();
+  filterCriteriaToDisplay: string[] = [
+    'equal',
+    'does_not_equal',
+    'contains',
+    'does_not_contain',
+    'starts_with',
+    'does_not_start_with',
+    'ends_with',
+    'does_not_end_with',
+  ];
+  selectedFilterCriteria: string = 'equal';
   selectedSearchOption: string = 'route_index';
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: Array<any> = [];
@@ -147,7 +158,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
           this.spinner.hide();
           await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
         });
-      
+
     });
   }
 
@@ -329,7 +340,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     vectorSource.addFeatures(depotFeatures);
 
     this.initMap(clusterLayer, vectorSource);
-    this.mapAlreadyRendered =true;
+    this.mapAlreadyRendered = true;
   }
   async fetchDataFromFileUrl(url: string) {
     const blob = await firstValueFrom(
@@ -405,7 +416,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       ],
       target: 'mapResult',
       view: new View({
-        center: OlProj.fromLonLat([ 100.53139488523458,13.786463255129673]),
+        center: OlProj.fromLonLat([100.53139488523458, 13.786463255129673]),
         zoom: 10,
         maxZoom: 17,
         minZoom: 10,
@@ -499,18 +510,18 @@ export class ResultComponent implements OnInit, AfterViewInit {
           });
         }
       );
-      const featureDepots:any[] = [];
-      if(this.featureDepots.length === 1){
+      const featureDepots: any[] = [];
+      if (this.featureDepots.length === 1) {
         featureDepots.push(this.featureDepots[0]);
-      }{
-      const matchingDepots = this.featureDepots.filter((depot: any) => 
-        [depotStartId, depotEndId].includes(depot.properties.depot_id)
-      );
-      featureDepots.push(...matchingDepots);
+      } {
+        const matchingDepots = this.featureDepots.filter((depot: any) =>
+          [depotStartId, depotEndId].includes(depot.properties.depot_id)
+        );
+        featureDepots.push(...matchingDepots);
       }
-    if (featureCollection) {
-      this.openModal(featureCollection, featureDepots);
-    }
+      if (featureCollection) {
+        this.openModal(featureCollection, featureDepots);
+      }
     }
   }
   private pointMove(evt: any): void {
@@ -611,8 +622,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
           color: isHighlighted
             ? '#ffcc33'
             : this.highlightedFeatureCollectionId !== null
-            ? 'rgba(0, 0, 0, 0.1)'
-            : color, // Highlight color if part of highlighted FeatureCollection
+              ? 'rgba(0, 0, 0, 0.1)'
+              : color, // Highlight color if part of highlighted FeatureCollection
         }),
         stroke: new Stroke({
           color: '#fff',
@@ -661,15 +672,15 @@ export class ResultComponent implements OnInit, AfterViewInit {
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement)?.value || '';
     if (filterValue || filterValue !== '') {
-      
-    
-    const filterObject = {
-      [this.selectedSearchOption]: filterValue.trim().toLowerCase(),
-    };
-    this.dataRouteInfo.filter = JSON.stringify(filterObject);
-  }else{
-    this.dataRouteInfo.filter = '';
-  }
+
+
+      const filterObject = {
+        [this.selectedSearchOption]: filterValue.trim().toLowerCase(),
+      };
+      this.dataRouteInfo.filter = JSON.stringify(filterObject);
+    } else {
+      this.dataRouteInfo.filter = '';
+    }
   }
 
   clearFilter() {
@@ -681,49 +692,53 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.selectedSearchOption = value;
   }
 
+  setSelectedFilterCriteria(value: string) {
+    this.selectedFilterCriteria = value;
+  }
+
   openRouteDetails(routeIndex: number): void {
     let depotStartId: number | null = null;
     let depotEndId: number | null = null;
-  
+
     const collection = this.featureCollections.find((collection: any) => {
       return collection.features.some((feature: any) => {
         if (feature.properties.route_index === routeIndex) {
-          depotStartId =  feature.properties.start_depot_id;
-          depotEndId =  feature.properties.end_depot_id;
+          depotStartId = feature.properties.start_depot_id;
+          depotEndId = feature.properties.end_depot_id;
           return true;
         }
         return false;
       });
     });
-  
+
     if (!collection) {
       console.error(`No feature collection found for route index ${routeIndex}`);
       return;
     }
-    const featureDepots:any[] = [];
-    if(this.featureDepots.length === 1){
+    const featureDepots: any[] = [];
+    if (this.featureDepots.length === 1) {
       featureDepots.push(this.featureDepots[0]);
-    }{
-      
-    const matchingDepots = this.featureDepots.filter((depot: any) => 
-      [depotStartId, depotEndId].includes(depot.properties.depot_id)
-    );
-    featureDepots.push(...matchingDepots);
+    } {
+
+      const matchingDepots = this.featureDepots.filter((depot: any) =>
+        [depotStartId, depotEndId].includes(depot.properties.depot_id)
+      );
+      featureDepots.push(...matchingDepots);
     }
-    
-  
+
+
     if (!featureDepots) {
       console.error(`No depot found with depot_id ${depotStartId} : ${depotEndId}`);
       return;
     }
-    console.log(featureDepots,collection);
-  
+    console.log(featureDepots, collection);
+
     this.openModal(collection, featureDepots);
   }
-  
+
 
   onMouseEnter(row: RouteInfo) {
-    if(!this.mapAlreadyRendered) return;
+    if (!this.mapAlreadyRendered) return;
     console.log('Mouse entered row:', row);
     this.highlightedFeatureCollectionId = row.route_index;
     const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
@@ -733,7 +748,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   onMouseLeave(row: RouteInfo) {
-    if(!this.mapAlreadyRendered) return;
+    if (!this.mapAlreadyRendered) return;
     console.log('Mouse left row:', row);
     this.highlightedFeatureCollectionId = null;
     const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
@@ -742,7 +757,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     clusterLayer.getSource()?.changed();
   }
 
-  openConfirmDialog(title:string,message:string,question:string, acceptButton:string ='Confirm',disableCancelButton:boolean=true) {
+  openConfirmDialog(title: string, message: string, question: string, acceptButton: string = 'Confirm', disableCancelButton: boolean = true) {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -760,35 +775,35 @@ export class ResultComponent implements OnInit, AfterViewInit {
     return dialogRef;
   }
 
-  tryToRerunExperiment(){
-    const dialogRef = this.openConfirmDialog('Try to Rerun experiment','Confirm to try to Rerun experiment','Are you sure to try to rerun experiment ?');
+  tryToRerunExperiment() {
+    const dialogRef = this.openConfirmDialog('Try to Rerun experiment', 'Confirm to try to Rerun experiment', 'Are you sure to try to rerun experiment ?');
     dialogRef.result.then((confirmed: boolean) => {
-      if(confirmed){
+      if (confirmed) {
         this.spinner.show();
         this.experimentService.replicateExperiment(this.experiment!.runId).subscribe(response => {
           this.spinner.hide();
           this.toastr.success("Success to replicate experiment", 'Replicate Experiment');
-          this.router.navigate(['/users/run',response.runId]);
+          this.router.navigate(['/users/run', response.runId]);
         })
       }
     })
-    
+
   }
 
 
-  downloadPlan(){
+  downloadPlan() {
     this.spinner.show();
-    this.experimentService.getExperimentResultUrl(this.experiment!.runId).subscribe( (response: DownloadResultFile) => {
+    this.experimentService.getExperimentResultUrl(this.experiment!.runId).subscribe((response: DownloadResultFile) => {
       this.configurationService.downloadFile(response.fileUrl.resultFileBlobPathUrl).subscribe((response) => {
         const contentDisposition = response.headers.get('Content-Disposition');
         let fileName = 'downloadedFile';
         if (contentDisposition) {
           const matches = /filename="([^"]*)"/.exec(contentDisposition);
-          if (matches && matches.length > 0) { 
+          if (matches && matches.length > 0) {
             fileName = matches[1];
           }
         }
-      
+
         const blob = response.body;
         if (blob) {
           const link = document.createElement('a');
@@ -804,11 +819,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
           this.spinner.hide();
         }
       });
-      
-      
-      
+
+
+
     })
-    
-    
+
+
   }
+
+
 }
