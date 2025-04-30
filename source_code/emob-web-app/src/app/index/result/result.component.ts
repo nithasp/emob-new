@@ -117,6 +117,16 @@ export class ResultComponent implements OnInit, AfterViewInit {
     'ends_with',
     'does_not_end_with',
   ];
+  operatorSymbols: Record<string,string> = {
+    equal: '=',
+    does_not_equal: '≠',
+    contains: '∋',
+    does_not_contain: '∌',
+    starts_with: '^=',
+    does_not_start_with: '!^=',
+    ends_with: '$=',
+    does_not_end_with: '!$='
+  };
   selectedFilterCriteria: string = 'equal';
   selectedSearchOption: string = 'route_index';
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];

@@ -1,11 +1,17 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import {  Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import {  NgxSpinnerService } from 'ngx-spinner';
+import { NgxSpinnerService } from 'ngx-spinner';
 import { Experiment } from 'src/app/models/experiment.model';
 import { ConstraintService } from 'src/app/services/constraint.service';
 import { ExperimentService } from 'src/app/services/experiment.service';
@@ -15,95 +21,93 @@ import { UserMSGraphService } from 'src/app/services/user.service';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
 import { distinctUntilChanged } from 'rxjs';
 
-
-
 @Component({
   selector: 'app-experiment',
   templateUrl: './experiment.component.html',
-  styleUrl: './experiment.component.scss'
+  styleUrl: './experiment.component.scss',
 })
 export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
-
   public displayedColumns = [
     {
-      def: "select",
-      label: "select",
-      visible: true
+      def: 'select',
+      label: 'select',
+      visible: true,
     },
     {
-      def: "Name",
-      label: "Name",
-      visible: true
+      def: 'Name',
+      label: 'Name',
+      visible: true,
     },
     {
-      def: "actions",
-      label: "Actions",
-      visible: true
+      def: 'actions',
+      label: 'Actions',
+      visible: true,
     },
     {
-      def: "TimeStamp",
-      label: "TimeStamp",
-      visible: true
+      def: 'TimeStamp',
+      label: 'TimeStamp',
+      visible: true,
     },
     {
-      def: "TimeStart",
-      label: "Run Start",
-      visible: true
+      def: 'TimeStart',
+      label: 'Run Start',
+      visible: true,
     },
     {
-      def: "TimeEnd",
-      label: "Run End",
-      visible: true
+      def: 'TimeEnd',
+      label: 'Run End',
+      visible: true,
     },
     {
-      def: "TimeDuration",
-      label: "Duration",
-      visible: true
+      def: 'TimeDuration',
+      label: 'Duration',
+      visible: true,
     },
     {
-      def: "TriggeredBy",
-      label: "Triggered By",
-      visible: true
+      def: 'TriggeredBy',
+      label: 'Triggered By',
+      visible: true,
     },
     {
-      def: "Status",
-      label: "Status",
-      visible: true
+      def: 'Status',
+      label: 'Status',
+      visible: true,
     },
     {
-      def: "Run",
-      label: "Run",
-      visible: true
+      def: 'Run',
+      label: 'Run',
+      visible: true,
     },
     {
-      def: "parameter",
-      label: "Parameter",
-      visible: true
+      def: 'parameter',
+      label: 'Parameter',
+      visible: true,
     },
     {
-      def: "RunId",
-      label: "Run ID",
-      visible: false
+      def: 'RunId',
+      label: 'Run ID',
+      visible: false,
     },
     {
-      def: "GroupId",
-      label: "Group ID",
-      visible: false
-    }];
+      def: 'GroupId',
+      label: 'Group ID',
+      visible: false,
+    },
+  ];
 
   interval: any;
   dataSource = new MatTableDataSource<Experiment>([]);
   selection = new SelectionModel<Experiment>(false);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   constructor(
-    private readonly experimentService : ExperimentService,
+    private readonly experimentService: ExperimentService,
     private readonly constraintService: ConstraintService,
-    private readonly spinner : NgxSpinnerService,
+    private readonly spinner: NgxSpinnerService,
     private readonly router: Router,
     private readonly ngbModal: NgbModal,
     private readonly toastr: ToastrService,
     private readonly userMsGraphService: UserMSGraphService
-  ){}
+  ) {}
   ngOnInit(): void {
     this.spinner.show();
     this.loadData();
@@ -111,12 +115,11 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   ngAfterViewInit() {
-        this.dataSource.paginator = this.paginator;
+    this.dataSource.paginator = this.paginator;
     this.interval = setInterval(() => {
       this.loadData();
     }, 45000); // 30 seconds
   }
-
 
   loadData(): void {
     this.showSpinner();
@@ -124,85 +127,97 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       next: (response) => {
         this.dataSource.data = response;
         this.dataSource.paginator = this.paginator;
-        
+
         this.hiddenSpinner();
-    },
-    error: () => {
-      this.hiddenSpinner();
-      
-    }
-    })
-    
+      },
+      error: () => {
+        this.hiddenSpinner();
+      },
+    });
   }
   ngOnDestroy(): void {
     if (this.interval) {
       clearInterval(this.interval);
     }
   }
- 
+
   toggleSelection(row: any) {
     this.selection.clear(); // Clear previous selections
-   this.selection.toggle(row); // Select the new row
+    this.selection.toggle(row); // Select the new row
   }
- 
+
   /** The label for the checkbox on the passed row */
   checkboxLabel(row: Experiment): string {
     return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row `;
   }
 
   getDisplayedColumns(): string[] {
-    return this.displayedColumns.filter(cd => cd.visible).map(cd => cd.def);
+    return this.displayedColumns.filter((cd) => cd.visible).map((cd) => cd.def);
   }
 
-  isSelectedStatusValue(status:string): boolean {
-    return this.selection.selected.length > 0 ? this.selection.selected[0].status === status : false;
+  isSelectedStatusValue(status: string): boolean {
+    return this.selection.selected.length > 0
+      ? this.selection.selected[0].status === status
+      : false;
   }
-  
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
-  
-  
-  
 
-  createNewExperiment(){
-    const openConfirmDialog = this.openConfirmDialog("Create Experiment Confirmation","","Do you want to create a new experiment?","Confirm",false);
-    openConfirmDialog.result.then(confirmed => {
-      if(confirmed){
+  createNewExperiment() {
+    const openConfirmDialog = this.openConfirmDialog(
+      'Create Experiment Confirmation',
+      '',
+      'Do you want to create a new experiment?',
+      'Confirm',
+      false
+    );
+    openConfirmDialog.result.then((confirmed) => {
+      if (confirmed) {
         this.spinner.show();
-        this.experimentService.createExperiment().subscribe(response =>{
-          this.toastr.info("create experiment",response.runId);
-          this.router.navigate(['/users/run',response.runId]);
-          
+        this.experimentService.createExperiment().subscribe((response) => {
+          this.toastr.info('create experiment', response.runId);
+          this.router.navigate(['/users/run', response.runId]);
         });
       }
     });
-    
   }
 
-  getParameter(runId:string){
+  getParameter(runId: string) {
     this.showSpinner();
     this.constraintService.getParameter(runId).subscribe(
-      response=>{
+      (response) => {
         console.log(response);
         this.hiddenSpinner();
-        this.openDetails("Parameters",this.objectToStringArray(response),'lg');
-        
+        this.openDetails(
+          'Parameters',
+          this.objectToStringArray(response),
+          'lg'
+        );
+      },
+      (err) => {
+        this.hiddenSpinner();
       }
     );
   }
 
-  getConsumption(experiment: Experiment){
+  getConsumption(experiment: Experiment) {
     this.showSpinner();
-    this.openDetails("Consumptions",this.objectToStringArray({
-      countGeocoding:experiment.countGeocoding ? experiment.countGeocoding : 0, 
-      countReroute:experiment.countReroute ? experiment.countReroute : 0
-    }),'');
+    this.openDetails(
+      'Consumptions',
+      this.objectToStringArray({
+        countGeocoding: experiment.countGeocoding
+          ? experiment.countGeocoding
+          : 0,
+        countReroute: experiment.countReroute ? experiment.countReroute : 0,
+      }),
+      ''
+    );
     this.hiddenSpinner();
   }
-  objectToStringArray(value:any): string[] {
+  objectToStringArray(value: any): string[] {
     if (!value || typeof value !== 'object') {
       return [];
     }
@@ -215,9 +230,8 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       .map(([key, value]) => `${key}: ${value}`)
       .join('\n');
   }
-  
 
-  openDetails(title:string,message:string | string[],size:string) {
+  openDetails(title: string, message: string | string[], size: string) {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -226,7 +240,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     const dialogRef = this.ngbModal.open(DetailsDialogComponent, {
       centered: true,
       animation: true,
-      size: size
+      size: size,
     });
     dialogRef.componentInstance.title = title;
     dialogRef.componentInstance.message = message;
@@ -238,7 +252,13 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       }
     });
   }
-  openConfirmDialog(title:string,message:string,question:string, acceptButton:string ='Confirm',disableCancelButton:boolean=true) {
+  openConfirmDialog(
+    title: string,
+    message: string,
+    question: string,
+    acceptButton: string = 'Confirm',
+    disableCancelButton: boolean = true
+  ) {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -256,76 +276,106 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     return dialogRef;
   }
 
-  retryExperiment(experiment: Experiment){
-    const dialogRef = this.openConfirmDialog('Retry experiment','Confirm to retry experiment','Are you sure to retry experiment ?');
+  retryExperiment(experiment: Experiment) {
+    const dialogRef = this.openConfirmDialog(
+      'Retry experiment',
+      'Confirm to retry experiment',
+      'Are you sure to retry experiment ?'
+    );
     dialogRef.result.then((confirmed: boolean) => {
-      if(confirmed){
+      if (confirmed) {
         this.spinner.show();
-        this.experimentService.rerunExperiment(experiment.runId).subscribe(response => {
-          this.spinner.hide();
-          this.toastr.success(response.message, 'Rerun Experiment');
-        })
+        this.experimentService
+          .rerunExperiment(experiment.runId)
+          .subscribe((response) => {
+            this.spinner.hide();
+            this.toastr.success(response.message, 'Rerun Experiment');
+          });
       }
     });
-    
   }
-  tryToRerunExperiment(experiment: Experiment){
-    const dialogRef = this.openConfirmDialog('Try to Rerun experiment','Confirm to try to Rerun experiment','Are you sure to try to rerun experiment ?');
+  tryToRerunExperiment(experiment: Experiment) {
+    const dialogRef = this.openConfirmDialog(
+      'Try to Rerun experiment',
+      'Confirm to try to Rerun experiment',
+      'Are you sure to try to rerun experiment ?'
+    );
     dialogRef.result.then((confirmed: boolean) => {
-      if(confirmed){
+      if (confirmed) {
         this.spinner.show();
-    this.experimentService.replicateExperiment(experiment.runId).subscribe(response => {
-      this.spinner.hide();
-      this.toastr.success("Success to replicate experiment", 'Replicate Experiment');
-      this.router.navigate(['/users/run',response.runId]);
-    })
+        this.experimentService
+          .replicateExperiment(experiment.runId)
+          .subscribe((response) => {
+            this.spinner.hide();
+            this.toastr.success(
+              'Success to replicate experiment',
+              'Replicate Experiment'
+            );
+            this.router.navigate(['/users/run', response.runId]);
+          });
       }
-    })
-    
+    });
   }
 
-  cancelExperiment(experiment: Experiment){
-    const dialogRef = this.openConfirmDialog('Cancel experiment','Confirm to cancel experiment','Are you sure to cancel experiment ?');
+  cancelExperiment(experiment: Experiment) {
+    const dialogRef = this.openConfirmDialog(
+      'Cancel experiment',
+      'Confirm to cancel experiment',
+      'Are you sure to cancel experiment ?'
+    );
     dialogRef.result.then((confirmed: boolean) => {
-      if(confirmed){
+      if (confirmed) {
         this.spinner.show();
-        this.experimentService.cancelExperiment(experiment.runId).subscribe(response => {
-          this.spinner.hide();
-          this.toastr.info(response.message, 'Cancel Experiment');
-        })
+        this.experimentService
+          .cancelExperiment(experiment.runId)
+          .subscribe((response) => {
+            this.spinner.hide();
+            this.toastr.info(response.message, 'Cancel Experiment');
+          });
       }
-    })
-    
+    });
   }
-  selectExperiment(experiment:Experiment){
+  selectExperiment(experiment: Experiment) {
     this.spinner.show();
-    console.log("select experiment",experiment);
-    if(experiment.status === 'Initializing'){
+    console.log('select experiment', experiment);
+    if (experiment.status === 'Initializing') {
       this.userMsGraphService.getUserId().subscribe((userId) => {
         this.spinner.hide();
-        console.log('compare user id',userId,experiment.triggeredBy);
-        if(userId === experiment.triggeredBy){
-          console.log("open run experiment");
-          this.router.navigate(['/users/run',experiment.runId]);
-          this.toastr.info("opening experiment",experiment.name);
-        }else{
-          this.openConfirmDialog("cannot open Experiment","You cannot open an experiment that you did not create"," ",'Acknowledge' );
-          this.toastr.warning("cannot open Experiment","You cannot open an experiment that you did not create");
+        console.log('compare user id', userId, experiment.triggeredBy);
+        if (userId === experiment.triggeredBy) {
+          console.log('open run experiment');
+          this.router.navigate(['/users/run', experiment.runId]);
+          this.toastr.info('opening experiment', experiment.name);
+        } else {
+          this.openConfirmDialog(
+            'cannot open Experiment',
+            'You cannot open an experiment that you did not create',
+            ' ',
+            'Acknowledge'
+          );
+          this.toastr.warning(
+            'cannot open Experiment',
+            'You cannot open an experiment that you did not create'
+          );
         }
       });
-    }else if (experiment.status === 'Succeeded'){
-      console.log("open result experiment");
-      this.router.navigate(['/users/result',experiment.runId]);
-    }else{
-      
-      this.toastr.warning("cannot open Experiment","You cannot open an experiment that is not succeeded");
-      this.openConfirmDialog("cannot open Experiment","You cannot open an experiment that is not succeeded","","Acknowledge");
-
+    } else if (experiment.status === 'Succeeded') {
+      console.log('open result experiment');
+      this.router.navigate(['/users/result', experiment.runId]);
+    } else {
+      this.toastr.warning(
+        'cannot open Experiment',
+        'You cannot open an experiment that is not succeeded'
+      );
+      this.openConfirmDialog(
+        'cannot open Experiment',
+        'You cannot open an experiment that is not succeeded',
+        '',
+        'Acknowledge'
+      );
     }
     this.spinner.hide();
-    
   }
-
 
   showSpinner() {
     this.spinner.show('experiment', {
@@ -338,12 +388,8 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
   }
   hiddenSpinner() {
     console.log('hidden spinner');
-      setTimeout(() => {
-        this.spinner.hide('experiment');
-      },500);
-      
+    setTimeout(() => {
+      this.spinner.hide('experiment');
+    }, 500);
   }
-
-
-
 }
