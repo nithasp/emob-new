@@ -190,6 +190,8 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
         this.hiddenSpinner();
         this.openDetails("Parameters",this.objectToStringArray(response),'lg');
         
+      }, err => {
+        this.hiddenSpinner();
       }
     );
   }
