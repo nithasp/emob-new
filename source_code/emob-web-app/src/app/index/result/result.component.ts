@@ -107,7 +107,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     'weight',
   ];
   searchControl = new FormControl();
-  selectedSearchOption: string = 'route_index';
+  selectedSearchOption: string = 'route_label';
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: Array<any> = [];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
