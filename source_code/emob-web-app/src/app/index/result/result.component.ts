@@ -120,7 +120,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
     'does_not_start_with',
     'ends_with',
     'does_not_end_with',
-
   ];
   operatorSymbols: Record<string, string> = {
     equal: '=',
@@ -186,7 +185,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.searchControl.valueChanges.subscribe((v) => this.applyFilter(v));
+    //this.searchControl.valueChanges.subscribe((v) => this.applyFilter(v));
   }
 
   filterPredicate(data: RouteInfo, filter: string): boolean {
@@ -761,17 +760,18 @@ export class ResultComponent implements OnInit, AfterViewInit {
     );
   }
 
-  applyFilter(event: Event | string): void {
-    const input =
-      typeof event === 'string'
-        ? event
-        : (event.target as HTMLInputElement).value;
+  applyFilter(value?: string): void {
+    const raw =
+      value?.toString().trim() ||
+      this.searchControl.value?.toString().trim() ||
+      '';
 
-    const trimmed = input.trim();
-    if (trimmed) {
+    if (raw) {
+      this.dataRouteInfo.filterPredicate = this.filterPredicate.bind(this);
+
       this.dataRouteInfo.filter = JSON.stringify({
         column: this.selectedSearchOption,
-        value: trimmed,
+        value: raw,
       });
     } else {
       this.dataRouteInfo.filter = '';

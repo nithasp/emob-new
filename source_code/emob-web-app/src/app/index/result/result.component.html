@@ -201,30 +201,6 @@
             </button>
           </div>
         </div>
-<!-- 
-        <div ngbDropdown class="d-inline-block">
-          <button
-            type="button"
-            style="width: 150px"
-            class="btn btn-outline-secondary btn-sm text-capitalize d-flex align-items-center justify-content-between"
-            id="criteriaFilterDropdown"
-            ngbDropdownToggle
-          >
-          {{ operatorSymbols[selectedFilterCriteria] }}
-
-          </button>
-          <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-            <button
-              ngbDropdownItem
-              class="text-capitalize"
-              style="font-size: smaller"
-              *ngFor="let item of filterCriteriaToDisplay"
-              (click)="setSelectedFilterCriteria(item)"
-            >
-              {{ operatorSymbols[item] }}
-            </button>
-          </div>
-        </div> -->
 
         <input
           type="text"
@@ -232,9 +208,15 @@
           [formControl]="searchControl"
           aria-label="Small"
           aria-describedby="inputGroup-sizing-sm"
-          (keyup)="applyFilter($event)"
+          
+         
           placeholder="Ex. 1, 2, 3"
         />
+
+        <div>
+          <button class="apply-filter" (click)="applyFilter()">Apply Filter</button>
+        </div>
+
         <div class="input-group-append" [hidden]="!searchControl.value">
           <button
             type="button"
@@ -244,6 +226,10 @@
             <mat-icon class="icon-custom-primary">backspace</mat-icon>
           </button>
         </div>
+      </div>
+
+      <div>
+        <h1>chip</h1>
       </div>
 
       <div
