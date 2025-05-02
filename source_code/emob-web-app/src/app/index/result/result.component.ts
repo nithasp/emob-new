@@ -110,22 +110,31 @@ export class ResultComponent implements OnInit, AfterViewInit {
   filterCriteriaToDisplay: string[] = [
     'equal',
     'does_not_equal',
+    'greater_than',
+    'greater_than_or_equal',
+    'less_than',
+    'less_than_or_equal',
     'contains',
     'does_not_contain',
     'starts_with',
     'does_not_start_with',
     'ends_with',
     'does_not_end_with',
+
   ];
-  operatorSymbols: Record<string,string> = {
+  operatorSymbols: Record<string, string> = {
     equal: '=',
     does_not_equal: '≠',
+    greater_than: '>',
+    greater_than_or_equal: '>=',
+    less_than: '<',
+    less_than_or_equal: '<=',
     contains: '∋',
     does_not_contain: '∌',
     starts_with: '^=',
     does_not_start_with: '!^=',
     ends_with: '$=',
-    does_not_end_with: '!$='
+    does_not_end_with: '!$=',
   };
   selectedFilterCriteria: string = 'equal';
   selectedSearchOption: string = 'route_index';
@@ -199,19 +208,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
       case 'service_time':
         displayValue = Number(rawValue) / 60;
         break;
-
       case 'travel_duration':
         displayValue = Number((Number(rawValue) / 60).toFixed(2));
         break;
-
       case 'travel_distance':
-        displayValue = Math.round(Number(rawValue));
-        break;
-
       case 'weight':
         displayValue = Math.round(Number(rawValue));
         break;
-
       default:
         displayValue = rawValue;
     }
@@ -223,27 +226,32 @@ export class ResultComponent implements OnInit, AfterViewInit {
     switch (crit) {
       case 'equal':
         return !isNaN(dvNum) ? dvNum === Number(search) : dvStr === search;
-
       case 'does_not_equal':
         return !isNaN(dvNum) ? dvNum !== Number(search) : dvStr !== search;
-
       case 'contains':
         return dvStr.includes(search);
-
       case 'does_not_contain':
         return !dvStr.includes(search);
-
       case 'starts_with':
         return dvStr.startsWith(search);
-
       case 'does_not_start_with':
         return !dvStr.startsWith(search);
-
       case 'ends_with':
         return dvStr.endsWith(search);
-
       case 'does_not_end_with':
         return !dvStr.endsWith(search);
+
+      case 'greater_than':
+        return !isNaN(dvNum) && dvNum > Number(search);
+
+      case 'greater_than_or_equal':
+        return !isNaN(dvNum) && dvNum >= Number(search);
+
+      case 'less_than':
+        return !isNaN(dvNum) && dvNum < Number(search);
+
+      case 'less_than_or_equal':
+        return !isNaN(dvNum) && dvNum <= Number(search);
 
       default:
         return false;
