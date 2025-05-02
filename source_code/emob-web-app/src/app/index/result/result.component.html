@@ -228,9 +228,19 @@
         </div>
       </div>
 
-      <div>
-        <h1>chip</h1>
-      </div>
+      <div (click)="debug()">btn</div>
+      <mat-chip-list *ngIf="activeFilters.length" aria-label="Applied filters">
+        <mat-chip
+          *ngFor="let f of activeFilters"
+          [removable]="true"
+          (removed)="removeFilter(f)"
+        >
+          {{ f.column.replaceAll('_', ' ') }}
+          {{ f.criteria.replaceAll('_', ' ') }}
+          <mat-icon matChipRemove>cancel</mat-icon>
+        </mat-chip>
+      </mat-chip-list>
+      
 
       <div
         style="height: 700px; font-size: 11px; padding: 3px; overflow-y: scroll"

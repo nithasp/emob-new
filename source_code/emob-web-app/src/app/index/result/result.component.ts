@@ -79,6 +79,12 @@ import { DownloadResultFile } from '../../models/experiment.model';
   ],
 })
 export class ResultComponent implements OnInit, AfterViewInit {
+  public activeFilters: Array<{
+    column: string;
+    criteria: string;
+    value: string;
+  }> = [];
+  
   // Map related variables
   public map!: Map;
   public iconStyle?: Style;
@@ -145,6 +151,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
   // data store
   experiment?: Experiment;
 
+
+
+
   constructor(
     private readonly http: HttpClient,
     private readonly spinner: NgxSpinnerService,
@@ -178,8 +187,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
             this.spinner.hide();
             await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
 
-            this.dataRouteInfo.filterPredicate =
-              this.filterPredicate.bind(this);
+            this.dataRouteInfo.filterPredicate = this.multiFilterPredicate.bind(this);
           });
       });
   }
@@ -198,10 +206,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
     return this.evaluateFilter(column, rawValue, value);
   }
 
-  evaluateFilter(column: string, rawValue: any, searchValue: string): boolean {
-    const crit = this.selectedFilterCriteria;
+  evaluateFilter(
+    column: string,
+    rawValue: any,
+    searchValue: string,
+    crit?: string
+  ): boolean {
+    const critUsed = crit ?? this.selectedFilterCriteria;
     const search = searchValue.trim().toLowerCase();
-
     let displayValue: number | string;
     switch (column) {
       case 'service_time':
@@ -217,16 +229,22 @@ export class ResultComponent implements OnInit, AfterViewInit {
       default:
         displayValue = rawValue;
     }
-
     const dvStr = displayValue.toString().toLowerCase();
-    const dvNum =
-      typeof displayValue === 'number' ? displayValue : Number(dvStr);
-
-    switch (crit) {
+    const dvNum = typeof displayValue === 'number' ? displayValue : Number(dvStr);
+  
+    switch (critUsed) {
       case 'equal':
         return !isNaN(dvNum) ? dvNum === Number(search) : dvStr === search;
       case 'does_not_equal':
         return !isNaN(dvNum) ? dvNum !== Number(search) : dvStr !== search;
+      case 'greater_than':
+        return !isNaN(dvNum) && dvNum > Number(search);
+      case 'greater_than_or_equal':
+        return !isNaN(dvNum) && dvNum >= Number(search);
+      case 'less_than':
+        return !isNaN(dvNum) && dvNum < Number(search);
+      case 'less_than_or_equal':
+        return !isNaN(dvNum) && dvNum <= Number(search);
       case 'contains':
         return dvStr.includes(search);
       case 'does_not_contain':
@@ -239,19 +257,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
         return dvStr.endsWith(search);
       case 'does_not_end_with':
         return !dvStr.endsWith(search);
-
-      case 'greater_than':
-        return !isNaN(dvNum) && dvNum > Number(search);
-
-      case 'greater_than_or_equal':
-        return !isNaN(dvNum) && dvNum >= Number(search);
-
-      case 'less_than':
-        return !isNaN(dvNum) && dvNum < Number(search);
-
-      case 'less_than_or_equal':
-        return !isNaN(dvNum) && dvNum <= Number(search);
-
       default:
         return false;
     }
@@ -760,23 +765,45 @@ export class ResultComponent implements OnInit, AfterViewInit {
     );
   }
 
-  applyFilter(value?: string): void {
-    const raw =
-      value?.toString().trim() ||
-      this.searchControl.value?.toString().trim() ||
-      '';
+  applyFilter(value: string = ''): void {
+    const raw = this.searchControl.value?.toString().trim();
+    if (!raw) return;
+    this.activeFilters.push({
+      column: this.selectedSearchOption,
+      criteria: this.selectedFilterCriteria,
+      value: raw,
+    });
+    this.searchControl.setValue('');
+    // trigger table re‐filter
+    this.dataRouteInfo.filter = JSON.stringify(this.activeFilters);
+  }
 
-    if (raw) {
-      this.dataRouteInfo.filterPredicate = this.filterPredicate.bind(this);
-
-      this.dataRouteInfo.filter = JSON.stringify({
-        column: this.selectedSearchOption,
-        value: raw,
-      });
+  removeFilter(filt: { column: string; criteria: string; value: string }) {
+    this.activeFilters = this.activeFilters.filter(x => x !== filt);
+    if (this.activeFilters.length) {
+      this.dataRouteInfo.filter = JSON.stringify(this.activeFilters);
     } else {
       this.dataRouteInfo.filter = '';
     }
   }
+
+  multiFilterPredicate(data: RouteInfo, filter: string): boolean {
+    if (!filter) return true;
+    const filters = JSON.parse(filter) as Array<{
+      column: string;
+      criteria: string;
+      value: string;
+    }>;
+    return filters.every(f =>
+      this.evaluateFilter(
+        f.column,
+        data[f.column as keyof RouteInfo],
+        f.value,
+        f.criteria
+      )
+    );
+  }
+  
 
   clearFilter() {
     this.searchControl.setValue('');
@@ -938,5 +965,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
             }
           });
       });
+  }
+
+  debug() {
+    console.log('activeFilters', this.activeFilters);
+
+    console.log('this.searchControl.value', this.searchControl.value);
   }
 }
