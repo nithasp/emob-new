@@ -142,7 +142,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     does_not_end_with: '!$=',
   };
   selectedFilterCriteria: string = 'equal';
-  selectedSearchOption: string = 'route_index';
+  selectedSearchOption: string = 'route_label';
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: Array<any> = [];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -765,54 +765,65 @@ export class ResultComponent implements OnInit, AfterViewInit {
     );
   }
 
-  applyFilter(value: string = ''): void {
+  applyFilter(p0: any = ''): void {
     const raw = this.searchControl.value?.toString().trim();
     if (!raw) return;
+  
     this.activeFilters.push({
       column: this.selectedSearchOption,
       criteria: this.selectedFilterCriteria,
       value: raw,
     });
+  
+    // clear the input
     this.searchControl.setValue('');
-    // trigger table re‐filter
+  
+    // re-apply the table filter
     this.dataRouteInfo.filter = JSON.stringify(this.activeFilters);
   }
+  
+
+  
 
   removeFilter(filt: { column: string; criteria: string; value: string }) {
+    // remove this filter
     this.activeFilters = this.activeFilters.filter(x => x !== filt);
-    if (this.activeFilters.length) {
-      this.dataRouteInfo.filter = JSON.stringify(this.activeFilters);
-    } else {
-      this.dataRouteInfo.filter = '';
+  
+    // if you want to reset your dropdowns back to the first items when everything is cleared:
+    if (!this.activeFilters.length) {
+      this.selectedSearchOption = this.columnsToDisplay[0];
+      this.selectedFilterCriteria = this.filterCriteriaToDisplay[0];
     }
+  
+    // update the table filter
+    this.dataRouteInfo.filter = this.activeFilters.length
+      ? JSON.stringify(this.activeFilters)
+      : '';
   }
 
   multiFilterPredicate(data: RouteInfo, filter: string): boolean {
     if (!filter) return true;
-    const filters = JSON.parse(filter) as Array<{
-      column: string;
-      criteria: string;
-      value: string;
-    }>;
-    return filters.every(f =>
-      this.evaluateFilter(
-        f.column,
-        data[f.column as keyof RouteInfo],
-        f.value,
-        f.criteria
-      )
+    interface F { column: string; criteria: string; value: string; }
+    const filters = JSON.parse(filter) as F[];
+  
+    // OR across all chips
+    return filters.some(f =>
+      this.evaluateFilter(f.column, data[f.column as keyof RouteInfo], f.value, f.criteria)
     );
   }
+  
+  
   
 
   clearFilter() {
     this.searchControl.setValue('');
     this.dataRouteInfo.filter = '';
+    this.activeFilters = [];
   }
 
   setSearchOption(value: string) {
     this.selectedSearchOption = value;
-    this.clearFilter();
+    //this.clearFilter();
   }
 
   setSelectedFilterCriteria(value: string) {
@@ -965,11 +976,5 @@ export class ResultComponent implements OnInit, AfterViewInit {
             }
           });
       });
-  }
-
-  debug() {
-    console.log('activeFilters', this.activeFilters);
-
-    console.log('this.searchControl.value', this.searchControl.value);
   }
 }

@@ -154,24 +154,48 @@
 
     <div id="filter-result" class="col-md-5">
       <div class="input-group input-group-sm mb-3 gap-2">
-        <div class="input-group-prepend">
+        <div class="d-flex gap-2">
+          <div class="input-group-prepend">
+            <div ngbDropdown class="d-inline-block">
+              <button
+                type="button"
+                style="width: 150px"
+                class="btn btn-outline-secondary btn-sm text-capitalize d-flex align-items-center justify-content-between"
+                id="dropdownBasic1"
+                ngbDropdownToggle
+              >
+                {{ selectedSearchOption | truncate : [15, "..."] }}
+              </button>
+              <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                <button
+                  ngbDropdownItem
+                  class="text-capitalize"
+                  style="font-size: smaller"
+                  *ngFor="let item of columnsToDisplay"
+                  (click)="setSearchOption(item)"
+                >
+                  {{ item.split("_").join(" ") }}
+                </button>
+              </div>
+            </div>
+          </div>
           <div ngbDropdown class="d-inline-block">
             <button
               type="button"
               style="width: 150px"
               class="btn btn-outline-secondary btn-sm text-capitalize d-flex align-items-center justify-content-between"
-              id="dropdownBasic1"
+              id="criteriaFilterDropdown"
               ngbDropdownToggle
             >
-              {{ selectedSearchOption | truncate : [15, "..."] }}
+              {{ selectedFilterCriteria | truncate : [15, "..."] }}
             </button>
             <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
               <button
                 ngbDropdownItem
                 class="text-capitalize"
                 style="font-size: smaller"
-                *ngFor="let item of columnsToDisplay"
-                (click)="setSearchOption(item)"
+                *ngFor="let item of filterCriteriaToDisplay"
+                (click)="setSelectedFilterCriteria(item)"
               >
                 {{ item.split("_").join(" ") }}
               </button>
@@ -179,68 +203,53 @@
           </div>
         </div>
 
-        <div ngbDropdown class="d-inline-block">
-          <button
-            type="button"
-            style="width: 150px"
-            class="btn btn-outline-secondary btn-sm text-capitalize d-flex align-items-center justify-content-between"
-            id="criteriaFilterDropdown"
-            ngbDropdownToggle
+        <div class="w-100">
+          <mat-chip-listbox
+          *ngIf="activeFilters.length"
+          aria-label="Applied filters"
+          class="d-flex flex-wrap gap-1"
+        >
+          <mat-chip
+            *ngFor="let f of activeFilters"
+            highlighted
+            removable
+            (removed)="removeFilter(f)"
+            class="text-capitalize"
+            color="primary"
+            style="
+              --mdc-chip-elevated-container-color: #3f51b5;
+              --mdc-chip-elevated-text-color: #fff;
+            "
           >
-            {{ selectedFilterCriteria | truncate : [15, "..."] }}
-          </button>
-          <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-            <button
-              ngbDropdownItem
-              class="text-capitalize"
-              style="font-size: smaller"
-              *ngFor="let item of filterCriteriaToDisplay"
-              (click)="setSelectedFilterCriteria(item)"
-            >
-              {{ item.split("_").join(" ") }}
-            </button>
-          </div>
+            {{ f.column.replaceAll("_", " ") }}
+            {{ f.criteria.replaceAll("_", " ") }}
+            {{ f.value }}
+            <mat-icon matChipRemove class="opacity-100">cancel</mat-icon>
+          </mat-chip>
+        </mat-chip-listbox>
         </div>
-
-        <input
-          type="text"
-          class="form-control"
-          [formControl]="searchControl"
-          aria-label="Small"
-          aria-describedby="inputGroup-sizing-sm"
-          
-         
-          placeholder="Ex. 1, 2, 3"
-        />
+    
 
         <div>
-          <button class="apply-filter" (click)="applyFilter()">Apply Filter</button>
+          <input
+            type="text"
+            class="form-control d-block"
+            [formControl]="searchControl"
+            aria-label="Small"
+            aria-describedby="inputGroup-sizing-sm"
+            placeholder="Ex. 1, 2, 3"
+          />
         </div>
 
-        <div class="input-group-append" [hidden]="!searchControl.value">
-          <button
-            type="button"
-            class="btn btn-outline-light btn-sm"
-            (click)="clearFilter()"
-          >
-            <mat-icon class="icon-custom-primary">backspace</mat-icon>
+        <div class="d-flex gap-2">
+          <button mat-raised-button color="primary" (click)="applyFilter()">
+            Apply Filter
+          </button>
+          <button mat-raised-button color="danger" (click)="clearFilter()">
+            Clear Filter
           </button>
         </div>
       </div>
-
-      <div (click)="debug()">btn</div>
-      <mat-chip-list *ngIf="activeFilters.length" aria-label="Applied filters">
-        <mat-chip
-          *ngFor="let f of activeFilters"
-          [removable]="true"
-          (removed)="removeFilter(f)"
-        >
-          {{ f.column.replaceAll('_', ' ') }}
-          {{ f.criteria.replaceAll('_', ' ') }}
-          <mat-icon matChipRemove>cancel</mat-icon>
-        </mat-chip>
-      </mat-chip-list>
-      
 
       <div
         style="height: 700px; font-size: 11px; padding: 3px; overflow-y: scroll"
