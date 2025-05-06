@@ -102,7 +102,7 @@ export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
   selector: 'app-run',
   templateUrl: './run.component.html',
   styleUrl: './run.component.scss',
-  providers: [{ provide: NgbTimeAdapter, useClass: NgbTimeStringAdapter }]
+  providers: [{ provide: NgbTimeAdapter, useClass: NgbTimeStringAdapter }],
 })
 export class RunComponent implements OnInit, AfterViewInit {
   // Condition
@@ -152,12 +152,12 @@ export class RunComponent implements OnInit, AfterViewInit {
         overDistance: {
           title: 'Over distance Warning!',
           message:
-          'Please check, the maximum travel distance parameter of your constraint.',
+            'Please check, the maximum travel distance parameter of your constraint.',
         },
         overWeight: {
           title: 'Over weight Warning!',
           message:
-          'Please check, the vehicle order-size capacity parameter of your constraint.',
+            'Please check, the vehicle order-size capacity parameter of your constraint.',
         },
       },
       orderData: {
@@ -263,58 +263,59 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.spinner.show();
-    this.route.params.pipe(take(1)).subscribe((params: { [x: string]: string }) => {
-      console.log(params);
-      this.experimentService
-        .getExperiment(params['runId'])
-        .subscribe((response: Experiment) => {
-          this.experiment = { ...response };
-
-          this.userMsGraphService
-            .getUserId()
-            .subscribe((userId: string | null) => {
-              if (this.experiment.status !== StatusExperiment.Initializing) {
-                this.openConfirmDialog(
-                  'Warning',
-                  `this experiment have been ${this.experiment.status} `,
-                  'We will to go back to the experiments page?',
-                  'Acknowledge',
-                  true
-                ).result.then((confirmed) => {
-                  this.spinner.hide();
-                  this.router.navigate(['/users/experiments']);
-                });
-              }
-              if (userId !== this.experiment.triggeredBy) {
-                this.openConfirmDialog(
-                  'Warning',
-                  'You are not the creator of this experiment',
-                  'We will to go back to the experiments page?',
-                  'Acknowledge',
-                  true
-                ).result.then((confirmed) => {
-                  this.spinner.hide();
-                  this.router.navigate(['/users/experiments']);
-                });
-              }
-              if (!this.experiment.preOrderBlobPath) {
-                this.initializeDefaultParameter();
-              } else {
-                this.initializeDataFromExperiment(this.experiment).finally(
-                  () => {
-                    setTimeout(() => {
-                      this.toastr.success(
-                        'Success to load experiment',
-                        this.experiment.name
-                      );
+    this.route.params
+      .pipe(take(1))
+      .subscribe((params: { [x: string]: string }) => {
+        console.log(params);
+        this.experimentService
+          .getExperiment(params['runId'])
+          .subscribe((response: Experiment) => {
+            this.experiment = { ...response };
+            if (this.experiment.status !== StatusExperiment.Initializing) {
+              this.spinner.hide();
+              this.openConfirmDialog(
+                'Warning',
+                `this experiment have been ${this.experiment.status} `,
+                'We will to go back to the experiments page?',
+                'Acknowledge',
+                true
+              ).result.then((confirmed) => {
+                this.spinner.hide();
+                this.router.navigate(['/users/experiments']);
+              });
+            } else
+              this.userMsGraphService
+                .getUserId()
+                .subscribe((userId: string | null) => {
+                  if (userId !== this.experiment.triggeredBy) {
+                    this.openConfirmDialog(
+                      'Warning',
+                      'You are not the creator of this experiment',
+                      'We will to go back to the experiments page?',
+                      'Acknowledge',
+                      true
+                    ).result.then((confirmed) => {
                       this.spinner.hide();
-                    }, 500);
+                      this.router.navigate(['/users/experiments']);
+                    });
+                  } else if (!this.experiment.preOrderBlobPath) {
+                    this.initializeDefaultParameter();
+                  } else {
+                    this.initializeDataFromExperiment(this.experiment).finally(
+                      () => {
+                        setTimeout(() => {
+                          this.toastr.success(
+                            'Success to load experiment',
+                            this.experiment.name
+                          );
+                          this.spinner.hide();
+                        }, 500);
+                      }
+                    );
                   }
-                );
-              }
-            });
-        });
-    });
+                });
+          });
+      });
 
     this.initIconStyle();
     this.initMap();
@@ -1091,11 +1092,15 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   validateExperimentPreOrder() {
-
-    if(this.constraintsData.earlyDeliveryTime > this.constraintsData.backToDepotTime){
-      this.showInvalidModal('INVALID : Early Delivery Time', 'Early Delivery Time must be less than Back to Depot Time');
+    if (
+      this.constraintsData.earlyDeliveryTime >
+      this.constraintsData.backToDepotTime
+    ) {
+      this.showInvalidModal(
+        'INVALID : Early Delivery Time',
+        'Early Delivery Time must be less than Back to Depot Time'
+      );
       return;
-
     }
     this.showSpinner();
     this.experimentService
