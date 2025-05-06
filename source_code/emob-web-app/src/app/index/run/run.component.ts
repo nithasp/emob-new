@@ -542,6 +542,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         })
         .catch((error) => {
           console.error('Dialog was dismissed:', error);
+          this.spinner.hide();
         });
     } else {
       console.log('Data is invalid');
