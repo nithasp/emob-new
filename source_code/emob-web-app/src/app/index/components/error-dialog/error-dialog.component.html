@@ -1,0 +1,28 @@
+<div class="m-3 mb-4">
+  <div class="modal-header px-0 pt-0">
+    <h5 mat-dialog-title class="modal-title fw-bold text-danger fs-5 m-0">
+      {{ title }}
+    </h5>
+    <button
+      type="button"
+      class="btn-close"
+      (click)="cancel()"
+      aria-label="Close"
+    >
+    </button>
+  </div>
+
+  <mat-dialog-content class="ps-3">
+    <ng-container *ngIf="messages.length; else noInfo">
+      <div class="row">
+        <div class="col-md-6" *ngFor="let msg of messages">
+          <p class="text-break" [innerHTML]="msg"></p>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #noInfo>
+      <p class="text-center text-secondary my-4 h2">No Information</p>
+    </ng-template>
+  </mat-dialog-content>
+</div>

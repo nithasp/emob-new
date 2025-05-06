@@ -106,8 +106,8 @@ td , th {
 }
 
 .text-table-container {
-  width: 50%;
+  width: 100%;
   margin: 0 auto; /* Horizontal centering */
   text-align: center;
-  margin-top: 350px;
+  margin-top: 350px !important;
 }

@@ -33,6 +33,7 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ParametersDialogComponent } from './components/parameters-dialog/parameters-dialog.component';
 import { ConsumptionDialogComponent } from './components/consumption-dialog/consumption-dialog.component';
+import { ErrorDialogComponent } from './components/error-dialog/error-dialog.component';
 
 @NgModule({
   declarations: [
@@ -58,7 +59,8 @@ import { ConsumptionDialogComponent } from './components/consumption-dialog/cons
     UploadFileComponent,
     MapDetailsDialogComponent,
     ParametersDialogComponent,
-    ConsumptionDialogComponent
+    ConsumptionDialogComponent,
+    ErrorDialogComponent
   ],
   imports: [
     IndexRoutingModule,
