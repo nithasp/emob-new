@@ -9,10 +9,17 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: initial;
   }
   h1 {
     color: #dc3545;
     font-size: 5em;
+    margin-bottom: 30px !important;
   }
   p {
     color: #6c757d;
