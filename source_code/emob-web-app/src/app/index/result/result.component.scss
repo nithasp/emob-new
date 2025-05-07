@@ -2,7 +2,6 @@ body {
   background-color: rgb(184, 118, 118);
 }
 
-
 a:link,
 a:visited {
   text-decoration: none;
@@ -68,14 +67,13 @@ tr.example-element-row:not(.example-expanded-row):active {
   opacity: 0.5;
 }
 
-
-
 .table-responsive {
-  height:400px;
-  width:100%;
-  overflow:auto;
+  height: 400px;
+  width: 100%;
+  overflow: auto;
 }
-.table th, .table td {
+.table th,
+.table td {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -91,18 +89,16 @@ tr.example-element-row:not(.example-expanded-row):active {
   position: sticky;
   top: 0;
   z-index: 1;
-  background-color: #0e145f; 
+  background-color: #0e145f;
   color: white;
 }
 tr:nth-child(even) {
-  background-color: #D6EEEE;
+  background-color: #d6eeee;
 }
 
-
-mat-icon{
+mat-icon {
   vertical-align: middle;
 }
-
 
 .ol-popup {
   position: absolute;
@@ -166,7 +162,6 @@ mat-icon{
 
 .arrow {
   font-size: 15px; /* Adjust size as needed */
-
 }
 
 .text {
@@ -199,8 +194,40 @@ mat-icon{
   font-size: 16px;
 }
 
-
 .custom-spinner .mat-progress-spinner circle,
 .custom-spinner .mat-spinner circle {
   stroke: #242484 !important; /* Replace with your desired color */
+}
+
+::ng-deep .modal-content {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.filter-item {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  align-items: center;
+  margin-bottom: 12px;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.search-control {
+  border-color: #6c757d;
+  &::placeholder {
+    font-size: 14px;
+  }
+}
+
+.modal-body {
+  button {
+    background-color: white !important;
+  }
+}
+
+.icon-clear-filter {
+  cursor: pointer;
+  margin:0 4px;
 }

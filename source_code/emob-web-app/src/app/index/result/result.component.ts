@@ -5,6 +5,7 @@ import {
   Component,
   OnInit,
   signal,
+  TemplateRef,
   ViewChild,
 } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -48,7 +49,7 @@ import Tile from 'ol/Tile';
 import ImageTile from 'ol/ImageTile';
 import { Cluster, Vector, XYZ } from 'ol/source';
 import CircleStyle from 'ol/style/Circle';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { MapDetailsDialogComponent } from '../components/map-details-dialog/map-details-dialog.component';
 import { Workbook } from 'exceljs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -84,7 +85,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     criteria: string;
     value: string;
   }> = [];
-  
+
   // Map related variables
   public map!: Map;
   public iconStyle?: Style;
@@ -105,6 +106,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   // Mat Table related variables
   dataRouteInfo = new MatTableDataSource<RouteInfo>([]);
   searchControl = new FormControl();
+  showFilterPanel = false;
   columnsToDisplay: string[] = [
     'route_label',
     'number_delivery_points',
@@ -147,12 +149,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
   expandedElement: Array<any> = [];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild('filterModal', { static: true })
+  filterModal!: TemplateRef<any>;
 
   // data store
   experiment?: Experiment;
-
-
-
 
   constructor(
     private readonly http: HttpClient,
@@ -162,7 +163,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     private readonly experimentService: ExperimentService,
     private readonly configurationService: ConfigurationService,
     private readonly toastr: ToastrService,
-    private readonly router: Router
+    private readonly router: Router,
   ) {
     this.spinner.show();
 
@@ -187,7 +188,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
             this.spinner.hide();
             await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
 
-            this.dataRouteInfo.filterPredicate = this.multiFilterPredicate.bind(this);
+            this.dataRouteInfo.filterPredicate =
+              this.multiFilterPredicate.bind(this);
           });
       });
   }
@@ -230,8 +232,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
         displayValue = rawValue;
     }
     const dvStr = displayValue.toString().toLowerCase();
-    const dvNum = typeof displayValue === 'number' ? displayValue : Number(dvStr);
-  
+    const dvNum =
+      typeof displayValue === 'number' ? displayValue : Number(dvStr);
+
     switch (critUsed) {
       case 'equal':
         return !isNaN(dvNum) ? dvNum === Number(search) : dvStr === search;
@@ -768,33 +771,30 @@ export class ResultComponent implements OnInit, AfterViewInit {
   applyFilter(p0: any = ''): void {
     const raw = this.searchControl.value?.toString().trim();
     if (!raw) return;
-  
+
     this.activeFilters.push({
       column: this.selectedSearchOption,
       criteria: this.selectedFilterCriteria,
       value: raw,
     });
-  
+
     // clear the input
     this.searchControl.setValue('');
-  
+
     // re-apply the table filter
     this.dataRouteInfo.filter = JSON.stringify(this.activeFilters);
   }
-  
-
-  
 
   removeFilter(filt: { column: string; criteria: string; value: string }) {
     // remove this filter
-    this.activeFilters = this.activeFilters.filter(x => x !== filt);
-  
+    this.activeFilters = this.activeFilters.filter((x) => x !== filt);
+
     // if you want to reset your dropdowns back to the first items when everything is cleared:
     if (!this.activeFilters.length) {
       this.selectedSearchOption = this.columnsToDisplay[0];
       this.selectedFilterCriteria = this.filterCriteriaToDisplay[0];
     }
-  
+
     // update the table filter
     this.dataRouteInfo.filter = this.activeFilters.length
       ? JSON.stringify(this.activeFilters)
@@ -803,23 +803,24 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   multiFilterPredicate(data: RouteInfo, filter: string): boolean {
     if (!filter) return true;
-    interface F { column: string; criteria: string; value: string; }
+    interface F {
+      column: string;
+      criteria: string;
+      value: string;
+    }
     const filters = JSON.parse(filter) as F[];
-  
+
     // OR across all chips
-    return filters.some(f =>
-      this.evaluateFilter(f.column, data[f.column as keyof RouteInfo], f.value, f.criteria)
+    return filters.some((f) =>
+      this.evaluateFilter(
+        f.column,
+        data[f.column as keyof RouteInfo],
+        f.value,
+        f.criteria
+      )
     );
   }
-  
-  
-  
-
-  clearFilter() {
-    this.searchControl.setValue('');
-    this.dataRouteInfo.filter = '';
-    this.activeFilters = [];
-  }
+ 
 
   setSearchOption(value: string) {
     this.selectedSearchOption = value;
@@ -977,4 +978,32 @@ export class ResultComponent implements OnInit, AfterViewInit {
           });
       });
   }
+
+  openFilter(): void {
+    this.ngbModal.open(this.filterModal, {
+      size: 'lg',
+      centered: true,
+    });
+  }
+
+  onAddFilter(modal: NgbModalRef): void {
+    const raw = this.searchControl.value?.toString().trim();
+    if (raw) {
+      this.activeFilters.push({
+        column: this.selectedSearchOption,
+        criteria: this.selectedFilterCriteria,
+        value: raw,
+      });
+      this.dataRouteInfo.filter = JSON.stringify(this.activeFilters);
+      this.searchControl.setValue('');
+    }
+    modal.close();
+  }
+
+  clearFilter(): void {
+    this.searchControl.setValue('');
+    this.dataRouteInfo.filter = '';
+    this.activeFilters = [];
+  }
+
 }
