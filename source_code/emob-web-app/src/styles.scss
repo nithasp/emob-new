@@ -2,8 +2,6 @@
 @import url("https://fonts.googleapis.com/css?family=Kanit");
 @import "bootstrap/scss/bootstrap";
 
-
-
 .bg-custom-primary {
   background-color: #242484 !important;
   color: #ffffff !important;
@@ -19,7 +17,6 @@
 .icon-custom-secondary {
   color: #04948c !important;
 }
-
 
 .main-wrapper {
   height: 100vh;
@@ -44,6 +41,15 @@ body {
   margin: 0;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0 !important;
+}
+
 * {
   font-family: Kanit;
 }
@@ -61,14 +67,14 @@ body {
   background-color: rgb(235, 235, 235);
 }
 
-mat-icon{
-    vertical-align: middle;
-  }
+mat-icon {
+  vertical-align: middle;
+}
 
-  .custom-tooltip .tooltip-inner {
-    background-color: white;
-    color: black; /* Optional: Change text color if needed */
-  }
+.custom-tooltip .tooltip-inner {
+  background-color: white;
+  color: black; /* Optional: Change text color if needed */
+}
 
 .mat-step-header .mat-step-icon-selected,
 .mat-step-header .mat-step-icon-state-done,
@@ -136,11 +142,9 @@ mat-icon{
   }
 }
 
-
 .material-icons {
   font-family: "Material Icons" !important;
 }
-
 
 .custom-modal-width .modal-dialog {
   max-width: 90%; /* Adjust the width as needed */

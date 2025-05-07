@@ -17,8 +17,9 @@
         </button>
         <div ngbDropdownMenu aria-labelledby="dropdownManual">
           @for(category of configurationsExplorer; track $index){
-
-          <button ngbDropdownItem [disabled]="category.name != 'actualLocation'"
+          <button ngbDropdownItem 
+          *ngIf="category.name !== 'actualLocation'"
+          [disabled]="category.name != 'actualLocation'"
             (click)="openUploadFile(category.name,category.name,'actualLocation')">
             <mat-icon class="mr-2">folder</mat-icon>
             <span class="text-capitalize font-weight-bold">

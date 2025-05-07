@@ -1005,5 +1005,4 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.dataRouteInfo.filter = '';
     this.activeFilters = [];
   }
-
 }

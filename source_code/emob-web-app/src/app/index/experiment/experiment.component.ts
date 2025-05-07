@@ -12,7 +12,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { Experiment } from 'src/app/models/experiment.model';
+import { Experiment, ExperimentCounts } from 'src/app/models/experiment.model';
 import { ConstraintService } from 'src/app/services/constraint.service';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import { DetailsDialogComponent } from '../components/details-dialog/details-dialog.component';
@@ -20,6 +20,9 @@ import { ToastrService } from 'ngx-toastr';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
 import { distinctUntilChanged } from 'rxjs';
+import { ParametersDialogComponent } from '../components/parameters-dialog/parameters-dialog.component';
+import { TimingAndCapacity } from 'src/app/models/constraint.model';
+import { ConsumptionDialogComponent } from '../components/consumption-dialog/consumption-dialog.component';
 
 @Component({
   selector: 'app-experiment',
@@ -94,6 +97,19 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       visible: false,
     },
   ];
+  paramsVehicle: TimingAndCapacity = {
+    backToDepotTime: '',
+    earlyDeliveryTime: '',
+    numberOfVehicleAvailable: 0,
+    vehicleOrderSizeCapacity: 0,
+    maximumTravelDistance: 0,
+    serviceDurationTime: '',
+    maximumWorkDuration: '',
+  };
+  paramsConsumption: ExperimentCounts = {
+    countGeocoding: 0,
+    countReroute: 0,
+  };
 
   interval: any;
   dataSource = new MatTableDataSource<Experiment>([]);
@@ -187,24 +203,23 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
 
   getParameter(runId: string) {
     this.showSpinner();
-    this.constraintService.getParameter(runId).subscribe(
-      (response) => {
-        console.log(response);
-        this.hiddenSpinner();
-        this.openDetails(
-          'Parameters',
-          this.objectToStringArray(response),
-          'lg'
-        );
-      },
-      (err) => {
-        this.hiddenSpinner();
-      }
-    );
+    this.constraintService.getParameter(runId).subscribe((response) => {
+      this.paramsVehicle = response;
+      this.hiddenSpinner();
+      this.openDetails('Parameters', this.objectToStringArray(response), 'lg');
+    }, err => {
+      this.hiddenSpinner();
+    });
   }
 
   getConsumption(experiment: Experiment) {
     this.showSpinner();
+    this.paramsConsumption.countGeocoding = experiment.countGeocoding
+      ? experiment.countGeocoding
+      : 0;
+    this.paramsConsumption.countReroute = experiment.countReroute
+      ? experiment.countReroute
+      : 0;
     this.openDetails(
       'Consumptions',
       this.objectToStringArray({
@@ -236,21 +251,36 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     if (focusedElement) {
       focusedElement.blur();
     }
-    console.log(`alertInvalidation: title = ${title}, message = ${message}`);
-    const dialogRef = this.ngbModal.open(DetailsDialogComponent, {
-      centered: true,
-      animation: true,
-      size: size,
-    });
-    dialogRef.componentInstance.title = title;
-    dialogRef.componentInstance.message = message;
 
-    dialogRef.result.then((confirmed: boolean) => {
-      console.log(`alertInvalidation: confirmed = ${confirmed}`);
-      if (confirmed) {
-        console.log('confirmed');
-      }
-    });
+    console.log(`alertInvalidation: title = ${title}, message = ${message}`);
+
+    if (title === 'Parameters') {
+      const dialogRef = this.ngbModal.open(ParametersDialogComponent, {
+        centered: true,
+        animation: true,
+        size: size,
+      });
+      dialogRef.componentInstance.paramsVehicle = this.paramsVehicle;
+      dialogRef.result.then((confirmed: boolean) => {
+        console.log(`alertInvalidation: confirmed = ${confirmed}`);
+        if (confirmed) {
+          console.log('confirmed');
+        }
+      });
+    } else if (title === 'Consumptions') {
+      const dialogRef = this.ngbModal.open(ConsumptionDialogComponent, {
+        centered: true,
+        animation: true,
+        size: size,
+      });
+      dialogRef.componentInstance.paramsConsumption = this.paramsConsumption;
+      dialogRef.result.then((confirmed: boolean) => {
+        console.log(`alertInvalidation: confirmed = ${confirmed}`);
+        if (confirmed) {
+          console.log('confirmed');
+        }
+      });
+    }
   }
   openConfirmDialog(
     title: string,
