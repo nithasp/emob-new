@@ -983,6 +983,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.ngbModal.open(this.filterModal, {
       size: 'lg',
       centered: true,
+      modalDialogClass: 'filter-modal'
     });
   }
 
