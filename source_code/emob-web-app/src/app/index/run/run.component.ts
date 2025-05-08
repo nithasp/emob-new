@@ -431,7 +431,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       .subscribe((response: Constraint) => {
         this.constraintsData = { ...response };
         console.log(this.constraintsData);
-        this.spinner.hide();
       });
   }
   refreshValidationTable() {
