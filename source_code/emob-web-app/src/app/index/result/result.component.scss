@@ -72,6 +72,7 @@ tr.example-element-row:not(.example-expanded-row):active {
   width: 100%;
   overflow: auto;
 }
+
 .table th,
 .table td {
   white-space: nowrap;
@@ -81,10 +82,12 @@ tr.example-element-row:not(.example-expanded-row):active {
   font-size: 11px;
   padding-left: 5px;
 }
+
 .table td {
   padding-right: 5px;
   text-align: right;
 }
+
 .table thead th {
   position: sticky;
   top: 0;
@@ -92,6 +95,7 @@ tr.example-element-row:not(.example-expanded-row):active {
   background-color: #0e145f;
   color: white;
 }
+
 tr:nth-child(even) {
   background-color: #d6eeee;
 }
@@ -136,32 +140,39 @@ mat-icon {
   left: 48px;
   margin-left: -11px;
 }
+
 .ol-popup-closer {
   text-decoration: none;
   position: absolute;
   top: 2px;
   right: 8px;
 }
+
 .ol-popup-closer:after {
   content: "✖";
   cursor: pointer;
 }
 
 .input-group-text-custom {
-  width: 140px; /* Set your desired width */
-  text-align: left; /* Optional: Center the text */
-  display: inline-block; /* Ensure it behaves like an inline element */
+  width: 140px;
+  /* Set your desired width */
+  text-align: left;
+  /* Optional: Center the text */
+  display: inline-block;
+  /* Ensure it behaves like an inline element */
   font-weight: bolder;
 }
 
 .text-wrap {
   white-space: normal;
-  width: 100px; /* Adjust the width as needed */
+  width: 100px;
+  /* Adjust the width as needed */
   word-wrap: break-word;
 }
 
 .arrow {
-  font-size: 15px; /* Adjust size as needed */
+  font-size: 15px;
+  /* Adjust size as needed */
 }
 
 .text {
@@ -170,9 +181,11 @@ mat-icon {
 }
 
 .hover-row:hover {
-  background-color: #f5f5f5; /* Change this to your desired hover color */
+  background-color: #f5f5f5;
+  /* Change this to your desired hover color */
   // cursor: pointer; /* Optional: change cursor to pointer */
 }
+
 .container-preview {
   text-align: center;
   padding: 20px;
@@ -196,14 +209,34 @@ mat-icon {
 
 .custom-spinner .mat-progress-spinner circle,
 .custom-spinner .mat-spinner circle {
-  stroke: #242484 !important; /* Replace with your desired color */
+  stroke: #242484 !important;
+  /* Replace with your desired color */
 }
-
 ::ng-deep {
   .filter-modal {
     .modal-content {
       max-width: 480px;
       margin: 0 auto;
+    }
+  }
+
+  mat-chip-listbox {
+    &.lines-ellipsis {
+      display: -webkit-box !important;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      -webkit-line-clamp: 2;
+      text-overflow: ellipsis;
+      max-height: 6.6em; // Approximate height for 2 lines (1.8em per line)
+      transition: max-height 0.3s ease;
+      
+      &[style*="max-height: none"] {
+        -webkit-line-clamp: initial;
+      }
+      
+      [role="presentation"] {
+        display: block !important;
+      }
     }
   }
 }
@@ -213,6 +246,7 @@ mat-icon {
   grid-template-columns: 100px 1fr;
   align-items: center;
   margin-bottom: 12px;
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -220,6 +254,7 @@ mat-icon {
 
 .search-control {
   border-color: #6c757d;
+
   &::placeholder {
     font-size: 14px;
   }
@@ -234,4 +269,17 @@ mat-icon {
 .icon-clear-filter {
   cursor: pointer;
   margin: 0 4px;
+}
+
+.two-lines-ellipsis {
+  /* required for the clamp to work */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  /* here's the magic: limit to 2 lines */
+  -webkit-line-clamp: 2;
+
+  /* fallback text-overflow (only for single-line in some browsers) */
+  text-overflow: ellipsis;
 }

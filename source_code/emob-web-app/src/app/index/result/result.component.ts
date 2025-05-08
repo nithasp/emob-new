@@ -3,6 +3,8 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  HostListener,
   OnInit,
   signal,
   TemplateRef,
@@ -152,6 +154,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
   @ViewChild('filterModal', { static: true })
   filterModal!: TemplateRef<any>;
 
+  @ViewChild('chipListbox') chipListbox!: ElementRef<HTMLElement>;
+  hasOverflow = false;
+  showAllLines = false;
+  
+
+
   // data store
   experiment?: Experiment;
 
@@ -196,7 +204,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     //this.searchControl.valueChanges.subscribe((v) => this.applyFilter(v));
+    setTimeout(() => this.checkOverflow(), 0);
+
+
   }
+ 
+ 
 
   filterPredicate(data: RouteInfo, filter: string): boolean {
     if (!filter) return true;
@@ -783,6 +796,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     // re-apply the table filter
     this.dataRouteInfo.filter = JSON.stringify(this.activeFilters);
+
+    setTimeout(() => this.checkOverflow(), 0);
+
   }
 
   removeFilter(filt: { column: string; criteria: string; value: string }) {
@@ -799,6 +815,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.dataRouteInfo.filter = this.activeFilters.length
       ? JSON.stringify(this.activeFilters)
       : '';
+
+      setTimeout(() => this.checkOverflow(), 0);
+
   }
 
   multiFilterPredicate(data: RouteInfo, filter: string): boolean {
@@ -1006,4 +1025,151 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.dataRouteInfo.filter = '';
     this.activeFilters = [];
   }
+
+  test() {
+    // this.activeFilters.push({
+    //   column: this.selectedSearchOption,
+    //   criteria: this.selectedFilterCriteria,
+    //   value: raw,
+    // });
+
+    this.activeFilters = [
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "1"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "2"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "3"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "4"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "5"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "6"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "7"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "8"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "9"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "10"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "11"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "12"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "13"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "14"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "15"
+      },
+      {
+          "column": "route_label",
+          "criteria": "equal",
+          "value": "16"
+      },
+ 
+  ]
+    console.log('this.activeFilters', this.activeFilters);
+    setTimeout(() => this.checkOverflow(), 0);
+  }
+ 
+  log() {
+    //console.log(this.isMoreThan2Lines, this.collapsed);
+  }
+
+
+  // Add this method to check for overflow
+checkOverflow() {
+  console.log('c1');
+  console.log('this.chipListbox', this.chipListbox);
+  console.log('this.chipListbox.nativeElement', this.chipListbox?.nativeElement);
+
+  const chipListbox2 = document.querySelector('.chipListbox') as HTMLElement;
+
+  console.log('chipListbox2', chipListbox2);
+
+  //if (!this.chipListbox?.nativeElement) return;
+  if (!chipListbox2) return;
+  
+  const element = chipListbox2 as HTMLElement;
+  this.hasOverflow = element.scrollHeight > element.clientHeight;
+  console.log('c1');
+  console.log('element.scrollHeight', element.scrollHeight);
+  console.log('element.clientHeight', element.clientHeight);
+}
+
+// Add this method to toggle overflow
+toggleOverflow() {
+
+  
+  // this.showAllLines = !this.showAllLines;
+  
+  // if (this.showAllLines) {
+  //   this.chipListbox.nativeElement.style.maxHeight = 'none';
+  //   this.chipListbox.nativeElement.classList.remove('lines-ellipsis');
+  // } else {
+  //   this.chipListbox.nativeElement.style.maxHeight = '';
+  //   this.chipListbox.nativeElement.classList.add('lines-ellipsis');
+  // }
+
+
+
+  const chipListbox2 = document.querySelector('.chipListbox') as HTMLElement;
+    this.showAllLines = !this.showAllLines;
+  
+    if (this.showAllLines) {
+      chipListbox2.style.maxHeight = 'none';
+      chipListbox2.classList.remove('lines-ellipsis');
+    } else {
+      chipListbox2.style.maxHeight = '';
+      chipListbox2.classList.add('lines-ellipsis');
+    }
+}
 }
