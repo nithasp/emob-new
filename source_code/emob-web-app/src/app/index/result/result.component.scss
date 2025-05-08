@@ -199,9 +199,13 @@ mat-icon {
   stroke: #242484 !important; /* Replace with your desired color */
 }
 
-::ng-deep .modal-content {
-  max-width: 480px;
-  margin: 0 auto;
+::ng-deep {
+  .filter-modal {
+    .modal-content {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+  }
 }
 
 .filter-item {
@@ -229,5 +233,5 @@ mat-icon {
 
 .icon-clear-filter {
   cursor: pointer;
-  margin:0 4px;
+  margin: 0 4px;
 }
