@@ -232,9 +232,8 @@
 
       <div class="w-100">
         <mat-chip-listbox
-          *ngIf="activeFilters.length"
           aria-label="Applied filters"
-          class="d-flex flex-wrap gap-1"
+          class="d-flex flex-wrap gap-1 mb-1"
         >
           <mat-chip
             *ngFor="let f of activeFilters"
@@ -253,14 +252,15 @@
             {{ f.value }}
             <mat-icon matChipRemove class="opacity-100">cancel</mat-icon>
           </mat-chip>
+          <div class="filter-button-wrapper d-inline-block align-items-center mt-1 ms-2">
+            <mat-icon *ngIf="activeFilters.length" class="icon-custom-primary icon-clear-filter" (click)="clearFilter()">backspace</mat-icon>
+            <button mat-raised-button color="primary" (click)="openFilter()">
+              Open Filter
+            </button>
+          </div>
         </mat-chip-listbox>
 
-        <div class="filter-button-wrapper d-inline-block  align-items-center mt-1">
-          <mat-icon *ngIf="activeFilters.length" class="icon-custom-primary icon-clear-filter" (click)="clearFilter()">backspace</mat-icon>
-          <button mat-raised-button color="primary" (click)="openFilter()">
-            Open Filter
-          </button>
-        </div>
+
   
       </div>
 
