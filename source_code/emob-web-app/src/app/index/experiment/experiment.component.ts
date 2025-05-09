@@ -195,7 +195,9 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
         this.spinner.show();
         this.experimentService.createExperiment().subscribe((response) => {
           this.toastr.info('create experiment', response.runId);
-          this.router.navigate(['/users/run', response.runId]);
+          this.router.navigate(['/users/run', response.runId], {
+            state: { isCreateMode: true },
+          });
         });
       }
     });
@@ -203,13 +205,20 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
 
   getParameter(runId: string) {
     this.showSpinner();
-    this.constraintService.getParameter(runId).subscribe((response) => {
-      this.paramsVehicle = response;
-      this.hiddenSpinner();
-      this.openDetails('Parameters', this.objectToStringArray(response), 'lg');
-    }, err => {
-      this.hiddenSpinner();
-    });
+    this.constraintService.getParameter(runId).subscribe(
+      (response) => {
+        this.paramsVehicle = response;
+        this.hiddenSpinner();
+        this.openDetails(
+          'Parameters',
+          this.objectToStringArray(response),
+          'lg'
+        );
+      },
+      (err) => {
+        this.hiddenSpinner();
+      }
+    );
   }
 
   getConsumption(experiment: Experiment) {
