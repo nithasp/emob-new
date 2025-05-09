@@ -245,6 +245,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
+  isCreateMode: boolean = false;
+
   constructor(
     private readonly spinner: NgxSpinnerService,
     private readonly constraintService: ConstraintService,
@@ -263,6 +265,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.spinner.show();
+    this.isCreateMode = history.state.isCreateMode;
     this.route.params
       .pipe(take(1))
       .subscribe((params: { [x: string]: string }) => {
@@ -431,6 +434,10 @@ export class RunComponent implements OnInit, AfterViewInit {
       .subscribe((response: Constraint) => {
         this.constraintsData = { ...response };
         console.log(this.constraintsData);
+
+        if (this.isCreateMode) {
+          this.spinner.hide();
+        }
       });
   }
   refreshValidationTable() {
