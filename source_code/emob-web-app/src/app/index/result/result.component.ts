@@ -157,8 +157,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
   @ViewChild('chipListbox') chipListbox!: ElementRef<HTMLElement>;
   hasOverflow = false;
   showAllLines = false;
-  
-
 
   // data store
   experiment?: Experiment;
@@ -171,7 +169,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     private readonly experimentService: ExperimentService,
     private readonly configurationService: ConfigurationService,
     private readonly toastr: ToastrService,
-    private readonly router: Router,
+    private readonly router: Router
   ) {
     this.spinner.show();
 
@@ -182,6 +180,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
       }),
     });
   }
+
+  @HostListener('window:resize')
+  onWindowResize() {
+    this.checkOverflow();
+  }
+
   ngOnInit(): void {
     this.route.params
       .pipe(take(1))
@@ -205,11 +209,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     //this.searchControl.valueChanges.subscribe((v) => this.applyFilter(v));
     setTimeout(() => this.checkOverflow(), 0);
-
-
   }
- 
- 
 
   filterPredicate(data: RouteInfo, filter: string): boolean {
     if (!filter) return true;
@@ -798,7 +798,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.dataRouteInfo.filter = JSON.stringify(this.activeFilters);
 
     setTimeout(() => this.checkOverflow(), 0);
-
   }
 
   removeFilter(filt: { column: string; criteria: string; value: string }) {
@@ -816,8 +815,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
       ? JSON.stringify(this.activeFilters)
       : '';
 
-      setTimeout(() => this.checkOverflow(), 0);
-
+    // Check overflow after DOM update
+    setTimeout(() => {
+      this.checkOverflow();
+      // If we're showing all lines but now don't have overflow, reset the state
+      if (this.showAllLines && !this.hasOverflow) {
+        this.showAllLines = false;
+      }
+    }, 0);
   }
 
   multiFilterPredicate(data: RouteInfo, filter: string): boolean {
@@ -839,7 +844,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
       )
     );
   }
- 
 
   setSearchOption(value: string) {
     this.selectedSearchOption = value;
@@ -1002,7 +1006,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.ngbModal.open(this.filterModal, {
       size: 'lg',
       centered: true,
-      modalDialogClass: 'filter-modal'
+      modalDialogClass: 'filter-modal',
     });
   }
 
@@ -1018,12 +1022,17 @@ export class ResultComponent implements OnInit, AfterViewInit {
       this.searchControl.setValue('');
     }
     modal.close();
-  }
 
+    // Check overflow after DOM update
+    setTimeout(() => {
+      this.checkOverflow();
+    }, 0);
+  }
   clearFilter(): void {
     this.searchControl.setValue('');
     this.dataRouteInfo.filter = '';
     this.activeFilters = [];
+    this.hasOverflow = false;
   }
 
   test() {
@@ -1035,141 +1044,137 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     this.activeFilters = [
       {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "1"
+        column: 'route_label',
+        criteria: 'equal',
+        value: '1',
       },
       {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "2"
+        column: 'route_label',
+        criteria: 'equal',
+        value: '2',
       },
       {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "3"
+        column: 'route_label',
+        criteria: 'equal',
+        value: '3',
       },
       {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "4"
+        column: 'route_label',
+        criteria: 'equal',
+        value: '4',
       },
       {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "5"
+        column: 'route_label',
+        criteria: 'equal',
+        value: '5',
       },
       {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "6"
+        column: 'route_label',
+        criteria: 'equal',
+        value: '6',
       },
       {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "7"
+        column: 'route_label',
+        criteria: 'equal',
+        value: '7',
       },
       {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "8"
+        column: 'route_label',
+        criteria: 'equal',
+        value: '8',
       },
       {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "9"
+        column: 'route_label',
+        criteria: 'equal',
+        value: '9',
       },
-      {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "10"
-      },
-      {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "11"
-      },
-      {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "12"
-      },
-      {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "13"
-      },
-      {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "14"
-      },
-      {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "15"
-      },
-      {
-          "column": "route_label",
-          "criteria": "equal",
-          "value": "16"
-      },
- 
-  ]
+    ];
     console.log('this.activeFilters', this.activeFilters);
     setTimeout(() => this.checkOverflow(), 0);
   }
- 
+
   log() {
     //console.log(this.isMoreThan2Lines, this.collapsed);
   }
 
+  checkOverflow() {
+    const chipListbox = document.querySelector('.chipListbox') as HTMLElement;
+    if (!chipListbox || !chipListbox.children.length) return;
 
-  // Add this method to check for overflow
-checkOverflow() {
-  console.log('c1');
-  console.log('this.chipListbox', this.chipListbox);
-  console.log('this.chipListbox.nativeElement', this.chipListbox?.nativeElement);
+    // Get the first chip element to measure line height
+    const firstChip = chipListbox.querySelector('mat-chip') as HTMLElement;
+    if (!firstChip) return;
 
-  const chipListbox2 = document.querySelector('.chipListbox') as HTMLElement;
+    // Calculate the height of a single line (including margin)
+    const chipStyle = window.getComputedStyle(firstChip);
+    const chipHeight = firstChip.offsetHeight;
+    const chipMarginBottom = parseFloat(chipStyle.marginBottom);
+    const lineHeight = chipHeight + chipMarginBottom;
 
-  console.log('chipListbox2', chipListbox2);
+    // Calculate the height of 2 lines (with some tolerance)
+    const maxAllowedHeight = lineHeight * 3 + 3; // Adding 2px tolerance
 
-  //if (!this.chipListbox?.nativeElement) return;
-  if (!chipListbox2) return;
-  
-  const element = chipListbox2 as HTMLElement;
-  this.hasOverflow = element.scrollHeight > element.clientHeight;
-  console.log('c1');
-  console.log('element.scrollHeight', element.scrollHeight);
-  console.log('element.clientHeight', element.clientHeight);
-}
+    // Check if content exceeds 2 lines
+    const contentHeight = chipListbox.scrollHeight;
+    this.hasOverflow = contentHeight > maxAllowedHeight;
 
-// Add this method to toggle overflow
-toggleOverflow() {
-
-  
-  // this.showAllLines = !this.showAllLines;
-  
-  // if (this.showAllLines) {
-  //   this.chipListbox.nativeElement.style.maxHeight = 'none';
-  //   this.chipListbox.nativeElement.classList.remove('lines-ellipsis');
-  // } else {
-  //   this.chipListbox.nativeElement.style.maxHeight = '';
-  //   this.chipListbox.nativeElement.classList.add('lines-ellipsis');
-  // }
-
-
-
-  const chipListbox2 = document.querySelector('.chipListbox') as HTMLElement;
-    this.showAllLines = !this.showAllLines;
-  
-    if (this.showAllLines) {
-      chipListbox2.style.maxHeight = 'none';
-      chipListbox2.classList.remove('lines-ellipsis');
+    // Apply or remove the ellipsis class based on overflow state
+    if (this.hasOverflow && !this.showAllLines) {
+      chipListbox.classList.add('lines-ellipsis');
+      chipListbox.style.maxHeight = `${maxAllowedHeight}px`;
     } else {
-      chipListbox2.style.maxHeight = '';
-      chipListbox2.classList.add('lines-ellipsis');
+      chipListbox.classList.remove('lines-ellipsis');
+      chipListbox.style.maxHeight = '';
     }
-}
+  }
+
+  toggleOverflow(): void {
+    const chipListbox = document.querySelector(
+      '.chipListbox'
+    ) as HTMLElement | null;
+    if (!chipListbox) return;
+
+    // measure a single chip (for collapsed height)
+    const firstChip = chipListbox.querySelector(
+      'mat-chip'
+    ) as HTMLElement | null;
+    if (!firstChip) return;
+    const cs = window.getComputedStyle(firstChip);
+    const chipH = firstChip.offsetHeight;
+    const chipM = parseFloat(cs.marginBottom);
+    const collapsedH = (chipH + chipM) * 2;
+
+    if (!this.showAllLines) {
+      // — EXPAND —
+      chipListbox.classList.remove('lines-ellipsis');
+      chipListbox.style.maxHeight = `${chipListbox.scrollHeight + 3}px`;
+
+      const onExpand = (e: TransitionEvent) => {
+        if (e.propertyName === 'max-height') {
+          chipListbox.style.maxHeight = ''; // allow auto height after open
+          chipListbox.removeEventListener('transitionend', onExpand);
+        }
+      };
+      chipListbox.addEventListener('transitionend', onExpand);
+    } else {
+      // — COLLAPSE —
+      chipListbox.classList.remove('lines-ellipsis'); // allow full height
+      chipListbox.style.maxHeight = `${chipListbox.scrollHeight + 3}px`;
+
+      // next paint: animate down to 2 lines
+      requestAnimationFrame(() => {
+        chipListbox.style.maxHeight = `${collapsedH + 3}px`;
+      });
+
+      const onCollapse = (e: TransitionEvent) => {
+        if (e.propertyName === 'max-height') {
+          chipListbox.classList.add('lines-ellipsis'); // re-clamp
+          chipListbox.removeEventListener('transitionend', onCollapse);
+        }
+      };
+      chipListbox.addEventListener('transitionend', onCollapse);
+    }
+
+    this.showAllLines = !this.showAllLines;
+  }
 }

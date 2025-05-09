@@ -165,9 +165,11 @@
               <button
                 ngbDropdownToggle
                 class="btn btn-outline-secondary btn-sm text-capitalize d-flex align-items-center justify-content-between w-100 text-black"
-   
               >
-                {{ selectedSearchOption.replaceAll("_", " ")  | truncate : [15, "..."]}}
+                {{
+                  selectedSearchOption.replaceAll("_", " ")
+                    | truncate : [15, "..."]
+                }}
               </button>
               <div ngbDropdownMenu class="w-100">
                 <button
@@ -188,9 +190,11 @@
               <button
                 ngbDropdownToggle
                 class="btn btn-outline-secondary btn-sm text-capitalize d-flex align-items-center justify-content-between w-100 text-black"
-             
               >
-                {{ selectedFilterCriteria.replaceAll("_", " ")  | truncate : [15, "..."] }}
+                {{
+                  selectedFilterCriteria.replaceAll("_", " ")
+                    | truncate : [15, "..."]
+                }}
               </button>
               <div ngbDropdownMenu class="w-100">
                 <button
@@ -224,9 +228,7 @@
           >
             Add Filter
           </button>
-          <button mat-raised-button (click)="modal.dismiss()">
-            Cancel
-          </button>
+          <button mat-raised-button (click)="modal.dismiss()">Cancel</button>
         </div>
       </ng-template>
 
@@ -266,44 +268,93 @@
       </div> -->
 
       <div class="w-100">
-        <mat-chip-listbox
-          aria-label="Applied filters"
-          class="d-flex flex-wrap gap-1 mb-1 chipListbox"
-          [class.lines-ellipsis]="hasOverflow"
-          #chipListbox
-        >
-          <mat-chip
-            *ngFor="let f of activeFilters"
-            highlighted
-            removable
-            (removed)="removeFilter(f)"
-            class="text-capitalize"
-            color="primary"
-            style="
-              --mdc-chip-elevated-container-color: #3f51b5;
-              --mdc-chip-elevated-text-color: #fff;
-            "
+        <div class="d-flex flex-wrap gap-1">
+          <mat-chip-listbox
+            aria-label="Applied filters"
+            class="d-flex flex-wrap gap-1 mb-1 chipListbox"
+            [class.lines-ellipsis]="hasOverflow"
+            #chipListbox
           >
-            {{ f.column.replaceAll("_", " ") }}
-            {{ f.criteria.replaceAll("_", " ") }}
-            {{ f.value }}
-            <mat-icon matChipRemove class="opacity-100">cancel</mat-icon>
-          </mat-chip>
-          <div class="filter-button-wrapper d-inline-block align-items-center mt-1 ms-2">
-            <mat-icon *ngIf="activeFilters.length" class="icon-custom-primary icon-clear-filter" (click)="clearFilter()">backspace</mat-icon>
+            <mat-chip
+              *ngFor="let f of activeFilters"
+              highlighted
+              removable
+              (removed)="removeFilter(f)"
+              class="text-capitalize position-relative"
+              color="primary"
+              style="
+                --mdc-chip-elevated-container-color: #3f51b5;
+                --mdc-chip-elevated-text-color: #fff;
+              "
+            >
+              {{ f.column.replaceAll("_", " ") }}
+              {{ f.criteria.replaceAll("_", " ") }}
+              {{ f.value }}
+              <mat-icon matChipRemove class="opacity-100">cancel</mat-icon>
+            </mat-chip>
+
+            <div
+              *ngIf="!hasOverflow"
+              class="filter-button-wrapper d-inline-block align-items-center mt-1 ms-2"
+            >
+              <mat-icon
+                *ngIf="activeFilters.length"
+                class="icon-custom-primary icon-clear-filter"
+                (click)="clearFilter()"
+                >backspace</mat-icon
+              >
+              <button mat-raised-button color="primary" (click)="openFilter()">
+                Open Filter
+              </button>
+            </div>
+
+
+                  <button
+                  *ngIf="hasOverflow"
+        mat-raised-button
+        class="bg-custom-primary btn btn-sm mr-3 d-flex align-items-center arrow-dropdown-icon"
+        (click)="toggleOverflow()"
+      >
+                <mat-icon  class="icon-custom-primary icon-clear-filter "
+            [class.rotate-arrow]="showAllLines" 
+              >arrow_drop_down</mat-icon
+            >
+    </button>
+
+
+
+          </mat-chip-listbox>
+
+          <div
+            *ngIf="hasOverflow"
+            class="filter-button-wrapper d-inline-block align-items-center"
+          >
+          
+            <mat-icon
+              *ngIf="activeFilters.length"
+              class="icon-custom-primary icon-clear-filter"
+              (click)="clearFilter()"
+              >backspace</mat-icon
+            >
             <button mat-raised-button color="primary" (click)="openFilter()">
               Open Filter
             </button>
           </div>
-        </mat-chip-listbox>
-      
-        <button *ngIf="hasOverflow" mat-button color="primary" (click)="toggleOverflow()" class="mt-1">
-          {{ showAllLines ? 'Show Less' : 'Show More' }}
-        </button>
-      
-        <button (click)="test()">test</button>
-      </div>
+        </div>
 
+        <!-- <button
+          *ngIf="hasOverflow"
+          mat-button
+          color="primary"
+          (click)="toggleOverflow()"
+          class="mt-1"
+        >
+          {{ showAllLines ? "Show Less" : "Show More" }}
+        </button> -->
+
+        <button (click)="test()">test</button>
+        <!-- <h1>hasOverflow: {{ hasOverflow }}</h1> -->
+      </div>
 
       <div
         style="height: 700px; font-size: 11px; padding: 3px; overflow-y: scroll"
