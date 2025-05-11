@@ -1,4 +1,18 @@
 <div class=" card mt-2 container-fluid main_container" style="min-height:100vh;">
+
+<ng-container *transloco="let t; read: 'index'">
+  <h2>{{ t('save') }}</h2>
+  <h2>Common says: {{ 'save' | transloco }}</h2>
+ 
+
+      <button (click)="toggleLang()">
+      Switch to {{ nextLang | uppercase }}
+    </button>
+</ng-container>
+ 
+
+
+
   <div class="row mt-5 justify-content-center">
     <div class="col-12 mb-3 text-right">
       <button mat-raised-button class="bg-custom-secondary" (click)="createNewExperiment()">

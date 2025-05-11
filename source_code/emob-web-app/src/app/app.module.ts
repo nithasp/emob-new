@@ -43,10 +43,18 @@ import { HttpClientModule } from '@angular/common/http';
 import {
   TranslocoModule,
   TRANSLOCO_CONFIG,
-  TRANSLOCO_LOADER,
   translocoConfig,
+  TRANSLOCO_LOADER,
+  TRANSLOCO_TRANSPILER,
+  DefaultTranspiler,
+  TRANSLOCO_MISSING_HANDLER,
+  DefaultMissingHandler,
+  TRANSLOCO_INTERCEPTOR,
+  DefaultInterceptor,
+  TRANSLOCO_FALLBACK_STRATEGY,
+  DefaultFallbackStrategy,
 } from '@jsverse/transloco';
-import { CommonI18nModule } from 'common-i18n.module';
+
 import { TranslocoHttpLoader } from 'transloco-loader';
 
 export function MSALInstanceFactory(): IPublicClientApplication {
@@ -110,7 +118,7 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
     MsalModule,
 
     HttpClientModule,
-    CommonI18nModule,
+
     TranslocoModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -144,11 +152,17 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
       useValue: translocoConfig({
         availableLangs: ['en', 'th'],
         defaultLang: 'en',
+        fallbackLang: 'en',
         reRenderOnLangChange: true,
-        prodMode: false,
+        prodMode: environment.production,
       }),
     },
     { provide: TRANSLOCO_LOADER, useClass: TranslocoHttpLoader },
+    // ← **this line fixes** the “No provider for TRANSLOCO_TRANSPILER” error:
+    { provide: TRANSLOCO_TRANSPILER, useClass: DefaultTranspiler },
+    { provide: TRANSLOCO_MISSING_HANDLER, useClass: DefaultMissingHandler },
+    { provide: TRANSLOCO_INTERCEPTOR, useClass: DefaultInterceptor },
+    { provide: TRANSLOCO_FALLBACK_STRATEGY, useClass: DefaultFallbackStrategy },
   ],
 })
 export class AppModule {}

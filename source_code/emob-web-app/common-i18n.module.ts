@@ -1,11 +1,15 @@
 import { NgModule } from '@angular/core';
-import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
+import {
+  TranslocoModule,
+  provideTranslocoScope
+} from '@jsverse/transloco';
 
 @NgModule({
-  imports:  [ TranslocoModule ],
-  exports:  [ TranslocoModule ],
+  imports:  [TranslocoModule],
+  exports:  [TranslocoModule],
   providers: [
-    { provide: TRANSLOCO_SCOPE, useValue: 'common' }
+    // default everything to assets/i18n/common/{lang}.json
+    provideTranslocoScope('common')
   ]
 })
 export class CommonI18nModule {}

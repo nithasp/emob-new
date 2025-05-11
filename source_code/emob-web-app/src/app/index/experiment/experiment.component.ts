@@ -23,6 +23,7 @@ import { distinctUntilChanged } from 'rxjs';
 import { ParametersDialogComponent } from '../components/parameters-dialog/parameters-dialog.component';
 import { TimingAndCapacity } from 'src/app/models/constraint.model';
 import { ConsumptionDialogComponent } from '../components/consumption-dialog/consumption-dialog.component';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-experiment',
@@ -122,7 +123,9 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     private readonly router: Router,
     private readonly ngbModal: NgbModal,
     private readonly toastr: ToastrService,
-    private readonly userMsGraphService: UserMSGraphService
+    private readonly userMsGraphService: UserMSGraphService,
+
+    private transloco: TranslocoService
   ) {}
   ngOnInit(): void {
     this.spinner.show();
@@ -430,5 +433,12 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     setTimeout(() => {
       this.spinner.hide('experiment');
     }, 500);
+  }
+
+    get nextLang(): 'en' | 'th' {
+    return this.transloco.getActiveLang() === 'en' ? 'th' : 'en';
+  }
+    toggleLang() {
+    this.transloco.setActiveLang(this.nextLang);
   }
 }
