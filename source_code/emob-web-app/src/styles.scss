@@ -115,6 +115,29 @@ mat-icon {
   position: relative;
 }
 
+.listbox-chip {
+  mat-chip {
+    background: white !important;
+    border: 1px solid #242484 !important;
+    transition: 0.2s;
+    .mat-mdc-chip-action-label {
+      color: #3f51b5 !important;
+    }
+    mat-icon {
+      color: #3f51b5 !important;
+    }
+    &:hover {
+      background: #242484 !important;
+      .mat-mdc-chip-action-label {
+        color: white !important;
+      }
+      mat-icon {
+        color: white !important;
+      }
+    }
+  }
+}
+
 @media screen {
   .push-right {
     #sidebar {
