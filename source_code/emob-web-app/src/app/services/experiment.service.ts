@@ -46,7 +46,7 @@ export class ExperimentService {
     `,
     fetchPolicy: 'cache-and-network'
     }).valueChanges.pipe(
-      map(result => result.data.experiments),this.errorHandlingService.handleError);
+      map(result => result.data.experiments));
   }
 
   createExperiment():Observable<Experiment>{
