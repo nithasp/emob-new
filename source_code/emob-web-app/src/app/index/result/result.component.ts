@@ -163,7 +163,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     private readonly experimentService: ExperimentService,
     private readonly configurationService: ConfigurationService,
     private readonly toastr: ToastrService,
-    private readonly router: Router,
+    private readonly router: Router
   ) {
     this.spinner.show();
 
@@ -374,7 +374,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   private async loadAndProcessGeoJSON(url: string): Promise<void> {
     const geoJson = await this.dataFromFileUrlToJson(url);
-    this.featureCollections = geoJson.routes;
+    this.featureCollections = geoJson.routes.map(
+      (rc: { features: { properties: { route_index: number } }[] }) => ({
+        ...rc,
+        route_index: rc.features[0]?.properties?.route_index,
+      })
+    );
     this.featureDepots = geoJson.depots;
     console.log(geoJson);
     //mapping routes to features
@@ -588,40 +593,22 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const clusterLayer = this.map.getLayers()?.item(2) as VectorLayer;
     clusterLayer.getSource()?.changed();
   }
-  handleClick(event: any): void {
-    let depotStartId: number | null = null;
-    let depotEndId: number | null = null;
 
-    const feature = this.map.forEachFeatureAtPixel(
-      event.pixel,
-      (feature) => feature
-    );
-    if (feature && feature.getGeometry()?.getType() === 'LineString') {
-      const routeIndex = feature.getProperties()['route_index'];
-      depotStartId = feature.getProperties()['start_depot_id'];
-      depotEndId = feature.getProperties()['end_depot_id'];
-      const featureCollection = this.featureCollections.find(
-        (collection: any) => {
-          return collection.features.some((f: any) => {
-            return f.properties.route_index === routeIndex;
-          });
-        }
-      );
-      const featureDepots: any[] = [];
-      if (this.featureDepots.length === 1) {
-        featureDepots.push(this.featureDepots[0]);
-      }
-      {
-        const matchingDepots = this.featureDepots.filter((depot: any) =>
-          [depotStartId, depotEndId].includes(depot.properties.depot_id)
-        );
-        featureDepots.push(...matchingDepots);
-      }
-      if (featureCollection) {
-        this.openModal(featureCollection, featureDepots);
-      }
+  handleClick(event: any): void {
+    const feature = this.map.forEachFeatureAtPixel(event.pixel, (feat) => feat);
+    if (!feature || feature.getGeometry()?.getType() !== 'LineString') {
+      return;
     }
+
+    const routeIndex = feature.getProperties()['route_index'];
+    if (routeIndex == null) {
+      console.error('Clicked LineString has no route_index');
+      return;
+    }
+
+    this.openRouteDetails(routeIndex);
   }
+
   private pointMove(evt: any): void {
     const target = this.map.getTargetElement();
     const pixel = this.map.getEventPixel(evt.originalEvent);
@@ -820,7 +807,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
       )
     );
   }
- 
 
   setSearchOption(value: string) {
     this.selectedSearchOption = value;
@@ -833,26 +819,22 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   openRouteDetails(routeIndex: number): void {
-    let depotStartId: number | null = null;
-    let depotEndId: number | null = null;
-
-    const collection = this.featureCollections.find((collection: any) => {
-      return collection.features.some((feature: any) => {
-        if (feature.properties.route_index === routeIndex) {
-          depotStartId = feature.properties.start_depot_id;
-          depotEndId = feature.properties.end_depot_id;
-          return true;
-        }
-        return false;
-      });
-    });
-
+    const collection = this.featureCollections.find(
+      (c: any) => c.route_index === routeIndex
+    );
     if (!collection) {
-      console.error(
-        `No feature collection found for route index ${routeIndex}`
-      );
+      console.error(`No route found for index ${routeIndex}`);
       return;
     }
+
+    // const startId = collection.features[0].properties.start_depot_id;
+    // const endId = collection.features[0].properties.end_depot_id;
+    // const featureDepots = this.featureDepots.filter((d: { properties: { depot_id: number } }) =>
+    //   [startId, endId].includes(d.properties.depot_id)
+    // );
+
+    let depotStartId: number | null = null;
+    let depotEndId: number | null = null;
     const featureDepots: any[] = [];
     if (this.featureDepots.length === 1) {
       featureDepots.push(this.featureDepots[0]);
@@ -863,14 +845,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
       );
       featureDepots.push(...matchingDepots);
     }
-
     if (!featureDepots) {
       console.error(
         `No depot found with depot_id ${depotStartId} : ${depotEndId}`
       );
       return;
     }
-    console.log(featureDepots, collection);
+
+    console.log('featureDepots:', featureDepots);
 
     this.openModal(collection, featureDepots);
   }
@@ -983,7 +965,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.ngbModal.open(this.filterModal, {
       size: 'lg',
       centered: true,
-      modalDialogClass: 'filter-modal'
+      modalDialogClass: 'filter-modal',
     });
   }
 
