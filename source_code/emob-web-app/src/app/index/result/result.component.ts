@@ -541,7 +541,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const element = document.getElementById('popupMapResult')!;
     this.popUp = new Overlay({
       element: element,
-      offset: [0, -20],
+      offset: [0, -30],
     });
     this.map.addOverlay(this.popUp);
   }

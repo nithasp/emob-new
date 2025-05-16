@@ -207,11 +207,11 @@ mat-icon {
     }
   }
 
-  #popup-content {
-    p:last-child {
-      margin-bottom: 0px;
-    }
-  }
+  // #popup-content {
+  //   p:last-child {
+  //     margin-bottom: 0px;
+  //   }
+  // }
 }
 
 .filter-item {
@@ -240,4 +240,8 @@ mat-icon {
 .icon-clear-filter {
   cursor: pointer;
   margin: 0 4px;
+}
+
+.depot-popup {
+  bottom: 10px;
 }

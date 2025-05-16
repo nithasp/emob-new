@@ -6,7 +6,11 @@
 </div>
 <div class="modal-body">
   <div id="modalMap" class="map"></div>
-  <div id="popupMapDeatils" class="ol-popup">
+  <div
+    id="popupMapDeatils"
+    class="ol-popup"
+    [ngClass]="{ 'depot-popup': popupContent?.is_depot }"
+  >
     <div
       id="popup-content"
       class="row justify-content-end"
