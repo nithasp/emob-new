@@ -127,7 +127,7 @@ export class MapDetailsDialogComponent implements OnInit {
     const element = document.getElementById('popupMapDeatils')!;
     this.popUp = new Overlay({
       element: element,
-      offset: [0, -20],
+      offset: [0, -30],
     });
     this.map.addOverlay(this.popUp);
     

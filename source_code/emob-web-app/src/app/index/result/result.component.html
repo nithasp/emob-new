@@ -399,7 +399,7 @@
 
     <div class="col-md-7">
       <div id="mapResult" class="map" [hidden]="!mapAlreadyRendered"></div>
-      <div id="popupMapResult" class="ol-popup" [hidden]="!mapAlreadyRendered">
+      <div id="popupMapResult" class="ol-popup" [ngClass]="{ 'depot-popup': popupContent?.is_depot }" [hidden]="!mapAlreadyRendered">
         <div
           id="popup-content"
           class="row justify-content-end"
@@ -407,10 +407,10 @@
           *ngIf="popupContent"
         >
           <p
-            class="d-inline-block text-truncate mr-2"
-            *ngIf="popupContent?.route_index"
+            class="d-inline-block text-truncate mr-2" 
+            *ngIf="popupContent?.route_label"
           >
-            <strong>Route Index:</strong> {{ popupContent?.route_index }}
+            <strong>Route Label:</strong> {{ popupContent?.route_label }}
           </p>
           <p
             class="d-inline-block text-truncate mr-2"
@@ -428,7 +428,11 @@
             class="d-inline-block text-truncate mr-2"
             *ngIf="popupContent?.name"
           >
-            <strong>ORDER ID : </strong> {{ popupContent["name"] }}
+            <strong>
+              <span> {{ popupContent.is_depot ? 'DEPOT NAME' : 'ORDER ID'  }}</span>
+              <span> : </span>
+            </strong> 
+            <span>{{ popupContent["name"] }}</span>
           </p>
           <p
             class="d-inline-block text-truncate mr-2"
