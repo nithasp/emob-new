@@ -206,6 +206,12 @@ mat-icon {
       margin: 0 auto;
     }
   }
+
+  #popup-content {
+    p:last-child {
+      margin-bottom: 0px;
+    }
+  }
 }
 
 .filter-item {

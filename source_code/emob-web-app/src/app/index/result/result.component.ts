@@ -819,22 +819,27 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   openRouteDetails(routeIndex: number): void {
+    let depotStartId: number | null = null;
+    let depotEndId: number | null = null;
+
     const collection = this.featureCollections.find(
-      (c: any) => c.route_index === routeIndex
+      (collection: any) => {
+        return collection.features.some((feature: any) => {
+          if (feature.properties.route_index === routeIndex) {
+            depotStartId = feature.properties.start_depot_id;
+            depotEndId = feature.properties.end_depot_id;
+            return collection.route_index === routeIndex;
+          }
+          return false;
+        })
+      }
     );
+
     if (!collection) {
       console.error(`No route found for index ${routeIndex}`);
       return;
     }
 
-    // const startId = collection.features[0].properties.start_depot_id;
-    // const endId = collection.features[0].properties.end_depot_id;
-    // const featureDepots = this.featureDepots.filter((d: { properties: { depot_id: number } }) =>
-    //   [startId, endId].includes(d.properties.depot_id)
-    // );
-
-    let depotStartId: number | null = null;
-    let depotEndId: number | null = null;
     const featureDepots: any[] = [];
     if (this.featureDepots.length === 1) {
       featureDepots.push(this.featureDepots[0]);
@@ -856,6 +861,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     this.openModal(collection, featureDepots);
   }
+
+
+
 
   onMouseEnter(row: RouteInfo) {
     if (!this.mapAlreadyRendered) return;
