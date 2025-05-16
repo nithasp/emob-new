@@ -1,7 +1,11 @@
 @import "node_modules/ol/ol.css";
 @import url("https://fonts.googleapis.com/css?family=Kanit");
 @import "bootstrap/scss/bootstrap";
+ 
 
+.mat-mdc-raised-button.mat-primary {
+    --mdc-protected-button-container-color: #242484 !important;
+}
 .bg-custom-primary {
   background-color: #242484 !important;
   color: #ffffff !important;
