@@ -795,18 +795,16 @@ export class ResultComponent implements OnInit, AfterViewInit {
     let depotStartId: number | null = null;
     let depotEndId: number | null = null;
 
-    const collection = this.featureCollections.find(
-      (collection: any) => {
-        return collection.features.some((feature: any) => {
-          if (feature.properties.route_index === routeIndex) {
-            depotStartId = feature.properties.start_depot_id;
-            depotEndId = feature.properties.end_depot_id;
-            return collection.route_index === routeIndex;
-          }
-          return false;
-        })
-      }
-    );
+    const collection = this.featureCollections.find((collection: any) => {
+      return collection.features.some((feature: any) => {
+        if (feature.properties.route_index === routeIndex) {
+          depotStartId = feature.properties.start_depot_id;
+          depotEndId = feature.properties.end_depot_id;
+          return collection.route_index === routeIndex;
+        }
+        return false;
+      });
+    });
 
     if (!collection) {
       console.error(`No route found for index ${routeIndex}`);
@@ -834,9 +832,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     this.openModal(collection, featureDepots);
   }
-
-
-
 
   onMouseEnter(row: RouteInfo) {
     if (!this.mapAlreadyRendered) return;
@@ -982,8 +977,15 @@ export class ResultComponent implements OnInit, AfterViewInit {
       .getSource()!
       .getFeatures()
       .forEach((feat) => {
-        const idx = feat.get('route_index');
-        feat.setStyle(visibleRoutes.includes(idx) ? undefined : new Style({}));
+        const geom = feat.getGeometry();
+        if (geom?.getType() === 'LineString') {
+          const idx = feat.get('route_index');
+          feat.setStyle(
+            visibleRoutes.includes(idx) ? undefined : new Style({})
+          );
+        } else {
+          feat.setStyle(undefined);
+        }
       });
 
     this.clusterLayer
