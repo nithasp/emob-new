@@ -260,7 +260,8 @@
               >backspace</mat-icon
             >
             <button mat-raised-button color="primary" (click)="openFilter()">
-              Open Filter
+              <mat-icon class="mr-2">filter_alt</mat-icon>
+              <span>Add Filter</span>
             </button>
           </div>
         </mat-chip-listbox>
@@ -400,7 +401,12 @@
 
     <div class="col-md-7">
       <div id="mapResult" class="map" [hidden]="!mapAlreadyRendered"></div>
-      <div id="popupMapResult" class="ol-popup" [ngClass]="{ 'depot-popup': popupContent?.is_depot }" [hidden]="!mapAlreadyRendered">
+      <div
+        id="popupMapResult"
+        class="ol-popup"
+        [ngClass]="{ 'depot-popup': popupContent?.is_depot }"
+        [hidden]="!mapAlreadyRendered"
+      >
         <div
           id="popup-content"
           class="row justify-content-end"
@@ -408,7 +414,7 @@
           *ngIf="popupContent"
         >
           <p
-            class="d-inline-block text-truncate mr-2" 
+            class="d-inline-block text-truncate mr-2"
             *ngIf="popupContent?.route_label"
           >
             <strong>Route Label:</strong> {{ popupContent?.route_label }}
@@ -430,9 +436,11 @@
             *ngIf="popupContent?.name"
           >
             <strong>
-              <span> {{ popupContent.is_depot ? 'DEPOT NAME' : 'ORDER ID'  }}</span>
+              <span>
+                {{ popupContent.is_depot ? "DEPOT NAME" : "ORDER ID" }}</span
+              >
               <span> : </span>
-            </strong> 
+            </strong>
             <span>{{ popupContent["name"] }}</span>
           </p>
           <p
