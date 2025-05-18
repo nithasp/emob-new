@@ -259,7 +259,7 @@
               (click)="clearFilter()"
               >backspace</mat-icon
             >
-            <button mat-raised-button color="primary" (click)="openFilter()">
+            <button mat-raised-button color="primary" (click)="openFilter()" [disabled]="isLoading">
               <mat-icon class="mr-2">filter_alt</mat-icon>
               <span>Add Filter</span>
             </button>

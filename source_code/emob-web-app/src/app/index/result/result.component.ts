@@ -153,6 +153,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   clusterLayer!: VectorLayer;
 
   experiment?: Experiment;
+  isLoading: boolean = true;
 
   constructor(
     private readonly http: HttpClient,
@@ -189,6 +190,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
             this.dataRouteInfo.filterPredicate =
               this.multiFilterPredicate.bind(this);
+
+            this.isLoading = false;
           });
       });
   }
@@ -941,9 +944,46 @@ export class ResultComponent implements OnInit, AfterViewInit {
   openFilter(): void {
     this.ngbModal.open(this.filterModal, {
       size: 'lg',
-      centered: true,
-      modalDialogClass: 'filter-modal',
+      windowClass: 'filter-modal-window',
+      backdrop: false,
+      centered: false,
     });
+    setTimeout(() => this.positionFilterModal(), 0);
+  }
+
+  positionFilterModal() {
+    const dialog = document.querySelector(
+      '.filter-modal-window .modal-dialog'
+    ) as HTMLElement;
+    if (!dialog) return;
+
+    dialog.style.position = 'absolute';
+    dialog.style.margin = '0';
+    dialog.style.transform = 'none';
+
+    if (window.innerWidth >= 768) {
+      const wrapper = document.querySelector(
+        '.filter-button-wrapper'
+      ) as HTMLElement;
+      if (!wrapper) return;
+
+      const wr = wrapper.getBoundingClientRect();
+      const margin = 8;
+
+      const aboveTop = wr.top - dialog.offsetHeight - margin;
+      dialog.style.top = `${aboveTop}px`;
+      dialog.style.left = `${wr.left + 50}px`;
+
+      const rect = dialog.getBoundingClientRect();
+      if (rect.top < 0 || rect.bottom > window.innerHeight) {
+        const belowTop = wr.bottom + margin;
+        dialog.style.top = `${belowTop}px`;
+      }
+    } else {
+      dialog.style.top = '50%';
+      dialog.style.left = '50%';
+      dialog.style.transform = 'translate(-50%, -50%)';
+    }
   }
 
   onAddFilter(modal: NgbModalRef): void {

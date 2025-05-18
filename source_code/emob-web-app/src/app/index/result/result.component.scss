@@ -200,10 +200,11 @@ mat-icon {
 }
 
 ::ng-deep {
-  .filter-modal {
-    .modal-content {
-      max-width: 480px;
-      margin: 0 auto;
+  ngb-modal-window {
+    background: rgba(0, 0, 0, 0.5);
+    .modal-dialog {
+      max-width: 480px !important;
+      width: 100%;
     }
   }
 
