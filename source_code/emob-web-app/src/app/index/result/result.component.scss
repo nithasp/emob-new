@@ -213,10 +213,13 @@ mat-icon {
   /* Replace with your desired color */
 }
 ::ng-deep {
-  .filter-modal {
-    .modal-content {
-      max-width: 480px;
-      margin: 0 auto;
+  ngb-modal-window {
+    background: rgba(0, 0, 0, 0.5);
+    .filter-modal {
+      .modal-content {
+        max-width: 480px;
+        margin: 0 auto;
+      }
     }
   }
 
@@ -228,10 +231,8 @@ mat-icon {
     transition: max-height 0.3s ease-in-out;
 
     &.lines-ellipsis {
-   
       -webkit-line-clamp: 2;
       display: -webkit-box !important;
-   
 
       [role="presentation"] {
         display: block !important;
@@ -251,6 +252,11 @@ mat-icon {
       display: contents;
     }
   }
+  // #popup-content {
+  //   p:last-child {
+  //     margin-bottom: 0px;
+  //   }
+  // }
 }
 
 .filter-item {
@@ -283,13 +289,7 @@ mat-icon {
   margin: 0 4px;
 }
 
-.two-lines-ellipsis {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  -webkit-line-clamp: 2;
-  text-overflow: ellipsis;
-}
+ 
 
 .arrow-dropdown-icon {
   position: absolute;
@@ -307,13 +307,16 @@ mat-icon {
     width: 100%;
     height: 100%;
     margin: 0;
-        transform: translate(-51%, -46%);
- 
+    transform: translate(-51%, -46%);
+
     transition: transform 0.3s;
 
     &.rotate-arrow {
-      transform:  translate(-48%, -54%) rotate(180deg);
+      transform: translate(-48%, -54%) rotate(180deg);
     }
   }
 }
 
+.depot-popup {
+  bottom: 10px;
+}

@@ -32,7 +32,8 @@ export class ConstraintService {
         }
       }
     
-    `
+    `,
+    fetchPolicy: 'network-only',
     }).pipe(
       map(result => result.data.myParameter),
       this.errorHandlingService.handleError
