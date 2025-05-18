@@ -228,10 +228,10 @@ mat-icon {
     transition: max-height 0.3s ease-in-out;
 
     &.lines-ellipsis {
-      -webkit-box-orient: vertical;
+   
       -webkit-line-clamp: 2;
       display: -webkit-box !important;
-      text-overflow: ellipsis;
+   
 
       [role="presentation"] {
         display: block !important;
