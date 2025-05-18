@@ -228,11 +228,14 @@ mat-icon {
     flex-wrap: wrap;
     gap: 8px;
     overflow: hidden;
-    transition: max-height 0.3s ease-in-out;
+    transition: max-height 0.2s ease-in-out;
 
     &.lines-ellipsis {
+      -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
       display: -webkit-box !important;
+      text-overflow: ellipsis !important;
+ 
 
       [role="presentation"] {
         display: block !important;
@@ -289,14 +292,17 @@ mat-icon {
   margin: 0 4px;
 }
 
- 
-
 .arrow-dropdown-icon {
   position: absolute;
   top: 25px;
   right: 15px;
-  font-size: 32px;
 
+  
+
+  button {
+    font-size: 32px; 
+    box-shadow: -5px 3px 1px 4px rgb(255, 255, 255), 0 0 8px 1px rgb(255, 255, 255);
+  }
   mat-icon {
     color: white !important;
     background: none;
@@ -309,7 +315,7 @@ mat-icon {
     margin: 0;
     transform: translate(-51%, -46%);
 
-    transition: transform 0.3s;
+    transition: transform 0.2s;
 
     &.rotate-arrow {
       transform: translate(-48%, -54%) rotate(180deg);

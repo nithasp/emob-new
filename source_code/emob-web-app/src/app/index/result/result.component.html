@@ -345,22 +345,29 @@
                 [disabled]="isLoading"
               >
                 <mat-icon class="mr-2">filter_alt</mat-icon>
-                <span>Add Filter <span *ngIf="activeFilters.length">({{ activeFilters.length }})</span></span>
+                <span
+                  >Add Filter
+                  <span *ngIf="activeFilters.length"
+                    >({{ activeFilters.length }})</span
+                  ></span
+                >
               </button>
             </div>
 
-            <button
-              *ngIf="hasOverflow"
-              mat-raised-button
-              class="bg-custom-primary btn btn-sm mr-3 d-flex align-items-center arrow-dropdown-icon"
-              (click)="toggleOverflow()"
-            >
-              <mat-icon
-                class="icon-custom-primary icon-clear-filter"
-                [class.rotate-arrow]="showAllLines"
-                >arrow_drop_down</mat-icon
+            <div class="arrow-dropdown-icon">
+              <button
+                *ngIf="hasOverflow"
+                mat-raised-button
+                class="bg-custom-primary btn btn-sm mr-3 d-flex align-items-center"
+                (click)="toggleOverflow()"
               >
-            </button>
+                <mat-icon
+                  class="icon-custom-primary icon-clear-filter"
+                  [class.rotate-arrow]="showAllLines"
+                  >arrow_drop_down</mat-icon
+                >
+              </button>
+            </div>
           </mat-chip-listbox>
 
           <div
@@ -380,7 +387,12 @@
               [disabled]="isLoading"
             >
               <mat-icon class="mr-2">filter_alt</mat-icon>
-              <span>Add Filter <span *ngIf="activeFilters.length">({{ activeFilters.length }})</span></span>
+              <span
+                >Add Filter
+                <span *ngIf="activeFilters.length"
+                  >({{ activeFilters.length }})</span
+                ></span
+              >
             </button>
           </div>
         </div>

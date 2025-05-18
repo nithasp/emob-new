@@ -1131,6 +1131,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       chipListbox.style.maxHeight = '';
     }
   }
+ 
 
   toggleOverflow(): void {
     const chipListbox = document.querySelector(
