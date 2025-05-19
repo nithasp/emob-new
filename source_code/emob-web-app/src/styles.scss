@@ -119,12 +119,12 @@ mat-icon {
   position: relative;
 }
 
-.listbox-chip {
-  mat-chip {
+ 
+  .chip-outline {
     background: white !important;
     border: 1px solid #242484 !important;
     transition: 0.2s;
-    .mat-mdc-chip-action-label {
+    .mat-mdc-chip-action-label, span {
       color: #3f51b5 !important;
     }
     mat-icon {
@@ -132,7 +132,7 @@ mat-icon {
     }
     &:hover {
       background: #242484 !important;
-      .mat-mdc-chip-action-label {
+      .mat-mdc-chip-action-label, span {
         color: white !important;
       }
       mat-icon {
@@ -140,7 +140,7 @@ mat-icon {
       }
     }
   }
-}
+ 
 
 @media screen {
   .push-right {

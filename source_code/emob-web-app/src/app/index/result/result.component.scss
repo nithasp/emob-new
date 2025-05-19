@@ -216,10 +216,9 @@ mat-icon {
   ngb-modal-window {
     background: rgba(0, 0, 0, 0.5);
     .filter-modal {
-      .modal-content {
-        max-width: 480px;
-        margin: 0 auto;
-      }
+      max-width: 480px;
+      width: 100%;
+      margin: 0 auto;
     }
   }
 
@@ -235,11 +234,10 @@ mat-icon {
       -webkit-line-clamp: 2;
       display: -webkit-box !important;
       text-overflow: ellipsis !important;
- 
+    }
 
-      [role="presentation"] {
-        display: block !important;
-      }
+    [role="presentation"] {
+      display: block !important;
     }
 
     &[style*="max-height: none"] {
@@ -297,11 +295,10 @@ mat-icon {
   top: 25px;
   right: 15px;
 
-  
-
   button {
-    font-size: 32px; 
-    box-shadow: -5px 3px 1px 4px rgb(255, 255, 255), 0 0 8px 1px rgb(255, 255, 255);
+    font-size: 32px;
+    box-shadow: -5px 3px 1px 4px rgb(255, 255, 255),
+      0 0 8px 1px rgb(255, 255, 255);
   }
   mat-icon {
     color: white !important;
@@ -325,4 +322,14 @@ mat-icon {
 
 .depot-popup {
   bottom: 10px;
+}
+
+.button-add-filter {
+  border-radius: 16px;
+}
+
+.button-expand {
+  border-radius: 16px;
+  max-width: 70px;
+  width: 100%;
 }

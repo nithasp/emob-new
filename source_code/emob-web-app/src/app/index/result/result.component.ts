@@ -213,7 +213,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
     //this.searchControl.valueChanges.subscribe((v) => this.applyFilter(v));
     setTimeout(() => this.checkOverflow(), 0);
   }
-  
 
   filterPredicate(data: RouteInfo, filter: string): boolean {
     if (!filter) return true;
@@ -972,7 +971,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
   openFilter(): void {
     this.ngbModal.open(this.filterModal, {
       size: 'lg',
-      centered: true,
+      backdrop: false,
+      centered: false,
+      windowClass: 'filter-modal-window',
       modalDialogClass: 'filter-modal',
     });
     setTimeout(() => this.positionFilterModal(), 0);
@@ -1116,11 +1117,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const lineHeight = chipHeight + chipMarginBottom;
 
     // Calculate the height of 2 lines (with some tolerance)
-    const maxAllowedHeight = lineHeight * 3 + 3; // Adding 2px tolerance
+    const maxAllowedHeight = lineHeight * 3; // Adding 2px tolerance
 
     // Check if content exceeds 2 lines
     const contentHeight = chipListbox.scrollHeight;
-    this.hasOverflow = contentHeight > maxAllowedHeight;
+    this.hasOverflow = contentHeight  > maxAllowedHeight;
 
     // Apply or remove the ellipsis class based on overflow state
     if (this.hasOverflow && !this.showAllLines) {
@@ -1131,7 +1132,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
       chipListbox.style.maxHeight = '';
     }
   }
- 
 
   toggleOverflow(): void {
     const chipListbox = document.querySelector(

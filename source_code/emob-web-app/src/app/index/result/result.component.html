@@ -343,6 +343,7 @@
                 color="primary"
                 (click)="openFilter()"
                 [disabled]="isLoading"
+                class="button-add-filter"
               >
                 <mat-icon class="mr-2">filter_alt</mat-icon>
                 <span
@@ -353,21 +354,20 @@
                 >
               </button>
             </div>
-
-            <div class="arrow-dropdown-icon">
-              <button
-                *ngIf="hasOverflow"
-                mat-raised-button
-                class="bg-custom-primary btn btn-sm mr-3 d-flex align-items-center"
-                (click)="toggleOverflow()"
+<!-- 
+                        <button
+              *ngIf="hasOverflow"
+              mat-raised-button
+              class="bg-custom-primary btn btn-sm mr-3 d-flex align-items-center arrow-dropdown-icon"
+              (click)="toggleOverflow()"
+            >
+              <mat-icon
+                class="icon-custom-primary icon-clear-filter"
+                [class.rotate-arrow]="showAllLines"
+                >arrow_drop_down</mat-icon
               >
-                <mat-icon
-                  class="icon-custom-primary icon-clear-filter"
-                  [class.rotate-arrow]="showAllLines"
-                  >arrow_drop_down</mat-icon
-                >
-              </button>
-            </div>
+            </button> -->
+
           </mat-chip-listbox>
 
           <div
@@ -385,6 +385,7 @@
               color="primary"
               (click)="openFilter()"
               [disabled]="isLoading"
+              class="button-add-filter"
             >
               <mat-icon class="mr-2">filter_alt</mat-icon>
               <span
@@ -395,6 +396,18 @@
               >
             </button>
           </div>
+
+          <button
+            *ngIf="hasOverflow"
+            (click)="toggleOverflow()"
+            class="chip-outline button-expand"
+            color="primary"
+          >
+            <span class="">
+              {{ showAllLines ? "Less" : "More" }}
+            </span>
+          </button>
+
         </div>
 
         <button (click)="test()">test</button>
