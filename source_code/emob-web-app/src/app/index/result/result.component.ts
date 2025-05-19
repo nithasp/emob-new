@@ -1028,6 +1028,41 @@ export class ResultComponent implements OnInit, AfterViewInit {
     }
     modal.close();
 
+    const buttonNoOverflow = document.querySelector(
+      '.filter-button-wrapper.no-overflow'
+    ) as HTMLElement;
+
+    const chipListbox = document.querySelector('.chipListbox') as HTMLElement;
+    const firstChip = chipListbox.querySelector('mat-chip') as HTMLElement;
+    if (!firstChip) return;
+
+    const chipStyle = window.getComputedStyle(firstChip);
+    const chipHeight = firstChip.offsetHeight;
+    const chipMarginBottom = parseFloat(chipStyle.marginBottom) + 1;
+    const lineHeight = chipHeight + chipMarginBottom;
+
+    const contentHeight2 = chipListbox.offsetHeight;
+    const maxAllowedHeight = lineHeight * 2;
+
+    const contentHeight = chipListbox.scrollHeight;
+
+    console.log('contentHeight => add filter', contentHeight);
+    console.log('contentHeight2 => add filter', contentHeight2);
+    console.log('maxAllowedHeight => add filter', maxAllowedHeight);
+
+    console.log('buttonNoOverflow', buttonNoOverflow);
+
+    if (contentHeight === maxAllowedHeight + 12) {
+      console.log('yesss');
+      buttonNoOverflow.style.display = 'none';
+      this.hasOverflow = false;
+      return;
+    } else {
+      console.log('nmoo');
+    }
+
+    console.log('contentHeight2 => add filter', contentHeight2);
+
     // Check overflow after DOM update
     setTimeout(() => {
       this.checkOverflow();
@@ -1037,7 +1072,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.searchControl.setValue('');
     this.dataRouteInfo.filter = '';
     this.activeFilters = [];
-    this.hasOverflow = false;
+
+    setTimeout(() => {
+      this.checkOverflow();
+      // If we're showing all lines but now don't have overflow, reset the state
+
+      this.showAllLines = false;
+      this.hasOverflow = false;
+    }, 0);
   }
 
   test() {
@@ -1083,16 +1125,16 @@ export class ResultComponent implements OnInit, AfterViewInit {
         criteria: 'equal',
         value: '7',
       },
-      {
-        column: 'route_label',
-        criteria: 'equal',
-        value: '8',
-      },
-      {
-        column: 'route_label',
-        criteria: 'equal',
-        value: '9',
-      },
+      // {
+      //   column: 'route_label',
+      //   criteria: 'equal',
+      //   value: '8',
+      // },
+      // {
+      //   column: 'route_label',
+      //   criteria: 'equal',
+      //   value: '9',
+      // },
     ];
     console.log('this.activeFilters', this.activeFilters);
     setTimeout(() => this.checkOverflow(), 0);
@@ -1106,27 +1148,46 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const chipListbox = document.querySelector('.chipListbox') as HTMLElement;
     if (!chipListbox || !chipListbox.children.length) return;
 
-    // Get the first chip element to measure line height
     const firstChip = chipListbox.querySelector('mat-chip') as HTMLElement;
     if (!firstChip) return;
 
-    // Calculate the height of a single line (including margin)
+    const firstChipAll = chipListbox.querySelectorAll('mat-chip') as any;
+
+    console.log('firstChipAll', firstChipAll);
+    console.log('firstChipAll length', firstChipAll.length);
+    console.log('firstChip', firstChip);
+
     const chipStyle = window.getComputedStyle(firstChip);
     const chipHeight = firstChip.offsetHeight;
-    const chipMarginBottom = parseFloat(chipStyle.marginBottom);
+    const chipMarginBottom = parseFloat(chipStyle.marginBottom) + 1;
     const lineHeight = chipHeight + chipMarginBottom;
 
-    // Calculate the height of 2 lines (with some tolerance)
-    const maxAllowedHeight = lineHeight * 3; // Adding 2px tolerance
+    console.log('chipHeight', chipHeight);
+    console.log('chipMarginBottom', chipMarginBottom);
+    console.log('lineHeight', lineHeight);
 
-    // Check if content exceeds 2 lines
+    const totalItemsHeight = firstChipAll.length * lineHeight;
+    const twoLinesHeight = chipHeight * 2;
+
+    console.log('totalItemsHeight', totalItemsHeight);
+    console.log('twoLinesHeight', twoLinesHeight);
+
+    const maxAllowedHeight = lineHeight * 2;
+
     const contentHeight = chipListbox.scrollHeight;
-    this.hasOverflow = contentHeight  > maxAllowedHeight;
+    const contentHeight2 = chipListbox.offsetHeight;
 
-    // Apply or remove the ellipsis class based on overflow state
+    this.hasOverflow = contentHeight > maxAllowedHeight + 12;
+
+    console.log('maxAllowedHeight', maxAllowedHeight);
+    console.log('contentHeight', contentHeight);
+    console.log('contentHeight2', contentHeight2);
+
+    console.log(' this.hasOverflow', this.hasOverflow);
+
     if (this.hasOverflow && !this.showAllLines) {
       chipListbox.classList.add('lines-ellipsis');
-      chipListbox.style.maxHeight = `${maxAllowedHeight}px`;
+      chipListbox.style.maxHeight = `${maxAllowedHeight + 10}px`;
     } else {
       chipListbox.classList.remove('lines-ellipsis');
       chipListbox.style.maxHeight = '';
@@ -1139,7 +1200,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
     ) as HTMLElement | null;
     if (!chipListbox) return;
 
-    // measure a single chip (for collapsed height)
     const firstChip = chipListbox.querySelector(
       'mat-chip'
     ) as HTMLElement | null;
@@ -1150,30 +1210,28 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const collapsedH = (chipH + chipM) * 2;
 
     if (!this.showAllLines) {
-      // — EXPAND —
+      console.log('c1');
       chipListbox.classList.remove('lines-ellipsis');
-      chipListbox.style.maxHeight = `${chipListbox.scrollHeight + 3}px`;
+      chipListbox.style.maxHeight = `${chipListbox.scrollHeight + 3 + 10}px`;
 
       const onExpand = (e: TransitionEvent) => {
         if (e.propertyName === 'max-height') {
-          chipListbox.style.maxHeight = ''; // allow auto height after open
+          chipListbox.style.maxHeight = '';
           chipListbox.removeEventListener('transitionend', onExpand);
         }
       };
       chipListbox.addEventListener('transitionend', onExpand);
-    } else {
-      // — COLLAPSE —
-      chipListbox.classList.remove('lines-ellipsis'); // allow full height
-      chipListbox.style.maxHeight = `${chipListbox.scrollHeight + 3}px`;
+    } else { console.log('c1');
+      chipListbox.classList.remove('lines-ellipsis');
+      chipListbox.style.maxHeight = `${chipListbox.scrollHeight + 3 + 8}px`;
 
-      // next paint: animate down to 2 lines
       requestAnimationFrame(() => {
-        chipListbox.style.maxHeight = `${collapsedH + 3}px`;
+        chipListbox.style.maxHeight = `${collapsedH + 3 + 8}px`;
       });
 
       const onCollapse = (e: TransitionEvent) => {
         if (e.propertyName === 'max-height') {
-          chipListbox.classList.add('lines-ellipsis'); // re-clamp
+          chipListbox.classList.add('lines-ellipsis');
           chipListbox.removeEventListener('transitionend', onCollapse);
         }
       };

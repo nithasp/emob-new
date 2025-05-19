@@ -193,7 +193,6 @@
               >
                 {{
                   selectedFilterCriteria.replaceAll("_", " ")
-                    | truncate : [15, "..."]
                 }}
               </button>
               <div ngbDropdownMenu class="w-100">
@@ -330,7 +329,9 @@
 
             <div
               *ngIf="!hasOverflow"
-              class="filter-button-wrapper d-inline-block align-items-center mt-1 ms-2"
+              class="filter-button-wrapper no-overflow d-inline-block align-items-center mt-1 ms-2"
+
+               
             >
               <mat-icon
                 *ngIf="activeFilters.length"
@@ -372,7 +373,7 @@
 
           <div
             *ngIf="hasOverflow"
-            class="filter-button-wrapper d-inline-block align-items-center"
+            class="filter-button-wrapper has-overflow d-inline-block align-items-center"
           >
             <mat-icon
               *ngIf="activeFilters.length"
