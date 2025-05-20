@@ -1028,30 +1028,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     }
     modal.close();
 
-    const buttonNoOverflow = document.querySelector(
-      '.filter-button-wrapper.no-overflow'
-    ) as HTMLElement;
-
-    const chipListbox = document.querySelector('.chipListbox') as HTMLElement;
-    const firstChip = chipListbox.querySelector('mat-chip') as HTMLElement;
-    if (!firstChip) return;
-
-    const chipStyle = window.getComputedStyle(firstChip);
-    const chipHeight = firstChip.offsetHeight;
-    const chipMarginBottom = parseFloat(chipStyle.marginBottom) + 1;
-    const lineHeight = chipHeight + chipMarginBottom;
-    const maxAllowedHeight = lineHeight * 2;
-    const contentHeight = chipListbox.scrollHeight;
-
-    if (contentHeight === maxAllowedHeight + 12) {
-      buttonNoOverflow.style.display = 'none';
-      this.hasOverflow = false;
-      return;
-    }
-    
-    setTimeout(() => {
-      this.checkOverflow();
-    }, 0);
+    setTimeout(() => this.checkOverflow(), 0);
   }
 
   clearFilter(): void {
@@ -1068,25 +1045,48 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   checkOverflow() {
     const chipListbox = document.querySelector('.chipListbox') as HTMLElement;
-    if (!chipListbox || !chipListbox.children.length) return;
+    if (!chipListbox) return;
 
-    const firstChip = chipListbox.querySelector('mat-chip') as HTMLElement;
-    if (!firstChip) return;
-
-    const chipStyle = window.getComputedStyle(firstChip);
-    const chipHeight = firstChip.offsetHeight;
-    const chipMarginBottom = parseFloat(chipStyle.marginBottom) + 1;
-    const lineHeight = chipHeight + chipMarginBottom;
-    const maxAllowedHeight = lineHeight * 2;
-    const contentHeight = chipListbox.scrollHeight;
-    this.hasOverflow = contentHeight > maxAllowedHeight + 12;
-
-    if (this.hasOverflow && !this.showAllLines) {
-      chipListbox.classList.add('lines-ellipsis');
-      chipListbox.style.maxHeight = `${maxAllowedHeight + 10}px`;
-    } else {
+    const chips = Array.from(
+      chipListbox.querySelectorAll('mat-chip')
+    ) as HTMLElement[];
+    if (chips.length === 0) {
+      this.hasOverflow = false;
+      this.showAllLines = false;
       chipListbox.classList.remove('lines-ellipsis');
       chipListbox.style.maxHeight = '';
+      return;
+    }
+
+    const rowTops = new Set<number>();
+    chips.forEach((chip) => {
+      const { top } = chip.getBoundingClientRect();
+      rowTops.add(Math.round(top));
+    });
+    const numRows = rowTops.size;
+
+    this.hasOverflow = numRows > 2;
+    if (!this.hasOverflow) {
+      this.showAllLines = false;
+      chipListbox.classList.remove('lines-ellipsis');
+      chipListbox.style.maxHeight = '';
+    } else if (!this.showAllLines) {
+      const containerTop = chipListbox.getBoundingClientRect().top;
+      const sortedChips = chips.sort(
+        (a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top
+      );
+
+      const secondRowTop = Array.from(rowTops).sort((a, b) => a - b)[1];
+      const chipsInSecondRow = sortedChips.filter(
+        (c) => Math.round(c.getBoundingClientRect().top) === secondRowTop
+      );
+      const bottomOfRow2 = Math.max(
+        ...chipsInSecondRow.map((c) => c.getBoundingClientRect().bottom)
+      );
+      const maxH = bottomOfRow2 - containerTop;
+
+      chipListbox.classList.add('lines-ellipsis');
+      chipListbox.style.maxHeight = `${maxH}px`;
     }
   }
 
