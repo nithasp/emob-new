@@ -165,9 +165,8 @@
               <button
                 ngbDropdownToggle
                 class="btn btn-outline-secondary btn-sm text-capitalize d-flex align-items-center justify-content-between w-100 text-black"
-   
               >
-                {{ selectedSearchOption.replaceAll("_", " ")  | truncate : [15, "..."]}}
+                {{ selectedSearchOption.replaceAll("_", " ") }}
               </button>
               <div ngbDropdownMenu class="w-100">
                 <button
@@ -188,9 +187,8 @@
               <button
                 ngbDropdownToggle
                 class="btn btn-outline-secondary btn-sm text-capitalize d-flex align-items-center justify-content-between w-100 text-black"
-             
               >
-                {{ selectedFilterCriteria.replaceAll("_", " ")  | truncate : [15, "..."] }}
+                {{ selectedFilterCriteria.replaceAll("_", " ") }}
               </button>
               <div ngbDropdownMenu class="w-100">
                 <button
@@ -224,46 +222,111 @@
           >
             Add Filter
           </button>
-          <button mat-raised-button (click)="modal.dismiss()">
-            Cancel
-          </button>
+          <button mat-raised-button (click)="modal.dismiss()">Cancel</button>
         </div>
       </ng-template>
 
       <div class="w-100">
-        <mat-chip-listbox
-          aria-label="Applied filters"
-          class="d-flex flex-wrap gap-1 mb-1"
-        >
-          <mat-chip
-            *ngFor="let f of activeFilters"
-            highlighted
-            removable
-            (removed)="removeFilter(f)"
-            class="text-capitalize"
-            color="primary"
-            style="
-              --mdc-chip-elevated-container-color: #3f51b5;
-              --mdc-chip-elevated-text-color: #fff;
-            "
+        <div class="d-flex flex-wrap gap-1">
+          <mat-chip-listbox
+            aria-label="Applied filters"
+            class="d-flex flex-wrap gap-1 mb-1 chipListbox listbox-chip"
+            [class.lines-ellipsis]="hasOverflow"
+            #chipListbox
           >
-            {{ f.column.replaceAll("_", " ") }}
-            {{ f.criteria.replaceAll("_", " ") }}
-            {{ f.value }}
-            <mat-icon matChipRemove class="opacity-100">cancel</mat-icon>
-          </mat-chip>
-          <div class="filter-button-wrapper d-inline-block align-items-center mt-1 ms-2">
-            <mat-icon *ngIf="activeFilters.length" class="icon-custom-primary icon-clear-filter" (click)="clearFilter()">backspace</mat-icon>
-            <button mat-raised-button color="primary" (click)="openFilter()">
-              Open Filter
+            <mat-chip
+              *ngFor="let f of activeFilters"
+              highlighted
+              removable
+              (removed)="removeFilter(f)"
+              class="text-capitalize chip-outline"
+              color="primary"
+            >
+              {{ f.column.replaceAll("_", " ") }}
+              {{ f.criteria.replaceAll("_", " ") }}
+              {{ f.value }}
+              <mat-icon matChipRemove class="opacity-100">cancel</mat-icon>
+            </mat-chip>
+
+            <div
+              *ngIf="!hasOverflow"
+              class="filter-button-wrapper no-overflow d-inline-block align-items-center mt-1 ms-2"
+            >
+              <mat-icon
+                *ngIf="activeFilters.length"
+                class="icon-custom-primary icon-clear-filter"
+                (click)="clearFilter()"
+                ngbTooltip="Clear All"
+                placement="top"
+                >backspace</mat-icon
+              >
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="openFilter()"
+                [disabled]="isLoading"
+                class="button-add-filter"
+              >
+                <mat-icon class="mr-2">filter_alt</mat-icon>
+                <span
+                  >Add Filter
+                  <span *ngIf="activeFilters.length"
+                    >({{ activeFilters.length }})</span
+                  ></span
+                >
+              </button>
+            </div>
+          </mat-chip-listbox>
+
+          <div
+            *ngIf="hasOverflow"
+            class="d-flex align-items-center justify-content-between w-100"
+          >
+            <div
+              class="filter-button-wrapper has-overflow d-inline-block align-items-center"
+            >
+              <mat-icon
+                *ngIf="activeFilters.length"
+                class="icon-custom-primary icon-clear-filter"
+                (click)="clearFilter()"
+                ngbTooltip="Clear All"
+                placement="top"
+                >backspace</mat-icon
+              >
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="openFilter()"
+                [disabled]="isLoading"
+                class="button-add-filter"
+              >
+                <mat-icon class="mr-2">filter_alt</mat-icon>
+                <span
+                  >Add Filter
+                  <span *ngIf="activeFilters.length"
+                    >({{ activeFilters.length }})</span
+                  ></span
+                >
+              </button>
+            </div>
+
+            <button
+              (click)="toggleOverflow()"
+              class="d-flex align-items-center chip-outline button-expand"
+              color="primary"
+            >
+              <mat-icon
+                class="icon-custom-primary arrow-dropdown-icon"
+                [class.rotate-arrow]="showAllLines"
+                >keyboard_arrow_down</mat-icon
+              >
+              <span class="">
+                {{ showAllLines ? "Less" : "More" }}
+              </span>
             </button>
           </div>
-        </mat-chip-listbox>
-
-
-  
+        </div>
       </div>
-
 
       <div
         style="height: 700px; font-size: 11px; padding: 3px; overflow-y: scroll"
@@ -399,7 +462,12 @@
 
     <div class="col-md-7">
       <div id="mapResult" class="map" [hidden]="!mapAlreadyRendered"></div>
-      <div id="popupMapResult" class="ol-popup" [ngClass]="{ 'depot-popup': popupContent?.is_depot }" [hidden]="!mapAlreadyRendered">
+      <div
+        id="popupMapResult"
+        class="ol-popup"
+        [ngClass]="{ 'depot-popup': popupContent?.is_depot }"
+        [hidden]="!mapAlreadyRendered"
+      >
         <div
           id="popup-content"
           class="row justify-content-end"
@@ -407,7 +475,7 @@
           *ngIf="popupContent"
         >
           <p
-            class="d-inline-block text-truncate mr-2" 
+            class="d-inline-block text-truncate mr-2"
             *ngIf="popupContent?.route_label"
           >
             <strong>Route Label:</strong> {{ popupContent?.route_label }}
@@ -429,9 +497,11 @@
             *ngIf="popupContent?.name"
           >
             <strong>
-              <span> {{ popupContent.is_depot ? 'DEPOT NAME' : 'ORDER ID'  }}</span>
+              <span>
+                {{ popupContent.is_depot ? "DEPOT NAME" : "ORDER ID" }}</span
+              >
               <span> : </span>
-            </strong> 
+            </strong>
             <span>{{ popupContent["name"] }}</span>
           </p>
           <p
