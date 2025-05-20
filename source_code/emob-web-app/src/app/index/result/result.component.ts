@@ -790,10 +790,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
       ? JSON.stringify(this.activeFilters)
       : '';
 
-    // Check overflow after DOM update
     setTimeout(() => {
       this.checkOverflow();
-      // If we're showing all lines but now don't have overflow, reset the state
       if (this.showAllLines && !this.hasOverflow) {
         this.showAllLines = false;
       }
@@ -1043,6 +1041,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.searchControl.setValue('');
     this.dataRouteInfo.filter = '';
     this.activeFilters = [];
+    this.applyMapFilter();
 
     setTimeout(() => {
       this.checkOverflow();
