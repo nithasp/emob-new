@@ -1144,38 +1144,98 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.applyMapFilter();
   }
 
-  applyMapFilter() {
-    const visibleRoutes = (this.dataRouteInfo.filteredData as RouteInfo[]).map(
-      (r) => r.route_index
-    );
+  // applyMapFilter() {
+  //   const visibleRoutes = (this.dataRouteInfo.filteredData as RouteInfo[]).map(
+  //     (r) => r.route_index
+  //   );
 
-    this.vectorLayer
-      .getSource()!
-      .getFeatures()
-      .forEach((feat) => {
-        const geom = feat.getGeometry();
-        if (geom?.getType() === 'LineString') {
-          const idx = feat.get('route_index');
-          feat.setStyle(
-            visibleRoutes.includes(idx) ? undefined : new Style({})
-          );
-        } else {
-          feat.setStyle(undefined);
-        }
-      });
+  //   this.vectorLayer
+  //     .getSource()!
+  //     .getFeatures()
+  //     .forEach((feat) => {
+  //       const geom = feat.getGeometry();
+  //       if (geom?.getType() === 'LineString') {
+  //         const idx = feat.get('route_index');
+  //         feat.setStyle(
+  //           visibleRoutes.includes(idx) ? undefined : new Style({})
+  //         );
+  //       } else {
+  //         feat.setStyle(undefined);
+  //       }
+  //     });
 
-    this.clusterLayer
-      .getSource()!
-      .getFeatures()
-      .forEach((clusterFeat) => {
-        const members = clusterFeat.get('features') as FeatureLike[];
-        const idx = members[0]?.get('route_index');
-        clusterFeat.setStyle(
-          idx != null && visibleRoutes.includes(idx) ? undefined : new Style({})
-        );
-      });
+  //   this.clusterLayer
+  //     .getSource()!
+  //     .getFeatures()
+  //     .forEach((clusterFeat) => {
+  //       const members = clusterFeat.get('features') as FeatureLike[];
+  //       const idx = members[0]?.get('route_index');
+  //       clusterFeat.setStyle(
+  //         idx != null && visibleRoutes.includes(idx) ? undefined : new Style({})
+  //       );
+  //     });
 
-    this.vectorLayer.changed();
-    this.clusterLayer.changed();
-  }
+  //   this.vectorLayer.changed();
+  //   this.clusterLayer.changed();
+  // }
+
+ 
+
+applyMapFilter() {
+  const visibleRoutes = (this.dataRouteInfo.filteredData as RouteInfo[])
+    .map(r => r.route_index);
+
+  // 1) Update each LineString to either “highlight” or “dim”
+  this.vectorLayer.getSource()!.getFeatures().forEach(feat => {
+    if (feat.getGeometry()?.getType() === 'LineString') {
+      const idx = feat.get('route_index') as number;
+      if (visibleRoutes.includes(idx)) {
+        // highlight
+        feat.setStyle(new Style({
+          stroke: new Stroke({
+            color: feat.get('color'),
+            width: 6
+          })
+        }));
+      } else {
+        // dim
+        feat.setStyle(this.dimStyle);
+      }
+    }
+  });
+
+  // 2) Update each cluster similarly
+  this.clusterLayer.getSource()!.getFeatures().forEach(clusterFeat => {
+    const members = clusterFeat.get('features') as FeatureLike[];
+    const memberIdx = members[0].get('route_index') as number;
+    const isVisible = visibleRoutes.includes(memberIdx);
+
+    // reuse your cluster styling logic, but force `isHighlighted = true` when visible
+    const circle = new CircleStyle({
+      radius: isVisible ? 15 : 10,
+      fill: new Fill({
+        color: isVisible
+          ? '#ffcc33'
+          : 'rgba(0, 0, 0, 0.1)'
+      }),
+      stroke: new Stroke({
+        color: '#fff',
+        width: 2
+      }),
+    });
+
+    const label = new Text({
+      text: String(members[0].get('route_order') ?? ''),
+      font: '15px Calibri,sans-serif',
+      fill: new Fill({ color: '#fff' })
+    });
+
+    clusterFeat.setStyle(new Style({ image: circle, text: label }));
+  });
+
+  // 3) Tell OpenLayers to re-draw
+  this.vectorLayer.changed();
+  this.clusterLayer.changed();
+}
+
 }
