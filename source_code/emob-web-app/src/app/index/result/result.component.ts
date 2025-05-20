@@ -1185,57 +1185,78 @@ applyMapFilter() {
   const visibleRoutes = (this.dataRouteInfo.filteredData as RouteInfo[])
     .map(r => r.route_index);
 
-  // 1) Update each LineString to either “highlight” or “dim”
+  // 1) If no filter (or everything’s back), clear any per-feature style
+  //    so your original styleFunction/clusterStyleFunction takes over.
+  if (
+    visibleRoutes.length === 0 ||
+    visibleRoutes.length === this.featureCollections.length
+  ) {
+    this.vectorLayer.getSource()!
+      .getFeatures()
+      .forEach(f => f.setStyle(undefined));
+
+    this.clusterLayer.getSource()!
+      .getFeatures()
+      .forEach(c => c.setStyle(undefined));
+
+    this.vectorLayer.changed();
+    this.clusterLayer.changed();
+    return;
+  }
+
+  // 2) Otherwise, loop LineStrings and apply highlight (6px) or dimStyle
   this.vectorLayer.getSource()!.getFeatures().forEach(feat => {
     if (feat.getGeometry()?.getType() === 'LineString') {
       const idx = feat.get('route_index') as number;
-      if (visibleRoutes.includes(idx)) {
-        // highlight
-        feat.setStyle(new Style({
-          stroke: new Stroke({
-            color: feat.get('color'),
-            width: 6
-          })
-        }));
-      } else {
-        // dim
-        feat.setStyle(this.dimStyle);
-      }
+      feat.setStyle(
+        visibleRoutes.includes(idx)
+          ? new Style({
+              stroke: new Stroke({
+                color: feat.get('color'),
+                width: 6,
+              }),
+            })
+          : this.dimStyle
+      );
     }
   });
 
-  // 2) Update each cluster similarly
+  // 3) And for clusters, re-create the exact same CircleStyle logic
+  //    you have in clusterStyleFunction, just using filter-visibility
   this.clusterLayer.getSource()!.getFeatures().forEach(clusterFeat => {
     const members = clusterFeat.get('features') as FeatureLike[];
-    const memberIdx = members[0].get('route_index') as number;
-    const isVisible = visibleRoutes.includes(memberIdx);
+    const first = members[0];
+    const routeIndex = first.get('route_index') as number;
+    const isVisible = visibleRoutes.includes(routeIndex);
 
-    // reuse your cluster styling logic, but force `isHighlighted = true` when visible
-    const circle = new CircleStyle({
-      radius: isVisible ? 15 : 10,
-      fill: new Fill({
-        color: isVisible
-          ? '#ffcc33'
-          : 'rgba(0, 0, 0, 0.1)'
-      }),
-      stroke: new Stroke({
-        color: '#fff',
-        width: 2
-      }),
+    // match clusterStyleFunction’s fill logic:
+    //   visible → yellow & big
+    //   otherwise → dim grey & small
+    const radius = isVisible ? 15 : 10;
+    const fillColor = isVisible
+      ? '#ffcc33'
+      : 'rgba(0, 0, 0, 0.1)';
+
+    const circ = new CircleStyle({
+      radius,
+      fill: new Fill({ color: fillColor }),
+      stroke: new Stroke({ color: '#fff', width: 2 }),
     });
 
-    const label = new Text({
-      text: String(members[0].get('route_order') ?? ''),
+    const lbl = new Text({
+      text: String(first.get('route_order') ?? ''),
       font: '15px Calibri,sans-serif',
-      fill: new Fill({ color: '#fff' })
+      fill: new Fill({ color: '#fff' }),
     });
 
-    clusterFeat.setStyle(new Style({ image: circle, text: label }));
+    clusterFeat.setStyle(new Style({ image: circ, text: lbl }));
   });
 
-  // 3) Tell OpenLayers to re-draw
+  // 4) Finally trigger a repaint
   this.vectorLayer.changed();
   this.clusterLayer.changed();
 }
+
+
 
 }
