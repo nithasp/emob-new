@@ -424,15 +424,23 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const clusterSource = new Cluster({
       distance: 40,
       source: new VectorSource({
-        features: allFeatures.filter(
-          (feature) => feature.getGeometry()!.getType() === 'Point'
-        ),
+        features: allFeatures.filter((feature) => {
+          if (feature.getGeometry() && feature.getGeometry()!.getType()) {
+            return feature.getGeometry()!.getType() === 'Point';
+          } else {
+            return false;
+          }
+        }),
       }),
     });
     const vectorSource = new VectorSource({
-      features: allFeatures.filter(
-        (feature) => feature.getGeometry()!.getType() !== 'Point'
-      ),
+      features: allFeatures.filter((feature) => {
+        if (feature.getGeometry() && feature.getGeometry()!.getType()) {
+          return feature.getGeometry()!.getType() !== 'Point';
+        } else {
+          return false;
+        }
+      }),
     });
     console.log(clusterSource);
     const clusterLayer = new VectorLayer({
