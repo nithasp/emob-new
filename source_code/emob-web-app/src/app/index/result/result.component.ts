@@ -677,7 +677,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
     });
     modalRef.componentInstance.featureCollection = featureCollection;
     modalRef.componentInstance.featureDepots = featureDepots;
-    
   }
 
   styleFunction(feature: FeatureLike): Style | Style[] {
@@ -863,6 +862,10 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.dataRouteInfo.filter = this.activeFilters.length
       ? JSON.stringify(this.activeFilters)
       : '';
+
+    if (this.activeFilters.length === 0) {
+      this.resetRouteMapUi();
+    }
 
     setTimeout(() => {
       this.checkOverflow();
@@ -1117,11 +1120,31 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.activeFilters = [];
     this.applyMapFilter();
 
+    if (this.activeFilters.length === 0) {
+      this.resetRouteMapUi();
+    }
+
     setTimeout(() => {
       this.checkOverflow();
       this.showAllLines = false;
       this.hasOverflow = false;
     }, 0);
+  }
+
+  resetRouteMapUi(): void {
+    // Clear the current highlight
+    this.highlightedFeatureCollectionId = null;
+
+    // Grab your vector and cluster layers by index
+    const vectorLayer = this.map.getLayers().item(1) as VectorLayer;
+    const clusterLayer = this.map.getLayers().item(2) as VectorLayer;
+
+    // Tell OL that the source changed so it re-runs your style functions
+    vectorLayer.getSource()?.changed();
+    clusterLayer.getSource()?.changed();
+
+    this.popUp?.setPosition(undefined);
+    this.popupContent = undefined;
   }
 
   checkOverflow() {
