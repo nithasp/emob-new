@@ -676,7 +676,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         if (this.highlightedFeatureCollectionId === routeIndex) {
           return new Style({
             stroke: new Stroke({
-              color: color,
+              color: '#04948c',
               width: 6,
             }),
           });
@@ -717,7 +717,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         radius: isHighlighted ? 15 : 10,
         fill: new Fill({
           color: isHighlighted
-            ? '#ffcc33'
+            ? '#242484'
             : this.highlightedFeatureCollectionId !== null
             ? 'rgba(0, 0, 0, 0.1)'
             : color,
@@ -1144,119 +1144,77 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.applyMapFilter();
   }
 
-  // applyMapFilter() {
-  //   const visibleRoutes = (this.dataRouteInfo.filteredData as RouteInfo[]).map(
-  //     (r) => r.route_index
-  //   );
+  applyMapFilter() {
+    const visibleRoutes = (this.dataRouteInfo.filteredData as RouteInfo[]).map(
+      (r) => r.route_index
+    );
 
-  //   this.vectorLayer
-  //     .getSource()!
-  //     .getFeatures()
-  //     .forEach((feat) => {
-  //       const geom = feat.getGeometry();
-  //       if (geom?.getType() === 'LineString') {
-  //         const idx = feat.get('route_index');
-  //         feat.setStyle(
-  //           visibleRoutes.includes(idx) ? undefined : new Style({})
-  //         );
-  //       } else {
-  //         feat.setStyle(undefined);
-  //       }
-  //     });
+    if (
+      visibleRoutes.length === 0 ||
+      visibleRoutes.length === this.featureCollections.length
+    ) {
+      this.vectorLayer
+        .getSource()!
+        .getFeatures()
+        .forEach((f) => f.setStyle(undefined));
 
-  //   this.clusterLayer
-  //     .getSource()!
-  //     .getFeatures()
-  //     .forEach((clusterFeat) => {
-  //       const members = clusterFeat.get('features') as FeatureLike[];
-  //       const idx = members[0]?.get('route_index');
-  //       clusterFeat.setStyle(
-  //         idx != null && visibleRoutes.includes(idx) ? undefined : new Style({})
-  //       );
-  //     });
+      this.clusterLayer
+        .getSource()!
+        .getFeatures()
+        .forEach((c) => c.setStyle(undefined));
 
-  //   this.vectorLayer.changed();
-  //   this.clusterLayer.changed();
-  // }
+      this.vectorLayer.changed();
+      this.clusterLayer.changed();
+      return;
+    }
 
- 
-
-applyMapFilter() {
-  const visibleRoutes = (this.dataRouteInfo.filteredData as RouteInfo[])
-    .map(r => r.route_index);
-
-  // 1) If no filter (or everything’s back), clear any per-feature style
-  //    so your original styleFunction/clusterStyleFunction takes over.
-  if (
-    visibleRoutes.length === 0 ||
-    visibleRoutes.length === this.featureCollections.length
-  ) {
-    this.vectorLayer.getSource()!
+    this.vectorLayer
+      .getSource()!
       .getFeatures()
-      .forEach(f => f.setStyle(undefined));
+      .forEach((feat) => {
+        if (feat.getGeometry()?.getType() === 'LineString') {
+          const idx = feat.get('route_index') as number;
+          feat.setStyle(
+            visibleRoutes.includes(idx)
+              ? new Style({
+                  stroke: new Stroke({
+                    color: feat.get('color'),
+                    width: 6,
+                  }),
+                })
+              : this.dimStyle
+          );
+        }
+      });
 
-    this.clusterLayer.getSource()!
+    this.clusterLayer
+      .getSource()!
       .getFeatures()
-      .forEach(c => c.setStyle(undefined));
+      .forEach((clusterFeat) => {
+        const members = clusterFeat.get('features') as FeatureLike[];
+        const first = members[0];
+        const routeIndex = first.get('route_index') as number;
+        const isVisible = visibleRoutes.includes(routeIndex);
+
+        const radius = isVisible ? 15 : 10;
+        const fillColor = isVisible ? '#ffcc33' : 'rgba(0, 0, 0, 0.1)';
+
+        const circ = new CircleStyle({
+          radius,
+          fill: new Fill({ color: fillColor }),
+          stroke: new Stroke({ color: '#fff', width: 2 }),
+        });
+
+        const lbl = new Text({
+          text: String(first.get('route_order') ?? ''),
+          font: '15px Calibri,sans-serif',
+          fill: new Fill({ color: '#fff' }),
+        });
+
+        clusterFeat.setStyle(new Style({ image: circ, text: lbl }));
+      });
 
     this.vectorLayer.changed();
     this.clusterLayer.changed();
-    return;
   }
-
-  // 2) Otherwise, loop LineStrings and apply highlight (6px) or dimStyle
-  this.vectorLayer.getSource()!.getFeatures().forEach(feat => {
-    if (feat.getGeometry()?.getType() === 'LineString') {
-      const idx = feat.get('route_index') as number;
-      feat.setStyle(
-        visibleRoutes.includes(idx)
-          ? new Style({
-              stroke: new Stroke({
-                color: feat.get('color'),
-                width: 6,
-              }),
-            })
-          : this.dimStyle
-      );
-    }
-  });
-
-  // 3) And for clusters, re-create the exact same CircleStyle logic
-  //    you have in clusterStyleFunction, just using filter-visibility
-  this.clusterLayer.getSource()!.getFeatures().forEach(clusterFeat => {
-    const members = clusterFeat.get('features') as FeatureLike[];
-    const first = members[0];
-    const routeIndex = first.get('route_index') as number;
-    const isVisible = visibleRoutes.includes(routeIndex);
-
-    // match clusterStyleFunction’s fill logic:
-    //   visible → yellow & big
-    //   otherwise → dim grey & small
-    const radius = isVisible ? 15 : 10;
-    const fillColor = isVisible
-      ? '#ffcc33'
-      : 'rgba(0, 0, 0, 0.1)';
-
-    const circ = new CircleStyle({
-      radius,
-      fill: new Fill({ color: fillColor }),
-      stroke: new Stroke({ color: '#fff', width: 2 }),
-    });
-
-    const lbl = new Text({
-      text: String(first.get('route_order') ?? ''),
-      font: '15px Calibri,sans-serif',
-      fill: new Fill({ color: '#fff' }),
-    });
-
-    clusterFeat.setStyle(new Style({ image: circ, text: lbl }));
-  });
-
-  // 4) Finally trigger a repaint
-  this.vectorLayer.changed();
-  this.clusterLayer.changed();
-}
-
-
-
 }
