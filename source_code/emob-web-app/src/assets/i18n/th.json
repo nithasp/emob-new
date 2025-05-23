@@ -2,5 +2,7 @@
   "save": "บันทึก Global",
   "experiments": "การทดลอง",
   "configurations": "การตั้งค่า",
-  "logout": "ออกจากระบบ"
+  "logout": "ออกจากระบบ",
+  "filter": "ตัวกรอง",
+  "reloading": "กำลังโหลด"
 }

@@ -1,3 +1,20 @@
 {
-    "save": "Save index"
+  "save": "Save index",
+  "new_experiment": "New",
+
+  "search_columns": "Search Columns",
+  "refresh": "Refresh",
+  "edit_columns": "Edit Columns",
+  "name": "Name",
+  "timestamp": "TimeStamp",
+  "run_start": "Run Start",
+  "run_end": "Run End",
+  "duration": "Duration",
+  "triggered_by": "Triggered By",
+  "status": "Status",
+  "run": "Run",
+  "parameter": "Parameter",
+  "run_id": "Run ID",
+    "group_id": "Group ID",
+    "no_records_found": "No records found"
 }

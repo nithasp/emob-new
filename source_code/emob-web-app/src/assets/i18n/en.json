@@ -1,6 +1,8 @@
 {
-    "save": "Save Global",
-    "experiments": "Experiments",
-    "configurations": "Configurations",
-    "logout": "Logout"
+  "save": "Save Global",
+  "experiments": "Experiments",
+  "configurations": "Configurations",
+  "logout": "Logout",
+  "filter": "Filter",
+  "reloading": "Reloading"
 }

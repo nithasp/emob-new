@@ -1,3 +1,20 @@
 {
-    "save": "บันทึก index"
+  "save": "บันทึก index",
+  "new_experiment": "เพิ่มการทดลอง",
+
+  "search_columns": "ค้นหาคอลัมน์",
+  "refresh": "รีเฟรช",
+  "edit_columns": "แก้ไขคอลัมน์",
+  "name": "ชื่อ",
+  "timestamp": "เวลาประทับ",
+  "run_start": "เริ่มการทำงาน",
+  "run_end": "สิ้นสุดการทำงาน",
+  "duration": "ระยะเวลา",
+  "triggered_by": "ถูกกระตุ้นโดย",
+  "status": "สถานะ",
+  "run": "เรียกใช้งาน",
+  "parameter": "พารามิเตอร์",
+  "run_id": "ID Run",
+  "group_id": "ID กลุ่ม",
+  "no_records_found": "ไม่พบข้อมูล"
 }

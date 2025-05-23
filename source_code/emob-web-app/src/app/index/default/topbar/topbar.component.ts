@@ -64,9 +64,6 @@ export class TopbarComponent implements OnInit {
     return this.activeRoute === route;
   }
 
-  get nextLang(): 'en' | 'th' {
-    return this.transloco.getActiveLang() === 'en' ? 'th' : 'en';
-  }
   toggleLang(lang: 'en' | 'th') {
     this.currentLang = lang;
     this.transloco.setActiveLang(lang);
