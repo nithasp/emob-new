@@ -2,6 +2,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import {
   AfterViewInit,
   Component,
+  HostListener,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -112,6 +113,9 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
   dataSource = new MatTableDataSource<Experiment>([]);
   selection = new SelectionModel<Experiment>(false);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  pollingTimer: ReturnType<typeof setInterval> | null = null;
+
   constructor(
     private readonly experimentService: ExperimentService,
     private readonly constraintService: ConstraintService,
@@ -121,6 +125,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     private readonly toastr: ToastrService,
     private readonly userMsGraphService: UserMSGraphService
   ) {}
+  
   ngOnInit(): void {
     this.spinner.show();
     this.loadData();
@@ -129,9 +134,14 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
-    this.interval = setInterval(() => {
-      this.loadData();
-    }, 45000); // 30 seconds
+
+    if (!document.hidden) {
+      this.startPolling();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.stopPolling();
   }
 
   loadData(): void {
@@ -148,9 +158,25 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       },
     });
   }
-  ngOnDestroy(): void {
-    if (this.interval) {
-      clearInterval(this.interval);
+
+  @HostListener('document:visibilitychange')
+  onVisibilityChange() {
+    if (document.hidden) {
+      this.stopPolling();
+    } else {
+      this.startPolling();
+    }
+  }
+
+  startPolling() {
+    this.stopPolling();
+    this.pollingTimer = setInterval(() => this.loadData(), 45000);
+  }
+
+  stopPolling() {
+    if (this.pollingTimer) {
+      clearInterval(this.pollingTimer);
+      this.pollingTimer = null;
     }
   }
 

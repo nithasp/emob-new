@@ -72,6 +72,7 @@ tr.example-element-row:not(.example-expanded-row):active {
   width: 100%;
   overflow: auto;
 }
+
 .table th,
 .table td {
   white-space: nowrap;
@@ -81,10 +82,12 @@ tr.example-element-row:not(.example-expanded-row):active {
   font-size: 11px;
   padding-left: 5px;
 }
+
 .table td {
   padding-right: 5px;
   text-align: right;
 }
+
 .table thead th {
   position: sticky;
   top: 0;
@@ -92,6 +95,7 @@ tr.example-element-row:not(.example-expanded-row):active {
   background-color: #0e145f;
   color: white;
 }
+
 tr:nth-child(even) {
   background-color: #d6eeee;
 }
@@ -136,32 +140,39 @@ mat-icon {
   left: 48px;
   margin-left: -11px;
 }
+
 .ol-popup-closer {
   text-decoration: none;
   position: absolute;
   top: 2px;
   right: 8px;
 }
+
 .ol-popup-closer:after {
   content: "✖";
   cursor: pointer;
 }
 
 .input-group-text-custom {
-  width: 140px; /* Set your desired width */
-  text-align: left; /* Optional: Center the text */
-  display: inline-block; /* Ensure it behaves like an inline element */
+  width: 140px;
+  /* Set your desired width */
+  text-align: left;
+  /* Optional: Center the text */
+  display: inline-block;
+  /* Ensure it behaves like an inline element */
   font-weight: bolder;
 }
 
 .text-wrap {
   white-space: normal;
-  width: 100px; /* Adjust the width as needed */
+  width: 100px;
+  /* Adjust the width as needed */
   word-wrap: break-word;
 }
 
 .arrow {
-  font-size: 15px; /* Adjust size as needed */
+  font-size: 15px;
+  /* Adjust size as needed */
 }
 
 .text {
@@ -170,9 +181,11 @@ mat-icon {
 }
 
 .hover-row:hover {
-  background-color: #f5f5f5; /* Change this to your desired hover color */
+  background-color: #f5f5f5;
+  /* Change this to your desired hover color */
   // cursor: pointer; /* Optional: change cursor to pointer */
 }
+
 .container-preview {
   text-align: center;
   padding: 20px;
@@ -196,16 +209,54 @@ mat-icon {
 
 .custom-spinner .mat-progress-spinner circle,
 .custom-spinner .mat-spinner circle {
-  stroke: #242484 !important; /* Replace with your desired color */
+  stroke: #242484 !important;
+  /* Replace with your desired color */
 }
-
 ::ng-deep {
-  .filter-modal {
-    .modal-content {
+  ngb-modal-window {
+    background: rgba(0, 0, 0, 0.5);
+    .filter-modal {
       max-width: 480px;
+      width: 100%;
       margin: 0 auto;
     }
   }
+
+  mat-chip-listbox {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    overflow: hidden;
+    transition: max-height 0.2s ease-in-out;
+
+    &.lines-ellipsis {
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+
+    [role="presentation"] {
+      display: block !important;
+    }
+
+    &[style*="max-height: none"] {
+      -webkit-line-clamp: initial;
+      max-height: none !important;
+    }
+
+    mat-chip {
+      margin-bottom: 8px;
+    }
+
+    .chip-row {
+      display: contents;
+    }
+  }
+  // #popup-content {
+  //   p:last-child {
+  //     margin-bottom: 0px;
+  //   }
+  // }
 }
 
 .filter-item {
@@ -213,6 +264,7 @@ mat-icon {
   grid-template-columns: 100px 1fr;
   align-items: center;
   margin-bottom: 12px;
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -220,6 +272,7 @@ mat-icon {
 
 .search-control {
   border-color: #6c757d;
+
   &::placeholder {
     font-size: 14px;
   }
@@ -234,4 +287,36 @@ mat-icon {
 .icon-clear-filter {
   cursor: pointer;
   margin: 0 4px;
+}
+
+.arrow-dropdown-icon {
+  &.rotate-arrow {
+    transform: rotate(180deg);
+  }
+}
+
+.chip-outline.button-expand {
+  border: none !important;
+  outline: none !important;
+  &:hover {
+    background: unset !important;
+    span {
+      color: #3f51b5 !important;
+    }
+    mat-icon {
+      color: #3f51b5 !important;
+    }
+  }
+}
+
+.depot-popup {
+  bottom: 10px;
+}
+
+.button-add-filter {
+  border-radius: 16px;
+}
+
+.button-expand {
+  border-radius: 16px;
 }

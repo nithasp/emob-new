@@ -3,6 +3,8 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  HostListener,
   OnInit,
   signal,
   TemplateRef,
@@ -46,6 +48,7 @@ import {
   MouseWheelZoom,
 } from 'ol/interaction';
 import Tile from 'ol/Tile';
+import TileState from 'ol/TileState';
 import ImageTile from 'ol/ImageTile';
 import { Cluster, Vector, XYZ } from 'ol/source';
 import CircleStyle from 'ol/style/Circle';
@@ -86,7 +89,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
     value: string;
   }> = [];
 
-  // Map related variables
   public map!: Map;
   public iconStyle?: Style;
   allFiles: File[] = [];
@@ -99,11 +101,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
   public mapAlreadyRendered: boolean = false;
   readonly panelOpenState = signal(false);
 
-  // report
   headersReport: string[] = [];
   dataSourceReport: any[] = [];
 
-  // Mat Table related variables
   dataRouteInfo = new MatTableDataSource<RouteInfo>([]);
   searchControl = new FormControl();
   showFilterPanel = false;
@@ -151,9 +151,16 @@ export class ResultComponent implements OnInit, AfterViewInit {
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('filterModal', { static: true })
   filterModal!: TemplateRef<any>;
+  vectorLayer!: VectorLayer;
+  clusterLayer!: VectorLayer;
+
+  @ViewChild('chipListbox') chipListbox!: ElementRef<HTMLElement>;
+  hasOverflow = false;
+  showAllLines = false;
 
   // data store
   experiment?: Experiment;
+  isLoading: boolean = true;
 
   constructor(
     private readonly http: HttpClient,
@@ -163,7 +170,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     private readonly experimentService: ExperimentService,
     private readonly configurationService: ConfigurationService,
     private readonly toastr: ToastrService,
-    private readonly router: Router,
+    private readonly router: Router
   ) {
     this.spinner.show();
 
@@ -174,6 +181,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
       }),
     });
   }
+
+  @HostListener('window:resize')
+  onWindowResize() {
+    this.checkOverflow();
+  }
+
   ngOnInit(): void {
     this.route.params
       .pipe(take(1))
@@ -190,12 +203,15 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
             this.dataRouteInfo.filterPredicate =
               this.multiFilterPredicate.bind(this);
+
+            this.isLoading = false;
           });
       });
   }
 
   ngAfterViewInit(): void {
     //this.searchControl.valueChanges.subscribe((v) => this.applyFilter(v));
+    setTimeout(() => this.checkOverflow(), 0);
   }
 
   filterPredicate(data: RouteInfo, filter: string): boolean {
@@ -295,11 +311,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
             cell.value !== null ? String(cell.value) : `Column ${colNumber}`;
         });
       if (options === 0) this.headersReport = headers;
-      // if(options === 1){
-      //   this.columnsToDisplay = headers;
-      //   this.columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
-
-      // }
 
       worksheet.eachRow((row: any, rowIndex: any) => {
         if (rowIndex === 1) return;
@@ -374,23 +385,28 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   private async loadAndProcessGeoJSON(url: string): Promise<void> {
     const geoJson = await this.dataFromFileUrlToJson(url);
-    this.featureCollections = geoJson.routes;
+    this.featureCollections = geoJson.routes.map(
+      (rc: { features: { properties: { route_index: number } }[] }) => ({
+        ...rc,
+        route_index: rc.features[0]?.properties?.route_index,
+      })
+    );
     this.featureDepots = geoJson.depots;
     console.log(geoJson);
-    //mapping routes to features
+
     const allFeatures: Feature<Geometry>[] = [];
     geoJson.routes.forEach((item: any, index_: number) => {
       const itemFeatures = new GeoJSON().readFeatures(item, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
       });
-      // Reduce coordinates in LineString features by 50%
+
       const reducedItemFeatures = itemFeatures.map((feature, index, arr) => {
         const geometry = feature.getGeometry();
         if (geometry?.getType() === 'LineString') {
           const lineString = geometry as LineString;
           const coordinates = lineString.getCoordinates();
-          const reducedCoordinates = coordinates.filter((_, i) => i % 10 === 0); // Keep every other coordinate
+          const reducedCoordinates = coordinates.filter((_, i) => i % 10 === 0);
           console.log(
             index_,
             'Original coordinates:',
@@ -405,19 +421,26 @@ export class ResultComponent implements OnInit, AfterViewInit {
       allFeatures.push(...reducedItemFeatures);
     });
 
-    // Create a cluster source for point features
     const clusterSource = new Cluster({
       distance: 40,
       source: new VectorSource({
-        features: allFeatures.filter(
-          (feature) => feature.getGeometry()!.getType() === 'Point'
-        ),
+        features: allFeatures.filter((feature) => {
+          if (feature.getGeometry() && feature.getGeometry()!.getType()) {
+            return feature.getGeometry()!.getType() === 'Point';
+          } else {
+            return false;
+          }
+        }),
       }),
     });
     const vectorSource = new VectorSource({
-      features: allFeatures.filter(
-        (feature) => feature.getGeometry()!.getType() !== 'Point'
-      ),
+      features: allFeatures.filter((feature) => {
+        if (feature.getGeometry() && feature.getGeometry()!.getType()) {
+          return feature.getGeometry()!.getType() !== 'Point';
+        } else {
+          return false;
+        }
+      }),
     });
     console.log(clusterSource);
     const clusterLayer = new VectorLayer({
@@ -425,7 +448,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
       style: this.clusterStyleFunction.bind(this),
     });
 
-    // mapping depots for features
     const depotFeatures: Feature<Geometry>[] = [];
     geoJson.depots.forEach((depot: any) => {
       const itemFeatures = new GeoJSON().readFeatures(depot, {
@@ -459,64 +481,63 @@ export class ResultComponent implements OnInit, AfterViewInit {
     return jsonData;
   }
 
-  private initMap(clusterLayer: VectorLayer, vectorSource: VectorSource) {
-    const vectorLayer = new VectorLayer({
+  private initMap(clusterLayer: VectorLayer, vectorSource: VectorSource): void {
+    this.vectorLayer = new VectorLayer({
       source: vectorSource,
       style: this.styleFunction.bind(this),
       updateWhileInteracting: true,
       updateWhileAnimating: true,
     });
+
+    this.clusterLayer = new VectorLayer({
+      source: clusterLayer.getSource() || undefined,
+      style: this.clusterStyleFunction.bind(this),
+    });
+
     const tileLoadFunction = (tile: Tile, src: string) => {
       if (tile instanceof ImageTile) {
-        const imageTile = tile.getImage() as HTMLImageElement;
-        const abortController = new AbortController();
-        const { signal } = abortController;
+        const imageEl = tile.getImage() as HTMLImageElement;
+        const controller = new AbortController();
+        const { signal } = controller;
 
         fetch(src, { signal })
-          .then((response) => response.blob())
+          .then((res) => res.blob())
           .then((blob) => {
-            imageTile.src = URL.createObjectURL(blob);
+            imageEl.src = URL.createObjectURL(blob);
           })
-          .catch((error) => {
-            if (error.name === 'AbortError') {
-              console.log('Tile request aborted:', src);
-            } else {
-              console.error('Tile load error:', error);
-            }
+          .catch((err) => {
+            if (err.name !== 'AbortError')
+              console.error('Tile load error', err);
           });
 
-        // Abort the fetch request if the tile is no longer needed
-        tile.setState(3); // 3 corresponds to TileState.LOADED
+        tile.setState(TileState.LOADED);
       }
     };
-    const attribution = new Attribution({
-      collapsible: true,
-    });
-    console.log(this.allFiles);
+
+    const attribution = new Attribution({ collapsible: true });
+
     this.map = new Map({
+      target: 'mapResult',
       layers: [
         new TileLayer({
           source: new XYZ({
             url: 'https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
             attributions:
-              '&copy;<a href="https://carto.com" target="_blank"> CARTO</a>' +
-              '&copy;<a href="http://openmaptiles.org/" target="_blank"> OpenMapTiles</a>' +
-              '&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank"> OpenStreetMap contributors</a>' +
-              '&copy;<a href="http://map.project-osrm.org" target="_blank"> Project OSRM contributors</a>',
+              '&copy;<a href="https://carto.com">CARTO</a>' +
+              '&copy;<a href="https://www.openstreetmap.org">OSM</a>',
             crossOrigin: 'anonymous',
             cacheSize: 500000,
-            tileLoadFunction: tileLoadFunction,
+            tileLoadFunction,
           }),
         }),
-        vectorLayer,
-        clusterLayer,
+        this.vectorLayer,
+        this.clusterLayer,
       ],
-      target: 'mapResult',
       view: new View({
         center: OlProj.fromLonLat([100.53139488523458, 13.786463255129673]),
         zoom: 10,
-        maxZoom: 17,
         minZoom: 10,
+        maxZoom: 17,
       }),
       controls: defaultControls({ attribution: false }).extend([
         new ZoomSlider(),
@@ -528,6 +549,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         new MouseWheelZoom(),
       ]),
     });
+
     this.map.on('pointermove', this.handlePointerMove.bind(this));
     this.map.on('pointermove', (event) => this.pointMove(event));
     this.map.on('click', this.handleClick.bind(this));
@@ -536,7 +558,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const element = document.getElementById('popupMapResult')!;
     this.popUp = new Overlay({
       element: element,
-      offset: [0, -20],
+      offset: [0, -30],
     });
     this.map.addOverlay(this.popUp);
   }
@@ -552,7 +574,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
     if (feature) {
       const geometry = feature.getGeometry();
       if (geometry instanceof LineString) {
-        // Get the closest point on the LineString to the event's pixel location
         coordinates = geometry.getClosestPoint(
           this.map.getCoordinateFromPixel(event.pixel)
         );
@@ -560,7 +581,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
       } else if (geometry instanceof Point) {
         coordinates = geometry.getCoordinates();
       } else {
-        // Handle other geometry types if needed
         coordinates = [];
       }
       this.popUp?.setPosition(coordinates);
@@ -588,40 +608,22 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const clusterLayer = this.map.getLayers()?.item(2) as VectorLayer;
     clusterLayer.getSource()?.changed();
   }
-  handleClick(event: any): void {
-    let depotStartId: number | null = null;
-    let depotEndId: number | null = null;
 
-    const feature = this.map.forEachFeatureAtPixel(
-      event.pixel,
-      (feature) => feature
-    );
-    if (feature && feature.getGeometry()?.getType() === 'LineString') {
-      const routeIndex = feature.getProperties()['route_index'];
-      depotStartId = feature.getProperties()['start_depot_id'];
-      depotEndId = feature.getProperties()['end_depot_id'];
-      const featureCollection = this.featureCollections.find(
-        (collection: any) => {
-          return collection.features.some((f: any) => {
-            return f.properties.route_index === routeIndex;
-          });
-        }
-      );
-      const featureDepots: any[] = [];
-      if (this.featureDepots.length === 1) {
-        featureDepots.push(this.featureDepots[0]);
-      }
-      {
-        const matchingDepots = this.featureDepots.filter((depot: any) =>
-          [depotStartId, depotEndId].includes(depot.properties.depot_id)
-        );
-        featureDepots.push(...matchingDepots);
-      }
-      if (featureCollection) {
-        this.openModal(featureCollection, featureDepots);
-      }
+  handleClick(event: any): void {
+    const feature = this.map.forEachFeatureAtPixel(event.pixel, (feat) => feat);
+    if (!feature || feature.getGeometry()?.getType() !== 'LineString') {
+      return;
     }
+
+    const routeIndex = feature.getProperties()['route_index'];
+    if (routeIndex == null) {
+      console.error('Clicked LineString has no route_index');
+      return;
+    }
+
+    this.openRouteDetails(routeIndex);
   }
+
   private pointMove(evt: any): void {
     const target = this.map.getTargetElement();
     const pixel = this.map.getEventPixel(evt.originalEvent);
@@ -702,15 +704,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
       this.highlightedFeatureCollectionId
     );
 
-    // Aggregate properties from individual features
     const colors = features.map((f: FeatureLike) => f.getProperties()['color']);
     const texts = features.map(
       (f: FeatureLike) => f.getProperties()['route_order']
     );
 
-    // Create an array of styles for each feature
-
-    const color = colors[0] || '#3399CC'; // Default color if not specified
+    const color = colors[0] || '#3399CC';
     const text = texts[0] || '';
 
     return new Style({
@@ -721,7 +720,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
             ? '#ffcc33'
             : this.highlightedFeatureCollectionId !== null
             ? 'rgba(0, 0, 0, 0.1)'
-            : color, // Highlight color if part of highlighted FeatureCollection
+            : color,
         }),
         stroke: new Stroke({
           color: '#fff',
@@ -778,27 +777,26 @@ export class ResultComponent implements OnInit, AfterViewInit {
       value: raw,
     });
 
-    // clear the input
     this.searchControl.setValue('');
 
-    // re-apply the table filter
     this.dataRouteInfo.filter = JSON.stringify(this.activeFilters);
+
+    setTimeout(() => this.checkOverflow(), 0);
   }
 
   removeFilter(filt: { column: string; criteria: string; value: string }) {
-    // remove this filter
     this.activeFilters = this.activeFilters.filter((x) => x !== filt);
-
-    // if you want to reset your dropdowns back to the first items when everything is cleared:
-    if (!this.activeFilters.length) {
-      this.selectedSearchOption = this.columnsToDisplay[0];
-      this.selectedFilterCriteria = this.filterCriteriaToDisplay[0];
-    }
-
-    // update the table filter
     this.dataRouteInfo.filter = this.activeFilters.length
       ? JSON.stringify(this.activeFilters)
       : '';
+
+    setTimeout(() => {
+      this.checkOverflow();
+      if (this.showAllLines && !this.hasOverflow) {
+        this.showAllLines = false;
+      }
+    }, 0);
+    this.applyMapFilter();
   }
 
   multiFilterPredicate(data: RouteInfo, filter: string): boolean {
@@ -810,7 +808,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
     }
     const filters = JSON.parse(filter) as F[];
 
-    // OR across all chips
     return filters.some((f) =>
       this.evaluateFilter(
         f.column,
@@ -820,11 +817,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
       )
     );
   }
- 
 
   setSearchOption(value: string) {
     this.selectedSearchOption = value;
-    //this.clearFilter();
   }
 
   setSelectedFilterCriteria(value: string) {
@@ -841,18 +836,17 @@ export class ResultComponent implements OnInit, AfterViewInit {
         if (feature.properties.route_index === routeIndex) {
           depotStartId = feature.properties.start_depot_id;
           depotEndId = feature.properties.end_depot_id;
-          return true;
+          return collection.route_index === routeIndex;
         }
         return false;
       });
     });
 
     if (!collection) {
-      console.error(
-        `No feature collection found for route index ${routeIndex}`
-      );
+      console.error(`No route found for index ${routeIndex}`);
       return;
     }
+
     const featureDepots: any[] = [];
     if (this.featureDepots.length === 1) {
       featureDepots.push(this.featureDepots[0]);
@@ -863,14 +857,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
       );
       featureDepots.push(...matchingDepots);
     }
-
     if (!featureDepots) {
       console.error(
         `No depot found with depot_id ${depotStartId} : ${depotEndId}`
       );
       return;
     }
-    console.log(featureDepots, collection);
+
+    console.log('featureDepots:', featureDepots);
 
     this.openModal(collection, featureDepots);
   }
@@ -878,6 +872,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   onMouseEnter(row: RouteInfo) {
     if (!this.mapAlreadyRendered) return;
     console.log('Mouse entered row:', row);
+
     this.highlightedFeatureCollectionId = row.route_index;
     const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
     vectorLayer.getSource()?.changed();
@@ -966,11 +961,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
               const link = document.createElement('a');
               link.href = window.URL.createObjectURL(blob);
               link.download = fileName;
-              link.target = '_blank'; // Open in a new window
+              link.target = '_blank';
               link.click();
               this.spinner.hide();
               this.toastr.success('Success to download plan', 'Download Plan');
-              window.URL.revokeObjectURL(link.href); // Clean up
+              window.URL.revokeObjectURL(link.href);
             } else {
               console.error('Download failed: Blob is null');
               this.spinner.hide();
@@ -982,9 +977,47 @@ export class ResultComponent implements OnInit, AfterViewInit {
   openFilter(): void {
     this.ngbModal.open(this.filterModal, {
       size: 'lg',
-      centered: true,
-      modalDialogClass: 'filter-modal'
+      backdrop: false,
+      centered: false,
+      windowClass: 'filter-modal-window',
+      modalDialogClass: 'filter-modal',
     });
+    setTimeout(() => this.positionFilterModal(), 0);
+  }
+
+  positionFilterModal() {
+    const dialog = document.querySelector(
+      '.filter-modal-window .modal-dialog'
+    ) as HTMLElement;
+    if (!dialog) return;
+
+    dialog.style.position = 'absolute';
+    dialog.style.margin = '0';
+    dialog.style.transform = 'none';
+
+    if (window.innerWidth >= 768) {
+      const wrapper = document.querySelector(
+        '.filter-button-wrapper'
+      ) as HTMLElement;
+      if (!wrapper) return;
+
+      const wr = wrapper.getBoundingClientRect();
+      const margin = 8;
+
+      const aboveTop = wr.top - dialog.offsetHeight - margin;
+      dialog.style.top = `${aboveTop}px`;
+      dialog.style.left = `${wr.left + 50}px`;
+
+      const rect = dialog.getBoundingClientRect();
+      if (rect.top < 0 || rect.bottom > window.innerHeight) {
+        const belowTop = wr.bottom + margin;
+        dialog.style.top = `${belowTop}px`;
+      }
+    } else {
+      dialog.style.top = '50%';
+      dialog.style.left = '50%';
+      dialog.style.transform = 'translate(-50%, -50%)';
+    }
   }
 
   onAddFilter(modal: NgbModalRef): void {
@@ -997,13 +1030,152 @@ export class ResultComponent implements OnInit, AfterViewInit {
       });
       this.dataRouteInfo.filter = JSON.stringify(this.activeFilters);
       this.searchControl.setValue('');
+      this.applyMapFilter();
     }
     modal.close();
+
+    setTimeout(() => this.checkOverflow(), 0);
   }
 
   clearFilter(): void {
     this.searchControl.setValue('');
     this.dataRouteInfo.filter = '';
     this.activeFilters = [];
+    this.applyMapFilter();
+
+    setTimeout(() => {
+      this.checkOverflow();
+      this.showAllLines = false;
+      this.hasOverflow = false;
+    }, 0);
+  }
+
+  checkOverflow() {
+    const chipListbox = document.querySelector('.chipListbox') as HTMLElement;
+    if (!chipListbox) return;
+
+    const chips = Array.from(
+      chipListbox.querySelectorAll('mat-chip')
+    ) as HTMLElement[];
+    if (chips.length === 0) {
+      this.hasOverflow = false;
+      this.showAllLines = false;
+      chipListbox.classList.remove('lines-ellipsis');
+      chipListbox.style.maxHeight = '';
+      return;
+    }
+
+    const rowTops = new Set<number>();
+    chips.forEach((chip) => {
+      const { top } = chip.getBoundingClientRect();
+      rowTops.add(Math.round(top));
+    });
+    const numRows = rowTops.size;
+
+    this.hasOverflow = numRows > 2;
+    if (!this.hasOverflow) {
+      this.showAllLines = false;
+      chipListbox.classList.remove('lines-ellipsis');
+      chipListbox.style.maxHeight = '';
+    } else if (!this.showAllLines) {
+      const containerTop = chipListbox.getBoundingClientRect().top;
+      const sortedChips = chips.sort(
+        (a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top
+      );
+
+      const secondRowTop = Array.from(rowTops).sort((a, b) => a - b)[1];
+      const chipsInSecondRow = sortedChips.filter(
+        (c) => Math.round(c.getBoundingClientRect().top) === secondRowTop
+      );
+      const bottomOfRow2 = Math.max(
+        ...chipsInSecondRow.map((c) => c.getBoundingClientRect().bottom)
+      );
+      const maxH = bottomOfRow2 - containerTop;
+
+      chipListbox.classList.add('lines-ellipsis');
+      chipListbox.style.maxHeight = `${maxH}px`;
+    }
+  }
+
+  toggleOverflow(): void {
+    const chipListbox = document.querySelector(
+      '.chipListbox'
+    ) as HTMLElement | null;
+    if (!chipListbox) return;
+
+    const firstChip = chipListbox.querySelector(
+      'mat-chip'
+    ) as HTMLElement | null;
+    if (!firstChip) return;
+    const cs = window.getComputedStyle(firstChip);
+    const chipH = firstChip.offsetHeight;
+    const chipM = parseFloat(cs.marginBottom);
+    const collapsedH = (chipH + chipM) * 2;
+
+    if (!this.showAllLines) {
+      chipListbox.classList.remove('lines-ellipsis');
+      chipListbox.style.maxHeight = `${chipListbox.scrollHeight + 3 + 10}px`;
+
+      const onExpand = (e: TransitionEvent) => {
+        if (e.propertyName === 'max-height') {
+          chipListbox.style.maxHeight = '';
+          chipListbox.removeEventListener('transitionend', onExpand);
+        }
+      };
+      chipListbox.addEventListener('transitionend', onExpand);
+    } else {
+      chipListbox.classList.remove('lines-ellipsis');
+      chipListbox.style.maxHeight = `${chipListbox.scrollHeight + 3 + 8}px`;
+
+      requestAnimationFrame(() => {
+        chipListbox.style.maxHeight = `${collapsedH + 3 + 8}px`;
+      });
+
+      const onCollapse = (e: TransitionEvent) => {
+        if (e.propertyName === 'max-height') {
+          chipListbox.classList.add('lines-ellipsis');
+          chipListbox.removeEventListener('transitionend', onCollapse);
+        }
+      };
+      chipListbox.addEventListener('transitionend', onCollapse);
+    }
+
+    this.showAllLines = !this.showAllLines;
+    this.applyMapFilter();
+  }
+
+  applyMapFilter() {
+    const visibleRoutes = (this.dataRouteInfo.filteredData as RouteInfo[]).map(
+      (r) => r.route_index
+    );
+
+    this.vectorLayer
+      .getSource()!
+      .getFeatures()
+      .forEach((feat) => {
+        const geom = feat.getGeometry();
+        if (geom?.getType() === 'LineString') {
+          const idx = feat.get('route_index');
+          feat.setStyle(
+            visibleRoutes.includes(idx) ? undefined : new Style({})
+          );
+        } else {
+          feat.setStyle(undefined);
+        }
+      });
+
+    this.clusterLayer
+      .getSource()!
+      .getFeatures()
+      .forEach((clusterFeat) => {
+        const members = clusterFeat.get('features') as FeatureLike[];
+        const idx = members[0]?.get('route_index');
+        clusterFeat.setStyle(
+          idx != null && visibleRoutes.includes(idx) ? undefined : new Style({})
+        );
+      });
+
+    this.vectorLayer.changed();
+    this.clusterLayer.changed();
   }
 }
