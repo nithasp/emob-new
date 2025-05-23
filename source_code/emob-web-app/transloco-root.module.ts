@@ -1,27 +1,40 @@
 import { NgModule } from '@angular/core';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
 import {
+  DefaultFallbackStrategy,
+  DefaultInterceptor,
+  DefaultMissingHandler,
+  DefaultTranspiler,
   TRANSLOCO_CONFIG,
+  TRANSLOCO_FALLBACK_STRATEGY,
+  TRANSLOCO_INTERCEPTOR,
   TRANSLOCO_LOADER,
+  TRANSLOCO_MISSING_HANDLER,
+  TRANSLOCO_TRANSPILER,
   TranslocoModule,
-  translocoConfig
+  translocoConfig,
 } from '@jsverse/transloco';
 import { TranslocoHttpLoader } from './transloco-loader';
+import { environment } from 'src/environments/environment';
 
 @NgModule({
-  imports: [HttpClientModule, TranslocoModule],
+  exports: [TranslocoModule],
   providers: [
     {
       provide: TRANSLOCO_CONFIG,
       useValue: translocoConfig({
-        availableLangs: ['en'],
+        availableLangs: ['en', 'th'],
         defaultLang: 'en',
         fallbackLang: 'en',
         reRenderOnLangChange: true,
-        prodMode: false
-      })
+        prodMode: environment.production,
+      }),
     },
-    { provide: TRANSLOCO_LOADER, useClass: TranslocoHttpLoader }
-  ]
+    { provide: TRANSLOCO_LOADER, useClass: TranslocoHttpLoader },
+    // ← **this line fixes** the “No provider for TRANSLOCO_TRANSPILER” error:
+    { provide: TRANSLOCO_TRANSPILER, useClass: DefaultTranspiler },
+    { provide: TRANSLOCO_MISSING_HANDLER, useClass: DefaultMissingHandler },
+    { provide: TRANSLOCO_INTERCEPTOR, useClass: DefaultInterceptor },
+    { provide: TRANSLOCO_FALLBACK_STRATEGY, useClass: DefaultFallbackStrategy },
+  ],
 })
 export class TranslocoRootModule {}

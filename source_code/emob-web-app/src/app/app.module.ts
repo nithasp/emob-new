@@ -38,24 +38,7 @@ import { RoleGuard } from './guards/role.guard';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 import { RouterModule } from '@angular/router';
 import { environment } from 'src/environments/environment';
-
-import { HttpClientModule } from '@angular/common/http';
-import {
-  TranslocoModule,
-  TRANSLOCO_CONFIG,
-  translocoConfig,
-  TRANSLOCO_LOADER,
-  TRANSLOCO_TRANSPILER,
-  DefaultTranspiler,
-  TRANSLOCO_MISSING_HANDLER,
-  DefaultMissingHandler,
-  TRANSLOCO_INTERCEPTOR,
-  DefaultInterceptor,
-  TRANSLOCO_FALLBACK_STRATEGY,
-  DefaultFallbackStrategy,
-} from '@jsverse/transloco';
-
-import { TranslocoHttpLoader } from 'transloco-loader';
+import { TranslocoRootModule } from 'transloco-root.module';
 
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication(msalConfig);
@@ -116,10 +99,7 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
       maxOpened: 5,
     }),
     MsalModule,
-
-    HttpClientModule,
-
-    TranslocoModule,
+    TranslocoRootModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   bootstrap: [AppComponent, MsalRedirectComponent],
@@ -147,22 +127,6 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
     MsalService,
     MsalBroadcastService,
     RoleGuard,
-    {
-      provide: TRANSLOCO_CONFIG,
-      useValue: translocoConfig({
-        availableLangs: ['en', 'th'],
-        defaultLang: 'en',
-        fallbackLang: 'en',
-        reRenderOnLangChange: true,
-        prodMode: environment.production,
-      }),
-    },
-    { provide: TRANSLOCO_LOADER, useClass: TranslocoHttpLoader },
-    // ← **this line fixes** the “No provider for TRANSLOCO_TRANSPILER” error:
-    { provide: TRANSLOCO_TRANSPILER, useClass: DefaultTranspiler },
-    { provide: TRANSLOCO_MISSING_HANDLER, useClass: DefaultMissingHandler },
-    { provide: TRANSLOCO_INTERCEPTOR, useClass: DefaultInterceptor },
-    { provide: TRANSLOCO_FALLBACK_STRATEGY, useClass: DefaultFallbackStrategy },
   ],
 })
 export class AppModule {}
