@@ -1,3 +1,6 @@
 {
-    "save": "Save Global"
+    "save": "Save Global",
+    "experiments": "Experiments",
+    "configurations": "Configurations",
+    "logout": "Logout"
 }

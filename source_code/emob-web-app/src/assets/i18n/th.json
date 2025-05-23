@@ -1,3 +1,6 @@
 {
-    "save": "บันทึก Global"
+  "save": "บันทึก Global",
+  "experiments": "การทดลอง",
+  "configurations": "การตั้งค่า",
+  "logout": "ออกจากระบบ"
 }

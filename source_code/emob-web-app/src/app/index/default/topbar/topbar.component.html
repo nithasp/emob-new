@@ -32,7 +32,7 @@
           class="nav-link"
           [routerLink]="['/users/experiments']"
           routerLinkActive
-          >Experiments</a
+          >{{ 'experiments' | transloco }}</a
         >
       </li>
       <li
@@ -44,12 +44,12 @@
           class="nav-link"
           [routerLink]="['/users/configurations']"
           routerLinkActive
-          >Configurations</a
+          >{{ 'configurations' | transloco }}</a
         >
       </li>
     </ul>
     <ul class="navbar-nav ml-auto nav-flex-icons">
-      <div class="d-flex align-items-center">
+      <div class="d-flex align-items-center mr-1">
         <span
           class="lang"
           (click)="toggleLang('en')"
@@ -89,14 +89,14 @@
           aria-labelledby="navbarDropdown"
         >
           <button
-            class="dropdown-item btn btn-block"
+            class="dropdown-item btn btn-block m-lg-2"
             style="font-size: 12px; padding: 2px"
             disabled
           >
             version : {{ version }}
           </button>
           <button class="dropdown-item btn btn-block" (click)="logout()">
-            <mat-icon>logout</mat-icon> Logout
+            <mat-icon>logout</mat-icon> {{ 'logout' | transloco }}
           </button>
         </div>
       </li>
