@@ -15,6 +15,10 @@
   "run": "Run",
   "parameter": "Parameter",
   "run_id": "Run ID",
-    "group_id": "Group ID",
-    "no_records_found": "No records found"
+  "group_id": "Group ID",
+  "no_records_found": "No records found",
+
+  "consumption": "Consumption",
+  "count_geocoding": "countGeocoding",
+  "count_reroute": "countReroute"
 }

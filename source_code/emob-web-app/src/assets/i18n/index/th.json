@@ -16,5 +16,9 @@
   "parameter": "พารามิเตอร์",
   "run_id": "ID Run",
   "group_id": "ID กลุ่ม",
-  "no_records_found": "ไม่พบข้อมูล"
+  "no_records_found": "ไม่พบข้อมูล",
+
+  "consumption": "การบริโภค",
+  "count_geocoding": "จำนวนการแปลงพิกัด",
+  "count_reroute": "จำนวนการเปลี่ยนเส้นทาง"
 }

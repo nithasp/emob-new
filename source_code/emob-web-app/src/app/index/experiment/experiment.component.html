@@ -54,7 +54,7 @@
           <input
             matInput
             (keyup)="applyFilter($event)"
-            placeholder="Search Columns"
+            [placeholder]="t('search_columns')"
             #input
           />
         </mat-form-field>
