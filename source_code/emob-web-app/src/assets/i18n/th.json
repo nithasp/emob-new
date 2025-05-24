@@ -6,5 +6,14 @@
   "reloading": "กำลังโหลด",
   "hours": "ชั่วโมง",
   "minutes": "นาที",
-  "not_set": "ไม่ได้ตั้งค่า"
+  "not_set": "ไม่ได้ตั้งค่า",
+
+  "paginator": {
+    "items_per_page": "จำนวนรายการต่อหน้า",
+    "of": "จากทั้งหมด",
+    "next_page": "ถัดไป",
+    "previous_page": "ก่อนหน้า",
+    "first_page": "หน้าแรก",
+    "last_page": "หน้าสุดท้าย"
+  }
 }

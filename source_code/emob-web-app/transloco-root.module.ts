@@ -15,6 +15,8 @@ import {
 } from '@jsverse/transloco';
 import { TranslocoHttpLoader } from './transloco-loader';
 import { environment } from 'src/environments/environment';
+import { MatPaginatorIntl } from '@angular/material/paginator';
+import { TranslocoPaginatorIntl } from './transloco-paginator-intl';
 
 @NgModule({
   exports: [TranslocoModule],
@@ -35,6 +37,7 @@ import { environment } from 'src/environments/environment';
     { provide: TRANSLOCO_MISSING_HANDLER, useClass: DefaultMissingHandler },
     { provide: TRANSLOCO_INTERCEPTOR, useClass: DefaultInterceptor },
     { provide: TRANSLOCO_FALLBACK_STRATEGY, useClass: DefaultFallbackStrategy },
+    { provide: MatPaginatorIntl, useClass: TranslocoPaginatorIntl },
   ],
 })
 export class TranslocoRootModule {}
