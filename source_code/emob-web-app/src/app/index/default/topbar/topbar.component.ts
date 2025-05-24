@@ -20,8 +20,6 @@ export class TopbarComponent implements OnInit {
   @Input() public userADprofile?: UserADProfile;
   public activeRoute: string;
   version: string = version;
-  
-  currentLang: string = 'en';
 
   constructor(
     private readonly router: Router,
@@ -64,8 +62,11 @@ export class TopbarComponent implements OnInit {
     return this.activeRoute === route;
   }
 
+  get currentLang(): string {
+    return this.transloco.getActiveLang();
+  }
+
   toggleLang(lang: 'en' | 'th') {
-    this.currentLang = lang;
     this.transloco.setActiveLang(lang);
   }
 }

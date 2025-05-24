@@ -1,5 +1,4 @@
 {
-  "save": "Save index",
   "new_experiment": "New",
 
   "search_columns": "Search Columns",
@@ -20,5 +19,16 @@
 
   "consumption": "Consumption",
   "count_geocoding": "countGeocoding",
-  "count_reroute": "countReroute"
+  "count_reroute": "countReroute",
+
+  "generals": "Generals",
+  "early_delivery_time_is": "Early delivery Time is",
+  "back_to_depot_time_is": "Back to depot time is",
+  "maximum_work_duration_is": "Maximum work duration is",
+  "vehicle": "Vehicle",
+  "number_of_vehicle_available_is_set_to": "Number of vehicle available is set to",
+  "vehicle_order_size_capacity_is": "Vehicle order-size capacity is",
+  "maximum_travel_distance_is": "Maximum travel distance is",
+  "customer": "Customer",
+  "service_time_is": "Service time is"
 }

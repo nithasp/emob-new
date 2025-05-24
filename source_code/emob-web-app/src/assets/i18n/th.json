@@ -1,8 +1,10 @@
 {
-  "save": "บันทึก Global",
   "experiments": "การทดลอง",
   "configurations": "การตั้งค่า",
   "logout": "ออกจากระบบ",
   "filter": "ตัวกรอง",
-  "reloading": "กำลังโหลด"
+  "reloading": "กำลังโหลด",
+  "hours": "ชั่วโมง",
+  "minutes": "นาที",
+  "not_set": "ไม่ได้ตั้งค่า"
 }

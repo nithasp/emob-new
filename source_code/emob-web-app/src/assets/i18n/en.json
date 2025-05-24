@@ -1,8 +1,10 @@
 {
-  "save": "Save Global",
   "experiments": "Experiments",
   "configurations": "Configurations",
   "logout": "Logout",
   "filter": "Filter",
-  "reloading": "Reloading"
+  "reloading": "Reloading",
+  "hours": "Hours",
+  "minutes": "Minutes",
+  "not_set": "Not set"
 }

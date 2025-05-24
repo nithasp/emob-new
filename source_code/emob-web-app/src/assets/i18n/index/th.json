@@ -1,5 +1,4 @@
 {
-  "save": "บันทึก index",
   "new_experiment": "เพิ่มการทดลอง",
 
   "search_columns": "ค้นหาคอลัมน์",
@@ -18,7 +17,19 @@
   "group_id": "ID กลุ่ม",
   "no_records_found": "ไม่พบข้อมูล",
 
+
   "consumption": "การบริโภค",
   "count_geocoding": "จำนวนการแปลงพิกัด",
-  "count_reroute": "จำนวนการเปลี่ยนเส้นทาง"
+  "count_reroute": "จำนวนการเปลี่ยนเส้นทาง",
+
+  "generals": "ข้อมูลทั่วไป",
+  "early_delivery_time_is": "เวลาส่งสินค้าล่วงหน้าคือ",
+  "back_to_depot_time_is": "เวลากลับไปยังศูนย์คือ",
+  "maximum_work_duration_is": "ระยะเวลาทำงานสูงสุดคือ",
+  "vehicle": "ยานพาหนะ",
+  "number_of_vehicle_available_is_set_to": "จำนวนยานพาหนะที่มีอยู่ถูกตั้งไว้ที่",
+  "vehicle_order_size_capacity_is": "ความจุของการสั่งซื้อต่อคันคือ",
+  "maximum_travel_distance_is": "ระยะทางเดินทางสูงสุดคือ",
+  "customer": "ลูกค้า",
+  "service_time_is": "เวลาการให้บริการคือ"
 }
