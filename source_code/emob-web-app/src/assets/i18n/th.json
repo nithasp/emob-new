@@ -15,5 +15,16 @@
     "previous_page": "ก่อนหน้า",
     "first_page": "หน้าแรก",
     "last_page": "หน้าสุดท้าย"
-  }
+  },
+
+  "wait_a_moment": "โปรดรอสักครู่",
+  "update": "อัปเดต",
+  "update_file": "อัปเดตไฟล์",
+  "download": "ดาวน์โหลด",
+  "select_file_to_preview": "เลือกไฟล์เพื่อแสดงตัวอย่าง",
+  "loading_data": "กำลังโหลดข้อมูล",
+  "search": "ค้นหา",
+  "search_three_dots": "ค้นหา ...",
+  "confirm": "ยืนยัน",
+  "cancel": "ยกเลิก"
 }

@@ -39,10 +39,7 @@ import { ParametersDialogComponent } from './components/parameters-dialog/parame
 import { ConsumptionDialogComponent } from './components/consumption-dialog/consumption-dialog.component';
 import { ErrorDialogComponent } from './components/error-dialog/error-dialog.component';
 
-import {
-  TranslocoModule,
-  TRANSLOCO_SCOPE
-} from '@jsverse/transloco';
+import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
 
 @NgModule({
   declarations: [
@@ -86,16 +83,9 @@ import {
     NgbTooltipModule,
     OverlayModule,
     DragDropModule,
-
-  
-    TranslocoModule,
+    TranslocoModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    providers: [
-    {
-      provide: TRANSLOCO_SCOPE,
-      useValue: 'index'   
-    }
-  ]
+  providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'index' }],
 })
 export class IndexModule {}

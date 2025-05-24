@@ -31,5 +31,24 @@
   "vehicle_order_size_capacity_is": "Vehicle order-size capacity is",
   "maximum_travel_distance_is": "Maximum travel distance is",
   "customer": "Customer",
-  "service_time_is": "Service time is"
+  "service_time_is": "Service time is",
+
+  "create_experiment_confirmation": "Create Experiment Confirmation",
+  "create_experiment_message": "Do you want to create a new experiment?",
+  "retry_experiment": "Retry experiment",
+  "retry_experiment_confirmation": "Confirm to retry experiment",
+  "retry_experiment_message": "Are you sure to retry experiment ?",
+  "rerun_experiment": "Try to Rerun experiment",
+  "rerun_experiment_confirmation": "Confirm to try to Rerun experiment",
+  "rerun_experiment_message": "Are you sure to try to rerun experiment ?",
+  "cancel_experiment": "Cancel experiment",
+  "cancel_experiment_confirmation": "Confirm to cancel experiment",
+  "cancel_experiment_message": "Are you sure to cancel experiment ?",
+  "cannot_open_experiment": "cannot open Experiment",
+  "cannot_open_experiment_not_creator": "You cannot open an experiment that you did not create",
+  "cannot_open_experiment_not_succeeded": "You cannot open an experiment that is not succeeded",
+  "rerun_experiment_title": "Rerun Experiment",
+  "file_uploaded_successfully": "File uploaded successfully",
+  "success_to_download_plan": "Success to download plan",
+  "download_plan": "Download Plan"
 }

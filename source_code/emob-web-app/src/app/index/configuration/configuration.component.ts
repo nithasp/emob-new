@@ -12,6 +12,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { UploadFileComponent } from './upload-file/upload-file.component';
 import { firstValueFrom } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-configuration',
@@ -44,18 +45,18 @@ export class ConfigurationComponent implements OnInit {
     private readonly configurationService: ConfigurationService,
     private readonly spinner: NgxSpinnerService,
     private readonly ngbModal: NgbModal,
-    private readonly toastr: ToastrService
+    private readonly toastr: ToastrService,
+    private transloco: TranslocoService
   ) {}
 
   ngOnInit(): void {
     this.loadDataConfiguration();
   }
-  // Limit the number of rows displayed
 
+  // Limit the number of rows displayed
   private loadDataConfiguration() {
     this.spinner.show();
     this.configurationService.getConfigurations().subscribe((data) => {
-  
       this.configurationAllData.configurations = data.configurations;
       this.configurationAllData.actualLocations = data.actualLocations;
       const configurationCategory: Categories[] = [];
@@ -118,7 +119,9 @@ export class ConfigurationComponent implements OnInit {
       });
       this.configurationsExplorer = configurationCategory;
       console.log(this.configurationsExplorer);
-      this.dataSource = this.configurationsExplorer.filter(item => item.name !== 'actualLocation');
+      this.dataSource = this.configurationsExplorer.filter(
+        (item) => item.name !== 'actualLocation'
+      );
       this.spinner.hide();
     });
   }
@@ -247,8 +250,6 @@ export class ConfigurationComponent implements OnInit {
     console.log('openUploadFile', category, name, type);
     console.log('name', name);
 
-
-
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -269,8 +270,9 @@ export class ConfigurationComponent implements OnInit {
     dialogRef.componentInstance.type = type;
     dialogRef.componentInstance.name = name;
     if (type === 'configuration') {
-      const cfg: any = this.configurationAllData.configurations
-        .find(c => c.name === name);
+      const cfg: any = this.configurationAllData.configurations.find(
+        (c) => c.name === name
+      );
       dialogRef.componentInstance.headersColumns = cfg?.columns ?? [];
     }
 
@@ -293,7 +295,10 @@ export class ConfigurationComponent implements OnInit {
         .subscribe((response) => {
           console.log(response);
           this.loadDataConfiguration();
-          this.toastr.success('File uploaded successfully', 'Actual Location');
+          this.toastr.success(
+            this.transloco.translate('file_uploaded_successfully', {}, 'index'),
+            'Actual Location'
+          );
           this.hiddenSpinner();
         });
     } else if (type === 'configuration') {
@@ -308,7 +313,11 @@ export class ConfigurationComponent implements OnInit {
             console.log(response);
             this.loadDataConfiguration();
             this.toastr.success(
-              'File uploaded successfully',
+              this.transloco.translate(
+                'file_uploaded_successfully',
+                {},
+                'index'
+              ),
               configuration.category
             );
             this.hiddenSpinner();
@@ -336,7 +345,10 @@ export class ConfigurationComponent implements OnInit {
         link.target = '_blank'; // Open in a new window
         link.click();
         this.spinner.hide();
-        this.toastr.success('Success to download plan', 'Download Plan');
+        this.toastr.success(
+          this.transloco.translate('success_to_download_plan', {}, 'index'),
+          this.transloco.translate('download_plan', {}, 'index')
+        );
         window.URL.revokeObjectURL(link.href); // Clean up
       } else {
         console.error('Download failed: Blob is null');

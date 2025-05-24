@@ -15,5 +15,16 @@
     "previous_page": "Previous page",
     "first_page": "First page",
     "last_page": "Last page"
-  }
+  },
+
+  "wait_a_moment": "Wait a moment",
+  "update": "Update",
+  "update_file": "Update File",
+  "download": "Download",
+  "select_file_to_preview": "Select a file to preview it",
+  "loading_data": "Loading data",
+  "search": "Search",
+  "search_three_dots": "Search ...",
+  "confirm": "Confirm",
+  "cancel": "Cancel"
 }

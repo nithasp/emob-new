@@ -18,7 +18,6 @@
   "group_id": "ID กลุ่ม",
   "no_records_found": "ไม่พบข้อมูล",
 
-
   "consumption": "การบริโภค",
   "count_geocoding": "จำนวนการแปลงพิกัด",
   "count_reroute": "จำนวนการเปลี่ยนเส้นทาง",
@@ -32,5 +31,24 @@
   "vehicle_order_size_capacity_is": "ความจุของการสั่งซื้อต่อคันคือ",
   "maximum_travel_distance_is": "ระยะทางเดินทางสูงสุดคือ",
   "customer": "ลูกค้า",
-  "service_time_is": "เวลาการให้บริการคือ"
+  "service_time_is": "เวลาการให้บริการคือ",
+
+  "create_experiment_confirmation": "ยืนยันการสร้างการทดลอง",
+  "create_experiment_message": "คุณต้องการสร้างการทดลองใหม่หรือไม่?",
+  "retry_experiment": "ลองใหม่อีกครั้ง",
+  "retry_experiment_confirmation": "ยืนยันการลองใหม่อีกครั้ง",
+  "retry_experiment_message": "คุณแน่ใจหรือไม่ว่าต้องการลองใหม่อีกครั้ง?",
+  "rerun_experiment": "ลองเรียกใช้งานอีกครั้ง",
+  "rerun_experiment_confirmation": "ยืนยันการลองเรียกใช้งานอีกครั้ง",
+  "rerun_experiment_message": "คุณแน่ใจหรือไม่ว่าต้องการลองเรียกใช้งานอีกครั้ง?",
+  "cancel_experiment": "ยกเลิกการทดลอง",
+  "cancel_experiment_confirmation": "ยืนยันการยกเลิกการทดลอง",
+  "cancel_experiment_message": "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการทดลอง?",
+  "cannot_open_experiment": "ไม่สามารถเปิดการทดลองได้",
+  "cannot_open_experiment_not_creator": "คุณไม่สามารถเปิดการทดลองที่คุณไม่ได้สร้างได้",
+  "cannot_open_experiment_not_succeeded": "คุณไม่สามารถเปิดการทดลองที่ไม่สำเร็จได้",
+  "rerun_experiment_title": "เรียกใช้งานการทดลองอีกครั้ง",
+  "file_uploaded_successfully": "อัปโหลดไฟล์สำเร็จ",
+  "success_to_download_plan": "ดาวน์โหลดแผนสำเร็จ",
+  "download_plan": "ดาวน์โหลดแผน"
 }

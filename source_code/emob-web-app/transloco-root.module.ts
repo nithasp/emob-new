@@ -28,8 +28,8 @@ import { TranslocoPaginatorIntl } from './transloco-paginator-intl';
         defaultLang: 'en',
         fallbackLang: 'en',
         reRenderOnLangChange: true,
-        prodMode: environment.production,
-      }),
+        prodMode: environment.production
+      })
     },
     { provide: TRANSLOCO_LOADER, useClass: TranslocoHttpLoader },
     // ← **this line fixes** the “No provider for TRANSLOCO_TRANSPILER” error:
