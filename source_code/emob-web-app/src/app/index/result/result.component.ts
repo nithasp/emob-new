@@ -680,36 +680,53 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   styleFunction(feature: FeatureLike): Style | Style[] {
+    const geom = feature.getGeometry();
+    // ─── DEPOT POINTS ───────────────────────────────────────────────────────────
+    if (geom?.getType() === 'Point') {
+      return new Style({
+        image: new Icon({
+          anchor: [0.5, 0.5],
+          anchorOrigin: 'bottom-left',
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          crossOrigin: 'anonymous',
+          opacity: 1,
+          src: `assets/image/depot.png`,
+        }),
+        text: new Text({
+          text: feature.get('depot_id')?.toString() || '',
+          font: '12px Calibri,sans-serif',
+          fill: new Fill({ color: '#000' }),
+        }),
+      });
+    }
+
+    // ─── ROUTE LINES ────────────────────────────────────────────────────────────
     const idx = feature.get('route_index') as number;
     const color = feature.get('color') as string;
     const hovered = this.highlightedFeatureCollectionId;
 
-    //─── 1) HOVER-ONLY MODE ────────────────────────────────────────────────────────
-    // if we're over a route, hide all others
+    // 1) HOVER-ONLY MODE
     if (hovered != null) {
       if (idx === hovered) {
-        // only draw the hovered route, thick & colored
         return new Style({
           stroke: new Stroke({ color: '#04948c', width: 6 }),
         });
       }
-      // all other routes: draw zero styles → hidden
-      return [];
+      return []; // hide all non-hovered lines
     }
 
-    //─── 2) FILTER-AWARE OR DEFAULT MODE ─────────────────────────────────────────
-    // if filters are active, dim the out-of-filter ones and draw the rest normally
+    // 2) FILTER-AWARE MODE
     if (this.visibleRoutes.size > 0) {
       if (!this.visibleRoutes.has(idx)) {
-        return this.dimStyle;
+        return this.dimStyle; // dim out-of-filter lines
       }
-      // visible & not hovered: normal thin stroke
       return new Style({
         stroke: new Stroke({ color, width: 3 }),
       });
     }
 
-    //─── 3) NO HOVER, NO FILTERS → EXACTLY YOUR ORIGINAL INIT BEHAVIOR ────────────
+    // 3) NO HOVER, NO FILTERS → default behavior
     if (this.highlightedFeatureCollectionId === idx) {
       return new Style({
         stroke: new Stroke({ color: '#04948c', width: 6 }),
