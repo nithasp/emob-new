@@ -1,42 +1,64 @@
 <div class="modal-header">
-    @if(category ==='actualLocation'){
-        <h4 class="modal-title text-capitalize">Uploading : {{name}}</h4>
-    }@else{
-        <h4 class="modal-title text-capitalize">Uploading {{category}} {{type}} : {{name}}</h4>
-    }
-    <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.close(null)"></button>
+  @if(category ==='actualLocation'){
+  <h4 class="modal-title text-capitalize">
+    {{ "uploading" | transloco }} : {{ name }}
+  </h4>
+  }@else{
+  <h4 class="modal-title text-capitalize">
+    {{ "uploading" | transloco }} {{ category }} {{ type }} : {{ name }}
+  </h4>
+  }
+  <button
+    type="button"
+    class="btn-close"
+    aria-label="Close"
+    (click)="activeModal.close(null)"
+  ></button>
 </div>
 <div class="modal-body">
-    <div class="row mt-3 justify-content-md-center">
-        <div class="col-md-11 rounded-3 dropzone" DropZone
-            (onFileDropped)="onFileSelected($event)">
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <mat-icon class="icon-upload">upload_file</mat-icon>
-                    <div class="col-md-12 text-center">
-                        <span>Drag and drop file here</span>
-                        <span><br>or</span>
-                    </div>
-                </div>
-                <input type="file" class="file-input"
-                    [accept]="requiredFileType"
-                    (change)="onFileSelected($event)"
-                    (click)="resetFileInput($event)"
-                    #fileUpload>
-                <div class="col-md-12 text-center mt-2">
-                    <button mat-stroked-button 
-                    class="bg-custom-primary"
-                    class="border-primary" (click)="fileUpload.click()">
-                        <mat-icon class="icon-browser">attach_file</mat-icon>Browse
-                        File</button>
-                </div>
-            </div>
+  <div class="row mt-3 justify-content-md-center">
+    <div
+      class="col-md-11 rounded-3 dropzone"
+      DropZone
+      (onFileDropped)="onFileSelected($event)"
+    >
+      <div class="row">
+        <div class="col-md-12 text-center">
+          <mat-icon class="icon-upload">upload_file</mat-icon>
+          <div class="col-md-12 text-center">
+            <span>{{ "drag_and_drop_file_here" | transloco }}</span>
+            <span><br />{{ "or" | transloco }}</span>
+          </div>
         </div>
+        <input
+          type="file"
+          class="file-input"
+          [accept]="requiredFileType"
+          (change)="onFileSelected($event)"
+          (click)="resetFileInput($event)"
+          #fileUpload
+        />
+        <div class="col-md-12 text-center mt-2">
+          <button
+            mat-stroked-button
+            class="bg-custom-primary"
+            class="border-primary"
+            (click)="fileUpload.click()"
+          >
+            <mat-icon class="icon-browser">attach_file</mat-icon>
+            <span>{{ "browse_file" | transloco }}</span>
+          </button>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-outline-secondary" (click)="activeModal.close(null)">Close</button>
+  <button
+    type="button"
+    class="btn btn-outline-secondary"
+    (click)="activeModal.close(null)"
+  >
+    {{ 'close' | transloco}}
+  </button>
 </div>
-
-
-

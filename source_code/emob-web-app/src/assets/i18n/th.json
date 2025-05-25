@@ -26,5 +26,11 @@
   "search": "ค้นหา",
   "search_three_dots": "ค้นหา ...",
   "confirm": "ยืนยัน",
-  "cancel": "ยกเลิก"
+  "cancel": "ยกเลิก",
+
+  "uploading": "กำลังอัปโหลด",
+  "drag_and_drop_file_here": "ลากและวางไฟล์ที่นี่",
+  "or": "หรือ",
+  "browse_file": "เลือกไฟล์",
+  "close": "ปิด"
 }

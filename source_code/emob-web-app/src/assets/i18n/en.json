@@ -26,5 +26,11 @@
   "search": "Search",
   "search_three_dots": "Search ...",
   "confirm": "Confirm",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+
+  "uploading": "Uploading",
+  "drag_and_drop_file_here": "Drag and drop file here",
+  "or": "or",
+  "browse_file": "Browse File",
+  "close": "Close"
 }
