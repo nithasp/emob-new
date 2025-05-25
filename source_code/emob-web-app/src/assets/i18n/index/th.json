@@ -38,7 +38,7 @@
   "retry_experiment": "ลองใหม่อีกครั้ง",
   "retry_experiment_confirmation": "ยืนยันการลองใหม่อีกครั้ง",
   "retry_experiment_message": "คุณแน่ใจหรือไม่ว่าต้องการลองใหม่อีกครั้ง?",
-  "rerun_experiment": "ลองเรียกใช้งานอีกครั้ง",
+  "rerun_experiment_try": "ลองเรียกใช้งานอีกครั้ง",
   "rerun_experiment_confirmation": "ยืนยันการลองเรียกใช้งานอีกครั้ง",
   "rerun_experiment_message": "คุณแน่ใจหรือไม่ว่าต้องการลองเรียกใช้งานอีกครั้ง?",
   "cancel_experiment": "ยกเลิกการทดลอง",
@@ -50,5 +50,24 @@
   "rerun_experiment_title": "เรียกใช้งานการทดลองอีกครั้ง",
   "file_uploaded_successfully": "อัปโหลดไฟล์สำเร็จ",
   "success_to_download_plan": "ดาวน์โหลดแผนสำเร็จ",
-  "download_plan": "ดาวน์โหลดแผน"
+  "download_plan": "ดาวน์โหลดแผน",
+
+
+  "do_you_want_to_create_new_experiment": "คุณต้องการสร้างการทดลองใหม่หรือไม่?",
+  "confirm": "ยืนยัน",
+  "confirm_to_retry_experiment": "ยืนยันเพื่อทำการทดลองอีกครั้ง",
+  "are_you_sure_to_retry_experiment": "คุณแน่ใจหรือไม่ว่าต้องการทำการทดลองอีกครั้ง?",
+  "try_to_rerun_experiment": "ลองเรียกใช้งานการทดลองอีกครั้ง",
+  "confirm_to_try_to_rerun_experiment": "ยืนยันเพื่อเรียกใช้งานการทดลองอีกครั้ง",
+  "are_you_sure_to_try_to_rerun_experiment": "คุณแน่ใจหรือไม่ว่าต้องการเรียกใช้งานการทดลองอีกครั้ง?",
+  "success_to_replicate_experiment": "ทำซ้ำการทดลองสำเร็จ",
+  "replicate_experiment": "ทำซ้ำการทดลอง",
+  "confirm_to_cancel_experiment": "ยืนยันเพื่อยกเลิกการทดลอง",
+  "are_you_sure_to_cancel_experiment": "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการทดลอง?",
+  "cannot_open_not_creator": "คุณไม่สามารถเปิดการทดลองที่คุณไม่ได้เป็นผู้สร้างได้",
+  "cannot_open_not_succeeded": "คุณไม่สามารถเปิดการทดลองที่ยังไม่สำเร็จได้",
+  "acknowledge": "รับทราบ",
+  "opening_experiment": "กำลังเปิดการทดลอง",
+  "create_experiment": "สร้างการทดลอง",
+  "rerun_experiment": "เรียกใช้งานการทดลองอีกครั้ง"
 }

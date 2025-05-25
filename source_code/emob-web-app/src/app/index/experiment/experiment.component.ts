@@ -21,6 +21,7 @@ import { ConfirmationDialogComponent } from '../components/confirmation-dialog/c
 import { ParametersDialogComponent } from '../components/parameters-dialog/parameters-dialog.component';
 import { TimingAndCapacity } from 'src/app/models/constraint.model';
 import { ConsumptionDialogComponent } from '../components/consumption-dialog/consumption-dialog.component';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-experiment',
@@ -123,9 +124,10 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     private readonly router: Router,
     private readonly ngbModal: NgbModal,
     private readonly toastr: ToastrService,
-    private readonly userMsGraphService: UserMSGraphService
+    private readonly userMsGraphService: UserMSGraphService,
+    private readonly transloco: TranslocoService
   ) {}
-  
+
   ngOnInit(): void {
     this.spinner.show();
     this.loadData();
@@ -207,17 +209,20 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
 
   createNewExperiment() {
     const openConfirmDialog = this.openConfirmDialog(
-      'Create Experiment Confirmation',
+      this.transloco.translate('create_experiment_confirmation', {}, 'index'),
       '',
-      'Do you want to create a new experiment?',
-      'Confirm',
+      this.transloco.translate('create_experiment_message', {}, 'index'),
+      this.transloco.translate('confirm', {}, 'index'),
       false
     );
     openConfirmDialog.result.then((confirmed) => {
       if (confirmed) {
         this.spinner.show();
         this.experimentService.createExperiment().subscribe((response) => {
-          this.toastr.info('create experiment', response.runId);
+          this.toastr.info(
+            this.transloco.translate('create_experiment', {}, 'index'),
+            response.runId
+          );
           this.router.navigate(['/users/run', response.runId], {
             state: { isCreateMode: true },
           });
@@ -340,9 +345,9 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
 
   retryExperiment(experiment: Experiment) {
     const dialogRef = this.openConfirmDialog(
-      'Retry experiment',
-      'Confirm to retry experiment',
-      'Are you sure to retry experiment ?'
+      this.transloco.translate('retry_experiment', {}, 'index'),
+      this.transloco.translate('retry_experiment_confirmation', {}, 'index'),
+      this.transloco.translate('retry_experiment_message', {}, 'index')
     );
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
@@ -351,16 +356,19 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
           .rerunExperiment(experiment.runId)
           .subscribe((response) => {
             this.spinner.hide();
-            this.toastr.success(response.message, 'Rerun Experiment');
+            this.toastr.success(
+              response.message,
+              this.transloco.translate('rerun_experiment', {}, 'index')
+            );
           });
       }
     });
   }
   tryToRerunExperiment(experiment: Experiment) {
     const dialogRef = this.openConfirmDialog(
-      'Try to Rerun experiment',
-      'Confirm to try to Rerun experiment',
-      'Are you sure to try to rerun experiment ?'
+      this.transloco.translate('rerun_experiment_try', {}, 'index'),
+      this.transloco.translate('rerun_experiment_confirmation', {}, 'index'),
+      this.transloco.translate('rerun_experiment_message', {}, 'index')
     );
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
@@ -370,8 +378,12 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
           .subscribe((response) => {
             this.spinner.hide();
             this.toastr.success(
-              'Success to replicate experiment',
-              'Replicate Experiment'
+              this.transloco.translate(
+                'success_to_replicate_experiment',
+                {},
+                'index'
+              ),
+              this.transloco.translate('replicate_experiment', {}, 'index')
             );
             this.router.navigate(['/users/run', response.runId]);
           });
@@ -381,9 +393,9 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
 
   cancelExperiment(experiment: Experiment) {
     const dialogRef = this.openConfirmDialog(
-      'Cancel experiment',
-      'Confirm to cancel experiment',
-      'Are you sure to cancel experiment ?'
+      this.transloco.translate('cancel_experiment', {}, 'index'),
+      this.transloco.translate('cancel_experiment_confirmation', {}, 'index'),
+      this.transloco.translate('cancel_experiment_message', {}, 'index')
     );
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
@@ -392,7 +404,10 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
           .cancelExperiment(experiment.runId)
           .subscribe((response) => {
             this.spinner.hide();
-            this.toastr.info(response.message, 'Cancel Experiment');
+            this.toastr.info(
+              response.message,
+              this.transloco.translate('cancel_experiment', {}, 'index')
+            );
           });
       }
     });
@@ -407,17 +422,28 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
         if (userId === experiment.triggeredBy) {
           console.log('open run experiment');
           this.router.navigate(['/users/run', experiment.runId]);
-          this.toastr.info('opening experiment', experiment.name);
+          this.toastr.info(
+            this.transloco.translate('opening_experiment', {}, 'index'),
+            experiment.name
+          );
         } else {
           this.openConfirmDialog(
-            'cannot open Experiment',
-            'You cannot open an experiment that you did not create',
-            ' ',
-            'Acknowledge'
+            this.transloco.translate('cannot_open_experiment', {}, 'index'),
+            this.transloco.translate(
+              'cannot_open_experiment_not_creator',
+              {},
+              'index'
+            ),
+            '',
+            this.transloco.translate('acknowledge', {}, 'index')
           );
           this.toastr.warning(
-            'cannot open Experiment',
-            'You cannot open an experiment that you did not create'
+            this.transloco.translate('cannot_open_experiment', {}, 'index'),
+            this.transloco.translate(
+              'cannot_open_experiment_not_creator',
+              {},
+              'index'
+            )
           );
         }
       });
@@ -426,14 +452,22 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       this.router.navigate(['/users/result', experiment.runId]);
     } else {
       this.toastr.warning(
-        'cannot open Experiment',
-        'You cannot open an experiment that is not succeeded'
+        this.transloco.translate('cannot_open_experiment', {}, 'index'),
+        this.transloco.translate(
+          'cannot_open_experiment_not_succeeded',
+          {},
+          'index'
+        )
       );
       this.openConfirmDialog(
-        'cannot open Experiment',
-        'You cannot open an experiment that is not succeeded',
+        this.transloco.translate('cannot_open_experiment', {}, 'index'),
+        this.transloco.translate(
+          'cannot_open_experiment_not_succeeded',
+          {},
+          'index'
+        ),
         '',
-        'Acknowledge'
+        this.transloco.translate('acknowledge', {}, 'index')
       );
     }
     this.spinner.hide();

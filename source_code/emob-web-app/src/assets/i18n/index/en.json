@@ -38,7 +38,7 @@
   "retry_experiment": "Retry experiment",
   "retry_experiment_confirmation": "Confirm to retry experiment",
   "retry_experiment_message": "Are you sure to retry experiment ?",
-  "rerun_experiment": "Try to Rerun experiment",
+  "rerun_experiment_try": "Try to Rerun experiment",
   "rerun_experiment_confirmation": "Confirm to try to Rerun experiment",
   "rerun_experiment_message": "Are you sure to try to rerun experiment ?",
   "cancel_experiment": "Cancel experiment",
@@ -50,5 +50,25 @@
   "rerun_experiment_title": "Rerun Experiment",
   "file_uploaded_successfully": "File uploaded successfully",
   "success_to_download_plan": "Success to download plan",
-  "download_plan": "Download Plan"
+  "download_plan": "Download Plan",
+
+
+
+  "do_you_want_to_create_new_experiment": "Do you want to create a new experiment?",
+  "confirm": "Confirm",
+  "confirm_to_retry_experiment": "Confirm to retry experiment",
+  "are_you_sure_to_retry_experiment": "Are you sure to retry experiment?",
+  "try_to_rerun_experiment": "Try to Rerun experiment",
+  "confirm_to_try_to_rerun_experiment": "Confirm to try to Rerun experiment",
+  "are_you_sure_to_try_to_rerun_experiment": "Are you sure to try to rerun experiment?",
+  "success_to_replicate_experiment": "Success to replicate experiment",
+  "replicate_experiment": "Replicate Experiment",
+  "confirm_to_cancel_experiment": "Confirm to cancel experiment",
+  "are_you_sure_to_cancel_experiment": "Are you sure to cancel experiment?",
+  "cannot_open_not_creator": "You cannot open an experiment that you did not create",
+  "cannot_open_not_succeeded": "You cannot open an experiment that is not succeeded",
+  "acknowledge": "Acknowledge",
+  "opening_experiment": "opening experiment",
+  "create experiment": "create Experiment",
+  "rerun_experiment": "Rerun Experiment"
 }

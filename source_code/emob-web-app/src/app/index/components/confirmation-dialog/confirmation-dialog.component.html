@@ -17,6 +17,6 @@
 	</p>
 </div>
 <div class="modal-footer">
-	<button type="button" class="btn btn-outline-secondary" (click)="onCancleClick()" [hidden]="disableCancelButton">Cancel</button>
+	<button type="button" class="btn btn-outline-secondary" (click)="onCancleClick()" [hidden]="disableCancelButton">{{ 'cancel' | transloco}}</button>
 	<button type="button" ngbAutofocus mat-raised-button class="bg-custom-primary" (click)="onConfirmClick()">{{acceptButton}}</button>
 </div>
