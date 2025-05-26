@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit } from '@angular/core';
 import { fromLonLat } from 'ol/proj';
 import { Vector as VectorSource, XYZ } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
@@ -6,10 +6,19 @@ import { GeoJSON } from 'ol/format';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Map, Overlay, View } from 'ol';
 import { Circle, LineString, Point } from 'ol/geom';
-import { Attribution, FullScreen, ZoomSlider,defaults as defaultControls, } from 'ol/control';
+import {
+  Attribution,
+  FullScreen,
+  ZoomSlider,
+  defaults as defaultControls,
+} from 'ol/control';
 import TileLayer from 'ol/layer/Tile';
 import * as OlProj from 'ol/proj';
-import { DragPan, MouseWheelZoom,defaults as defaultInteractions, } from 'ol/interaction';
+import {
+  DragPan,
+  MouseWheelZoom,
+  defaults as defaultInteractions,
+} from 'ol/interaction';
 import { FeatureLike } from 'ol/Feature';
 import { Fill, Icon, Stroke, Style, Text } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
@@ -17,50 +26,53 @@ import { Coordinate } from 'ol/coordinate';
 @Component({
   selector: 'app-map-details-dialog',
   templateUrl: './map-details-dialog.component.html',
-  styleUrl: './map-details-dialog.component.scss'
+  styleUrl: './map-details-dialog.component.scss',
 })
-export class MapDetailsDialogComponent implements OnInit {
+export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   @Input() featureCollection: any;
-  @Input() featureDepots: any[] =[];
+  @Input() featureDepots: any[] = [];
   private map!: Map;
   public popUp?: Overlay;
   public popupContent?: any;
-  private highlightedFeatureCollectionId:number|null = null;
+  private highlightedFeatureCollectionId: number | null = null;
 
   constructor(private readonly ngbActiveModal: NgbActiveModal) {}
+
   ngOnInit(): void {
     console.log(this.featureCollection);
-    this.loadAndProcessGeoJSON(this.featureCollection,this.featureDepots);
+  }
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.loadAndProcessGeoJSON(this.featureCollection, this.featureDepots);
+    });
   }
 
-  loadAndProcessGeoJSON(item:any,depots:any[]): void {
-        const itemFeatures = new GeoJSON().readFeatures(item, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: 'EPSG:3857',
-        });
-        // Reduce coordinates in LineString features by 50%
-        const reducedItemFeatures = itemFeatures.map((feature, index, arr) => {
-          const geometry = feature.getGeometry();
-          if (geometry?.getType() === 'LineString') {
-            const lineString = geometry as LineString;
-            const coordinates = lineString.getCoordinates();
-            const reducedCoordinates = coordinates.filter(
-              (_, i) => i % 2 === 0
-            ); // Keep every other coordinate
-            console.log(
-              index,
-              'Original coordinates:',
-              coordinates.length,
-              'Reduced coordinates:',
-              reducedCoordinates.length
-            );
-            lineString.setCoordinates(reducedCoordinates);
-          }
-          return feature;
-        });
+  loadAndProcessGeoJSON(item: any, depots: any[]): void {
+    const itemFeatures = new GeoJSON().readFeatures(item, {
+      dataProjection: 'EPSG:4326',
+      featureProjection: 'EPSG:3857',
+    });
+    // Reduce coordinates in LineString features by 50%
+    const reducedItemFeatures = itemFeatures.map((feature, index, arr) => {
+      const geometry = feature.getGeometry();
+      if (geometry?.getType() === 'LineString') {
+        const lineString = geometry as LineString;
+        const coordinates = lineString.getCoordinates();
+        const reducedCoordinates = coordinates.filter((_, i) => i % 2 === 0); // Keep every other coordinate
+        console.log(
+          index,
+          'Original coordinates:',
+          coordinates.length,
+          'Reduced coordinates:',
+          reducedCoordinates.length
+        );
+        lineString.setCoordinates(reducedCoordinates);
+      }
+      return feature;
+    });
 
-      const vectorSource = new VectorSource({
-        features: [...reducedItemFeatures]
+    const vectorSource = new VectorSource({
+      features: [...reducedItemFeatures],
     });
 
     // mapping depots for features
@@ -69,13 +81,10 @@ export class MapDetailsDialogComponent implements OnInit {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
       });
-    vectorSource.addFeatures(features);
-      
-    })
+      vectorSource.addFeatures(features);
+    });
 
     this.initMap(vectorSource);
-    
-    
   }
 
   private initMap(vectorSource: VectorSource) {
@@ -104,7 +113,7 @@ export class MapDetailsDialogComponent implements OnInit {
       ],
       target: 'modalMap',
       view: new View({
-        center: OlProj.fromLonLat([ 100.53139488523458,13.786463255129673]),
+        center: OlProj.fromLonLat([100.53139488523458, 13.786463255129673]),
         zoom: 10,
         maxZoom: 17,
         minZoom: 10,
@@ -130,7 +139,6 @@ export class MapDetailsDialogComponent implements OnInit {
       offset: [0, -30],
     });
     this.map.addOverlay(this.popUp);
-    
   }
   private pointMove(evt: any): void {
     const target = this.map.getTargetElement();
@@ -188,7 +196,7 @@ export class MapDetailsDialogComponent implements OnInit {
     const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
     vectorLayer.getSource()?.changed();
   }
-  styleFunction(feature: FeatureLike): Style | Style[] | undefined{
+  styleFunction(feature: FeatureLike): Style | Style[] | undefined {
     const geometryType = feature.getGeometry()!.getType();
     const color = feature.getProperties()['color'] as string;
     const text = feature.getProperties()['route_order'] as string;
@@ -196,7 +204,7 @@ export class MapDetailsDialogComponent implements OnInit {
 
     switch (geometryType) {
       case 'Point':
-        if(isDepot){
+        if (isDepot) {
           return new Style({
             image: new Icon({
               anchor: [0.5, 0.5],
@@ -206,35 +214,35 @@ export class MapDetailsDialogComponent implements OnInit {
               crossOrigin: 'anonymous',
               opacity: 1,
               src: `assets/image/depot.png`,
-            })          
+            }),
           });
-        }else return new Style({
-          image: new CircleStyle({
-            radius: 15,
-            fill: new Fill({
-              color: '#242484',
+        } else
+          return new Style({
+            image: new CircleStyle({
+              radius: 15,
+              fill: new Fill({
+                color: '#242484',
+              }),
+              stroke: new Stroke({
+                color: '#fff',
+                width: 3,
+              }),
             }),
-            stroke: new Stroke({
-              color: '#fff',
-              width: 3,
+            text: new Text({
+              text: text,
+              font: '15px  Calibri,sans-serif',
+              fill: new Fill({
+                color: '#fff',
+              }),
             }),
-          }),
-          text: new Text({
-            text: text,
-            font: '15px  Calibri,sans-serif',
-            fill: new Fill({
-              color: '#fff',
-            }),
+          });
+      case 'LineString':
+        return new Style({
+          stroke: new Stroke({
+            color: '#04948c',
+            width: 7,
           }),
         });
-      case 'LineString':
-      
-          return new Style({
-            stroke: new Stroke({
-              color: '#04948c',
-              width: 7
-            })
-          });
       default:
         return undefined;
     }

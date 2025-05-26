@@ -91,5 +91,12 @@
   "weight": "Weight",
   "zone": "Zone",
   "map_is_rendering_data": "map is rendering data",
-  "details": "Details"
+  "details": "Details",
+
+  "overview_routing_plan": "Overview Routing Plan",
+  "customers": "Customers",
+  "total_customers": "Total Customers",
+  "service_duration": "Service Duration",
+  "travel_duration": "Travel Duration",
+  "address": "Address"
 }

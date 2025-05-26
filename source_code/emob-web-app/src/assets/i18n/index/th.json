@@ -90,5 +90,12 @@
   "weight": "น้ำหนัก",
   "zone": "โซน",
   "map_is_rendering_data": "แผนที่กำลังแสดงข้อมูล",
-  "details": "รายละเอียด"
+  "details": "รายละเอียด",
+
+  "overview_routing_plan": "ภาพรวมแผนการจัดส่ง",
+  "customers": "ลูกค้า",
+  "total_customers": "จำนวนลูกค้าทั้งหมด",
+  "service_duration": "ระยะเวลาการให้บริการ",
+  "travel_duration": "ระยะเวลาเดินทาง",
+  "address": "ที่อยู่"
 }
