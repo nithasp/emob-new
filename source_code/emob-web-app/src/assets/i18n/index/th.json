@@ -14,7 +14,7 @@
   "status": "สถานะ",
   "run": "เรียกใช้งาน",
   "parameter": "พารามิเตอร์",
-  "run_id": "ID Run",
+  "run_id": "ID เรียกใช้งาน",
   "group_id": "ID กลุ่ม",
   "no_records_found": "ไม่พบข้อมูล",
 
@@ -52,7 +52,6 @@
   "success_to_download_plan": "ดาวน์โหลดแผนสำเร็จ",
   "download_plan": "ดาวน์โหลดแผน",
 
-
   "do_you_want_to_create_new_experiment": "คุณต้องการสร้างการทดลองใหม่หรือไม่?",
   "confirm": "ยืนยัน",
   "confirm_to_retry_experiment": "ยืนยันเพื่อทำการทดลองอีกครั้ง",
@@ -69,5 +68,27 @@
   "acknowledge": "รับทราบ",
   "opening_experiment": "กำลังเปิดการทดลอง",
   "create_experiment": "สร้างการทดลอง",
-  "rerun_experiment": "เรียกใช้งานการทดลองอีกครั้ง"
+  "rerun_experiment": "เรียกใช้งานการทดลองอีกครั้ง",
+
+
+  "experiment_information": "ข้อมูลการทดลอง",
+  "experiment_name": "ชื่อการทดลอง",
+  "time_start": "เวลาเริ่มต้น",
+  "time_end": "เวลาสิ้นสุด",
+  "time_duration": "ระยะเวลา",
+  "add_filter": "เพิ่มตัวกรอง",
+  "filter": "ตัวกรอง",
+  "operator": "ตัวดำเนินการ",
+  "value": "ค่า",
+  "route_label": "ชื่อเส้นทาง",
+  "point_index": "ลำดับจุด",
+  "route_order": "ลำดับเส้นทาง",
+  "depot_name": "ชื่อศูนย์กระจายสินค้า",
+  "order_id": "รหัสคำสั่งซื้อ",
+  "total_points": "จำนวนจุดทั้งหมด",
+  "distance": "ระยะทาง",
+  "weight": "น้ำหนัก",
+  "zone": "โซน",
+  "map_is_rendering_data": "แผนที่กำลังแสดงข้อมูล",
+  "details": "รายละเอียด"
 }

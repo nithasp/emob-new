@@ -70,5 +70,26 @@
   "acknowledge": "Acknowledge",
   "opening_experiment": "opening experiment",
   "create experiment": "create Experiment",
-  "rerun_experiment": "Rerun Experiment"
+  "rerun_experiment": "Rerun Experiment",
+
+  "experiment_information": "Experiment Information",
+  "experiment_name": "Experiment name",
+  "time_start": "Time Start",
+  "time_end": "Time End",
+  "time_duration": "Time Duration",
+  "add_filter": "Add Filter",
+  "filter": "Filter",
+  "operator": "Operator",
+  "value": "Value",
+  "route_label": "Route Label",
+  "point_index": "Point Index",
+  "route_order": "Route Order",
+  "depot_name": "DEPOT NAME",
+  "order_id": "ORDER ID",
+  "total_points": "Total Points",
+  "distance": "Distance",
+  "weight": "Weight",
+  "zone": "Zone",
+  "map_is_rendering_data": "map is rendering data",
+  "details": "Details"
 }

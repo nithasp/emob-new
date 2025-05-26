@@ -32,5 +32,9 @@
   "drag_and_drop_file_here": "Drag and drop file here",
   "or": "or",
   "browse_file": "Browse File",
-  "close": "Close"
+  "close": "Close",
+  "less": "Less",
+  "more": "More",
+  "km": "km",
+  "kg": "kg"
 }

@@ -66,6 +66,7 @@ import { FormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
 import { DownloadResultFile } from '../../models/experiment.model';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-result',
@@ -149,7 +150,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   expandedElement: Array<any> = [];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-  @ViewChild('filterModal', { static: true })
+  @ViewChild('filterModal', { static: false, read: TemplateRef })
   filterModal!: TemplateRef<any>;
   vectorLayer!: VectorLayer;
   clusterLayer!: VectorLayer;
@@ -172,7 +173,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
     private readonly experimentService: ExperimentService,
     private readonly configurationService: ConfigurationService,
     private readonly toastr: ToastrService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly transloco: TranslocoService
   ) {
     this.spinner.show();
 
@@ -1010,10 +1012,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   tryToRerunExperiment() {
     const dialogRef = this.openConfirmDialog(
-      'Try to Rerun experiment',
-      'Confirm to try to Rerun experiment',
-      'Are you sure to try to rerun experiment ?'
+      this.transloco.translate('rerun_experiment_try', {}, 'index'),
+      this.transloco.translate('retry_experiment_confirmation', {}, 'index'),
+      this.transloco.translate('retry_experiment_message', {}, 'index')
     );
+
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
         this.spinner.show();
@@ -1022,8 +1025,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
           .subscribe((response) => {
             this.spinner.hide();
             this.toastr.success(
-              'Success to replicate experiment',
-              'Replicate Experiment'
+              this.transloco.translate(
+                'success_to_replicate_experiment',
+                {},
+                'index'
+              ),
+              this.transloco.translate('replicate_experiment', {}, 'index')
             );
             this.router.navigate(['/users/run', response.runId]);
           });
