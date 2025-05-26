@@ -38,7 +38,7 @@ import { RoleGuard } from './guards/role.guard';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 import { RouterModule } from '@angular/router';
 import { environment } from 'src/environments/environment';
-import { TranslocoRootModule } from 'transloco-root.module';
+import { TranslocoRootModule } from 'src/transloco/transloco-root.module';
 
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication(msalConfig);
