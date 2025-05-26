@@ -162,6 +162,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
   experiment?: Experiment;
   isLoading: boolean = true;
 
+  visibleRoutes = new Set<number>();
+
   constructor(
     private readonly http: HttpClient,
     private readonly spinner: NgxSpinnerService,
@@ -564,13 +566,10 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   handlePointerMove(event: any): void {
+    // show popup and compute hovered feature
     let coordinates: Coordinate;
-    const feature = this.map.forEachFeatureAtPixel(
-      event.pixel,
-      function (feature) {
-        return feature;
-      }
-    )!;
+    const feature = this.map.forEachFeatureAtPixel(event.pixel, (feat) => feat);
+
     if (feature) {
       const geometry = feature.getGeometry();
       if (geometry instanceof LineString) {
@@ -583,30 +582,63 @@ export class ResultComponent implements OnInit, AfterViewInit {
       } else {
         coordinates = [];
       }
+
+      // position and fill popup
       this.popUp?.setPosition(coordinates);
-      const properties = feature.getProperties();
-      if (properties['features'] && properties['features'].length > 0) {
-        const nestedFeatureProperties =
-          properties['features'][0].getProperties();
-        this.popupContent = nestedFeatureProperties;
+      const props = feature.getProperties();
+      if (props['features'] && props['features'].length > 0) {
+        this.popupContent = (
+          props['features'][0] as FeatureLike
+        ).getProperties();
       } else {
-        this.popupContent = properties;
+        this.popupContent = props;
       }
-      console.log(this.popupContent);
     } else {
       this.popUp?.setPosition(undefined);
     }
 
+    // determine which route (if any) is hovered
     if (feature && feature.getGeometry()?.getType() === 'LineString') {
+      this.highlightedFeatureCollectionId = feature.get(
+        'route_index'
+      ) as number;
+    } else if (feature && feature.get('features')) {
+      // if it's a cluster, pick one child route_index
+      const members = feature.get('features') as FeatureLike[];
       this.highlightedFeatureCollectionId =
-        feature.getProperties()['route_index'];
+        (members[0]?.get('route_index') as number) || null;
     } else {
       this.highlightedFeatureCollectionId = null;
     }
-    const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
-    vectorLayer.getSource()?.changed();
-    const clusterLayer = this.map.getLayers()?.item(2) as VectorLayer;
-    clusterLayer.getSource()?.changed();
+
+    // ─── CLEAR OUT “DIM” STYLES ON HOVERED ROUTE ───────────────────────────────
+    const hoverId = this.highlightedFeatureCollectionId;
+    if (hoverId != null) {
+      // 1) reset any manual style on the line itself
+      this.vectorLayer
+        .getSource()!
+        .getFeatures()
+        .forEach((feat) => {
+          if (feat.get('route_index') === hoverId) {
+            feat.setStyle(undefined);
+          }
+        });
+
+      // 2) reset any manual style on its cluster(s)
+      this.clusterLayer
+        .getSource()!
+        .getFeatures()
+        .forEach((clusterFeat) => {
+          const members = clusterFeat.get('features') as FeatureLike[];
+          if (members.some((m) => m.get('route_index') === hoverId)) {
+            clusterFeat.setStyle(undefined);
+          }
+        });
+    }
+
+    // force a redraw so styleFunction / clusterStyleFunction re-runs
+    this.vectorLayer.getSource()?.changed();
+    this.clusterLayer.getSource()?.changed();
   }
 
   handleClick(event: any): void {
@@ -647,92 +679,150 @@ export class ResultComponent implements OnInit, AfterViewInit {
     modalRef.componentInstance.featureDepots = featureDepots;
   }
 
-  styleFunction(feature: FeatureLike): Style | Style[] | undefined {
-    const geometryType = feature.getGeometry()!.getType();
-    const color = feature.getProperties()['color'];
-    const text = feature.getProperties()['node_index'];
-    const routeIndex = feature.getProperties()['route_index'];
-    switch (geometryType) {
-      case 'Point':
-        return new Style({
-          image: new Icon({
-            anchor: [0.5, 0.5],
-            anchorOrigin: 'bottom-left',
-            anchorXUnits: 'fraction',
-            anchorYUnits: 'pixels',
-            crossOrigin: 'anonymous',
-            opacity: 1,
-            src: `assets/image/depot.png`,
-          }),
-          text: new Text({
-            text: text,
-            font: '15px Calibri,sans-serif',
-            fill: new Fill({
-              color: '#fff',
-            }),
-          }),
-        });
-      case 'LineString':
-        if (this.highlightedFeatureCollectionId === routeIndex) {
-          return new Style({
-            stroke: new Stroke({
-              color: color,
-              width: 6,
-            }),
-          });
-        } else if (this.highlightedFeatureCollectionId !== null) {
-          return this.dimStyle;
-        } else {
-          return new Style({
-            stroke: new Stroke({
-              color: color,
-              width: 3,
-            }),
-          });
-        }
-      default:
-        return undefined;
+  styleFunction(feature: FeatureLike): Style | Style[] {
+    const geom = feature.getGeometry();
+    // ─── DEPOT POINTS ───────────────────────────────────────────────────────────
+    if (geom?.getType() === 'Point') {
+      return new Style({
+        image: new Icon({
+          anchor: [0.5, 0.5],
+          anchorOrigin: 'bottom-left',
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          crossOrigin: 'anonymous',
+          opacity: 1,
+          src: `assets/image/depot.png`,
+        }),
+        text: new Text({
+          text: feature.get('depot_id')?.toString() || '',
+          font: '12px Calibri,sans-serif',
+          fill: new Fill({ color: '#000' }),
+        }),
+      });
     }
+
+    // ─── ROUTE LINES ────────────────────────────────────────────────────────────
+    const idx = feature.get('route_index') as number;
+    const color = feature.get('color') as string;
+    const hovered = this.highlightedFeatureCollectionId;
+
+    // 1) HOVER-ONLY MODE
+    if (hovered != null) {
+      if (idx === hovered) {
+        return new Style({
+          stroke: new Stroke({ color: '#04948c', width: 6 }),
+        });
+      }
+      return []; // hide all non-hovered lines
+    }
+
+    // 2) FILTER-AWARE MODE
+    if (this.visibleRoutes.size > 0) {
+      if (!this.visibleRoutes.has(idx)) {
+        return this.dimStyle; // dim out-of-filter lines
+      }
+      return new Style({
+        stroke: new Stroke({ color, width: 3 }),
+      });
+    }
+
+    // 3) NO HOVER, NO FILTERS → default behavior
+    if (this.highlightedFeatureCollectionId === idx) {
+      return new Style({
+        stroke: new Stroke({ color: '#04948c', width: 6 }),
+      });
+    }
+    return new Style({
+      stroke: new Stroke({ color, width: 3 }),
+    });
   }
 
   clusterStyleFunction(feature: FeatureLike): Style | Style[] {
-    const features = feature.get('features');
-    const routeIndexes = features.map(
-      (f: FeatureLike) => f.getProperties()['route_index']
-    );
-    const isHighlighted = routeIndexes.includes(
-      this.highlightedFeatureCollectionId
-    );
+    const members = feature.get('features') as FeatureLike[];
+    const idxs = members.map((m) => m.get('route_index') as number);
+    const baseColor = (members[0].get('color') as string) || '#3399CC';
+    const orderTxt = String(members[0].get('route_order') || '');
 
-    const colors = features.map((f: FeatureLike) => f.getProperties()['color']);
-    const texts = features.map(
-      (f: FeatureLike) => f.getProperties()['route_order']
-    );
+    const hovered = this.highlightedFeatureCollectionId;
 
-    const color = colors[0] || '#3399CC';
-    const text = texts[0] || '';
+    //─── 1) HOVER-ONLY MODE ────────────────────────────────────────────────────────
+    if (hovered != null) {
+      if (idxs.includes(hovered)) {
+        // only draw the hovered cluster, highlighted
+        return new Style({
+          image: new CircleStyle({
+            radius: 15,
+            fill: new Fill({ color: '#242484' }),
+            stroke: new Stroke({ color: '#fff', width: 2 }),
+          }),
+          text: new Text({
+            text: orderTxt,
+            font: '15px Calibri,sans-serif',
+            fill: new Fill({ color: '#fff' }),
+          }),
+        });
+      }
+      return []; // hide all other clusters
+    }
 
+    //─── 2) FILTER-AWARE MODE ──────────────────────────────────────────────────────
+    if (this.visibleRoutes.size > 0) {
+      const anyVisible = idxs.some((i) => this.visibleRoutes.has(i));
+      if (!anyVisible) {
+        // out-of-filter clusters get dimmed
+        return new Style({
+          image: new CircleStyle({
+            radius: 10,
+            fill: new Fill({ color: 'rgba(0,0,0,0.1)' }),
+            stroke: new Stroke({ color: '#fff', width: 2 }),
+          }),
+          text: new Text({
+            text: orderTxt,
+            font: '15px Calibri,sans-serif',
+            fill: new Fill({ color: '#fff' }),
+          }),
+        });
+      }
+      // in-filter & not hovered → normal color/size
+      return new Style({
+        image: new CircleStyle({
+          radius: 10,
+          fill: new Fill({ color: baseColor }),
+          stroke: new Stroke({ color: '#fff', width: 2 }),
+        }),
+        text: new Text({
+          text: orderTxt,
+          font: '15px Calibri,sans-serif',
+          fill: new Fill({ color: '#fff' }),
+        }),
+      });
+    }
+
+    //─── 3) NO HOVER, NO FILTERS → ORIGINAL BEHAVIOR ───────────────────────────────
+    if (idxs.includes(hovered!)) {
+      return new Style({
+        image: new CircleStyle({
+          radius: 15,
+          fill: new Fill({ color: '#242484' }),
+          stroke: new Stroke({ color: '#fff', width: 2 }),
+        }),
+        text: new Text({
+          text: orderTxt,
+          font: '15px Calibri,sans-serif',
+          fill: new Fill({ color: '#fff' }),
+        }),
+      });
+    }
     return new Style({
       image: new CircleStyle({
-        radius: isHighlighted ? 15 : 10,
-        fill: new Fill({
-          color: isHighlighted
-            ? '#ffcc33'
-            : this.highlightedFeatureCollectionId !== null
-            ? 'rgba(0, 0, 0, 0.1)'
-            : color,
-        }),
-        stroke: new Stroke({
-          color: '#fff',
-          width: 2,
-        }),
+        radius: 10,
+        fill: new Fill({ color: baseColor }),
+        stroke: new Stroke({ color: '#fff', width: 2 }),
       }),
       text: new Text({
-        text: text,
+        text: orderTxt,
         font: '15px Calibri,sans-serif',
-        fill: new Fill({
-          color: '#fff',
-        }),
+        fill: new Fill({ color: '#fff' }),
       }),
     });
   }
@@ -790,13 +880,17 @@ export class ResultComponent implements OnInit, AfterViewInit {
       ? JSON.stringify(this.activeFilters)
       : '';
 
+    if (this.activeFilters.length === 0) {
+      this.resetRouteMapUi();
+    }
+
     setTimeout(() => {
       this.checkOverflow();
+      this.applyMapFilter();
       if (this.showAllLines && !this.hasOverflow) {
         this.showAllLines = false;
       }
     }, 0);
-    this.applyMapFilter();
   }
 
   multiFilterPredicate(data: RouteInfo, filter: string): boolean {
@@ -1043,11 +1137,31 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.activeFilters = [];
     this.applyMapFilter();
 
+    if (this.activeFilters.length === 0) {
+      this.resetRouteMapUi();
+    }
+
     setTimeout(() => {
       this.checkOverflow();
       this.showAllLines = false;
       this.hasOverflow = false;
     }, 0);
+  }
+
+  resetRouteMapUi(): void {
+    // Clear the current highlight
+    this.highlightedFeatureCollectionId = null;
+
+    // Grab your vector and cluster layers by index
+    const vectorLayer = this.map.getLayers().item(1) as VectorLayer;
+    const clusterLayer = this.map.getLayers().item(2) as VectorLayer;
+
+    // Tell OL that the source changed so it re-runs your style functions
+    vectorLayer.getSource()?.changed();
+    clusterLayer.getSource()?.changed();
+
+    this.popUp?.setPosition(undefined);
+    this.popupContent = undefined;
   }
 
   checkOverflow() {
@@ -1145,34 +1259,59 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   applyMapFilter() {
-    const visibleRoutes = (this.dataRouteInfo.filteredData as RouteInfo[]).map(
-      (r) => r.route_index
-    );
+    // compute visibleRoutes array exactly as you do now
+    const visibleRoutesArr = (
+      this.dataRouteInfo.filteredData as RouteInfo[]
+    ).map((r) => r.route_index);
+    this.visibleRoutes = new Set(visibleRoutesArr);
 
+    // 1) vector lines
     this.vectorLayer
       .getSource()!
       .getFeatures()
       .forEach((feat) => {
-        const geom = feat.getGeometry();
-        if (geom?.getType() === 'LineString') {
-          const idx = feat.get('route_index');
-          feat.setStyle(
-            visibleRoutes.includes(idx) ? undefined : new Style({})
-          );
-        } else {
-          feat.setStyle(undefined);
+        if (feat.getGeometry()?.getType() === 'LineString') {
+          const idx = feat.get('route_index') as number;
+          if (!this.visibleRoutes.has(idx)) {
+            // outside filter → dim
+            feat.setStyle(this.dimStyle);
+          } else {
+            // inside filter → let styleFunction handle normal vs hover
+            feat.setStyle(undefined);
+          }
         }
       });
 
+    // 2) clusters (points)
     this.clusterLayer
       .getSource()!
       .getFeatures()
       .forEach((clusterFeat) => {
         const members = clusterFeat.get('features') as FeatureLike[];
-        const idx = members[0]?.get('route_index');
-        clusterFeat.setStyle(
-          idx != null && visibleRoutes.includes(idx) ? undefined : new Style({})
+        const routeIndexes = members.map((m) => m.get('route_index') as number);
+        // if *none* of the member routes is in your filter → dim
+        const isAnyVisible = routeIndexes.some((i) =>
+          this.visibleRoutes.has(i)
         );
+        if (isAnyVisible) {
+          clusterFeat.setStyle(undefined);
+        } else {
+          // dim circle for “hidden” clusters
+          clusterFeat.setStyle(
+            new Style({
+              image: new CircleStyle({
+                radius: 10,
+                fill: new Fill({ color: 'rgba(0,0,0,0.1)' }),
+                stroke: new Stroke({ color: '#fff', width: 2 }),
+              }),
+              text: new Text({
+                text: String(members[0].get('route_order') || ''),
+                font: '15px Calibri,sans-serif',
+                fill: new Fill({ color: '#fff' }),
+              }),
+            })
+          );
+        }
       });
 
     this.vectorLayer.changed();
