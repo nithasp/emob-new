@@ -46,5 +46,6 @@
   "province": "จังหวัด",
   "district": "อำเภอ",
   "sub_district": "ตำบล",
-  "address": "ที่อยู่"
+  "address": "ที่อยู่",
+  "warning": "คำเตือน"
 }

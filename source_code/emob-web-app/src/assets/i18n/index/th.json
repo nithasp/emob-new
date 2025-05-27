@@ -89,9 +89,6 @@
   "total_customers": "จำนวนลูกค้าทั้งหมด",
   "service_duration": "ระยะเวลาการให้บริการ",
   "travel_duration": "ระยะเวลาเดินทาง",
-  
-
-
 
   "wait_a_moment": "รอสักครู่",
   "orders_data": "ข้อมูลคำสั่งซื้อ",
@@ -120,7 +117,7 @@
   "maximum_travel_distance": "ระยะทางการเดินทางสูงสุด",
   "service_duration_time": "ระยะเวลาบริการ",
   "set_as_default": "ตั้งเป็นค่าเริ่มต้น",
-  
+
   "revalidate": "ตรวจสอบใหม่",
   "validate": "ตรวจสอบ",
   "validation": "การตรวจสอบ",
@@ -159,5 +156,46 @@
   "over_weight": "เกินน้ำหนัก",
   "over_distance": "เกินระยะทาง",
   "no_files_uploaded": "ยังไม่มีไฟล์ที่อัปโหลด",
-  "order": "ลำดับ"
+  "order": "ลำดับ",
+  "this_experiment_have_been": "การทดลองนี้ได้ถูกดำเนินการแล้ว",
+  "we_will_to_go_back_to_the_experiments_page": "เราจะกลับไปที่หน้าการทดลอง",
+  "you_are_not_the_creator_of_this_experiment": "คุณไม่ใช่ผู้สร้างการทดลองนี้",
+
+    "cannot_delete_file": "ไม่สามารถลบไฟล์ได้",
+  "original_experiment_warning": "การทดลองนี้เป็นต้นฉบับของการทดลองแม่",
+  "rewrite_file_instruction": "หากต้องการเขียนไฟล์ใหม่ กรุณาสร้างการทดลองใหม่",
+
+
+
+
+  "success_load_experiment": "โหลดการทดลองสำเร็จ",
+  "loading_preorder_data": "กำลังโหลดข้อมูล PreOrder",
+  "please_wait": "กรุณารอสักครู่",
+  "cannot_load_data": "ไม่สามารถโหลดข้อมูลได้",
+  "reupload_preorder_file": "กรุณาอัปโหลดไฟล์ Pre-order ใหม่อีกครั้ง",
+  "loading_geo_location_data": "กำลังโหลดข้อมูลพิกัดภูมิศาสตร์",
+  "loading_modified_geo_data": "กำลังโหลดข้อมูลพิกัดภูมิศาสตร์ที่แก้ไขแล้ว",
+    "new_edited_location_data_prefix": "มี",
+  "new_edited_location_data_suffix": "ข้อมูลใหม่จากการแก้ไขพิกัดโดยผู้ใช้ในเซสชัน",
+  "cannot_use_multiple_files": "ไม่สามารถใช้หลายไฟล์พร้อมกันได้",
+  "file_invalid": "ไฟล์ไม่ถูกต้อง",
+  "select_excel_file": "กรุณาเลือกไฟล์ Excel (.xlsx หรือ .xls)",
+  "upload_preorder_success": "อัปโหลดไฟล์ PreOrder สำเร็จ",
+  "set_default_parameter": "ตั้งค่าพารามิเตอร์เริ่มต้น",
+  "set_default_parameter_failed": "ตั้งค่าพารามิเตอร์เริ่มต้นล้มเหลว",
+  "missing_required_columns": "คอลัมน์ที่จำเป็นหายไป:",
+  "updating_customer_location": "กำลังอัปเดตตำแหน่งลูกค้า",
+  "location_in_memory": "อยู่ในหน่วยความจำของเซสชัน",
+  "submit_experiment": "ส่งการทดลอง",
+  "succeed": "สำเร็จ",
+  "failed": "ล้มเหลว",
+  "error": "เกิดข้อผิดพลาด",
+  "file_fetch_or_parse_error": "เกิดข้อผิดพลาดในการดึงหรือแปลงไฟล์",
+  "excel_process_failed": "ไม่สามารถประมวลผลไฟล์ Excel ได้",
+  "cannot_read_file": "ไม่สามารถอ่านไฟล์ได้",
+  "data_validation_failed": "การตรวจสอบข้อมูลล้มเหลว",
+  "worksheet_not_found": "ไม่พบแผ่นงาน",
+  "excel_read_failed": "ไม่สามารถอ่านไฟล์ Excel ได้",
+    "loading_validation_data": "กำลังโหลดข้อมูลการตรวจสอบ"
+
 }

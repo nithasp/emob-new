@@ -78,6 +78,7 @@ import { ConfigurationService } from 'src/app/services/configuration.service';
 import { DataService } from 'src/app/services/data.service';
 import { ExportFileService } from 'src/app/services/export-file.service';
 import { set } from 'ol/transform';
+import { TranslocoService } from '@jsverse/transloco';
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
 @Injectable()
@@ -261,7 +262,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly userMsGraphService: UserMSGraphService,
     private readonly configurationService: ConfigurationService,
     private readonly dataService: DataService,
-    private readonly exportService: ExportFileService
+    private readonly exportService: ExportFileService,
+    private readonly transloco: TranslocoService
   ) {}
 
   ngOnInit(): void {
@@ -281,10 +283,18 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (this.experiment.status !== StatusExperiment.Initializing) {
                 this.spinner.hide();
                 this.openConfirmDialog(
-                  'Warning',
-                  `this experiment have been ${this.experiment.status} `,
-                  'We will to go back to the experiments page?',
-                  'Acknowledge',
+                  this.transloco.translate('warning'),
+                  `${this.transloco.translate(
+                    'this_experiment_have_been',
+                    {},
+                    'index'
+                  )} ${this.experiment.status}`,
+                  `${this.transloco.translate(
+                    'we_will_to_go_back_to_the_experiments_page',
+                    {},
+                    'index'
+                  )}?`,
+                  this.transloco.translate('acknowledge', {}, 'index'),
                   true
                 ).result.then((confirmed) => {
                   this.spinner.hide();
@@ -296,10 +306,18 @@ export class RunComponent implements OnInit, AfterViewInit {
                   .subscribe((userId: string | null) => {
                     if (userId !== this.experiment.triggeredBy) {
                       this.openConfirmDialog(
-                        'Warning',
-                        'You are not the creator of this experiment',
-                        'We will to go back to the experiments page?',
-                        'Acknowledge',
+                        this.transloco.translate('warning'),
+                        this.transloco.translate(
+                          'you_are_not_the_creator_of_this_experiment',
+                          {},
+                          'index'
+                        ),
+                        `${this.transloco.translate(
+                          'we_will_to_go_back_to_the_experiments_page',
+                          {},
+                          'index'
+                        )}?`,
+                        this.transloco.translate('acknowledge', {}, 'index'),
                         true
                       ).result.then((confirmed) => {
                         this.spinner.hide();
@@ -313,7 +331,11 @@ export class RunComponent implements OnInit, AfterViewInit {
                       ).finally(() => {
                         setTimeout(() => {
                           this.toastr.success(
-                            'Success to load experiment',
+                            this.transloco.translate(
+                              'success_load_experiment',
+                              {},
+                              'index'
+                            ),
                             this.experiment.name
                           );
                           this.spinner.hide();
@@ -346,7 +368,10 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.initializeDefaultParameter();
     }
 
-    this.toastr.info('Loading PreOrder Data', 'Please wait...');
+    this.toastr.info(
+      this.transloco.translate('loading_preorder_data', {}, 'index'),
+      `${this.transloco.translate('please_wait', {}, 'index')} ...`
+    );
     // Load PreOrder
     const isLoadPrOrder = await this.dataFromFileUrlToExcel(
       experiment.fileUrl.preOrderUrl
@@ -354,11 +379,14 @@ export class RunComponent implements OnInit, AfterViewInit {
     console.log('isLoadPrOrder', isLoadPrOrder);
     if (!isLoadPrOrder) {
       this.toastr.warning(
-        'Can not load Data',
-        'Please reupload Pre-order file again'
+        this.transloco.translate('cannot_load_data', {}, 'index'),
+        this.transloco.translate('reupload_preorder_file', {}, 'index')
       );
     }
-    this.toastr.info('Loading Geo Location Data', 'Please wait...');
+    this.toastr.info(
+      this.transloco.translate('loading_geo_location_data', {}, 'index'),
+      `${this.transloco.translate('please_wait', {}, 'index')} ...`
+    );
     // load geocoding location
     await this.dataFromFileUrlToJson(
       experiment.fileUrl.LocationBlobPathUrl
@@ -367,7 +395,10 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.groupingCustomer(response.customers, response.depots);
     });
     if (experiment.fileUrl.locationUpdateBlobPathUrl) {
-      this.toastr.info('Loading modified geo-location data.', 'Please wait...');
+      this.toastr.info(
+        this.transloco.translate('loading_geo_location_data', {}, 'index'),
+        `${this.transloco.translate('please_wait', {}, 'index')} ...`
+      );
       // load geocoding location edited
       await this.dataFromFileUrlToJson(
         experiment.fileUrl.locationUpdateBlobPathUrl
@@ -389,10 +420,10 @@ export class RunComponent implements OnInit, AfterViewInit {
               console.log(newData);
               if (newData.length > 0) {
                 this.toastr.info(
-                  'There are ' +
+                  `${this.transloco.translate('please_wait', {}, 'index')} ` +
                     newData.length +
-                    ' new data from user edited location in session',
-                  'Please wait...'
+                    ` ${this.transloco.translate('new_edited_location_data_suffix', {}, 'index')}`,
+                  `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
               }
@@ -404,7 +435,10 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     if (experiment.fileUrl.validatedBlobPathUrl) {
       // load validation data
-      this.toastr.info('Loading Validation Data', 'Please wait...');
+      this.toastr.info(
+        this.transloco.translate('loading_validation_data', {}, 'index'),
+        `${this.transloco.translate('please_wait', {}, 'index')} ...`
+      );
       await this.dataFromFileUrlToJson(
         experiment.fileUrl.validatedBlobPathUrl
       ).then((response: Result) => {
@@ -458,22 +492,22 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (files instanceof FileList) {
       file = files[0];
       if (files.length > 1) {
-        this.toastr.warning('Cannot use multiple files');
+        this.toastr.warning(this.transloco.translate('cannot_use_multiple_files', {}, 'index'))
       }
     } else {
       file = files.target.files[0];
       const target: DataTransfer = <DataTransfer>files.target;
       if (target.files.length > 1) {
-        this.toastr.warning('Cannot use multiple files');
+       this.toastr.warning(this.transloco.translate('cannot_use_multiple_files', {}, 'index'))
       }
     }
     if (file) {
       if (!this.validTypes.includes(file.type)) {
         this.showInvalidModal(
-          'File Invalid',
-          'Please select an Excel file (.xlsx or .xls)'
+          this.transloco.translate('file_invalid', {}, 'index'),
+          this.transloco.translate('select_excel_file', {}, 'index')
         );
-        this.toastr.error('File Invalid:', file.type);
+        this.toastr.error(`${this.transloco.translate('file_invalid', {}, 'index')}:`, file.type);
       } else {
         // Proceed with file processing
         this.uploadFile(file);
@@ -546,7 +580,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                 this.preOrderFiles.push(file);
                 this.experiment.name = response.name;
                 this.spinner.hide();
-                this.toastr.success('Upload PreOrder Success.');
+                this.toastr.success(`${this.transloco.translate('upload_preorder_success', {}, 'index')}.`);
               });
           }
         })
@@ -582,14 +616,14 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.experiment.status !== StatusExperiment.Initializing
     ) {
       this.toastr.warning(
-        'Can not delete file',
-        'This experiment is Original of Parent Experiment'
+        this.transloco.translate('cannot_delete_file', {}, 'index'),
+        this.transloco.translate('original_experiment_warning', {}, 'index')
       );
       this.openConfirmDialog(
-        'Can not delete file',
-        'This experiment is Original of Parent Experiment',
-        'If you need to rewrite file, please new Experiment.',
-        'Acknowledge'
+        this.transloco.translate('cannot_delete_file', {}, 'index'),
+        this.transloco.translate('original_experiment_warning', {}, 'index'),
+        `${this.transloco.translate('rewrite_file_instruction', {}, 'index')}.`,
+        this.transloco.translate('acknowledge', {}, 'index')
       );
       return;
     }
@@ -637,11 +671,11 @@ export class RunComponent implements OnInit, AfterViewInit {
               (response: { status_message: string | undefined }) => {
                 this.toastr.success(
                   response.status_message,
-                  'Set default Parameter'
+                  this.transloco.translate('set_default_parameter', {}, 'index') 
                 );
               },
               (error: any) => {
-                this.toastr.error('Failed to set default Parameter', 'Error');
+                this.toastr.error(this.transloco.translate('set_default_parameter_failed', {}, 'index') , this.transloco.translate('error', {}, 'index'));
                 console.error('Error updating parameter:', error);
               }
             );
@@ -885,8 +919,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
 
     if (missingColumns.length > 0) {
-      this.showInvalidModal('Missing required columns:', missingColumns);
-      this.toastr.error('Missing required columns:', missingColumns.join(','));
+      this.showInvalidModal(`${this.transloco.translate('missing_required_columns', {}, 'index')}:`, missingColumns);
+      this.toastr.error(`${this.transloco.translate('missing_required_columns', {}, 'index')}:`, missingColumns.join(','));
       return false;
     }
     return true;
@@ -1064,7 +1098,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
   updateCustomerLocation(customersLocationUpdated: Customer) {
     this.customersLocationUpdated.push(customersLocationUpdated);
-    this.toastr.info('Updating Customer Location', 'In Memory in sesion.');
+    this.toastr.info(this.transloco.translate('updating_customer_location', {}, 'index') , `${this.transloco.translate('location_in_memory', {}, 'index')}.`);
   }
   isVerified(orderId: string): boolean {
     return (
@@ -1186,11 +1220,11 @@ export class RunComponent implements OnInit, AfterViewInit {
             .subscribe({
               next: (result) => {
                 console.log(result);
-                this.toastr.success('Submit Experiment', 'Succeed');
+                this.toastr.success(this.transloco.translate('submit_experiment', {}, 'index'), this.transloco.translate('succeed', {}, 'index'));
                 this.router.navigate(['/users/experiments']);
               },
               error: (err) => {
-                this.toastr.error('submit experiment', 'Failed');
+                this.toastr.error(this.transloco.translate('submit_experiment', {}, 'index'), this.transloco.translate('failed', {}, 'index'));
               },
               complete: () => {
                 this.hiddenSpinner();
@@ -1259,7 +1293,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.preOrderFiles.push(file);
       return isReadExcel;
     } catch (error) {
-      this.toastr.error('Error fetching or parsing file');
+      this.toastr.error(this.transloco.translate('file_fetch_or_parse_error', {}, 'index'));
       console.error('Error fetching or parsing file:', error);
       return false;
     }
@@ -1276,14 +1310,14 @@ export class RunComponent implements OnInit, AfterViewInit {
           resolve(isReadExcel);
         } catch (error) {
           console.error('Error processing Excel file:', error);
-          this.toastr.error('Failed to process Excel file');
+          this.toastr.error(this.transloco.translate('excel_process_failed', {}, 'index'));
           resolve(false);
         }
       };
 
       reader.onerror = (error) => {
         console.error('File reading error:', error);
-        this.toastr.error('Cannot read file');
+        this.toastr.error(this.transloco.translate('cannot_read_file', {}, 'index'));
         reject(false);
       };
 
@@ -1306,7 +1340,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.groupDataById();
       return true;
     } else {
-      this.toastr.error('Data validation failed');
+      this.toastr.error(this.transloco.translate('data_validation_failed', {}, 'index') );
       return false;
     }
   }
@@ -1321,7 +1355,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       const worksheet =
         workbook.getWorksheet(1) || workbook.getWorksheet('PreOrder');
       if (!worksheet) {
-        this.toastr.warning('Worksheet not found');
+        this.toastr.warning(this.transloco.translate('worksheet_not_found', {}, 'index') );
         return false;
       }
 
@@ -1344,7 +1378,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       return this.appendExcelData(data, worksheet);
     } catch (error) {
       console.error('Error reading Excel file:', error);
-      this.toastr.error('Failed to read Excel file');
+      this.toastr.error(this.transloco.translate('excel_read_failed', {}, 'index'));
       return false;
     }
   }
@@ -1495,5 +1529,29 @@ export class RunComponent implements OnInit, AfterViewInit {
       files.map((file) => file.data),
       files.map((file) => file.name)
     );
+  }
+
+  test() {
+    this.toastr.info(
+      this.transloco.translate('loading_preorder_data', {}, 'index'),
+      `${this.transloco.translate('please_wait', {}, 'index')} ...`
+    );
+
+    // this.openConfirmDialog(
+    //   this.transloco.translate('warning'),
+    //   `${this.transloco.translate('this_experiment_have_been', {}, 'index')} ${
+    //     this.experiment.status
+    //   }`,
+    //   `${this.transloco.translate(
+    //     'we_will_to_go_back_to_the_experiments_page',
+    //     {},
+    //     'index'
+    //   )}?`,
+    //   this.transloco.translate('acknowledge', {}, 'index'),
+    //   true
+    // ).result.then((confirmed) => {
+    //   this.spinner.hide();
+    //   this.router.navigate(['/users/experiments']);
+    // });
   }
 }

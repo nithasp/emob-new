@@ -46,5 +46,6 @@
   "province": "Province",
   "district": "District",
   "sub_district": "Sub-district",
-   "address": "Address"
+   "address": "Address",
+   "warning": "Warning"
 }
