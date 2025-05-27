@@ -37,5 +37,14 @@
   "less": "Less",
   "more": "More",
   "km": "km",
-  "kg": "kg"
+  "kg": "kg",
+  "kilogram": "Kilogram",
+  "total": "Total",
+  "order" : "Order",
+  "orders": "Orders",
+  "back": "Back",
+  "province": "Province",
+  "district": "District",
+  "sub_district": "Sub-district",
+   "address": "Address"
 }

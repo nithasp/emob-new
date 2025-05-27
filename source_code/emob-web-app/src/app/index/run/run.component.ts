@@ -77,6 +77,7 @@ import { firstValueFrom, take } from 'rxjs';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import { DataService } from 'src/app/services/data.service';
 import { ExportFileService } from 'src/app/services/export-file.service';
+import { set } from 'ol/transform';
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
 @Injectable()
@@ -265,47 +266,51 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.spinner.show();
-    this.isCreateMode = history.state.isCreateMode;
-    this.route.params
-      .pipe(take(1))
-      .subscribe((params: { [x: string]: string }) => {
-        console.log(params);
-        this.experimentService
-          .getExperiment(params['runId'])
-          .subscribe((response: Experiment) => {
-            this.experiment = { ...response };
-            if (this.experiment.status !== StatusExperiment.Initializing) {
-              this.spinner.hide();
-              this.openConfirmDialog(
-                'Warning',
-                `this experiment have been ${this.experiment.status} `,
-                'We will to go back to the experiments page?',
-                'Acknowledge',
-                true
-              ).result.then((confirmed) => {
+  }
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.isCreateMode = history.state.isCreateMode;
+      this.route.params
+        .pipe(take(1))
+        .subscribe((params: { [x: string]: string }) => {
+          console.log(params);
+          this.experimentService
+            .getExperiment(params['runId'])
+            .subscribe((response: Experiment) => {
+              this.experiment = { ...response };
+              if (this.experiment.status !== StatusExperiment.Initializing) {
                 this.spinner.hide();
-                this.router.navigate(['/users/experiments']);
-              });
-            } else
-              this.userMsGraphService
-                .getUserId()
-                .subscribe((userId: string | null) => {
-                  if (userId !== this.experiment.triggeredBy) {
-                    this.openConfirmDialog(
-                      'Warning',
-                      'You are not the creator of this experiment',
-                      'We will to go back to the experiments page?',
-                      'Acknowledge',
-                      true
-                    ).result.then((confirmed) => {
-                      this.spinner.hide();
-                      this.router.navigate(['/users/experiments']);
-                    });
-                  } else if (!this.experiment.preOrderBlobPath) {
-                    this.initializeDefaultParameter();
-                  } else {
-                    this.initializeDataFromExperiment(this.experiment).finally(
-                      () => {
+                this.openConfirmDialog(
+                  'Warning',
+                  `this experiment have been ${this.experiment.status} `,
+                  'We will to go back to the experiments page?',
+                  'Acknowledge',
+                  true
+                ).result.then((confirmed) => {
+                  this.spinner.hide();
+                  this.router.navigate(['/users/experiments']);
+                });
+              } else
+                this.userMsGraphService
+                  .getUserId()
+                  .subscribe((userId: string | null) => {
+                    if (userId !== this.experiment.triggeredBy) {
+                      this.openConfirmDialog(
+                        'Warning',
+                        'You are not the creator of this experiment',
+                        'We will to go back to the experiments page?',
+                        'Acknowledge',
+                        true
+                      ).result.then((confirmed) => {
+                        this.spinner.hide();
+                        this.router.navigate(['/users/experiments']);
+                      });
+                    } else if (!this.experiment.preOrderBlobPath) {
+                      this.initializeDefaultParameter();
+                    } else {
+                      this.initializeDataFromExperiment(
+                        this.experiment
+                      ).finally(() => {
                         setTimeout(() => {
                           this.toastr.success(
                             'Success to load experiment',
@@ -313,17 +318,15 @@ export class RunComponent implements OnInit, AfterViewInit {
                           );
                           this.spinner.hide();
                         }, 500);
-                      }
-                    );
-                  }
-                });
-          });
-      });
+                      });
+                    }
+                  });
+            });
+        });
 
-    this.initIconStyle();
-    this.initMap();
-  }
-  ngAfterViewInit() {
+      this.initIconStyle();
+      this.initMap();
+    }, 100);
     this.dataSource.paginator = this.paginator; // For pagination
     this.dataSource.sort = this.sort; // For sort
   }
