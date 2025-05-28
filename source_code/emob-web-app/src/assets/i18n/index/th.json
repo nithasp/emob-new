@@ -214,6 +214,10 @@
   "user_confirm": "ผู้ใช้ยืนยัน",
   "date_confirm": "วันที่ยืนยัน",
 
-  "update_location": "อัปเดตตำแหน่ง"
+  "update_location": "อัปเดตตำแหน่ง",
+    "please_mark_location_on_map_or_input_latitude_and_longitude": "กรุณาทำเครื่องหมายตำแหน่งบนแผนที่หรือป้อนละติจูดและลองจิจูด",
+      "sync_latitude_and_longitude_to_map": "ซิงค์ละติจูดและลองจิจูดกับแผนที่"
+
+
 
 }

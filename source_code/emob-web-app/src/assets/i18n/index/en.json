@@ -214,6 +214,11 @@
   "user_confirm": "USERCONFIRM",
   "date_confirm": "DATE CONFIRM",
 
-  "update_location": "Update Location"
+  "update_location": "Update Location",
+      "please_mark_location_on_map_or_input_latitude_and_longitude": "Please mark location on map or Input Latitude and Longtitude",
+        "sync_latitude_and_longitude_to_map": "Sync Latitude and Longitude to Map"
+
+
+
 
 }
