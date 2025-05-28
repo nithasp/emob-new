@@ -205,7 +205,7 @@
   "the_location_is": "The location is",
   "replace": "Replace",
   "order_details": "ORDER DETAILS",
-
+  "update_again": "Update Again",
  
   "product_id": "PRODUCTID",
   "product_name": "PRODUCT NAME",
@@ -216,7 +216,19 @@
 
   "update_location": "Update Location",
       "please_mark_location_on_map_or_input_latitude_and_longitude": "Please mark location on map or Input Latitude and Longtitude",
-        "sync_latitude_and_longitude_to_map": "Sync Latitude and Longitude to Map"
+        "sync_latitude_and_longitude_to_map": "Sync Latitude and Longitude to Map",
+
+
+
+          "upload_preorder_file_confirmation": "Upload PreOrder file Confirmation",
+  "confirm_to_upload_file": "Confirm to Upload file",
+  "please_make_sure_to_upload_the_file_and_note_that_there_may_be_a_cost_associated_with_finding_the_location": "Please make sure to upload the file, and note that there may be a cost associated with finding the location",
+  "update_parameter_confirmation": "Update Parameter Confirmation",
+  "confirm_to_set_default_parameter": "Confirm to set default Parameter",
+  "to_set_a_default_parameter_you_can_use_it_to_submit_an_experiment_in_the_future": "To set a default parameter, you can use it to submit an experiment in the future",
+  "experiment_confirmation": "Experiment Confirmation",
+  "confirm_to_submit_experiment": "Confirm to submit experiment",
+  "submitting_an_experiment_to_the_ai_service_will_start_the_planning_process": "Submitting an experiment to the AI service will start the planning process"
 
 
 

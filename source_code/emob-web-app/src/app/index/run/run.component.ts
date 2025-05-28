@@ -422,7 +422,11 @@ export class RunComponent implements OnInit, AfterViewInit {
                 this.toastr.info(
                   `${this.transloco.translate('please_wait', {}, 'index')} ` +
                     newData.length +
-                    ` ${this.transloco.translate('new_edited_location_data_suffix', {}, 'index')}`,
+                    ` ${this.transloco.translate(
+                      'new_edited_location_data_suffix',
+                      {},
+                      'index'
+                    )}`,
                   `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
@@ -492,13 +496,17 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (files instanceof FileList) {
       file = files[0];
       if (files.length > 1) {
-        this.toastr.warning(this.transloco.translate('cannot_use_multiple_files', {}, 'index'))
+        this.toastr.warning(
+          this.transloco.translate('cannot_use_multiple_files', {}, 'index')
+        );
       }
     } else {
       file = files.target.files[0];
       const target: DataTransfer = <DataTransfer>files.target;
       if (target.files.length > 1) {
-       this.toastr.warning(this.transloco.translate('cannot_use_multiple_files', {}, 'index'))
+        this.toastr.warning(
+          this.transloco.translate('cannot_use_multiple_files', {}, 'index')
+        );
       }
     }
     if (file) {
@@ -507,7 +515,10 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.transloco.translate('file_invalid', {}, 'index'),
           this.transloco.translate('select_excel_file', {}, 'index')
         );
-        this.toastr.error(`${this.transloco.translate('file_invalid', {}, 'index')}:`, file.type);
+        this.toastr.error(
+          `${this.transloco.translate('file_invalid', {}, 'index')}:`,
+          file.type
+        );
       } else {
         // Proceed with file processing
         this.uploadFile(file);
@@ -560,10 +571,21 @@ export class RunComponent implements OnInit, AfterViewInit {
         centered: true,
         animation: true,
       });
-      dialogRef.componentInstance.title = 'Upload PreOrder file Confirmation';
-      dialogRef.componentInstance.question = 'Confirm to Upload file ?';
-      dialogRef.componentInstance.message =
-        'Please make sure to upload the file, and note that there may be a cost associated with finding the location.';
+      dialogRef.componentInstance.title = this.transloco.translate(
+        'upload_preorder_file_confirmation',
+        {},
+        'index'
+      );
+      dialogRef.componentInstance.question = `${this.transloco.translate(
+        'confirm_to_upload_file',
+        {},
+        'index'
+      )} ?`;
+      dialogRef.componentInstance.message = `${this.transloco.translate(
+        'please_make_sure_to_upload_the_file_and_note_that_there_may_be_a_cost_associated_with_finding_the_location',
+        {},
+        'index'
+      )}.`;
 
       dialogRef.result
         .then((confirmed: boolean) => {
@@ -580,7 +602,13 @@ export class RunComponent implements OnInit, AfterViewInit {
                 this.preOrderFiles.push(file);
                 this.experiment.name = response.name;
                 this.spinner.hide();
-                this.toastr.success(`${this.transloco.translate('upload_preorder_success', {}, 'index')}.`);
+                this.toastr.success(
+                  `${this.transloco.translate(
+                    'upload_preorder_success',
+                    {},
+                    'index'
+                  )}.`
+                );
               });
           }
         })
@@ -657,10 +685,21 @@ export class RunComponent implements OnInit, AfterViewInit {
       centered: true,
       animation: true,
     });
-    dialogRef.componentInstance.title = 'Update Parameter Confirmation';
-    dialogRef.componentInstance.question = 'Confirm to set default Parameter ?';
-    dialogRef.componentInstance.message =
-      'To set a default parameter, you can use it to submit an experiment in the future.';
+    dialogRef.componentInstance.title = this.transloco.translate(
+      'update_parameter_confirmation',
+      {},
+      'index'
+    );
+    dialogRef.componentInstance.question = `${this.transloco.translate(
+      'confirm_to_set_default_parameter',
+      {},
+      'index'
+    )} ?`;
+    dialogRef.componentInstance.message = `${this.transloco.translate(
+      'to_set_a_default_parameter_you_can_use_it_to_submit_an_experiment_in_the_future',
+      {},
+      'index'
+    )}.`;
 
     dialogRef.result
       .then((confirmed: boolean) => {
@@ -671,11 +710,18 @@ export class RunComponent implements OnInit, AfterViewInit {
               (response: { status_message: string | undefined }) => {
                 this.toastr.success(
                   response.status_message,
-                  this.transloco.translate('set_default_parameter', {}, 'index') 
+                  this.transloco.translate('set_default_parameter', {}, 'index')
                 );
               },
               (error: any) => {
-                this.toastr.error(this.transloco.translate('set_default_parameter_failed', {}, 'index') , this.transloco.translate('error', {}, 'index'));
+                this.toastr.error(
+                  this.transloco.translate(
+                    'set_default_parameter_failed',
+                    {},
+                    'index'
+                  ),
+                  this.transloco.translate('error', {}, 'index')
+                );
                 console.error('Error updating parameter:', error);
               }
             );
@@ -919,8 +965,14 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
 
     if (missingColumns.length > 0) {
-      this.showInvalidModal(`${this.transloco.translate('missing_required_columns', {}, 'index')}:`, missingColumns);
-      this.toastr.error(`${this.transloco.translate('missing_required_columns', {}, 'index')}:`, missingColumns.join(','));
+      this.showInvalidModal(
+        `${this.transloco.translate('missing_required_columns', {}, 'index')}:`,
+        missingColumns
+      );
+      this.toastr.error(
+        `${this.transloco.translate('missing_required_columns', {}, 'index')}:`,
+        missingColumns.join(',')
+      );
       return false;
     }
     return true;
@@ -1098,7 +1150,10 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
   updateCustomerLocation(customersLocationUpdated: Customer) {
     this.customersLocationUpdated.push(customersLocationUpdated);
-    this.toastr.info(this.transloco.translate('updating_customer_location', {}, 'index') , `${this.transloco.translate('location_in_memory', {}, 'index')}.`);
+    this.toastr.info(
+      this.transloco.translate('updating_customer_location', {}, 'index'),
+      `${this.transloco.translate('location_in_memory', {}, 'index')}.`
+    );
   }
   isVerified(orderId: string): boolean {
     return (
@@ -1206,10 +1261,21 @@ export class RunComponent implements OnInit, AfterViewInit {
       centered: true,
       animation: true,
     });
-    dialogRef.componentInstance.title = 'Experiment Confirmation';
-    dialogRef.componentInstance.question = 'Confirm to submit experiment ?';
-    dialogRef.componentInstance.message =
-      'Submitting an experiment to the AI service will start the planning process.';
+    dialogRef.componentInstance.title = this.transloco.translate(
+      'experiment_confirmation',
+      {},
+      'index'
+    );
+    dialogRef.componentInstance.question = `${this.transloco.translate(
+      'confirm_to_submit_experiment',
+      {},
+      'index'
+    )} ?`;
+    dialogRef.componentInstance.message = `${this.transloco.translate(
+      'submitting_an_experiment_to_the_ai_service_will_start_the_planning_process',
+      {},
+      'index'
+    )}.`;
 
     dialogRef.result
       .then((confirmed: boolean) => {
@@ -1220,11 +1286,17 @@ export class RunComponent implements OnInit, AfterViewInit {
             .subscribe({
               next: (result) => {
                 console.log(result);
-                this.toastr.success(this.transloco.translate('submit_experiment', {}, 'index'), this.transloco.translate('succeed', {}, 'index'));
+                this.toastr.success(
+                  this.transloco.translate('submit_experiment', {}, 'index'),
+                  this.transloco.translate('succeed', {}, 'index')
+                );
                 this.router.navigate(['/users/experiments']);
               },
               error: (err) => {
-                this.toastr.error(this.transloco.translate('submit_experiment', {}, 'index'), this.transloco.translate('failed', {}, 'index'));
+                this.toastr.error(
+                  this.transloco.translate('submit_experiment', {}, 'index'),
+                  this.transloco.translate('failed', {}, 'index')
+                );
               },
               complete: () => {
                 this.hiddenSpinner();
@@ -1293,7 +1365,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.preOrderFiles.push(file);
       return isReadExcel;
     } catch (error) {
-      this.toastr.error(this.transloco.translate('file_fetch_or_parse_error', {}, 'index'));
+      this.toastr.error(
+        this.transloco.translate('file_fetch_or_parse_error', {}, 'index')
+      );
       console.error('Error fetching or parsing file:', error);
       return false;
     }
@@ -1310,14 +1384,18 @@ export class RunComponent implements OnInit, AfterViewInit {
           resolve(isReadExcel);
         } catch (error) {
           console.error('Error processing Excel file:', error);
-          this.toastr.error(this.transloco.translate('excel_process_failed', {}, 'index'));
+          this.toastr.error(
+            this.transloco.translate('excel_process_failed', {}, 'index')
+          );
           resolve(false);
         }
       };
 
       reader.onerror = (error) => {
         console.error('File reading error:', error);
-        this.toastr.error(this.transloco.translate('cannot_read_file', {}, 'index'));
+        this.toastr.error(
+          this.transloco.translate('cannot_read_file', {}, 'index')
+        );
         reject(false);
       };
 
@@ -1340,7 +1418,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.groupDataById();
       return true;
     } else {
-      this.toastr.error(this.transloco.translate('data_validation_failed', {}, 'index') );
+      this.toastr.error(
+        this.transloco.translate('data_validation_failed', {}, 'index')
+      );
       return false;
     }
   }
@@ -1355,7 +1435,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       const worksheet =
         workbook.getWorksheet(1) || workbook.getWorksheet('PreOrder');
       if (!worksheet) {
-        this.toastr.warning(this.transloco.translate('worksheet_not_found', {}, 'index') );
+        this.toastr.warning(
+          this.transloco.translate('worksheet_not_found', {}, 'index')
+        );
         return false;
       }
 
@@ -1378,7 +1460,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       return this.appendExcelData(data, worksheet);
     } catch (error) {
       console.error('Error reading Excel file:', error);
-      this.toastr.error(this.transloco.translate('excel_read_failed', {}, 'index'));
+      this.toastr.error(
+        this.transloco.translate('excel_read_failed', {}, 'index')
+      );
       return false;
     }
   }

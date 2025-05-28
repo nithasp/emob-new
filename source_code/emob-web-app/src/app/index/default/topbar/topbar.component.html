@@ -32,7 +32,7 @@
           class="nav-link"
           [routerLink]="['/users/experiments']"
           routerLinkActive
-          >{{ 'experiments' | transloco }}</a
+          >{{ "experiments" | transloco }}</a
         >
       </li>
       <li
@@ -44,25 +44,39 @@
           class="nav-link"
           [routerLink]="['/users/configurations']"
           routerLinkActive
-          >{{ 'configurations' | transloco }}</a
+          >{{ "configurations" | transloco }}</a
         >
       </li>
     </ul>
     <ul class="navbar-nav ml-auto nav-flex-icons">
-      <div class="d-flex align-items-center mr-1">
-        <span
-          class="lang"
+      <div class="d-flex gap-1 align-items-center mr-1">
+        <div
+          class="lang-wrapper"
           (click)="toggleLang('en')"
           [class.active]="currentLang === 'en'"
-          >EN</span
         >
-        <span class="mx-1">|</span>
-        <span
-          class="lang"
+          <img
+            src="assets/image/flag/Flag_of_the_United_States.svg.png"
+            class="flag-navbar"
+            width="20"
+            height="15"
+          />
+          <span class="lang">EN</span>
+        </div>
+
+        <div
+          class="lang-wrapper"
           (click)="toggleLang('th')"
           [class.active]="currentLang === 'th'"
-          >TH</span
         >
+          <img
+            src="assets/image/flag/Flag_of_Thailand.svg.webp"
+            class="flag-navbar"
+            width="20"
+            height="15"
+          />
+          <span class="lang">TH</span>
+        </div>
       </div>
 
       <li class="avatar dropdown">
@@ -96,7 +110,7 @@
             version : {{ version }}
           </button>
           <button class="dropdown-item btn btn-block" (click)="logout()">
-            <mat-icon>logout</mat-icon> {{ 'logout' | transloco }}
+            <mat-icon>logout</mat-icon> {{ "logout" | transloco }}
           </button>
         </div>
       </li>

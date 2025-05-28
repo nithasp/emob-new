@@ -205,7 +205,7 @@
   "the_location_is": "ตำแหน่งคือ",
   "replace": "แทนที่",
   "order_details": "รายละเอียดคำสั่งซื้อ",
-
+"update_again": "อัปเดตอีกครั้ง",
  
   "product_id": "รหัสสินค้า",
   "product_name": "ชื่อสินค้า",
@@ -216,7 +216,18 @@
 
   "update_location": "อัปเดตตำแหน่ง",
     "please_mark_location_on_map_or_input_latitude_and_longitude": "กรุณาทำเครื่องหมายตำแหน่งบนแผนที่หรือป้อนละติจูดและลองจิจูด",
-      "sync_latitude_and_longitude_to_map": "ซิงค์ละติจูดและลองจิจูดกับแผนที่"
+      "sync_latitude_and_longitude_to_map": "ซิงค์ละติจูดและลองจิจูดกับแผนที่",
+
+
+  "upload_preorder_file_confirmation": "ยืนยันการอัปโหลดไฟล์ PreOrder",
+  "confirm_to_upload_file": "ยืนยันการอัปโหลดไฟล์",
+  "please_make_sure_to_upload_the_file_and_note_that_there_may_be_a_cost_associated_with_finding_the_location": "โปรดตรวจสอบให้แน่ใจว่าได้อัปโหลดไฟล์ และโปรดทราบว่าอาจมีค่าใช้จ่ายที่เกี่ยวข้องกับการค้นหาตำแหน่ง",
+  "update_parameter_confirmation": "ยืนยันการอัปเดตพารามิเตอร์",
+  "confirm_to_set_default_parameter": "ยืนยันการตั้งค่าพารามิเตอร์เป็นค่าเริ่มต้น",
+  "to_set_a_default_parameter_you_can_use_it_to_submit_an_experiment_in_the_future": "เมื่อคุณตั้งพารามิเตอร์เป็นค่าเริ่มต้น คุณสามารถใช้มันเพื่อส่งการทดลองในอนาคต",
+  "experiment_confirmation": "ยืนยันการทดลอง",
+  "confirm_to_submit_experiment": "ยืนยันการส่งการทดลอง",
+  "submitting_an_experiment_to_the_ai_service_will_start_the_planning_process": "การส่งการทดลองไปยังบริการ AI จะเริ่มกระบวนการวางแผน"
 
 
 
