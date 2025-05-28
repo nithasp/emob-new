@@ -194,6 +194,26 @@
   "data_validation_failed": "Data validation failed",
   "worksheet_not_found": "Worksheet not found",
   "excel_read_failed": "Failed to read Excel file",
-    "loading_validation_data": "Loading Validation Data"
+    "loading_validation_data": "Loading Validation Data",
+
+
+
+     "customer_information": "CUSTOMER INFORMATION",
+  "channel": "CHANNEL",
+  "customer_name": "CUSTOMER NAME",
+  "geolocation_description": "Geolocation Description",
+  "the_location_is": "The location is",
+  "replace": "Replace",
+  "order_details": "ORDER DETAILS",
+
+ 
+  "product_id": "PRODUCTID",
+  "product_name": "PRODUCT NAME",
+  "quantity_main": "QUANTITY MAIN",
+  "quantity_minor": "QUANTITY MINOR",
+  "user_confirm": "USERCONFIRM",
+  "date_confirm": "DATE CONFIRM",
+
+  "update_location": "Update Location"
 
 }

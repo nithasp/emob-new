@@ -21,6 +21,7 @@ import OSM from 'ol/source/OSM';
 import { Style } from 'ol/style';
 import { MarkLocationDialogComponent } from '../mark-location-dialog/mark-location-dialog.component';
 import { ToastrService } from 'ngx-toastr';
+import { TranslocoService } from '@jsverse/transloco';
 @Component({
   selector: 'app-customer-details',
   templateUrl: './customer-details.component.html',
@@ -50,6 +51,7 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
   constructor(private readonly ngbModal: NgbModal,
     private readonly ngbModalActive: NgbActiveModal,
     private readonly toastr: ToastrService,
+    private readonly transloco: TranslocoService
     ) {
      }
   ngOnInit(): void {
@@ -265,7 +267,7 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
           this.locationType = LocationType.Edit;
           this.dataEmitter.emit(this.location);
           this.setLocation(this.dataCustomer,this.location);
-          this.toastr.success("Update Location","Succeed");
+          this.toastr.success(this.transloco.translate('update_location', {}, 'index'), this.transloco.translate('succeed', {}, 'index'));
       }
         
     }).catch((error) => {

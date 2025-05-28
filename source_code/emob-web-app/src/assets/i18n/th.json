@@ -8,7 +8,6 @@
   "minutes": "นาที",
   "not_set": "ไม่ได้ตั้งค่า",
   "hrs": "ชม",
-  
   "paginator": {
     "items_per_page": "จำนวนรายการต่อหน้า",
     "of": "จากทั้งหมด",
@@ -17,7 +16,6 @@
     "first_page": "หน้าแรก",
     "last_page": "หน้าสุดท้าย"
   },
-
   "wait_a_moment": "โปรดรอสักครู่",
   "update": "อัปเดต",
   "update_file": "อัปเดตไฟล์",
@@ -28,7 +26,6 @@
   "search_three_dots": "ค้นหา ...",
   "confirm": "ยืนยัน",
   "cancel": "ยกเลิก",
-
   "uploading": "กำลังอัปโหลด",
   "drag_and_drop_file_here": "ลากและวางไฟล์ที่นี่",
   "or": "หรือ",
@@ -40,12 +37,17 @@
   "kg": "กก",
   "kilogram": "กิโลกรัม",
   "total": "ทั้งหมด",
-  "order" : "คำสั่งซื้อ",
+  "order": "คำสั่งซื้อ",
   "orders": "คำสั่งซื้อ",
   "back": "ย้อนกลับ",
   "province": "จังหวัด",
   "district": "อำเภอ",
   "sub_district": "ตำบล",
   "address": "ที่อยู่",
-  "warning": "คำเตือน"
+  "warning": "คำเตือน",
+  
+  "latitude": "ละติจูด",
+  "longitude": "ลองจิจูด",
+  "zipcode": "รหัสไปรษณีย์",
+  "tel": "โทรศัพท์"
 }

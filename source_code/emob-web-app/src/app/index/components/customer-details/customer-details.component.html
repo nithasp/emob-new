@@ -1,205 +1,257 @@
-<div class="align-right" *ngIf="isModal">
+<ng-container *transloco="let t; read: 'index'">
+  <div class="align-right" *ngIf="isModal">
     <button class="btn" (click)="close()" aria-label="Close">
-        <mat-icon>clear</mat-icon>
+      <mat-icon>clear</mat-icon>
     </button>
-</div>
-<div style="min-height: 500px;" class="m-2">
-    <ngx-spinner name="detailUser">
-    </ngx-spinner>
-    <h2 class="text-center mb-4">CUSTOMER INFORMATION</h2>
+  </div>
+  <div style="min-height: 500px" class="m-2">
+    <ngx-spinner name="detailUser"> </ngx-spinner>
+    <h2 class="text-center mb-4">{{ t("customer_information") }}</h2>
 
-    <div class="row" *ngIf="dataPreOder!==null">
-
-        <div class="col-md-6">
-
-            <div class="col-sm-12 ">
-                <div class="input-group input-group-sm mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">ORDERID ORG</span>
-                    </div>
-                    <input type="text" class="form-control bg-white"
-                        [value]="dataPreOder.ORDERID_ORG" disabled>
-                </div>
+    <div class="row" *ngIf="dataPreOder !== null">
+      <div class="col-md-6">
+        <div class="col-sm-12">
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">ORDERID ORG</span>
             </div>
-            <div class="col-sm-12">
-                <div class="input-group input-group-sm mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">CHANNEL</span>
-                    </div>
-                    <input type="text" class="form-control bg-white"
-                        [value]="dataPreOder.CHANNEL" disabled>
-                </div>
-            </div>
-            <div class="col-sm-12">
-                <div class="input-group input-group-sm mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">CUSTOMER NAME</span>
-                    </div>
-                    <input type="text" class="form-control bg-white"
-                        [value]="dataPreOder.CUSTOMER_NAME" disabled>
-                </div>
-            </div>
-            <div class="col-sm-12">
-                <div class="input-group input-group-sm mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">TEL</span>
-                    </div>
-                    <input type="text" class="form-control bg-white"
-                        [value]="dataPreOder.TEL" disabled>
-                </div>
-            </div>
-            <div class="col-sm-12">
-                <div class="input-group input-group-sm mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">AMPHER</span>
-                    </div>
-                    <input type="text" class="form-control bg-white"
-                        [value]="dataPreOder.AUMPHER" disabled>
-                </div>
-            </div>
-            <div class="col-sm-12">
-                <div class="input-group input-group-sm mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">PROVINCE</span>
-                    </div>
-                    <input type="text" class="form-control bg-white"
-                        [value]="dataPreOder.PROVINCE" disabled>
-                </div>
-            </div>
-            <div class="col-sm-12">
-                <div class="input-group input-group-sm mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">ZIPCODE</span>
-                    </div>
-                    <input type="text" class="form-control bg-white"
-                        [value]="dataPreOder.ZIPCODE" disabled>
-                </div>
-            </div>
-            <div class="col-sm-12">
-                <div class="input-group input-group-sm mb-3">
-                    <div class="input-group-prepend" style="height: 100px;">
-                        <span class="input-group-text"
-                            style="height: 100px;display: flex;align-items: center;">ADDRESS</span>
-                    </div>
-                    <textarea class="form-control bg-white" aria-label="Small"
-                        aria-describedby="inputGroup-sizing-sm" rows="3"
-                        [value]="dataPreOder.ADDRESS"
-                        style="height: 100px; overflow: auto;" disabled></textarea>
-                </div>
-            </div>
-
+            <input
+              type="text"
+              class="form-control bg-white"
+              [value]="dataPreOder.ORDERID_ORG"
+              disabled
+            />
+          </div>
         </div>
-        <div class="col-md-6 mb-2">
-            <div id="customerProfileMap" class="map" style="height: 100%;min-height: 300px;"></div>
-        </div>
-        <div class="col-sm-6">
-            <p class="h6">Geolocation Description</p>
-            <div class="row">
-                <div class="col-sm-12">
-                    <div
-                        class=" m-3  alert text-center text-uppercase font-weight-bold"
-                        [ngClass]="{
-        'alert-warning': isUncertain(),
-        'alert-danger': isUnverified(),
-        'alert-success': isVerified(),
-        'alert-primary': isEdited()
-      }">
-                        The location is {{locationType}}
-                    </div>
-                </div>
-
-                <dt class="col-sm-2">Validation</dt>
-                <dd class="col-sm-10">{{getEnumDescription(dataCustomer.validation_type)}}</dd>
-                <dt class="col-sm-2">Repalce</dt>
-                <dd class="col-sm-10">{{getEnumDescription(dataCustomer.replace_type)}}</dd>
-
+        <div class="col-sm-12">
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">{{ t("channel") }}</span>
             </div>
+            <input
+              type="text"
+              class="form-control bg-white"
+              [value]="dataPreOder.CHANNEL"
+              disabled
+            />
+          </div>
         </div>
-        <div class="col-sm-6">
-            <div class="row justify-content-md-center">
-                <div class="col-sm-6">
-                    <div class="input-group input-group-sm mb-3">
-                        <div class="input-group-prepend">
-                            <span
-                                class="input-group-text bg-secondary bg-gradient text-white"
-                                style="width: fit-content;">Latitude</span>
-                        </div>
-                        <input type="text" class="form-control bg-light"
-                            [(ngModel)]="location.latitude" disabled>
-                    </div>
-                </div>
-                <div class="col-sm-6">
-                    <div class="input-group input-group-sm mb-3">
-                        <div class="input-group-prepend ">
-                            <span
-                                class="input-group-text bg-secondary bg-gradient text-white"
-                                style="width: fit-content;">Longitude</span>
-                        </div>
-                        <input type="text" class="form-control bg-light"
-                        [(ngModel)]="location.longitude" disabled>
-                    </div>
-                </div>
-                @if(!isVerified()){
-                <div class="col-md-auto">
-                    <button mat-raised-button class="bg-custom-primary"
-                        (click)="markLocation()">
-                        <mat-icon>edit_location_alt</mat-icon>
-                        @if (isEdited()) {
-                            Update Again
-                        }@else {
-                            Update
-                        }
-                        </button>
-                </div>
-                }
-
+        <div class="col-sm-12">
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">{{ t("customer_name") }}</span>
             </div>
-
+            <input
+              type="text"
+              class="form-control bg-white"
+              [value]="dataPreOder.CUSTOMER_NAME"
+              disabled
+            />
+          </div>
         </div>
+        <div class="col-sm-12">
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">{{ "tel" | transloco }}</span>
+            </div>
+            <input
+              type="text"
+              class="form-control bg-white"
+              [value]="dataPreOder.TEL"
+              disabled
+            />
+          </div>
+        </div>
+        <div class="col-sm-12">
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">{{ "district" | transloco }}</span>
+            </div>
+            <input
+              type="text"
+              class="form-control bg-white"
+              [value]="dataPreOder.AUMPHER"
+              disabled
+            />
+          </div>
+        </div>
+        <div class="col-sm-12">
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">{{ "province" | transloco }}</span>
+            </div>
+            <input
+              type="text"
+              class="form-control bg-white"
+              [value]="dataPreOder.PROVINCE"
+              disabled
+            />
+          </div>
+        </div>
+        <div class="col-sm-12">
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">{{ "zipcode" | transloco }}</span>
+            </div>
+            <input
+              type="text"
+              class="form-control bg-white"
+              [value]="dataPreOder.ZIPCODE"
+              disabled
+            />
+          </div>
+        </div>
+        <div class="col-sm-12">
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend" style="height: 100px">
+              <span
+                class="input-group-text"
+                style="height: 100px; display: flex; align-items: center"
+                >{{ "address" | transloco }}</span
+              >
+            </div>
+            <textarea
+              class="form-control bg-white"
+              aria-label="Small"
+              aria-describedby="inputGroup-sizing-sm"
+              rows="3"
+              [value]="dataPreOder.ADDRESS"
+              style="height: 100px; overflow: auto"
+              disabled
+            ></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 mb-2">
+        <div
+          id="customerProfileMap"
+          class="map"
+          style="height: 100%; min-height: 300px"
+        ></div>
+      </div>
+      <div class="col-sm-6">
+        <p class="h6">{{ t("geolocation_description") }}</p>
 
+        <div class="row">
+          <div class="col-sm-12">
+            <div
+              class="m-3 alert text-center text-uppercase font-weight-bold"
+              [ngClass]="{
+                'alert-warning': isUncertain(),
+                'alert-danger': isUnverified(),
+                'alert-success': isVerified(),
+                'alert-primary': isEdited()
+              }"
+            >
+              {{ t("the_location_is") }} {{ locationType }}
+            </div>
+          </div>
+
+          <dt class="col-sm-2">{{ t("validation") }}</dt>
+
+          <dd class="col-sm-10">
+            {{ getEnumDescription(dataCustomer.validation_type) }}
+          </dd>
+          <dt class="col-sm-2">{{ t("replace") }}</dt>
+          <dd class="col-sm-10">
+            {{ getEnumDescription(dataCustomer.replace_type) }}
+          </dd>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="row justify-content-md-center">
+          <div class="col-sm-6">
+            <div class="input-group input-group-sm mb-3">
+              <div class="input-group-prepend">
+                <span
+                  class="input-group-text bg-secondary bg-gradient text-white"
+                  style="width: fit-content"
+                  >{{ "latitude" | transloco }}</span
+                >
+              </div>
+              <input
+                type="text"
+                class="form-control bg-light"
+                [(ngModel)]="location.latitude"
+                disabled
+              />
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="input-group input-group-sm mb-3">
+              <div class="input-group-prepend">
+                <span
+                  class="input-group-text bg-secondary bg-gradient text-white"
+                  style="width: fit-content"
+                  >{{ "longitude" | transloco }}</span
+                >
+              </div>
+              <input
+                type="text"
+                class="form-control bg-light"
+                [(ngModel)]="location.longitude"
+                disabled
+              />
+            </div>
+          </div>
+          @if(!isVerified()){
+          <div class="col-md-auto">
+            <button
+              mat-raised-button
+              class="bg-custom-primary"
+              (click)="markLocation()"
+            >
+              <mat-icon>edit_location_alt</mat-icon>
+              @if (isEdited()) { Update Again }@else { Update }
+            </button>
+          </div>
+          }
+        </div>
+      </div>
     </div>
-    <h3 mat-dialog-title class="text-center">ORDER DETAILS</h3>
+    <h3 mat-dialog-title class="text-center">{{ t("order_details") }}</h3>
     <div mat-dialog-content>
-        <div class="modal-body" *ngIf="dataPreOder.details.length > 0">
-
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr><th scope="col">No.</th>
-                            <th scope="col">PRODUCTID</th>
-                            <th scope="col">ORDER ID</th>
-                            <th scope="col">PRODUCT NAME</th>
-                            <th scope="col">QUANTITY MAIN</th>
-                            <th scope="col">QUANTITY MINOR</th>
-                            <th scope="col">USERCONFIRM</th>
-                            <th scope="col">DATE CONFIRM</th>
-    
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let order of dataPreOder.details;let i = index;">
-                            <th scope="row">{{ i+1 }}</th>
-                            <td>{{ order.PRODUCTID}}</td>
-                            <td>{{ order.ORDER_ID}}</td>
-                            <td>{{ order.PRODUCTNAME}}</td>
-                            <td>{{ order.QUANTITYMAIN}}</td>
-                            <td>{{ order.QUANTITYMINOR}}</td>
-                            <td>{{ order.UserConfirm}}</td>
-                            <td>
-                                {{ order.DateConfirm }}
-                            </td>
-    
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="d-flex justify-content-between p-2 float-right">
-                <ngb-pagination [collectionSize]="dataPreOder.details.length"
-                    [(page)]="page" [pageSize]="6">
-                </ngb-pagination>
-            </div>
-
+      <div class="modal-body" *ngIf="dataPreOder.details.length > 0">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">{{ t("no") }}</th>
+                <th scope="col">{{ t("product_id") }}</th>
+                <th scope="col">{{ t("order_id") }}</th>
+                <th scope="col">{{ t("product_name") }}</th>
+                <th scope="col">{{ t("quantity_main") }}</th>
+                <th scope="col">{{ t("quantity_minor") }}</th>
+                <th scope="col">{{ t("user_confirm") }}</th>
+                <th scope="col">{{ t("date_confirm") }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of dataPreOder.details; let i = index">
+                <th scope="row">{{ i + 1 }}</th>
+                <td>{{ order.PRODUCTID }}</td>
+                <td>{{ order.ORDER_ID }}</td>
+                <td>{{ order.PRODUCTNAME }}</td>
+                <td>{{ order.QUANTITYMAIN }}</td>
+                <td>{{ order.QUANTITYMINOR }}</td>
+                <td>{{ order.UserConfirm }}</td>
+                <td>
+                  {{ order.DateConfirm }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+
+        <div class="d-flex justify-content-between p-2 float-right">
+          <ngb-pagination
+            [collectionSize]="dataPreOder.details.length"
+            [(page)]="page"
+            [pageSize]="6"
+          >
+          </ngb-pagination>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
+</ng-container>

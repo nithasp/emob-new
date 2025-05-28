@@ -196,6 +196,24 @@
   "data_validation_failed": "การตรวจสอบข้อมูลล้มเหลว",
   "worksheet_not_found": "ไม่พบแผ่นงาน",
   "excel_read_failed": "ไม่สามารถอ่านไฟล์ Excel ได้",
-    "loading_validation_data": "กำลังโหลดข้อมูลการตรวจสอบ"
+    "loading_validation_data": "กำลังโหลดข้อมูลการตรวจสอบ",
+
+ "customer_information": "ข้อมูลลูกค้า",
+  "channel": "ช่องทาง",
+  "customer_name": "ชื่อลูกค้า",
+  "geolocation_description": "คำอธิบายตำแหน่งทางภูมิศาสตร์",
+  "the_location_is": "ตำแหน่งคือ",
+  "replace": "แทนที่",
+  "order_details": "รายละเอียดคำสั่งซื้อ",
+
+ 
+  "product_id": "รหัสสินค้า",
+  "product_name": "ชื่อสินค้า",
+  "quantity_main": "จำนวนหลัก",
+  "quantity_minor": "จำนวนย่อย",
+  "user_confirm": "ผู้ใช้ยืนยัน",
+  "date_confirm": "วันที่ยืนยัน",
+
+  "update_location": "อัปเดตตำแหน่ง"
 
 }

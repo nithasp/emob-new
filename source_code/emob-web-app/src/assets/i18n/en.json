@@ -40,12 +40,17 @@
   "kg": "kg",
   "kilogram": "Kilogram",
   "total": "Total",
-  "order" : "Order",
+  "order": "Order",
   "orders": "Orders",
   "back": "Back",
   "province": "Province",
   "district": "District",
   "sub_district": "Sub-district",
-   "address": "Address",
-   "warning": "Warning"
+  "address": "Address",
+  "warning": "Warning",
+  
+  "latitude": "Latitude",
+  "longitude": "Longitude",
+  "zipcode": "ZIPCODE",
+  "tel": "TEL"
 }
