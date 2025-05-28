@@ -32,6 +32,7 @@ export class TopbarComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.getLanguage();
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.activeRoute = event.urlAfterRedirects.split('/')[2];
@@ -68,5 +69,11 @@ export class TopbarComponent implements OnInit {
 
   toggleLang(lang: 'en' | 'th') {
     this.transloco.setActiveLang(lang);
+    localStorage.setItem('lang', lang);
+  }
+
+  getLanguage() {
+    const currentLang = localStorage.getItem('lang') || this.transloco.getDefaultLang();
+    this.transloco.setActiveLang(currentLang);
   }
 }
