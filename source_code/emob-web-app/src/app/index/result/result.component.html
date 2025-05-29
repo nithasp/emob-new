@@ -130,9 +130,9 @@
                 <th
                   *ngFor="let col of headersReport"
                   scope="col"
-                  class="text-capitalize text-wrap"
+                  class="text-wrap"
                 >
-                  {{ col.replaceAll("_", " ") }}
+                    {{ col | lowercase }}
                 </th>
               </tr>
             </thead>
