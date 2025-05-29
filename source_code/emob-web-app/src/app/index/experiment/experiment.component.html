@@ -77,8 +77,7 @@
                   (click)="$event.stopPropagation()"
                   [(ngModel)]="cd.visible"
                   (ngModelChange)="saveDisplayedColumns()"
-                >
-                  {{ cd.label }}
+                  >{{ t(cd.label) }}
                 </mat-checkbox>
               </div>
             </mat-menu>

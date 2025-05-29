@@ -228,9 +228,10 @@
   "to_set_a_default_parameter_you_can_use_it_to_submit_an_experiment_in_the_future": "To set a default parameter, you can use it to submit an experiment in the future",
   "experiment_confirmation": "Experiment Confirmation",
   "confirm_to_submit_experiment": "Confirm to submit experiment",
-  "submitting_an_experiment_to_the_ai_service_will_start_the_planning_process": "Submitting an experiment to the AI service will start the planning process"
+  "submitting_an_experiment_to_the_ai_service_will_start_the_planning_process": "Submitting an experiment to the AI service will start the planning process",
 
 
 
-
+  "select":       "Select",
+  "actions":      "Actions"
 }

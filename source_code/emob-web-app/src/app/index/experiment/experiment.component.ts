@@ -31,71 +31,19 @@ import { TranslocoService } from '@jsverse/transloco';
 export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
   columnsStorageKey = 'experimentDisplayedColumns';
   public displayedColumns = [
-    {
-      def: 'select',
-      label: 'select',
-      visible: true,
-    },
-    {
-      def: 'Name',
-      label: 'Name',
-      visible: true,
-    },
-    {
-      def: 'actions',
-      label: 'Actions',
-      visible: true,
-    },
-    {
-      def: 'TimeStamp',
-      label: 'TimeStamp',
-      visible: true,
-    },
-    {
-      def: 'TimeStart',
-      label: 'Run Start',
-      visible: true,
-    },
-    {
-      def: 'TimeEnd',
-      label: 'Run End',
-      visible: true,
-    },
-    {
-      def: 'TimeDuration',
-      label: 'Duration',
-      visible: true,
-    },
-    {
-      def: 'TriggeredBy',
-      label: 'Triggered By',
-      visible: true,
-    },
-    {
-      def: 'Status',
-      label: 'Status',
-      visible: true,
-    },
-    {
-      def: 'Run',
-      label: 'Run',
-      visible: true,
-    },
-    {
-      def: 'parameter',
-      label: 'Parameter',
-      visible: true,
-    },
-    {
-      def: 'RunId',
-      label: 'Run ID',
-      visible: false,
-    },
-    {
-      def: 'GroupId',
-      label: 'Group ID',
-      visible: false,
-    },
+    { def: 'select', label: 'select', visible: true },
+    { def: 'Name', label: 'name', visible: true },
+    { def: 'actions', label: 'actions', visible: true },
+    { def: 'TimeStamp', label: 'timestamp', visible: true },
+    { def: 'TimeStart', label: 'run_start', visible: true },
+    { def: 'TimeEnd', label: 'run_end', visible: true },
+    { def: 'TimeDuration', label: 'duration', visible: true },
+    { def: 'TriggeredBy', label: 'triggered_by', visible: true },
+    { def: 'Status', label: 'status', visible: true },
+    { def: 'Run', label: 'run', visible: true },
+    { def: 'parameter', label: 'parameter', visible: true },
+    { def: 'RunId', label: 'run_id', visible: false },
+    { def: 'GroupId', label: 'group_id', visible: false },
   ];
   paramsVehicle: TimingAndCapacity = {
     backToDepotTime: '',

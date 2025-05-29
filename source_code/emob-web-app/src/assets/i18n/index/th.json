@@ -227,8 +227,9 @@
   "to_set_a_default_parameter_you_can_use_it_to_submit_an_experiment_in_the_future": "เมื่อคุณตั้งพารามิเตอร์เป็นค่าเริ่มต้น คุณสามารถใช้มันเพื่อส่งการทดลองในอนาคต",
   "experiment_confirmation": "ยืนยันการทดลอง",
   "confirm_to_submit_experiment": "ยืนยันการส่งการทดลอง",
-  "submitting_an_experiment_to_the_ai_service_will_start_the_planning_process": "การส่งการทดลองไปยังบริการ AI จะเริ่มกระบวนการวางแผน"
+  "submitting_an_experiment_to_the_ai_service_will_start_the_planning_process": "การส่งการทดลองไปยังบริการ AI จะเริ่มกระบวนการวางแผน",
 
 
-
+  "select":       "เลือก",
+  "actions":      "การดำเนินการ"
 }
