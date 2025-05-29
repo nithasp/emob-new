@@ -376,7 +376,7 @@
                 === 'travel_distance') {
                 {{ element[column] | number : "1.0-0" }} KM } @else if(column
                 === 'travel_duration' || column === 'service_time') {
-                {{ element[column] / 60 | number : "1.0-2" }} hrs. } @else {
+                {{ element[column] / 60 | number : "1.0-2" }} hours } @else {
                 {{ element[column] | number : "1.0-0" }}
                 } } @else {
                 {{ element[column] }}
@@ -560,7 +560,7 @@
               <strong>{{ t("duration") }} : </strong>
               <span>
                 {{ popupContent["duration"] / 60 | number : "1.2-2" }}
-                {{ "hours" | transloco }}.</span
+                {{ "hours" | transloco }}</span
               >
             </p>
             <p
