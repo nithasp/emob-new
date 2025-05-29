@@ -89,13 +89,11 @@
   "total_customers": "Total Customers",
   "service_duration": "Service Duration",
   "travel_duration": "Travel Duration",
-
   "wait_a_moment": "Wait a moment",
   "orders_data": "Orders data",
   "drag_and_drop_file_here": "Drag and drop file here",
   "or": "or",
   "browse_file": "Browse File",
-
   "total_orders": "Total Orders",
   "point": "Point",
   "verified": "Verified",
@@ -118,7 +116,6 @@
   "maximum_travel_distance": "Maximum travel distance",
   "service_duration_time": "Service duration time",
   "set_as_default": "Set As Default",
-
   "revalidate": "Revalidate",
   "validate": "Validate",
   "validation": "Validation",
@@ -143,7 +140,6 @@
   "edit_location": "Edit location",
   "uncertain_location": "Uncertain location",
   "unverify_location": "Unverify location",
-
   "no": "No.",
   "file_name": "File Name",
   "size": "Size",
@@ -161,12 +157,9 @@
   "this_experiment_have_been": "This experiment have been",
   "we_will_to_go_back_to_the_experiments_page": "We will to go back to the experiments page",
   "you_are_not_the_creator_of_this_experiment": "You are not the creator of this experiment",
-
-    "cannot_delete_file": "Cannot delete file",
+  "cannot_delete_file": "Cannot delete file",
   "original_experiment_warning": "This experiment is the original of the parent experiment",
   "rewrite_file_instruction": "If you need to rewrite the file, please create a new experiment",
-
-
   "success_load_experiment": "Success to load experiment",
   "loading_preorder_data": "Loading PreOrder Data",
   "please_wait": "Please wait",
@@ -174,7 +167,7 @@
   "reupload_preorder_file": "Please reupload Pre-order file again",
   "loading_geo_location_data": "Loading Geo Location Data",
   "loading_modified_geo_data": "Loading modified geo-location data.",
-    "new_edited_location_data_prefix": "There are",
+  "new_edited_location_data_prefix": "There are",
   "new_edited_location_data_suffix": "new data from user edited location in session",
   "cannot_use_multiple_files": "Cannot use multiple files",
   "file_invalid": "File Invalid",
@@ -195,11 +188,8 @@
   "data_validation_failed": "Data validation failed",
   "worksheet_not_found": "Worksheet not found",
   "excel_read_failed": "Failed to read Excel file",
-    "loading_validation_data": "Loading Validation Data",
-
-
-
-     "customer_information": "CUSTOMER INFORMATION",
+  "loading_validation_data": "Loading Validation Data",
+  "customer_information": "CUSTOMER INFORMATION",
   "channel": "CHANNEL",
   "customer_name": "CUSTOMER NAME",
   "geolocation_description": "Geolocation Description",
@@ -207,21 +197,16 @@
   "replace": "Replace",
   "order_details": "ORDER DETAILS",
   "update_again": "Update Again",
- 
   "product_id": "PRODUCTID",
   "product_name": "PRODUCT NAME",
   "quantity_main": "QUANTITY MAIN",
   "quantity_minor": "QUANTITY MINOR",
   "user_confirm": "USERCONFIRM",
   "date_confirm": "DATE CONFIRM",
-
   "update_location": "Update Location",
-      "please_mark_location_on_map_or_input_latitude_and_longitude": "Please mark location on map or Input Latitude and Longtitude",
-        "sync_latitude_and_longitude_to_map": "Sync Latitude and Longitude to Map",
-
-
-
-          "upload_preorder_file_confirmation": "Upload PreOrder file Confirmation",
+  "please_mark_location_on_map_or_input_latitude_and_longitude": "Please mark location on map or Input Latitude and Longtitude",
+  "sync_latitude_and_longitude_to_map": "Sync Latitude and Longitude to Map",
+  "upload_preorder_file_confirmation": "Upload PreOrder file Confirmation",
   "confirm_to_upload_file": "Confirm to Upload file",
   "please_make_sure_to_upload_the_file_and_note_that_there_may_be_a_cost_associated_with_finding_the_location": "Please make sure to upload the file, and note that there may be a cost associated with finding the location",
   "update_parameter_confirmation": "Update Parameter Confirmation",
@@ -230,23 +215,15 @@
   "experiment_confirmation": "Experiment Confirmation",
   "confirm_to_submit_experiment": "Confirm to submit experiment",
   "submitting_an_experiment_to_the_ai_service_will_start_the_planning_process": "Submitting an experiment to the AI service will start the planning process",
-
-
-
   "select": "Select",
   "actions": "Actions",
   "failed_to_download_plan": "Failed to download plan",
   "failed_to_get_download_url": "Failed to get download URL",
   "no_report_available_to_load": "No report available to load",
-
-
-
   "number_delivery_points": "Number of Delivery Points",
   "service_time": "Service Time",
   "travel_distance": "Travel Distance",
-
-
-    "equal": "Equal",
+  "equal": "Equal",
   "does_not_equal": "Does Not Equal",
   "greater_than": "Greater Than",
   "greater_than_or_equal": "Greater Than or Equal",
@@ -259,15 +236,12 @@
   "ends_with": "Ends With",
   "does_not_end_with": "Does Not End With",
   "enter_value": "Enter Value",
-
   "status_succeeded": "Succeeded",
   "status_in_progress": "In Progress",
   "status_queued": "Queued",
   "status_failed": "Failed",
   "status_canceled": "Canceled",
   "status_initializing": "Initializing",
-
-
   "utilize": "Utilization",
   "total_duration": "Total Duration",
   "depot2first_distance": "Depot to First Point Distance",

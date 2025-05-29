@@ -8,16 +8,6 @@
   "minutes": "Minutes",
   "not_set": "Not set",
   "hrs": "hrs",
-
-  "paginator": {
-    "items_per_page": "Items per page",
-    "of": "of",
-    "next_page": "Next page",
-    "previous_page": "Previous page",
-    "first_page": "First page",
-    "last_page": "Last page"
-  },
-
   "wait_a_moment": "Wait a moment",
   "update": "Update",
   "update_file": "Update File",
@@ -28,7 +18,6 @@
   "search_three_dots": "Search ...",
   "confirm": "Confirm",
   "cancel": "Cancel",
-
   "uploading": "Uploading",
   "drag_and_drop_file_here": "Drag and drop file here",
   "or": "or",
@@ -49,9 +38,16 @@
   "sub_district": "Sub-district",
   "address": "Address",
   "warning": "Warning",
-  
   "latitude": "Latitude",
   "longitude": "Longitude",
   "zipcode": "ZIPCODE",
-  "tel": "TEL"
+  "tel": "TEL",
+  "paginator": {
+    "items_per_page": "Items per page",
+    "of": "of",
+    "next_page": "Next page",
+    "previous_page": "Previous page",
+    "first_page": "First page",
+    "last_page": "Last page"
+  }
 }

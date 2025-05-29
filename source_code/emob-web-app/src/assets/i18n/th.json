@@ -8,14 +8,6 @@
   "minutes": "นาที",
   "not_set": "ไม่ได้ตั้งค่า",
   "hrs": "ชม",
-  "paginator": {
-    "items_per_page": "จำนวนรายการต่อหน้า",
-    "of": "จากทั้งหมด",
-    "next_page": "ถัดไป",
-    "previous_page": "ก่อนหน้า",
-    "first_page": "หน้าแรก",
-    "last_page": "หน้าสุดท้าย"
-  },
   "wait_a_moment": "โปรดรอสักครู่",
   "update": "อัปเดต",
   "update_file": "อัปเดตไฟล์",
@@ -46,9 +38,16 @@
   "sub_district": "ตำบล",
   "address": "ที่อยู่",
   "warning": "คำเตือน",
-  
   "latitude": "ละติจูด",
   "longitude": "ลองจิจูด",
   "zipcode": "รหัสไปรษณีย์",
-  "tel": "โทรศัพท์"
+  "tel": "โทรศัพท์",
+  "paginator": {
+    "items_per_page": "จำนวนรายการต่อหน้า",
+    "of": "จากทั้งหมด",
+    "next_page": "ถัดไป",
+    "previous_page": "ก่อนหน้า",
+    "first_page": "หน้าแรก",
+    "last_page": "หน้าสุดท้าย"
+  }
 }

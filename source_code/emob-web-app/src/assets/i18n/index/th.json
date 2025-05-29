@@ -89,13 +89,11 @@
   "total_customers": "จำนวนลูกค้าทั้งหมด",
   "service_duration": "ระยะเวลาการให้บริการ",
   "travel_duration": "ระยะเวลาเดินทาง",
-
   "wait_a_moment": "รอสักครู่",
   "orders_data": "ข้อมูลคำสั่งซื้อ",
   "drag_and_drop_file_here": "ลากและวางไฟล์ที่นี่",
   "or": "หรือ",
   "browse_file": "เรียกดูไฟล์",
-
   "total_orders": "คำสั่งซื้อทั้งหมด",
   "point": "จุด",
   "verified": "ตรวจสอบแล้ว",
@@ -118,7 +116,6 @@
   "maximum_travel_distance": "ระยะทางการเดินทางสูงสุด",
   "service_duration_time": "ระยะเวลาบริการ",
   "set_as_default": "ตั้งเป็นค่าเริ่มต้น",
-
   "revalidate": "ตรวจสอบใหม่",
   "validate": "ตรวจสอบ",
   "validation": "การตรวจสอบ",
@@ -143,7 +140,6 @@
   "edit_location": "แก้ไขตำแหน่ง",
   "uncertain_location": "ตำแหน่งไม่แน่นอน",
   "unverify_location": "ยกเลิกการตรวจสอบตำแหน่ง",
-
   "no": "เลขที่",
   "file_name": "ชื่อไฟล์",
   "size": "ขนาด",
@@ -161,11 +157,9 @@
   "this_experiment_have_been": "การทดลองนี้ได้ถูกดำเนินการแล้ว",
   "we_will_to_go_back_to_the_experiments_page": "เราจะกลับไปที่หน้าการทดลอง",
   "you_are_not_the_creator_of_this_experiment": "คุณไม่ใช่ผู้สร้างการทดลองนี้",
-
   "cannot_delete_file": "ไม่สามารถลบไฟล์ได้",
   "original_experiment_warning": "การทดลองนี้เป็นต้นฉบับของการทดลองแม่",
   "rewrite_file_instruction": "หากต้องการเขียนไฟล์ใหม่ กรุณาสร้างการทดลองใหม่",
-
   "success_load_experiment": "โหลดการทดลองสำเร็จ",
   "loading_preorder_data": "กำลังโหลดข้อมูล PreOrder",
   "please_wait": "กรุณารอสักครู่",
@@ -195,7 +189,6 @@
   "worksheet_not_found": "ไม่พบแผ่นงาน",
   "excel_read_failed": "ไม่สามารถอ่านไฟล์ Excel ได้",
   "loading_validation_data": "กำลังโหลดข้อมูลการตรวจสอบ",
-
   "customer_information": "ข้อมูลลูกค้า",
   "channel": "ช่องทาง",
   "customer_name": "ชื่อลูกค้า",
@@ -204,18 +197,15 @@
   "replace": "แทนที่",
   "order_details": "รายละเอียดคำสั่งซื้อ",
   "update_again": "อัปเดตอีกครั้ง",
-
   "product_id": "รหัสสินค้า",
   "product_name": "ชื่อสินค้า",
   "quantity_main": "จำนวนหลัก",
   "quantity_minor": "จำนวนย่อย",
   "user_confirm": "ผู้ใช้ยืนยัน",
   "date_confirm": "วันที่ยืนยัน",
-
   "update_location": "อัปเดตตำแหน่ง",
   "please_mark_location_on_map_or_input_latitude_and_longitude": "กรุณาทำเครื่องหมายตำแหน่งบนแผนที่หรือป้อนละติจูดและลองจิจูด",
   "sync_latitude_and_longitude_to_map": "ซิงค์ละติจูดและลองจิจูดกับแผนที่",
-
   "upload_preorder_file_confirmation": "ยืนยันการอัปโหลดไฟล์ PreOrder",
   "confirm_to_upload_file": "ยืนยันการอัปโหลดไฟล์",
   "please_make_sure_to_upload_the_file_and_note_that_there_may_be_a_cost_associated_with_finding_the_location": "โปรดตรวจสอบให้แน่ใจว่าได้อัปโหลดไฟล์ และโปรดทราบว่าอาจมีค่าใช้จ่ายที่เกี่ยวข้องกับการค้นหาตำแหน่ง",
@@ -225,17 +215,14 @@
   "experiment_confirmation": "ยืนยันการทดลอง",
   "confirm_to_submit_experiment": "ยืนยันการส่งการทดลอง",
   "submitting_an_experiment_to_the_ai_service_will_start_the_planning_process": "การส่งการทดลองไปยังบริการ AI จะเริ่มกระบวนการวางแผน",
-
   "select": "เลือก",
   "actions": "การดำเนินการ",
   "failed_to_download_plan": "ไม่สามารถดาวน์โหลดแผนได้",
   "failed_to_get_download_url": "ไม่สามารถรับ URL การดาวน์โหลดได้",
   "no_report_available_to_load": "ไม่มีรายงานที่สามารถโหลดได้",
-
   "number_delivery_points": "จำนวนจุดส่งของ",
   "service_time": "เวลาบริการ",
   "travel_distance": "ระยะทาง",
-
   "equal": "เท่ากับ",
   "does_not_equal": "ไม่เท่ากับ",
   "greater_than": "มากกว่า",
@@ -249,15 +236,12 @@
   "ends_with": "ลงท้ายด้วย",
   "does_not_end_with": "ไม่ได้ลงท้ายด้วย",
   "enter_value": "ป้อนค่า",
-
   "status_succeeded": "สำเร็จ",
   "status_in_progress": "กำลังดำเนินการ",
   "status_queued": "อยู่ในคิว",
   "status_failed": "ล้มเหลว",
   "status_canceled": "ยกเลิก",
   "status_initializing": "กำลังเริ่มต้น",
-
-
   "utilize": "การใช้ประสิทธิภาพ",
   "total_duration": "ระยะเวลารวม",
   "depot2first_distance": "ระยะทางจากคลังถึงจุดแรก",
