@@ -235,5 +235,24 @@
   "actions":      "การดำเนินการ",
   "failed_to_download_plan": "ไม่สามารถดาวน์โหลดแผนได้",
   "failed_to_get_download_url": "ไม่สามารถรับ URL การดาวน์โหลดได้",
-  "no_report_available_to_load": "ไม่มีรายงานที่สามารถโหลดได้"
+  "no_report_available_to_load": "ไม่มีรายงานที่สามารถโหลดได้",
+
+
+  "number_delivery_points": "จำนวนจุดส่งของ",
+  "service_time": "เวลาบริการ",
+  "travel_distance": "ระยะทาง",
+
+    "equal": "เท่ากับ",
+  "does_not_equal": "ไม่เท่ากับ",
+  "greater_than": "มากกว่า",
+  "greater_than_or_equal": "มากกว่าหรือเท่ากับ",
+  "less_than": "น้อยกว่า",
+  "less_than_or_equal": "น้อยกว่าหรือเท่ากับ",
+  "contains": "มีคำว่า",
+  "does_not_contain": "ไม่มีคำว่า",
+  "starts_with": "ขึ้นต้นด้วย",
+  "does_not_start_with": "ไม่ได้ขึ้นต้นด้วย",
+  "ends_with": "ลงท้ายด้วย",
+  "does_not_end_with": "ไม่ได้ลงท้ายด้วย",
+  "enter_value": "ป้อนค่า"
 }

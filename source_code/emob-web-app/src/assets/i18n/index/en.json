@@ -237,5 +237,26 @@
   "actions":      "Actions",
   "failed_to_download_plan": "Failed to download plan",
   "failed_to_get_download_url": "Failed to get download URL",
-  "no_report_available_to_load": "No report available to load"
+  "no_report_available_to_load": "No report available to load",
+
+
+
+  "number_delivery_points": "Number of Delivery Points",
+  "service_time": "Service Time",
+  "travel_distance": "Travel Distance",
+
+
+    "equal": "Equal",
+  "does_not_equal": "Does Not Equal",
+  "greater_than": "Greater Than",
+  "greater_than_or_equal": "Greater Than or Equal",
+  "less_than": "Less Than",
+  "less_than_or_equal": "Less Than or Equal",
+  "contains": "Contains",
+  "does_not_contain": "Does Not Contain",
+  "starts_with": "Starts With",
+  "does_not_start_with": "Does Not Start With",
+  "ends_with": "Ends With",
+  "does_not_end_with": "Does Not End With",
+  "enter_value": "Enter Value"
 }
