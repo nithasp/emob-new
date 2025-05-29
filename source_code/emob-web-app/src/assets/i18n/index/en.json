@@ -258,5 +258,12 @@
   "does_not_start_with": "Does Not Start With",
   "ends_with": "Ends With",
   "does_not_end_with": "Does Not End With",
-  "enter_value": "Enter Value"
+  "enter_value": "Enter Value",
+
+  "status_succeeded": "Succeeded",
+  "status_in_progress": "In Progress",
+  "status_queued": "Queued",
+  "status_failed": "Failed",
+  "status_canceled": "Canceled",
+  "status_initializing": "Initializing"
 }

@@ -201,42 +201,59 @@
                 {{ element.triggeredByName }}
               </td>
             </ng-container>
+
             <ng-container matColumnDef="Status">
-              <th mat-header-cell *matHeaderCellDef>{{ t("status") }}</th>
+              <th mat-header-cell *matHeaderCellDef>
+                {{ t("status") }}
+              </th>
               <td mat-cell *matCellDef="let element">
-                @if(element.status =='Succeeded'){
-                <mat-icon style="color: green; vertical-align: middle"
-                  >check_circle</mat-icon
-                >
-                {{ element.status }}
-                } @else if(element.status =='InProgress'){
-                <mat-icon style="color: blue; vertical-align: middle"
-                  >pending</mat-icon
-                >
-                {{ "In Progress" }}
-                } @else if(element.status =='Failed'){
-                <mat-icon style="color: red; vertical-align: middle"
-                  >cancel</mat-icon
-                >
-                {{ element.status }}
-                } @else if(element.status =='Canceled'){
-                <mat-icon style="color: gray; vertical-align: middle"
-                  >block</mat-icon
-                >
-                {{ element.status }}
-                } @else if(element.status =='Queued'){
-                <mat-icon style="color: blue; vertical-align: middle"
-                  >update</mat-icon
-                >
-                {{ element.status }}
-                } @else if(element.status =='Initializing'){
-                <mat-icon style="color: blue; vertical-align: middle"
-                  >draw</mat-icon
-                >
-                {{ element.status }}
-                }
+                <ng-container [ngSwitch]="element.status">
+                  <ng-container *ngSwitchCase="'Succeeded'">
+                    <mat-icon style="color: green; vertical-align: middle"
+                      >check_circle</mat-icon
+                    >
+                    {{ t("status_succeeded") }}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'InProgress'">
+                    <mat-icon style="color: blue; vertical-align: middle"
+                      >pending</mat-icon
+                    >
+                    {{ t("status_in_progress") }}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'Failed'">
+                    <mat-icon style="color: red; vertical-align: middle"
+                      >cancel</mat-icon
+                    >
+                    {{ t("status_failed") }}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'Canceled'">
+                    <mat-icon style="color: gray; vertical-align: middle"
+                      >block</mat-icon
+                    >
+                    {{ t("status_canceled") }}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'Queued'">
+                    <mat-icon style="color: blue; vertical-align: middle"
+                      >update</mat-icon
+                    >
+                    {{ t("status_queued") }}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'Initializing'">
+                    <mat-icon style="color: blue; vertical-align: middle"
+                      >draw</mat-icon
+                    >
+                    {{ t("status_initializing") }}
+                  </ng-container>
+                  <ng-container *ngSwitchDefault>
+                    <mat-icon style="vertical-align: middle"
+                      >help_outline</mat-icon
+                    >
+                    {{ element.status | lowercase | transloco }}
+                  </ng-container>
+                </ng-container>
               </td>
             </ng-container>
+
             <ng-container matColumnDef="Run">
               <th mat-header-cell *matHeaderCellDef>{{ t("run") }}</th>
               <td mat-cell *matCellDef="let element">{{ element.run }}</td>

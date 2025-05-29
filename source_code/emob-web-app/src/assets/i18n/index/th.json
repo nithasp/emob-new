@@ -162,12 +162,9 @@
   "we_will_to_go_back_to_the_experiments_page": "เราจะกลับไปที่หน้าการทดลอง",
   "you_are_not_the_creator_of_this_experiment": "คุณไม่ใช่ผู้สร้างการทดลองนี้",
 
-    "cannot_delete_file": "ไม่สามารถลบไฟล์ได้",
+  "cannot_delete_file": "ไม่สามารถลบไฟล์ได้",
   "original_experiment_warning": "การทดลองนี้เป็นต้นฉบับของการทดลองแม่",
   "rewrite_file_instruction": "หากต้องการเขียนไฟล์ใหม่ กรุณาสร้างการทดลองใหม่",
-
-
-
 
   "success_load_experiment": "โหลดการทดลองสำเร็จ",
   "loading_preorder_data": "กำลังโหลดข้อมูล PreOrder",
@@ -176,7 +173,7 @@
   "reupload_preorder_file": "กรุณาอัปโหลดไฟล์ Pre-order ใหม่อีกครั้ง",
   "loading_geo_location_data": "กำลังโหลดข้อมูลพิกัดภูมิศาสตร์",
   "loading_modified_geo_data": "กำลังโหลดข้อมูลพิกัดภูมิศาสตร์ที่แก้ไขแล้ว",
-    "new_edited_location_data_prefix": "มี",
+  "new_edited_location_data_prefix": "มี",
   "new_edited_location_data_suffix": "ข้อมูลใหม่จากการแก้ไขพิกัดโดยผู้ใช้ในเซสชัน",
   "cannot_use_multiple_files": "ไม่สามารถใช้หลายไฟล์พร้อมกันได้",
   "file_invalid": "ไฟล์ไม่ถูกต้อง",
@@ -197,17 +194,17 @@
   "data_validation_failed": "การตรวจสอบข้อมูลล้มเหลว",
   "worksheet_not_found": "ไม่พบแผ่นงาน",
   "excel_read_failed": "ไม่สามารถอ่านไฟล์ Excel ได้",
-    "loading_validation_data": "กำลังโหลดข้อมูลการตรวจสอบ",
+  "loading_validation_data": "กำลังโหลดข้อมูลการตรวจสอบ",
 
- "customer_information": "ข้อมูลลูกค้า",
+  "customer_information": "ข้อมูลลูกค้า",
   "channel": "ช่องทาง",
   "customer_name": "ชื่อลูกค้า",
   "geolocation_description": "คำอธิบายตำแหน่งทางภูมิศาสตร์",
   "the_location_is": "ตำแหน่งคือ",
   "replace": "แทนที่",
   "order_details": "รายละเอียดคำสั่งซื้อ",
-"update_again": "อัปเดตอีกครั้ง",
- 
+  "update_again": "อัปเดตอีกครั้ง",
+
   "product_id": "รหัสสินค้า",
   "product_name": "ชื่อสินค้า",
   "quantity_main": "จำนวนหลัก",
@@ -216,9 +213,8 @@
   "date_confirm": "วันที่ยืนยัน",
 
   "update_location": "อัปเดตตำแหน่ง",
-    "please_mark_location_on_map_or_input_latitude_and_longitude": "กรุณาทำเครื่องหมายตำแหน่งบนแผนที่หรือป้อนละติจูดและลองจิจูด",
-      "sync_latitude_and_longitude_to_map": "ซิงค์ละติจูดและลองจิจูดกับแผนที่",
-
+  "please_mark_location_on_map_or_input_latitude_and_longitude": "กรุณาทำเครื่องหมายตำแหน่งบนแผนที่หรือป้อนละติจูดและลองจิจูด",
+  "sync_latitude_and_longitude_to_map": "ซิงค์ละติจูดและลองจิจูดกับแผนที่",
 
   "upload_preorder_file_confirmation": "ยืนยันการอัปโหลดไฟล์ PreOrder",
   "confirm_to_upload_file": "ยืนยันการอัปโหลดไฟล์",
@@ -230,19 +226,17 @@
   "confirm_to_submit_experiment": "ยืนยันการส่งการทดลอง",
   "submitting_an_experiment_to_the_ai_service_will_start_the_planning_process": "การส่งการทดลองไปยังบริการ AI จะเริ่มกระบวนการวางแผน",
 
-
-  "select":       "เลือก",
-  "actions":      "การดำเนินการ",
+  "select": "เลือก",
+  "actions": "การดำเนินการ",
   "failed_to_download_plan": "ไม่สามารถดาวน์โหลดแผนได้",
   "failed_to_get_download_url": "ไม่สามารถรับ URL การดาวน์โหลดได้",
   "no_report_available_to_load": "ไม่มีรายงานที่สามารถโหลดได้",
-
 
   "number_delivery_points": "จำนวนจุดส่งของ",
   "service_time": "เวลาบริการ",
   "travel_distance": "ระยะทาง",
 
-    "equal": "เท่ากับ",
+  "equal": "เท่ากับ",
   "does_not_equal": "ไม่เท่ากับ",
   "greater_than": "มากกว่า",
   "greater_than_or_equal": "มากกว่าหรือเท่ากับ",
@@ -254,5 +248,12 @@
   "does_not_start_with": "ไม่ได้ขึ้นต้นด้วย",
   "ends_with": "ลงท้ายด้วย",
   "does_not_end_with": "ไม่ได้ลงท้ายด้วย",
-  "enter_value": "ป้อนค่า"
+  "enter_value": "ป้อนค่า",
+
+  "status_succeeded": "สำเร็จ",
+  "status_in_progress": "กำลังดำเนินการ",
+  "status_queued": "อยู่ในคิว",
+  "status_failed": "ล้มเหลว",
+  "status_canceled": "ยกเลิก",
+  "status_initializing": "กำลังเริ่มต้น"
 }
