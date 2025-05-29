@@ -323,7 +323,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         .getRow(1)
         .eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
           headers[colNumber - 1] =
-            cell.value !== null ? String(cell.value) : `Column ${colNumber}`;
+             cell.value !== null ? String(cell.value) : `column_${colNumber}`;
         });
       if (options === 0) this.headersReport = headers;
 

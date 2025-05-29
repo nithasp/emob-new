@@ -265,5 +265,16 @@
   "status_queued": "Queued",
   "status_failed": "Failed",
   "status_canceled": "Canceled",
-  "status_initializing": "Initializing"
+  "status_initializing": "Initializing",
+
+
+  "utilize": "Utilization",
+  "total_duration": "Total Duration",
+  "depot2first_distance": "Depot to First Point Distance",
+  "last2depot_distance": "Last Point to Depot Distance",
+  "total_customers_distance": "Total Customers Distance",
+  "average_customers_distance": "Average Customers Distance",
+  "max_customers_distance": "Max Customers Distance",
+  "number_zone": "Number of Zones",
+  "column_1": "Column 1"
 }

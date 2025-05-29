@@ -255,5 +255,16 @@
   "status_queued": "อยู่ในคิว",
   "status_failed": "ล้มเหลว",
   "status_canceled": "ยกเลิก",
-  "status_initializing": "กำลังเริ่มต้น"
+  "status_initializing": "กำลังเริ่มต้น",
+
+
+  "utilize": "การใช้ประสิทธิภาพ",
+  "total_duration": "ระยะเวลารวม",
+  "depot2first_distance": "ระยะทางจากคลังถึงจุดแรก",
+  "last2depot_distance": "ระยะทางจากจุดสุดท้ายถึงคลัง",
+  "total_customers_distance": "ระยะทางรวมของลูกค้า",
+  "average_customers_distance": "ระยะทางเฉลี่ยของลูกค้า",
+  "max_customers_distance": "ระยะทางสูงสุดของลูกค้า",
+  "number_zone": "จำนวนโซน",
+  "column_1": "คอลัมน์ 1"
 }

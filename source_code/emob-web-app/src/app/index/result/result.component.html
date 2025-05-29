@@ -132,7 +132,7 @@
                   scope="col"
                   class="text-wrap"
                 >
-                    {{ col | lowercase }}
+                  {{ t(col) }}
                 </th>
               </tr>
             </thead>
@@ -371,16 +371,34 @@
                 *matCellDef="let element"
                 style="white-space: nowrap"
               >
-                @if(isNumber(element[column])) { @if(column === 'weight') {
-                {{ element[column] | number : "1.0-0" }} {{ t('kg') }} } @else if (column
-                === 'travel_distance') {
-                {{ element[column] | number : "1.0-0" }} {{ t('km') }} } @else if(column
-                === 'travel_duration' || column === 'service_time') {
-                {{ element[column] / 60 | number : "1.0-2" }} {{ t('hours') }} } @else {
-                {{ element[column] | number : "1.0-0" }}
-                } } @else {
-                {{ element[column] }}
-                }
+                <ng-container *ngIf="isNumber(element[column]); else nonNumber">
+                  <ng-container [ngSwitch]="column">
+                    <ng-container *ngSwitchCase="'weight'">
+                      {{ element[column] | number : "1.0-0" }} {{ t("kg") }}
+                    </ng-container>
+
+                    <ng-container *ngSwitchCase="'travel_distance'">
+                      {{ element[column] | number : "1.0-0" }} {{ t("km") }}
+                    </ng-container>
+
+                    <ng-container *ngSwitchCase="'travel_duration'">
+                      {{ element[column] / 60 | number : "1.0-2" }}
+                      {{ t("hours") }}
+                    </ng-container>
+                    <ng-container *ngSwitchCase="'service_time'">
+                      {{ element[column] / 60 | number : "1.0-2" }}
+                      {{ t("hours") }}
+                    </ng-container>
+
+                    <ng-container *ngSwitchDefault>
+                      {{ element[column] | number : "1.0-0" }}
+                    </ng-container>
+                  </ng-container>
+                </ng-container>
+
+                <ng-template #nonNumber>
+                  {{ element[column] }}
+                </ng-template>
               </td>
             </ng-container>
 
@@ -443,14 +461,17 @@
                       }}
                       <div class="text">
                         @if(i === 1) {
-                        {{ element.depot2first_distance | number : "1.0-1" }} {{ 'km' | transloco }}
+                        {{ element.depot2first_distance | number : "1.0-1" }}
+                        {{ "km" | transloco }}
                         } @else if (i === element.route.length - 1) {
-                        {{ element.last2depot_distance | number : "1.0-1" }} {{ 'km' | transloco }}
+                        {{ element.last2depot_distance | number : "1.0-1" }}
+                        {{ "km" | transloco }}
                         } @else if(i !== 0) {
                         {{
                           element.customers_distance[i - 2] | number : "1.0-1"
                         }}
-                        {{ 'km' | transloco }} }@else { {{ 0 | number : "1.0-1" }} {{ 'km' | transloco }} }
+                        {{ "km" | transloco }} }@else {
+                        {{ 0 | number : "1.0-1" }} {{ "km" | transloco }} }
                       </div>
                     </div>
                     }
