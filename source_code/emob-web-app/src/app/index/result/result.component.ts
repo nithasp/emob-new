@@ -67,6 +67,7 @@ import { MatSort } from '@angular/material/sort';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
 import { DownloadResultFile } from '../../models/experiment.model';
 import { TranslocoService } from '@jsverse/transloco';
+import { LanguageChangeService } from 'src/app/services/language-change.service';
 
 @Component({
   selector: 'app-result',
@@ -174,7 +175,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
     private readonly configurationService: ConfigurationService,
     private readonly toastr: ToastrService,
     private readonly router: Router,
-    private readonly transloco: TranslocoService
+    private readonly transloco: TranslocoService,
+    private languageChangeService: LanguageChangeService
   ) {
     this.spinner.show();
 
@@ -210,6 +212,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
             this.isLoading = false;
           });
       });
+
+    this.checkFilterOverflowTwolinesWhenLanguageChange();
   }
 
   ngAfterViewInit(): void {
@@ -1354,5 +1358,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     this.vectorLayer.changed();
     this.clusterLayer.changed();
+  }
+
+  checkFilterOverflowTwolinesWhenLanguageChange() {
+    this.languageChangeService.langToggled$.subscribe(() => {
+      this.applyFilter();
+      setTimeout(() => this.checkOverflow(), 0);
+    });
   }
 }

@@ -10,6 +10,7 @@ import { InteractionType } from '@azure/msal-browser';
 import { UserADProfile } from 'src/app/models/profile.model';
 import { version } from 'package.json';
 import { TranslocoService } from '@jsverse/transloco';
+import { LanguageChangeService } from 'src/app/services/language-change.service';
 
 @Component({
   selector: 'app-topbar',
@@ -26,7 +27,8 @@ export class TopbarComponent implements OnInit {
     @Inject(MSAL_GUARD_CONFIG)
     private readonly msalGuardConfig: MsalGuardConfiguration,
     private readonly authService: MsalService,
-    private transloco: TranslocoService
+    private transloco: TranslocoService,
+    private languageChangeService: LanguageChangeService
   ) {
     this.activeRoute = '';
   }
@@ -70,10 +72,12 @@ export class TopbarComponent implements OnInit {
   toggleLang(lang: 'en' | 'th') {
     this.transloco.setActiveLang(lang);
     localStorage.setItem('lang', lang);
+    this.languageChangeService.notifyLangToggle();
   }
 
   getLanguage() {
-    const currentLang = localStorage.getItem('lang') || this.transloco.getDefaultLang();
+    const currentLang =
+      localStorage.getItem('lang') || this.transloco.getDefaultLang();
     this.transloco.setActiveLang(currentLang);
   }
 }
