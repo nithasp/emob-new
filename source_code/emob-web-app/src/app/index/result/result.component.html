@@ -548,9 +548,9 @@
               *ngIf="popupContent?.distance"
             >
               <strong>{{ t("distance") }} : </strong>
-              <span class="text-uppercase"
+              <span
                 >{{ popupContent["distance"] | number : "1.2-2" }}
-                {{ "km" | transloco }}.</span
+                {{ "kilometer" | transloco }}</span
               >
             </p>
             <p
