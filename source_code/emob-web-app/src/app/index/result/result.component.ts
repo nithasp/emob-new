@@ -287,7 +287,10 @@ export class ResultComponent implements OnInit, AfterViewInit {
   async loadReportData(url: string) {
     if (!url) {
       console.warn('loadReportData called with null URL, skipping.');
-      this.toastr.warning('No report available to load', 'Warning');
+      this.toastr.warning(
+        this.transloco.translate('no_report_available_to_load', {}, 'index'),
+        this.transloco.translate('warning')
+      );
       return;
     }
     const arrayBuffer = await this.fetchDataFromFileUrl(url);

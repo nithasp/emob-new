@@ -234,5 +234,6 @@
   "select":       "เลือก",
   "actions":      "การดำเนินการ",
   "failed_to_download_plan": "ไม่สามารถดาวน์โหลดแผนได้",
-  "failed_to_get_download_url": "ไม่สามารถรับ URL การดาวน์โหลดได้"
+  "failed_to_get_download_url": "ไม่สามารถรับ URL การดาวน์โหลดได้",
+  "no_report_available_to_load": "ไม่มีรายงานที่สามารถโหลดได้"
 }
