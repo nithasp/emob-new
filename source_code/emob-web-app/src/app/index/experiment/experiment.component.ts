@@ -29,6 +29,7 @@ import { TranslocoService } from '@jsverse/transloco';
   styleUrl: './experiment.component.scss',
 })
 export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
+  columnsStorageKey = 'experimentDisplayedColumns';
   public displayedColumns = [
     {
       def: 'select',
@@ -129,6 +130,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadDisplayedColumns();
     this.spinner.show();
     this.loadData();
     this.spinner.hide();
@@ -482,10 +484,28 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       fullScreen: false,
     });
   }
+
   hiddenSpinner() {
     console.log('hidden spinner');
     setTimeout(() => {
       this.spinner.hide('experiment');
     }, 500);
+  }
+
+  loadDisplayedColumns(): void {
+    const savedColumns = localStorage.getItem(this.columnsStorageKey);
+    if (savedColumns) {
+      const visibleDefs: string[] = JSON.parse(savedColumns);
+      this.displayedColumns.forEach((col) => {
+        col.visible = visibleDefs.includes(col.def);
+      });
+    }
+  }
+
+  saveDisplayedColumns(): void {
+    const visibleDefs = this.displayedColumns
+      .filter((c) => c.visible)
+      .map((c) => c.def);
+    localStorage.setItem(this.columnsStorageKey, JSON.stringify(visibleDefs));
   }
 }

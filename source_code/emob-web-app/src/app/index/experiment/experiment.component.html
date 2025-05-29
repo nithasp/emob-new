@@ -50,7 +50,7 @@
       </div>
       <div class="col-12">
         <mat-form-field class="full-width">
-          <mat-label>{{ 'filter' | transloco }}</mat-label>
+          <mat-label>{{ "filter" | transloco }}</mat-label>
           <input
             matInput
             (keyup)="applyFilter($event)"
@@ -67,13 +67,16 @@
             <mat-icon>view_list</mat-icon>
             {{ t("edit_columns") }}
             <mat-menu #menu="matMenu">
-              <span class="table-config-menu-label">{{ t("edit_columns") }}</span> 
+              <span class="table-config-menu-label">{{
+                t("edit_columns")
+              }}</span>
               <div class="table-config-menu-options">
                 <mat-checkbox
                   color="primary"
                   *ngFor="let cd of displayedColumns; let i = index"
                   (click)="$event.stopPropagation()"
                   [(ngModel)]="cd.visible"
+                  (ngModelChange)="saveDisplayedColumns()"
                 >
                   {{ cd.label }}
                 </mat-checkbox>
@@ -85,7 +88,7 @@
       <div class="col-12">
         <div class="table-container p-md-2" style="height: 700px">
           <ngx-spinner name="experiment">
-            <p class="h-3">{{ 'reloading' | transloco }} ...</p>
+            <p class="h-3">{{ "reloading" | transloco }} ...</p>
           </ngx-spinner>
           <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
             <ng-container matColumnDef="select">
@@ -159,7 +162,7 @@
               </td>
             </ng-container>
             <ng-container matColumnDef="TimeStamp">
-              <th mat-header-cell *matHeaderCellDef>{{ t("timestamp") }}</th> 
+              <th mat-header-cell *matHeaderCellDef>{{ t("timestamp") }}</th>
               <td mat-cell *matCellDef="let element">
                 {{ element.timestamp | date : "MM/dd/yy h:mm:ss a" }}
               </td>
