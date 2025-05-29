@@ -204,7 +204,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
             await this.loadReportData(response.fileUrl.outputReportUrl);
             this.spinner.hide();
             await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
-
             this.dataRouteInfo.filterPredicate =
               this.multiFilterPredicate.bind(this);
 
@@ -286,6 +285,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   async loadReportData(url: string) {
+    if (!url) {
+      console.warn('loadReportData called with null URL, skipping.');
+      this.toastr.warning('No report available to load', 'Warning');
+      return;
+    }
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
     await this.fetchAndParseExcel(arrayBuffer, 0);
     await this.fetchAndParseExcel(arrayBuffer, 1);
