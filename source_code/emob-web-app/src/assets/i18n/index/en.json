@@ -234,5 +234,7 @@
 
 
   "select":       "Select",
-  "actions":      "Actions"
+  "actions":      "Actions",
+  "failed_to_download_plan": "Failed to download plan",
+  "failed_to_get_download_url": "Failed to get download URL"
 }

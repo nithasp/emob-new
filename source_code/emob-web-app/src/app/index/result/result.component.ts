@@ -1042,36 +1042,60 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.spinner.show();
     this.experimentService
       .getExperimentResultUrl(this.experiment!.runId)
-      .subscribe((response: DownloadResultFile) => {
-        this.configurationService
-          .downloadFile(response.fileUrl.resultFileBlobPathUrl)
-          .subscribe((response) => {
-            const contentDisposition = response.headers.get(
-              'Content-Disposition'
-            );
-            let fileName = 'downloadedFile';
-            if (contentDisposition) {
-              const matches = /filename="([^"]*)"/.exec(contentDisposition);
-              if (matches && matches.length > 0) {
-                fileName = matches[1];
-              }
-            }
-
-            const blob = response.body;
-            if (blob) {
-              const link = document.createElement('a');
-              link.href = window.URL.createObjectURL(blob);
-              link.download = fileName;
-              link.target = '_blank';
-              link.click();
-              this.spinner.hide();
-              this.toastr.success('Success to download plan', 'Download Plan');
-              window.URL.revokeObjectURL(link.href);
-            } else {
-              console.error('Download failed: Blob is null');
-              this.spinner.hide();
-            }
-          });
+      .subscribe({
+        next: (response: DownloadResultFile) => {
+          this.configurationService
+            .downloadFile(response.fileUrl.resultFileBlobPathUrl)
+            .subscribe({
+              next: (resp) => {
+                const contentDisposition = resp.headers.get(
+                  'Content-Disposition'
+                );
+                let fileName = 'downloadedFile';
+                if (contentDisposition) {
+                  const m = /filename="([^"]*)"/.exec(contentDisposition);
+                  if (m) fileName = m[1];
+                }
+                const blob = resp.body;
+                if (blob) {
+                  const link = document.createElement('a');
+                  link.href = window.URL.createObjectURL(blob);
+                  link.download = fileName;
+                  link.click();
+                  window.URL.revokeObjectURL(link.href);
+                  this.toastr.success(
+                    this.transloco.translate(
+                      'success_to_download_plan',
+                      {},
+                      'index'
+                    ),
+                    this.transloco.translate('download_plan', {}, 'index')
+                  );
+                }
+                this.spinner.hide();
+              },
+              error: (err) => {
+                console.error('Download failed', err);
+                this.spinner.hide();
+                this.toastr.error(
+                  this.transloco.translate(
+                    'failed_to_download_plan',
+                    {},
+                    'index'
+                  ),
+                  this.transloco.translate('download_plan', {}, 'index')
+                );
+              },
+            });
+        },
+        error: (err) => {
+          console.error('Could not get download URL', err);
+          this.spinner.hide();
+          this.toastr.error(
+            this.transloco.translate('failed_to_get_download_url', {}, 'index'),
+            this.transloco.translate('download_plan', {}, 'index')
+          );
+        },
       });
   }
 

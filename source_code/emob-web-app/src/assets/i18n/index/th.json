@@ -232,5 +232,7 @@
 
 
   "select":       "เลือก",
-  "actions":      "การดำเนินการ"
+  "actions":      "การดำเนินการ",
+  "failed_to_download_plan": "ไม่สามารถดาวน์โหลดแผนได้",
+  "failed_to_get_download_url": "ไม่สามารถรับ URL การดาวน์โหลดได้"
 }
