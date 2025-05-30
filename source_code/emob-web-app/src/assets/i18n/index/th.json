@@ -252,5 +252,6 @@
   "average_customers_distance": "ระยะทางเฉลี่ยของลูกค้า",
   "max_customers_distance": "ระยะทางสูงสุดของลูกค้า",
   "number_zone": "จำนวนโซน",
-  "column_1": "คอลัมน์ 1"
+  "column_1": "คอลัมน์ 1",
+  "depot_expand": "ศูนย์ส่ง"
 }

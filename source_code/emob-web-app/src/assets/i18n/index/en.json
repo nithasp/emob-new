@@ -252,5 +252,6 @@
   "average_customers_distance": "Average Customers Distance",
   "max_customers_distance": "Max Customers Distance",
   "number_zone": "Number of Zones",
-  "column_1": "Column 1"
+  "column_1": "Column 1",
+  "depot_expand": "Depot"
 }
