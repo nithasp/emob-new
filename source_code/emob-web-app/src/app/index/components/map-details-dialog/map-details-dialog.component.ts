@@ -103,9 +103,10 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
           source: new XYZ({
             url: 'https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
             attributions:
-              '&copy;<a href="https://carto.com" "> CARTO</a>' +
-              '&copy;<a href="http://openmaptiles.org/" > OpenMapTiles</a>' +
-              '&copy;<a href="https://www.openstreetmap.org/copyright"> OpenStreetMap contributors</a>',
+              '&copy;<a href="https://carto.com" target="_blank"> CARTO</a>' +
+              '&copy;<a href="http://openmaptiles.org/" target="_blank"> OpenMapTiles</a>' +
+              '&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank"> OpenStreetMap contributors</a>' +
+              '&copy;<a href="http://map.project-osrm.org" target="_blank"> Project OSRM contributors</a>',
             crossOrigin: 'anonymous',
           }),
         }),
