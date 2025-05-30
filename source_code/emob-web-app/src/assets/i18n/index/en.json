@@ -253,5 +253,13 @@
   "max_customers_distance": "Max Customers Distance",
   "number_zone": "Number of Zones",
   "column_1": "Column 1",
-  "depot_expand": "Depot"
+  "depot_expand": "Depot",
+  "over_distance_warning": "Over distance Warning",
+  "over_distance_description": "Please check, the maximum travel distance parameter of your constraint",
+  "over_weight_warning": "Over weight Warning",
+  "over_weight_description": "Please check, the vehicle order-size capacity parameter of your constraint",
+  "unverify_coordinate_danger": "Unverify coordinate danger",
+  "unverify_coordinate_description": "Please check the order information, there are incorrect coordinates",
+  "zero_weight_warning": "Zero weight Warning",
+  "zero_weight_description": "Please check the inventories. If you have updated inventories"
 }

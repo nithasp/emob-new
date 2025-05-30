@@ -242,8 +242,8 @@
   "status_failed": "ล้มเหลว",
   "status_canceled": "ยกเลิก",
   "status_initializing": "กำลังเริ่มต้น",
-   "status_original": "ดั้งเดิม",
-   "status_rerun": "เรียกใช้งานใหม่",
+  "status_original": "ดั้งเดิม",
+  "status_rerun": "เรียกใช้งานใหม่",
   "utilize": "การใช้ประสิทธิภาพ",
   "total_duration": "ระยะเวลารวม",
   "depot2first_distance": "ระยะทางจากคลังถึงจุดแรก",
@@ -253,5 +253,13 @@
   "max_customers_distance": "ระยะทางสูงสุดของลูกค้า",
   "number_zone": "จำนวนโซน",
   "column_1": "คอลัมน์ 1",
-  "depot_expand": "ศูนย์ส่ง"
+  "depot_expand": "ศูนย์ส่ง",
+  "over_distance_warning": "คำเตือนระยะทางเกิน",
+  "over_distance_description": "โปรดตรวจสอบพารามิเตอร์ระยะทางสูงสุดของข้อจำกัดของคุณ",
+  "over_weight_warning": "คำเตือนน้ำหนักเกิน",
+  "over_weight_description": "โปรดตรวจสอบพารามิเตอร์ความจุขนาดคำสั่งซื้อของยานพาหนะของข้อจำกัดของคุณ",
+  "unverify_coordinate_danger": "อันตราย: พิกัดไม่ถูกต้อง",
+  "unverify_coordinate_description": "โปรดตรวจสอบข้อมูลคำสั่งซื้อ มีพิกัดที่ไม่ถูกต้อง",
+  "zero_weight_warning": "คำเตือนน้ำหนักเป็นศูนย์",
+  "zero_weight_description": "โปรดตรวจสอบสินค้าคงคลัง หากคุณได้ทำการอัปเดตสินค้าคงคลังแล้ว"
 }

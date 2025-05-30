@@ -79,6 +79,7 @@ import { DataService } from 'src/app/services/data.service';
 import { ExportFileService } from 'src/app/services/export-file.service';
 import { set } from 'ol/transform';
 import { TranslocoService } from '@jsverse/transloco';
+
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
 @Injectable()
@@ -148,36 +149,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       overWeight: true,
     },
   };
-  public validateMessage: ValidateMessage = {
-    filtersMessage: {
-      constraints: {
-        overDistance: {
-          title: 'Over distance Warning!',
-          message:
-            'Please check, the maximum travel distance parameter of your constraint.',
-        },
-        overWeight: {
-          title: 'Over weight Warning!',
-          message:
-            'Please check, the vehicle order-size capacity parameter of your constraint.',
-        },
-      },
-      orderData: {
-        invalidCoordinate: {
-          title: 'Unverify coordinate danger!',
-          message:
-            'Please check the order information, there are incorrect coordinates.',
-        },
-      },
-    },
-    warningMessage: {
-      zeroWeight: {
-        title: 'Zero weight Warning!',
-        message:
-          'Please check the inventories. If you have updated inventories,',
-      },
-    },
-  };
+  public validateMessage!: ValidateMessage;
 
   // map rendering
   private map!: Map;
@@ -348,6 +320,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
       this.initIconStyle();
       this.initMap();
+      this.getValidateMessage();
     }, 100);
     this.dataSource.paginator = this.paginator; // For pagination
     this.dataSource.sort = this.sort; // For sort
@@ -1615,27 +1588,64 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
   }
 
-  test() {
-    this.toastr.info(
-      this.transloco.translate('loading_preorder_data', {}, 'index'),
-      `${this.transloco.translate('please_wait', {}, 'index')} ...`
-    );
-
-    // this.openConfirmDialog(
-    //   this.transloco.translate('warning'),
-    //   `${this.transloco.translate('this_experiment_have_been', {}, 'index')} ${
-    //     this.experiment.status
-    //   }`,
-    //   `${this.transloco.translate(
-    //     'we_will_to_go_back_to_the_experiments_page',
-    //     {},
-    //     'index'
-    //   )}?`,
-    //   this.transloco.translate('acknowledge', {}, 'index'),
-    //   true
-    // ).result.then((confirmed) => {
-    //   this.spinner.hide();
-    //   this.router.navigate(['/users/experiments']);
-    // });
+  getValidateMessage(): void {
+    this.transloco
+      .selectTranslate('over_distance_warning', {}, 'index')
+      .subscribe((translation) => {
+        this.validateMessage = {
+          filtersMessage: {
+            constraints: {
+              overDistance: {
+                title: `${translation}!`,
+                message: `${this.transloco.translate(
+                  'over_distance_description',
+                  {},
+                  'index'
+                )}.`,
+              },
+              overWeight: {
+                title: `${this.transloco.translate(
+                  'over_weight_warning',
+                  {},
+                  'index'
+                )}!`,
+                message: `${this.transloco.translate(
+                  'over_weight_description',
+                  {},
+                  'index'
+                )}.`,
+              },
+            },
+            orderData: {
+              invalidCoordinate: {
+                title: `${this.transloco.translate(
+                  'unverify_coordinate_danger',
+                  {},
+                  'index'
+                )}!`,
+                message: `${this.transloco.translate(
+                  'unverify_coordinate_description',
+                  {},
+                  'index'
+                )}.`,
+              },
+            },
+          },
+          warningMessage: {
+            zeroWeight: {
+              title: `${this.transloco.translate(
+                'zero_weight_warning',
+                {},
+                'index'
+              )}!`,
+              message: `${this.transloco.translate(
+                'zero_weight_description',
+                {},
+                'index'
+              )}.`,
+            },
+          },
+        };
+      });
   }
 }
