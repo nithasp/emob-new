@@ -242,6 +242,8 @@
   "status_failed": "Failed",
   "status_canceled": "Canceled",
   "status_initializing": "Initializing",
+  "status_original": "Original",
+  "status_rerun": "Rerun",
   "utilize": "Utilization",
   "total_duration": "Total Duration",
   "depot2first_distance": "Depot to First Point Distance",

@@ -242,6 +242,8 @@
   "status_failed": "ล้มเหลว",
   "status_canceled": "ยกเลิก",
   "status_initializing": "กำลังเริ่มต้น",
+   "status_original": "ดั้งเดิม",
+   "status_rerun": "เรียกใช้งานใหม่",
   "utilize": "การใช้ประสิทธิภาพ",
   "total_duration": "ระยะเวลารวม",
   "depot2first_distance": "ระยะทางจากคลังถึงจุดแรก",

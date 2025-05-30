@@ -48,7 +48,7 @@
               <input
                 type="text"
                 class="form-control bg-white"
-                [value]="experiment?.run"
+                [value]="t('status_' + (experiment?.run || '').toLowerCase())"
                 disabled
               />
             </div>
@@ -100,7 +100,9 @@
               <input
                 type="text"
                 class="form-control bg-white"
-                [value]="experiment?.status"
+                [value]="
+                  t('status_' + (experiment?.status || '').toLowerCase())
+                "
                 disabled
               />
             </div>
