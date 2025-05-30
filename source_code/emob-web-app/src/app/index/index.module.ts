@@ -30,6 +30,7 @@ import { VerifyLocationDialogComponent } from './components/verify-location-dial
 import { MarkLocationDialogComponent } from './components/mark-location-dialog/mark-location-dialog.component';
 import { CustomerListComponent } from './components/customer-list/customer-list.component';
 import { FilterPipe } from '../directives/filter-pipe.directive';
+import { SnakeCasePipe } from '../directives/snakecase.pipe.directive';
 import { ResizableDirective } from '../directives/resizable.directive';
 import { UploadFileComponent } from './configuration/upload-file/upload-file.component';
 import { MapDetailsDialogComponent } from './components/map-details-dialog/map-details-dialog.component';
@@ -61,6 +62,7 @@ import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
     MarkLocationDialogComponent,
     CustomerListComponent,
     FilterPipe,
+    SnakeCasePipe,
     ResizableDirective,
     UploadFileComponent,
     MapDetailsDialogComponent,

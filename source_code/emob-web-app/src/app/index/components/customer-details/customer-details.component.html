@@ -202,7 +202,8 @@
               (click)="markLocation()"
             >
               <mat-icon>edit_location_alt</mat-icon>
-               @if (isEdited()) { {{ t("update_again") }} }@else { {{ 'update' | transloco }} }
+              @if (isEdited()) { {{ t("update_again") }} }@else {
+              {{ "update" | transloco }} }
             </button>
           </div>
           }

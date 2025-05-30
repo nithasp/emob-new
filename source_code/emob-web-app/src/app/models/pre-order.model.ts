@@ -104,7 +104,7 @@ export enum ValidationType {
   NON_VALIDATED = 'NON_VALIDATED'
 }
 
-const enumDescriptions: { [key: string]: string } = {
+export const enumDescriptions: { [key: string]: string } = {
   [ReplaceType.SUBDISTRICT_LEVEL]: 'Uses the centroid point to replace data at the subdistrict level.',
   [ReplaceType.DISTRICT_LEVEL]: 'Uses the centroid point to replace data at the district level.',
   [ReplaceType.PROVINCE_LEVEL]: 'Uses the centroid point to replace data at the province level.',

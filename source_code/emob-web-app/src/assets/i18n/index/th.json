@@ -261,5 +261,8 @@
   "unverify_coordinate_danger": "อันตราย: พิกัดไม่ถูกต้อง",
   "unverify_coordinate_description": "โปรดตรวจสอบข้อมูลคำสั่งซื้อ มีพิกัดที่ไม่ถูกต้อง",
   "zero_weight_warning": "คำเตือนน้ำหนักเป็นศูนย์",
-  "zero_weight_description": "โปรดตรวจสอบสินค้าคงคลัง หากคุณได้ทำการอัปเดตสินค้าคงคลังแล้ว"
+  "zero_weight_description": "โปรดตรวจสอบสินค้าคงคลัง หากคุณได้ทำการอัปเดตสินค้าคงคลังแล้ว",
+
+  "indicates_that_no_valid_data_was_available_for_validation": "แสดงว่าข้อมูลที่ใช้ในการตรวจสอบไม่มีข้อมูลที่ถูกต้อง",
+   "uses_the_centroid_point_to_replace_data_at_the_subdistrict_level": "ใช้จุดศูนย์กลางเพื่อแทนที่ข้อมูลในระดับตำบล"
 }

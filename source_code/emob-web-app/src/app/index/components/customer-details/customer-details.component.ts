@@ -1,7 +1,28 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { IconStyle, Location, LocationType } from 'src/app/models/location.model';
-import { Customer, DetailsPreOder, ReplaceType, ValidationType, getDescription } from 'src/app/models/pre-order.model';
+import {
+  IconStyle,
+  Location,
+  LocationType,
+} from 'src/app/models/location.model';
+import {
+  Customer,
+  DetailsPreOder,
+  ReplaceType,
+  ValidationType,
+  getDescription,
+  enumDescriptions,
+} from 'src/app/models/pre-order.model';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
@@ -9,51 +30,54 @@ import {
   defaults as defaultControls,
   ZoomSlider,
   FullScreen,
-  Attribution
-} from "ol/control";
-import * as OlProj from "ol/proj";
+  Attribution,
+} from 'ol/control';
+import * as OlProj from 'ol/proj';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import Icon from 'ol/style/Icon';
-import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 import OSM from 'ol/source/OSM';
 import { Style } from 'ol/style';
 import { MarkLocationDialogComponent } from '../mark-location-dialog/mark-location-dialog.component';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
+import { SnakeCasePipe } from 'src/app/directives/snakecase.pipe.directive';
+
 @Component({
   selector: 'app-customer-details',
   templateUrl: './customer-details.component.html',
   styleUrl: './customer-details.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges {
+export class CustomerDetailsComponent
+  implements OnInit, AfterViewInit, OnChanges
+{
   @Input() dataPreOder!: DetailsPreOder;
   @Input() dataCustomer!: Customer;
   @Input() locationType: LocationType = LocationType.Verify;
-  @Input() isModal: boolean =true;
+  @Input() isModal: boolean = true;
   @Output() dataEmitter: EventEmitter<Location> = new EventEmitter<Location>();
-  location: Location= {
+  location: Location = {
     latitude: 0,
-    longitude: 0
+    longitude: 0,
   };
   page = 1;
 
-
   // Map
-  public map!: Map
+  public map!: Map;
   public iconStyle: Partial<IconStyle> = {};
   public vectorSource!: VectorSource;
   public vectorLayer!: VectorLayer;
   private isFirstChange: boolean = true;
 
-  constructor(private readonly ngbModal: NgbModal,
+  constructor(
+    private readonly ngbModal: NgbModal,
     private readonly ngbModalActive: NgbActiveModal,
     private readonly toastr: ToastrService,
     private readonly transloco: TranslocoService
-    ) {
-     }
+  ) {}
   ngOnInit(): void {
     if (this.isModal) {
       console.log('Component is used as a modal');
@@ -68,41 +92,39 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
       source: this.vectorSource,
 
       updateWhileInteracting: true,
-      updateWhileAnimating: true
+      updateWhileAnimating: true,
     });
     this.initIconStyle();
-    
-
   }
   ngAfterViewInit(): void {
-    this.initMap()
-    this.setLocation(this.dataCustomer,this.location);
+    this.initMap();
+    this.setLocation(this.dataCustomer, this.location);
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log("Onchange",changes)
+    console.log('Onchange', changes);
     if (!this.isFirstChange) {
-      if (changes['dataCustomer'].currentValue['name'] != changes['dataCustomer'].previousValue['name']) {
-        console.log("have change",this.locationType);
+      if (
+        changes['dataCustomer'].currentValue['name'] !=
+        changes['dataCustomer'].previousValue['name']
+      ) {
+        console.log('have change', this.locationType);
         // Detect changes to the @Input property
         this.refreshLocation();
       }
-      
     } else {
       console.log('ngOnChanges called for the first time');
       this.isFirstChange = false;
-      
     }
-    
   }
 
   refreshLocation() {
     // Logic to refresh the component
     this.location.latitude = Number(this.dataCustomer.latitude);
     this.location.longitude = Number(this.dataCustomer.longitude);
-    this.setLocation(this.dataCustomer,this.location);
+    this.setLocation(this.dataCustomer, this.location);
   }
-  
+
   private initMap() {
     const attribution = new Attribution({
       collapsible: true,
@@ -115,17 +137,17 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
               '&copy;<a href="https://www.openstreetmap.org/copyright"> OpenStreetMap contributors</a>',
             crossOrigin: 'anonymous',
             cacheSize: 10000,
-            maxZoom: 20
-          })
+            maxZoom: 20,
+          }),
         }),
-        this.vectorLayer
+        this.vectorLayer,
       ],
       target: 'customerProfileMap',
       view: new View({
         center: OlProj.transform(
-          [ 100.53139488523458,13.786463255129673],
-          "EPSG:4326",
-          "EPSG:3857"
+          [100.53139488523458, 13.786463255129673],
+          'EPSG:4326',
+          'EPSG:3857'
         ),
         zoom: 10,
         maxZoom: 20,
@@ -134,35 +156,35 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
       controls: defaultControls({ attribution: false }).extend([
         new ZoomSlider(),
         new FullScreen(),
-        attribution
-      ])
+        attribution,
+      ]),
     });
   }
 
-  private setLocation(customer: Customer, latlong:any) {
+  private setLocation(customer: Customer, latlong: any) {
     this.vectorSource.clear();
     const location: Feature = new Feature({
       geometry: new Point(
-        OlProj.fromLonLat([
-          Number(latlong.longitude), Number(latlong.latitude)
-        ])
+        OlProj.fromLonLat([Number(latlong.longitude), Number(latlong.latitude)])
       ),
-      data: customer.name
-
+      data: customer.name,
     });
-    
-    console.log("locationTpye before checking and use icon",this.locationType);
-    if(this.locationType === LocationType.Edit && this.isModal){
+
+    console.log('locationTpye before checking and use icon', this.locationType);
+    if (this.locationType === LocationType.Edit && this.isModal) {
       location.setStyle(this.iconStyle.edit);
-      this.locationType = LocationType.Edit
-    }else if (
-      (customer.replace_type === ReplaceType.NO_REPLACE || customer.replace_type === ReplaceType.INPUT) &&
-      (customer.validation_type === ValidationType.SUBDISTRICT_LEVEL || customer.validation_type === ValidationType.DISTRICT_LEVEL)
+      this.locationType = LocationType.Edit;
+    } else if (
+      (customer.replace_type === ReplaceType.NO_REPLACE ||
+        customer.replace_type === ReplaceType.INPUT) &&
+      (customer.validation_type === ValidationType.SUBDISTRICT_LEVEL ||
+        customer.validation_type === ValidationType.DISTRICT_LEVEL)
     ) {
       location.setStyle(this.iconStyle.verify);
       this.locationType = LocationType.Verify;
     } else if (
-      customer.replace_type === ReplaceType.SUBDISTRICT_LEVEL || customer.replace_type === ReplaceType.DISTRICT_LEVEL
+      customer.replace_type === ReplaceType.SUBDISTRICT_LEVEL ||
+      customer.replace_type === ReplaceType.DISTRICT_LEVEL
     ) {
       location.setStyle(this.iconStyle.uncertain);
       this.locationType = LocationType.Uncertain;
@@ -177,26 +199,25 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
     }
 
     this.vectorSource.addFeature(location);
-    this.map.getView().setCenter(
-      OlProj.fromLonLat([Number(latlong.longitude), Number(latlong.latitude)])
-    );
+    this.map
+      .getView()
+      .setCenter(
+        OlProj.fromLonLat([Number(latlong.longitude), Number(latlong.latitude)])
+      );
     this.map.getView().setZoom(18);
-
-
-
   }
   private initIconStyle() {
-    Object.values(LocationType).forEach(type => {
+    Object.values(LocationType).forEach((type) => {
       let iconLocation = new Style({
         image: new Icon({
           anchor: [0.5, 0.5],
           anchorOrigin: 'bottom-left',
           anchorXUnits: 'fraction',
           anchorYUnits: 'pixels',
-          crossOrigin: "anonymous",
+          crossOrigin: 'anonymous',
           opacity: 0.8,
-          src: `assets/image/${type}.png`
-        })
+          src: `assets/image/${type}.png`,
+        }),
       });
 
       if (type === LocationType.Verify) {
@@ -216,11 +237,12 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
   }
 
   close() {
-    
     this.ngbModalActive.close(this.location);
   }
   getEnumDescription(enumValue: ReplaceType | ValidationType): string {
-    return getDescription(enumValue);
+    const key = enumDescriptions[enumValue] || '';
+    const snakeCaseKey = new SnakeCasePipe().transform(key);
+    return this.transloco.translate(snakeCaseKey, {}, 'index');
   }
   isVerified(): boolean {
     return this.locationType === LocationType.Verify;
@@ -237,7 +259,7 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
     return this.locationType === LocationType.Edit;
   }
 
-  markLocation(){
+  markLocation() {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -246,33 +268,37 @@ export class CustomerDetailsComponent implements OnInit, AfterViewInit,OnChanges
       centered: true,
       windowClass: 'custom-modal-align-right',
       backdrop: 'static',
-      keyboard:false,
+      keyboard: false,
       size: 'lg',
       animation: true,
       beforeDismiss: () => {
         return false;
       },
-
-
     });
-    dialogRef.componentInstance.location = {longitude:this.dataCustomer.longitude,latitude: this.dataCustomer.latitude};
-    dialogRef.componentInstance.address = this.dataCustomer.original_address.address;
+    dialogRef.componentInstance.location = {
+      longitude: this.dataCustomer.longitude,
+      latitude: this.dataCustomer.latitude,
+    };
+    dialogRef.componentInstance.address =
+      this.dataCustomer.original_address.address;
 
-    dialogRef.result.then((result:any) => {
-      
-        if(result){
+    dialogRef.result
+      .then((result: any) => {
+        if (result) {
           console.log(result);
           this.location.latitude = Number(result.latitude);
           this.location.longitude = Number(result.longitude);
           this.locationType = LocationType.Edit;
           this.dataEmitter.emit(this.location);
-          this.setLocation(this.dataCustomer,this.location);
-          this.toastr.success(this.transloco.translate('update_location', {}, 'index'), this.transloco.translate('succeed', {}, 'index'));
-      }
-        
-    }).catch((error) => {
-      console.error('Dialog was dismissed:', error);
-    });
+          this.setLocation(this.dataCustomer, this.location);
+          this.toastr.success(
+            this.transloco.translate('update_location', {}, 'index'),
+            this.transloco.translate('succeed', {}, 'index')
+          );
+        }
+      })
+      .catch((error) => {
+        console.error('Dialog was dismissed:', error);
+      });
   }
-
 }
