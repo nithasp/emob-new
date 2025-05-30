@@ -263,6 +263,15 @@
   "zero_weight_warning": "คำเตือนน้ำหนักเป็นศูนย์",
   "zero_weight_description": "โปรดตรวจสอบสินค้าคงคลัง หากคุณได้ทำการอัปเดตสินค้าคงคลังแล้ว",
 
-  "indicates_that_no_valid_data_was_available_for_validation": "แสดงว่าข้อมูลที่ใช้ในการตรวจสอบไม่มีข้อมูลที่ถูกต้อง",
-   "uses_the_centroid_point_to_replace_data_at_the_subdistrict_level": "ใช้จุดศูนย์กลางเพื่อแทนที่ข้อมูลในระดับตำบล"
+  "uses_the_centroid_point_to_replace_data_at_the_subdistrict_level": "ใช้จุดศูนย์กลางเพื่อแทนที่ข้อมูลในระดับตำบล",
+  "uses_the_centroid_point_to_replace_data_at_the_district_level": "ใช้จุดศูนย์กลางเพื่อแทนที่ข้อมูลในระดับอำเภอ",
+  "uses_the_centroid_point_to_replace_data_at_the_province_level": "ใช้จุดศูนย์กลางเพื่อแทนที่ข้อมูลในระดับจังหวัด",
+  "indicates_that_no_replacement_was_performed_retaining_the_original_location": "แสดงว่าไม่มีการแทนที่ใดๆ และคงตำแหน่งเดิมไว้",
+  "represents_the_input_location_itself_without_any_modification": "แสดงถึงตำแหน่งที่ป้อนเข้ามาโดยไม่มีการปรับเปลี่ยนใดๆ",
+  "ensures_accuracy_of_data_specifically_within_subdistrict_boundaries": "รับรองความถูกต้องของข้อมูลเฉพาะภายในเขตตำบล",
+  "ensures_accuracy_of_data_specifically_within_district_boundaries": "รับรองความถูกต้องของข้อมูลเฉพาะภายในเขตอำเภอ",
+  "ensures_accuracy_of_data_specifically_within_province_boundaries": "รับรองความถูกต้องของข้อมูลเฉพาะภายในเขตจังหวัด",
+  "indicates_that_no_valid_data_was_available_for_validation": "แสดงว่าไม่มีข้อมูลที่ถูกต้องสำหรับการตรวจสอบ",
+  "refers_to_inputs_containing_invalid_or_missing_nan_values_highlighting_issues_in_data_integrity": "อ้างถึงอินพุตที่มีค่าที่ไม่ถูกต้องหรือขาดหายไป (NaN) เพื่อเน้นปัญหาด้านความสมบูรณ์ของข้อมูล",
+  "specifies_that_the_input_has_not_undergone_any_validation_process": "ระบุว่าอินพุตยังไม่ได้ผ่านกระบวนการตรวจสอบใดๆ"
 }
