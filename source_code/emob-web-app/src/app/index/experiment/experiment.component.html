@@ -256,7 +256,9 @@
 
             <ng-container matColumnDef="Run">
               <th mat-header-cell *matHeaderCellDef>{{ t("run") }}</th>
-              <td mat-cell *matCellDef="let element">{{ element.run }}</td>
+              <td mat-cell *matCellDef="let element">
+                {{ t('status_' + (element?.run || '').toLowerCase()) }}
+              </td>
             </ng-container>
             <ng-container matColumnDef="parameter">
               <th mat-header-cell *matHeaderCellDef>{{ t("parameter") }}</th>
