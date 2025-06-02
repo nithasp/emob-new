@@ -75,7 +75,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     private readonly toastr: ToastrService,
     private readonly userMsGraphService: UserMSGraphService,
     private readonly transloco: TranslocoService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadDisplayedColumns();
@@ -162,7 +162,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       this.transloco.translate('create_experiment_confirmation', {}, 'index'),
       '',
       this.transloco.translate('create_experiment_message', {}, 'index'),
-      this.transloco.translate('confirm', {}, 'index'),
+      this.transloco.translate('confirm'),
       false
     );
     openConfirmDialog.result.then((confirmed) => {

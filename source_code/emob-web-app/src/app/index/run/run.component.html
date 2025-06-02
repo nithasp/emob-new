@@ -80,7 +80,7 @@
                     <div class="col-md-12 text-center">
                       <mat-icon class="icon-upload">upload_file</mat-icon>
                       <div class="col-md-12 text-center">
-                        <span>{{ t("drag_and_drop_file_here") }}</span>
+                        <span>{{ "drag_and_drop_file_here" | transloco }}</span>
                         <span><br />{{ "or" | transloco }}</span>
                       </div>
                     </div>
@@ -366,7 +366,7 @@
                     <!-- Symbol Column -->
                     <ng-container matColumnDef="PROVINCE">
                       <th mat-header-cell *matHeaderCellDef>
-                        {{ t("province") }}
+                        {{ "province" | transloco }}
                       </th>
 
                       <td mat-cell *matCellDef="let element">
@@ -1053,7 +1053,7 @@
                               <th scope="col">{{ t("address") }}</th>
                               <th scope="col">{{ t("sub_district") }}</th>
                               <th scope="col">{{ t("district") }}</th>
-                              <th scope="col">{{ t("province") }}</th>
+                              <th scope="col">{{ "province" | transloco }}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1125,7 +1125,7 @@
                               <th scope="col">{{ t("address") }}</th>
                               <th scope="col">{{ t("sub_district") }}</th>
                               <th scope="col">{{ t("district") }}</th>
-                              <th scope="col">{{ t("province") }}</th>
+                              <th scope="col">{{ "province" | transloco }}</th>
                             </tr>
                           </thead>
                           <tbody>

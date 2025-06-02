@@ -167,7 +167,7 @@
 
           <div class="modal-body">
             <div class="filter-item">
-              <div class="text-capitalize">{{ t("filter") }}</div>
+              <div class="text-capitalize">{{ "filter" | transloco }}</div>
               <div ngbDropdown class="filter-name">
                 <button
                   ngbDropdownToggle
@@ -385,11 +385,11 @@
 
                     <ng-container *ngSwitchCase="'travel_duration'">
                       {{ element[column] / 60 | number : "1.0-2" }}
-                      {{ t("hours") }}
+                      {{ "hours" | transloco }}
                     </ng-container>
                     <ng-container *ngSwitchCase="'service_time'">
                       {{ element[column] / 60 | number : "1.0-2" }}
-                      {{ t("hours") }}
+                      {{ "hours" | transloco }}
                     </ng-container>
 
                     <ng-container *ngSwitchDefault>
