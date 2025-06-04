@@ -78,6 +78,9 @@ import { ConfigurationService } from 'src/app/services/configuration.service';
 import { DataService } from 'src/app/services/data.service';
 import { ExportFileService } from 'src/app/services/export-file.service';
 import { set } from 'ol/transform';
+import Text from 'ol/style/Text';
+import Fill from 'ol/style/Fill';
+import Stroke from 'ol/style/Stroke';
 import { TranslocoService } from '@jsverse/transloco';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
@@ -221,6 +224,29 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isCreateMode: boolean = false;
 
+  public depots: any[] = [
+    {
+      id: 'D001',
+      name: 'Main Depot',
+      latitude: 13.736717,
+      longitude: 100.523186,
+    },
+    {
+      id: 'D002',
+      name: 'East Depot',
+      latitude: 13.789,
+      longitude: 100.567,
+    },
+    {
+      id: 'D003',
+      name: 'West Depot',
+      latitude: 13.712,
+      longitude: 100.456,
+    },
+  ];
+  public selectedDepotId: string | null = null;
+  public selectedDepotIds: string[] = [];
+
   constructor(
     private readonly spinner: NgxSpinnerService,
     private readonly constraintService: ConstraintService,
@@ -240,6 +266,8 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.spinner.show();
+
+    this.getMyDepots();
   }
   ngAfterViewInit() {
     setTimeout(() => {
@@ -252,6 +280,7 @@ export class RunComponent implements OnInit, AfterViewInit {
             .getExperiment(params['runId'])
             .subscribe((response: Experiment) => {
               this.experiment = { ...response };
+              this.loadDepotData();
               if (this.experiment.status !== StatusExperiment.Initializing) {
                 this.spinner.hide();
                 this.openConfirmDialog(
@@ -734,17 +763,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   private loadLocationDepot(depots: Array<Depot>) {
     this.vectorSourceDepot.clear();
-    let iconLocation = new Style({
-      image: new Icon({
-        anchor: [0.5, 0.5],
-        anchorOrigin: 'bottom-left',
-        anchorXUnits: 'fraction',
-        anchorYUnits: 'pixels',
-        crossOrigin: 'anonymous',
-        opacity: 1,
-        src: `assets/image/depot.png`,
-      }),
-    });
 
     depots.forEach((depot) => {
       if (depot.latitude && depot.longitude) {
@@ -752,14 +770,37 @@ export class RunComponent implements OnInit, AfterViewInit {
           geometry: new Point(
             OlProj.fromLonLat([Number(depot.longitude), Number(depot.latitude)])
           ),
-
           data: { data: depot, isDepot: true },
         });
-        location.setStyle(iconLocation);
+
+        const iconWithLabel = new Style({
+          image: new Icon({
+            anchor: [0.5, 1],
+            anchorOrigin: 'bottom-left',
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'pixels',
+            crossOrigin: 'anonymous',
+            opacity: 1,
+            scale: 1,
+            src: `assets/image/depot.png`,
+          }),
+          text: new Text({
+            text: depot.name,
+            offsetY: 25,
+            font: '12px Arial',
+            fill: new Fill({ color: '#000000' }),
+            stroke: new Stroke({ color: '#ffffff', width: 2 }),
+          }),
+        });
+
+        location.setStyle(iconWithLabel);
         this.vectorSourceDepot.addFeature(location);
+
+        //this.depots = [location, ...this.depots]
       }
     });
   }
+
   private loadLocation(uploadDataGroupCustomers: DataGroup) {
     this.vectorSource.clear();
     Object.keys(uploadDataGroupCustomers).forEach((key: string) => {
@@ -1647,5 +1688,91 @@ export class RunComponent implements OnInit, AfterViewInit {
           },
         };
       });
+  }
+
+  onDepotSelectionChange() {
+    const depot = this.depots.find((d) => d.id === this.selectedDepotId);
+    if (depot) {
+      this.updateDepotLocationOnMap([depot]);
+    }
+  }
+
+  onMultipleDepotSelectionChange() {
+    const selectedDepots = this.depots.filter((d) =>
+      this.selectedDepotIds.includes(d.id)
+    );
+    this.updateDepotLocationOnMap(selectedDepots);
+  }
+
+  updateDepotLocationOnMap(depots: any[]) {
+    this.vectorSourceDepot.clear();
+
+    let iconLocation = (depotName: string) =>
+      new Style({
+        image: new Icon({
+          anchor: [0.5, 1],
+          anchorOrigin: 'bottom-left',
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          crossOrigin: 'anonymous',
+          opacity: 1,
+          scale: 1,
+          src: `assets/image/depot.png`,
+        }),
+        text: new Text({
+          text: depotName,
+          offsetY: 25,
+          font: '12px Arial',
+          fill: new Fill({ color: '#000000' }),
+          stroke: new Stroke({ color: '#ffffff', width: 2 }),
+        }),
+      });
+
+    depots.forEach((depot) => {
+      const location: Feature = new Feature({
+        geometry: new Point(
+          OlProj.fromLonLat([depot.longitude, depot.latitude])
+        ),
+        data: { data: depot, isDepot: true },
+      });
+
+      location.setStyle(iconLocation(depot.name));
+      this.vectorSourceDepot.addFeature(location);
+    });
+  }
+
+  loadDepotData() {
+    const experimentDepots: any[] = (this.experiment?.result?.depots || []).map(
+      (d) => ({
+        id: d.id ?? d.name,
+        name: d.name,
+        latitude: d.latitude,
+        longitude: d.longitude,
+      })
+    );
+
+    const merged: any[] = [...this.depots];
+
+    experimentDepots.forEach((brsDepot) => {
+      const exists = merged.some((d) => d.id === brsDepot.id);
+      if (!exists) {
+        merged.push(brsDepot);
+      }
+    });
+
+    //this.depots = merged;
+    console.log('Merged depots (including BRS):', this.depots);
+  }
+
+  getMyDepots() {
+    this.experimentService.getMyDepots().subscribe({
+      next: (response) => {
+        console.log('Test getMyDepots response:', response);
+      },
+      error: (error) => {
+        console.error('Error fetching getMyDepots data:', error);
+        this.toastr.error(error);
+      },
+    });
   }
 }

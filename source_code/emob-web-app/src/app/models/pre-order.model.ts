@@ -121,6 +121,7 @@ export function getDescription(enumValue: ReplaceType | ValidationType): string 
   return enumDescriptions[enumValue] || 'No description available';
 }
 export interface Depot {
+  id: string
   delivery: number;
   index: number;
   is_depot: boolean;

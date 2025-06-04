@@ -89,4 +89,12 @@ export interface DownloadResultFile {
   };
 }
 
+export interface myDepots {
+  depotName: string;
+  latitude: string;
+  longitude: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ExperimentCounts extends Pick<Experiment, 'countGeocoding' | 'countReroute'> {}

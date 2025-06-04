@@ -165,6 +165,43 @@
                   </div>
                 </div>
 
+                <div class="card p-3 mb-4">
+                  <h4><mat-icon>location_on</mat-icon> Manage Depots</h4>
+
+                  <!-- Single select -->
+                  <mat-form-field appearance="fill" class="w-100 mb-3">
+                    <mat-label>Single Depot Selection</mat-label>
+                    <mat-select
+                      [(value)]="selectedDepotId"
+                      (selectionChange)="onDepotSelectionChange()"
+                    >
+                      <mat-option
+                        *ngFor="let depot of depots"
+                        [value]="depot.id"
+                      >
+                        {{ depot.name }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <!-- Multiple select -->
+                  <mat-form-field appearance="fill" class="w-100 mb-3">
+                    <mat-label>Multiple Depot Selection</mat-label>
+                    <mat-select
+                      multiple
+                      [(value)]="selectedDepotIds"
+                      (selectionChange)="onMultipleDepotSelectionChange()"
+                    >
+                      <mat-option
+                        *ngFor="let depot of depots"
+                        [value]="depot.id"
+                      >
+                        {{ depot.name }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
                 <div
                   class="row justify-content-md-center mb-2"
                   [hidden]="preOrderFiles.length < 1"

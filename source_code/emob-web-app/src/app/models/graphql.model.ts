@@ -3,6 +3,7 @@ import { Constraint } from './constraint.model';
 import { DownloadResultFile, Experiment, ExperimentState } from './experiment.model';
 
 export interface Response {
+  myDepots: any;
   timestamp: string;
   status_code: number;
   status_message: string;
