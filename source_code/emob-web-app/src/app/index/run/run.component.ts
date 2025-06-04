@@ -225,24 +225,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   isCreateMode: boolean = false;
 
   public depots: any[] = [
-    {
-      id: 'D001',
-      name: 'Main Depot',
-      latitude: 13.736717,
-      longitude: 100.523186,
-    },
-    {
-      id: 'D002',
-      name: 'East Depot',
-      latitude: 13.789,
-      longitude: 100.567,
-    },
-    {
-      id: 'D003',
-      name: 'West Depot',
-      latitude: 13.712,
-      longitude: 100.456,
-    },
+
   ];
   public selectedDepotId: string | null = null;
   public selectedDepotIds: string[] = [];
@@ -266,8 +249,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.spinner.show();
-
-    this.getMyDepots();
   }
   ngAfterViewInit() {
     setTimeout(() => {
@@ -280,7 +261,7 @@ export class RunComponent implements OnInit, AfterViewInit {
             .getExperiment(params['runId'])
             .subscribe((response: Experiment) => {
               this.experiment = { ...response };
-              this.loadDepotData();
+
               if (this.experiment.status !== StatusExperiment.Initializing) {
                 this.spinner.hide();
                 this.openConfirmDialog(
@@ -349,6 +330,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
       this.initIconStyle();
       this.initMap();
+      this.getMyDepots();
       this.getValidateMessage();
     }, 100);
     this.dataSource.paginator = this.paginator; // For pagination
@@ -796,7 +778,17 @@ export class RunComponent implements OnInit, AfterViewInit {
         location.setStyle(iconWithLabel);
         this.vectorSourceDepot.addFeature(location);
 
-        //this.depots = [location, ...this.depots]
+        console.log('location', location);
+        console.log('depot', depot);
+        this.depots = [
+          {
+            depotName: depot.name,
+            latitude: depot.latitude,
+            longitude: depot.longitude,
+          },
+          ...this.depots,
+        ];
+        this.selectedDepotId = depot.name;
       }
     });
   }
@@ -1691,23 +1683,33 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   onDepotSelectionChange() {
-    const depot = this.depots.find((d) => d.id === this.selectedDepotId);
+    this.selectedDepotIds = [];
+    this.updateDepotLocationOnMap([]);
+    const depot = this.depots.find((d) => d.depotName === this.selectedDepotId);
     if (depot) {
       this.updateDepotLocationOnMap([depot]);
     }
   }
 
   onMultipleDepotSelectionChange() {
-    const selectedDepots = this.depots.filter((d) =>
-      this.selectedDepotIds.includes(d.id)
+    this.selectedDepotId = null;
+    const selected = this.depots.filter((d) =>
+      this.selectedDepotIds.includes(d.depotName)
     );
-    this.updateDepotLocationOnMap(selectedDepots);
+    this.updateDepotLocationOnMap(selected);
   }
 
-  updateDepotLocationOnMap(depots: any[]) {
+  updateDepotLocationOnMap(
+    depots: Array<{
+      depotName: string;
+      latitude: number | string;
+      longitude: number | string;
+      [key: string]: any;
+    }>
+  ) {
     this.vectorSourceDepot.clear();
 
-    let iconLocation = (depotName: string) =>
+    const iconWithLabel = (label: string) =>
       new Style({
         image: new Icon({
           anchor: [0.5, 1],
@@ -1720,7 +1722,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           src: `assets/image/depot.png`,
         }),
         text: new Text({
-          text: depotName,
+          text: label,
           offsetY: 25,
           font: '12px Arial',
           fill: new Fill({ color: '#000000' }),
@@ -1729,50 +1731,37 @@ export class RunComponent implements OnInit, AfterViewInit {
       });
 
     depots.forEach((depot) => {
-      const location: Feature = new Feature({
-        geometry: new Point(
-          OlProj.fromLonLat([depot.longitude, depot.latitude])
-        ),
+      const lon = Number(depot.longitude);
+      const lat = Number(depot.latitude);
+      const coord = OlProj.fromLonLat([lon, lat]);
+
+      const feature = new Feature({
+        geometry: new Point(coord),
         data: { data: depot, isDepot: true },
       });
 
-      location.setStyle(iconLocation(depot.name));
-      this.vectorSourceDepot.addFeature(location);
+      feature.setStyle(iconWithLabel(depot.depotName));
+
+      this.vectorSourceDepot.addFeature(feature);
     });
-  }
-
-  loadDepotData() {
-    const experimentDepots: any[] = (this.experiment?.result?.depots || []).map(
-      (d) => ({
-        id: d.id ?? d.name,
-        name: d.name,
-        latitude: d.latitude,
-        longitude: d.longitude,
-      })
-    );
-
-    const merged: any[] = [...this.depots];
-
-    experimentDepots.forEach((brsDepot) => {
-      const exists = merged.some((d) => d.id === brsDepot.id);
-      if (!exists) {
-        merged.push(brsDepot);
-      }
-    });
-
-    //this.depots = merged;
-    console.log('Merged depots (including BRS):', this.depots);
   }
 
   getMyDepots() {
     this.experimentService.getMyDepots().subscribe({
-      next: (response) => {
+      next: (response: any) => {
         console.log('Test getMyDepots response:', response);
+        this.depots = response.myDepots
+        //console.log('response.data.myDepots', response.data.myDepots);
+        console.log('response', response);
       },
       error: (error) => {
         console.error('Error fetching getMyDepots data:', error);
         this.toastr.error(error);
       },
     });
+  }
+
+  log() {
+    console.log('selectedDepotId', this.selectedDepotId);
   }
 }
