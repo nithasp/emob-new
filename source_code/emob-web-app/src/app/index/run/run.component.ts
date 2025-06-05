@@ -176,8 +176,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   public countUploadedCustomers: number = 0;
   public constraintsData!: Constraint;
   public validateExperiment: Validate | null = null;
-  public companyDepotType: string = "";
-
+  public companyDepotType: string = '';
 
   //display table and virtualization
 
@@ -226,9 +225,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isCreateMode: boolean = false;
 
-  public depots: any[] = [
-
-  ];
+  public depots: any[] = [];
   public selectedDepotId: string | null = null;
   public selectedDepotIds: string[] = [];
 
@@ -790,6 +787,9 @@ export class RunComponent implements OnInit, AfterViewInit {
           },
           ...this.depots,
         ];
+
+
+        
         this.selectedDepotId = depot.name;
       }
     });
@@ -1685,15 +1685,39 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   onDepotSelectionChange() {
+    // Remove any multiple-depot storage
+    localStorage.removeItem('selectedDepotIds');
+
+    // Persist single selection (or clear it)
+    if (this.selectedDepotId) {
+      localStorage.setItem('selectedDepotId', this.selectedDepotId);
+    } else {
+      localStorage.removeItem('selectedDepotId');
+    }
+
+    // Update map markers
     this.selectedDepotIds = [];
     this.updateDepotLocationOnMap([]);
+
     const depot = this.depots.find((d) => d.depotName === this.selectedDepotId);
     if (depot) {
       this.updateDepotLocationOnMap([depot]);
     }
   }
 
+  // ─── 4) Persist on multiple-depot change ───────────────────────────────────────────────
   onMultipleDepotSelectionChange() {
+    // Remove any single-depot storage
+    localStorage.removeItem('selectedDepotId');
+
+    // Persist multiple selection array (or clear it)
+    if (this.selectedDepotIds && this.selectedDepotIds.length > 0) {
+      localStorage.setItem('selectedDepotIds', JSON.stringify(this.selectedDepotIds));
+    } else {
+      localStorage.removeItem('selectedDepotIds');
+    }
+
+    // Update map markers
     this.selectedDepotId = null;
     const selected = this.depots.filter((d) =>
       this.selectedDepotIds.includes(d.depotName)
@@ -1748,11 +1772,13 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  getMyDepots() {
+getMyDepots() {
     this.experimentService.getMyDepots().subscribe({
       next: (response: any) => {
         this.companyDepotType = response.myCompany.depotType;
-        this.depots = response.myDepots
+        this.depots = response.myDepots;
+ 
+        this.restoreDepotSelectionFromLocalStorage();
       },
       error: (error) => {
         console.error('Error fetching getMyDepots data:', error);
@@ -1761,7 +1787,45 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
+  restoreDepotSelectionFromLocalStorage() {
+    const singleId = localStorage.getItem('selectedDepotId');
+    if (singleId) {
+      console.log('singleId', singleId);
+      const found = this.depots.find((d) => d.depotName === singleId);
+      if (found) {
+        this.selectedDepotId = singleId;
+        this.updateDepotLocationOnMap([found]);
+        return;
+      } else {
+        localStorage.removeItem('selectedDepotId');
+      }
+    }
+
+    const multiJson = localStorage.getItem('selectedDepotIds');
+    if (multiJson) {
+      try {
+        const arrayOfIds: string[] = JSON.parse(multiJson);
+        const validIds = arrayOfIds.filter((id) =>
+          this.depots.some((d) => d.depotName === id)
+        );
+        if (validIds.length) {
+          this.selectedDepotIds = validIds;
+          const selectedDepots = this.depots.filter((d) =>
+            validIds.includes(d.depotName)
+          );
+          this.updateDepotLocationOnMap(selectedDepots);
+          return;
+        } else {
+          localStorage.removeItem('selectedDepotIds');
+        }
+      } catch {
+        localStorage.removeItem('selectedDepotIds');
+      }
+    }
+  }
+
   log() {
     console.log('selectedDepotId', this.selectedDepotId);
+ 
   }
 }
