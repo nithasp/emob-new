@@ -170,7 +170,7 @@
 
                   <h1 (click)="log()">log</h1>
 
-                  <mat-form-field appearance="fill" class="w-100 mb-3">
+                  <mat-form-field *ngIf="companyDepotType === 'Single'" appearance="fill" class="w-100 mb-3">
                     <mat-label>Single Depot Selection</mat-label>
                     <mat-select
                       [(value)]="selectedDepotId"
@@ -185,7 +185,7 @@
                     </mat-select>
                   </mat-form-field>
 
-                  <mat-form-field appearance="fill" class="w-100 mb-3">
+                  <mat-form-field *ngIf="companyDepotType === 'Multiple'" appearance="fill" class="w-100 mb-3">
                     <mat-label>Multiple Depot Selection</mat-label>
                     <mat-select
                       multiple
@@ -1326,6 +1326,8 @@
       <div class="col-md-5" [hidden]="!isUpload">
         <div class="row">
           <div id="map" class="map col-12 mt-3" style="min-height: 900px"></div>
+
+          
           <div id="popup" class="ol-popup" [hidden]="popupContent?.isDepot">
             <button
               (click)="closePopupMapShow()"
@@ -1335,7 +1337,7 @@
             <div
               id="popup-content"
               class="row justify-content-end mt-2"
-              *ngIf="popupContent"
+              *ngIf="popupContent && !popupContent.isDepot"
             >
               <p class="d-inline-block text-truncate" style="max-width: 300px">
                 <strong>{{ "address" | transloco }} : </strong>
@@ -1364,6 +1366,7 @@
               {{ t("details") }}
             </button>
           </div>
+
           <div class="col-md-12 mt-2">
             <div class="row">
               <div class="col-sm-3 col-6 pl-sm-1 pb-2">

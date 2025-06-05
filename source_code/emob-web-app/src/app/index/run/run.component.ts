@@ -176,6 +176,8 @@ export class RunComponent implements OnInit, AfterViewInit {
   public countUploadedCustomers: number = 0;
   public constraintsData!: Constraint;
   public validateExperiment: Validate | null = null;
+  public companyDepotType: string = "";
+
 
   //display table and virtualization
 
@@ -1749,10 +1751,8 @@ export class RunComponent implements OnInit, AfterViewInit {
   getMyDepots() {
     this.experimentService.getMyDepots().subscribe({
       next: (response: any) => {
-        console.log('Test getMyDepots response:', response);
+        this.companyDepotType = response.myCompany.depotType;
         this.depots = response.myDepots
-        //console.log('response.data.myDepots', response.data.myDepots);
-        console.log('response', response);
       },
       error: (error) => {
         console.error('Error fetching getMyDepots data:', error);

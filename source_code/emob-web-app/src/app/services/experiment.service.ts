@@ -312,26 +312,6 @@ export class ExperimentService {
       );
   }
 
-  // getTest(): Observable<any> {
-  //   return this.apollo
-  //     .query<Response>({
-  //       query: gql`
-  //         query myCompany {
-  //           myCompany {
-
-  //             depotType
-  //           }
-  //         }
-  //       `,
-  //       fetchPolicy: 'network-only',
-  //     })
-
-  //     .pipe(
-  //       map((result) => result.data.myDepots)
-  //       // catchError((error) => this.errorHandlingService.handleError(error))
-  //     );
-  // }
-
   getMyDepots(): Observable<{ myCompany: any; myDepots: any[] }> {
   return this.apollo
     .query<{ myCompany: any[]; myDepots: any[] }>({
