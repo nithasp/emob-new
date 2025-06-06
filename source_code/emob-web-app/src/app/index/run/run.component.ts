@@ -224,6 +224,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   isCreateMode: boolean = false;
+  isFilePreview: boolean = false;
 
   public depots: any[] = [];
   public selectedDepotId: string | null = null;
@@ -306,6 +307,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                       });
                     } else if (!this.experiment.preOrderBlobPath) {
                       this.initializeDefaultParameter();
+                      this.isFilePreview = true;
                     } else {
                       this.initializeDataFromExperiment(
                         this.experiment
@@ -542,66 +544,76 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   async uploadFile(file: File) {
+    console.log('file', file);
+    console.log('this.preOrderFiles', this.preOrderFiles);
+
     const isValid = await this.processExcelFile(file);
     if (isValid) {
       console.log('Data is valid');
 
-      const focusedElement = document.activeElement as HTMLElement;
-      if (focusedElement) {
-        focusedElement.blur();
-      }
-      const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
-        centered: true,
-        animation: true,
-      });
-      dialogRef.componentInstance.title = this.transloco.translate(
-        'upload_preorder_file_confirmation',
-        {},
-        'index'
-      );
-      dialogRef.componentInstance.question = `${this.transloco.translate(
-        'confirm_to_upload_file',
-        {},
-        'index'
-      )} ?`;
-      dialogRef.componentInstance.message = `${this.transloco.translate(
-        'please_make_sure_to_upload_the_file_and_note_that_there_may_be_a_cost_associated_with_finding_the_location',
-        {},
-        'index'
-      )}.`;
+      this.preOrderFiles.push(file);
+      this.isFilePreview = true;
 
-      dialogRef.result
-        .then((confirmed: boolean) => {
-          if (confirmed) {
-            this.spinner.show();
-
-            this.preOrderService
-              .uploadPreOrder(this.experiment.runId, file)
-              .subscribe((response: Experiment) => {
-                this.groupingCustomer(
-                  response.result.customers,
-                  response.result.depots
-                );
-                this.preOrderFiles.push(file);
-                this.experiment.name = response.name;
-                this.spinner.hide();
-                this.toastr.success(
-                  `${this.transloco.translate(
-                    'upload_preorder_success',
-                    {},
-                    'index'
-                  )}.`
-                );
-              });
-          }
-        })
-        .catch((error) => {
-          console.error('Dialog was dismissed:', error);
-          this.spinner.hide();
-        });
+      return;
     } else {
       console.log('Data is invalid');
     }
+  }
+
+  handleUploadSubmit() {
+    const focusedElement = document.activeElement as HTMLElement;
+    if (focusedElement) {
+      focusedElement.blur();
+    }
+    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      centered: true,
+      animation: true,
+    });
+    dialogRef.componentInstance.title = this.transloco.translate(
+      'upload_preorder_file_confirmation',
+      {},
+      'index'
+    );
+    dialogRef.componentInstance.question = `${this.transloco.translate(
+      'confirm_to_upload_file',
+      {},
+      'index'
+    )} ?`;
+    dialogRef.componentInstance.message = `${this.transloco.translate(
+      'please_make_sure_to_upload_the_file_and_note_that_there_may_be_a_cost_associated_with_finding_the_location',
+      {},
+      'index'
+    )}.`;
+
+    dialogRef.result
+      .then((confirmed: boolean) => {
+        if (confirmed) {
+          this.spinner.show();
+
+          this.preOrderService
+            .uploadPreOrder(this.experiment.runId, this.preOrderFiles[0])
+            .subscribe((response: Experiment) => {
+              this.groupingCustomer(
+                response.result.customers,
+                response.result.depots
+              );
+              this.experiment.name = response.name;
+              this.isFilePreview = false;
+              this.spinner.hide();
+              this.toastr.success(
+                `${this.transloco.translate(
+                  'upload_preorder_success',
+                  {},
+                  'index'
+                )}.`
+              );
+            });
+        }
+      })
+      .catch((error) => {
+        console.error('Dialog was dismissed:', error);
+        this.spinner.hide();
+      });
   }
 
   private showInvalidModal(title: string, message: string | string[]): void {
@@ -742,176 +754,191 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-private loadLocationDepot(incoming: any[]) {
-  // ─── 1) Ensure this.depots is at least an array ─────────────────────────────────
-  if (!this.depots) {
-    this.depots = [];
-  }
+  private loadLocationDepot(incoming: any[]) {
+    // ─── 1) Ensure this.depots is at least an array ─────────────────────────────────
+    if (!this.depots) {
+      this.depots = [];
+    }
 
-  // ─── 2) Normalize existing this.depots into simple objects ───────────────────────
-  //    (They should already be in the form { depotName, latitude, longitude } if coming
-  //     from getMyDepots, but we rebuild to be safe.)
-  const normalizedExisting: Array<{ depotName: string; latitude: number; longitude: number }> =
-    this.depots.map(d => ({
+    // ─── 2) Normalize existing this.depots into simple objects ───────────────────────
+    //    (They should already be in the form { depotName, latitude, longitude } if coming
+    //     from getMyDepots, but we rebuild to be safe.)
+    const normalizedExisting: Array<{
+      depotName: string;
+      latitude: number;
+      longitude: number;
+    }> = this.depots.map((d) => ({
       depotName: d.depotName,
       latitude: Number(d.latitude),
-      longitude: Number(d.longitude)
+      longitude: Number(d.longitude),
     }));
 
     console.log('normalizedExisting', normalizedExisting);
 
-  // ─── 3) Normalize the incoming array → always produce objects of the form:
-  //        { depotName: string, latitude: number, longitude: number }
-  const normalizedIncoming: Array<{ depotName: string; latitude: number; longitude: number }> =
-    incoming.map(item => {
+    // ─── 3) Normalize the incoming array → always produce objects of the form:
+    //        { depotName: string, latitude: number, longitude: number }
+    const normalizedIncoming: Array<{
+      depotName: string;
+      latitude: number;
+      longitude: number;
+    }> = incoming.map((item) => {
       // If item already has depotName, use it; otherwise, fall back to item.name
-      const nameKey = (typeof item.depotName === 'string')
-        ? item.depotName
-        : (typeof item.name === 'string' ? item.name : '');
+      const nameKey =
+        typeof item.depotName === 'string'
+          ? item.depotName
+          : typeof item.name === 'string'
+          ? item.name
+          : '';
 
       return {
         depotName: nameKey,
         latitude: Number(item.latitude),
-        longitude: Number(item.longitude)
+        longitude: Number(item.longitude),
       };
     });
 
     console.log('normalizedIncoming', normalizedIncoming);
 
-  // ─── 4) Merge normalizedExisting + normalizedIncoming into allDepots ──────────────
-  //    If you want to avoid duplicates by depotName, filter them out here.
-  let allDepots = [...normalizedIncoming, ...normalizedExisting];
+    // ─── 4) Merge normalizedExisting + normalizedIncoming into allDepots ──────────────
+    //    If you want to avoid duplicates by depotName, filter them out here.
+    let allDepots = [...normalizedIncoming, ...normalizedExisting];
 
-  console.log('allDepots', allDepots);
+    console.log('allDepots', allDepots);
 
-  // ─── Optional deduplication by depotName ───────────────────────────────────────────
-  // (Uncomment if you do not want the same depotName repeated):
-  //
-  // const seen = new Set<string>();
-  // allDepots = allDepots.filter(d => {
-  //   if (seen.has(d.depotName)) return false;
-  //   seen.add(d.depotName);
-  //   return true;
-  // });
+    // ─── Optional deduplication by depotName ───────────────────────────────────────────
+    // (Uncomment if you do not want the same depotName repeated):
+    //
+    // const seen = new Set<string>();
+    // allDepots = allDepots.filter(d => {
+    //   if (seen.has(d.depotName)) return false;
+    //   seen.add(d.depotName);
+    //   return true;
+    // });
 
-  // ─── 5) Rebuild this.depots so that it contains unique “full” Depot‐objects
-  //         (for later reference, e.g. storing other fields if needed).
-  //
-  // We’ll pick the first occurrence of each depotName from:
-  //    1) this.depots (the original server‐fetched objects)
-  //    2) incoming (the BRS‐like objects)
-  //
-  // This ensures this.depots always has one object per depotName.
+    // ─── 5) Rebuild this.depots so that it contains unique “full” Depot‐objects
+    //         (for later reference, e.g. storing other fields if needed).
+    //
+    // We’ll pick the first occurrence of each depotName from:
+    //    1) this.depots (the original server‐fetched objects)
+    //    2) incoming (the BRS‐like objects)
+    //
+    // This ensures this.depots always has one object per depotName.
 
-  // const mergedByName: { [name: string]: any } = {};
-  // [...this.depots, ...incoming].forEach(obj => {
-  //   const key = (typeof obj.depotName === 'string')
-  //     ? obj.depotName
-  //     : (typeof obj.name === 'string' ? obj.name : '');
+    // const mergedByName: { [name: string]: any } = {};
+    // [...this.depots, ...incoming].forEach(obj => {
+    //   const key = (typeof obj.depotName === 'string')
+    //     ? obj.depotName
+    //     : (typeof obj.name === 'string' ? obj.name : '');
 
-  //   if (key && !mergedByName[key]) {
-  //     mergedByName[key] = obj;
-  //   }
-  // });
-  // this.depots = Object.values(mergedByName);
+    //   if (key && !mergedByName[key]) {
+    //     mergedByName[key] = obj;
+    //   }
+    // });
+    // this.depots = Object.values(mergedByName);
 
-  this.depots = allDepots;
+    this.depots = allDepots;
 
-  console.log(' this.depots after merge', this.depots);
+    console.log(' this.depots after merge', this.depots);
 
-  // ─── 6) Clear any existing depot‐features on the map ──────────────────────────────
-  this.vectorSourceDepot.clear();
+    // ─── 6) Clear any existing depot‐features on the map ──────────────────────────────
+    this.vectorSourceDepot.clear();
 
-  // ─── 7) Read stored selection (if any) from localStorage ─────────────────────────
-  const singleId = localStorage.getItem('selectedDepotId');
-  let multiIds: string[] = [];
-  const rawMulti = localStorage.getItem('selectedDepotIds');
-  if (rawMulti) {
-    try {
-      const parsed = JSON.parse(rawMulti);
-      if (Array.isArray(parsed)) {
-        multiIds = parsed;
+    // ─── 7) Read stored selection (if any) from localStorage ─────────────────────────
+    const singleId = localStorage.getItem('selectedDepotId');
+    let multiIds: string[] = [];
+    const rawMulti = localStorage.getItem('selectedDepotIds');
+    if (rawMulti) {
+      try {
+        const parsed = JSON.parse(rawMulti);
+        if (Array.isArray(parsed)) {
+          multiIds = parsed;
+        }
+      } catch {
+        multiIds = [];
       }
-    } catch {
-      multiIds = [];
     }
-  }
 
-  // ─── 8) Decide which depot(s) to display ────────────────────────────────────────
-  let toShow: Array<{ depotName: string; latitude: number; longitude: number }> = [];
+    // ─── 8) Decide which depot(s) to display ────────────────────────────────────────
+    let toShow: Array<{
+      depotName: string;
+      latitude: number;
+      longitude: number;
+    }> = [];
 
-  // 8a) If a valid single‐depot ID is stored, show only that one
-  if (singleId) {
-    const found = allDepots.find(d => d.depotName === singleId);
-    if (found) {
-      this.selectedDepotId = singleId;
-      this.selectedDepotIds = [];
-      toShow = [found];
-    } else { console.log('c1');
-      // invalid singleId → remove it
-      localStorage.removeItem('selectedDepotId');
+    // 8a) If a valid single‐depot ID is stored, show only that one
+    if (singleId) {
+      const found = allDepots.find((d) => d.depotName === singleId);
+      if (found) {
+        this.selectedDepotId = singleId;
+        this.selectedDepotIds = [];
+        toShow = [found];
+      } else {
+        console.log('c1');
+        // invalid singleId → remove it
+        localStorage.removeItem('selectedDepotId');
+      }
     }
-  }
 
-  // 8b) Otherwise, if there’s a valid array of multiIds, show those
-  if (!toShow.length && multiIds.length) {
-    const validMulti = multiIds.filter(id => allDepots.some(d => d.depotName === id));
-    if (validMulti.length) {
-      this.selectedDepotIds = validMulti;
+    // 8b) Otherwise, if there’s a valid array of multiIds, show those
+    if (!toShow.length && multiIds.length) {
+      const validMulti = multiIds.filter((id) =>
+        allDepots.some((d) => d.depotName === id)
+      );
+      if (validMulti.length) {
+        this.selectedDepotIds = validMulti;
+        this.selectedDepotId = null;
+        toShow = allDepots.filter((d) => validMulti.includes(d.depotName));
+      } else {
+        // invalid saved multiIds → clear them
+        localStorage.removeItem('selectedDepotIds');
+        console.log('c1');
+        multiIds = [];
+      }
+    }
+
+    // 8c) If neither single nor multi selection is valid → default to all depots
+    if (!toShow.length) {
       this.selectedDepotId = null;
-      toShow = allDepots.filter(d => validMulti.includes(d.depotName));
-    } else {
-      // invalid saved multiIds → clear them
-      localStorage.removeItem('selectedDepotIds'); console.log('c1');
-      multiIds = [];
+      this.selectedDepotIds = [];
+      toShow = allDepots.slice();
     }
-  }
 
-  // 8c) If neither single nor multi selection is valid → default to all depots
-  if (!toShow.length) {
-    this.selectedDepotId = null;
-    this.selectedDepotIds = [];
-    toShow = allDepots.slice();
-  }
+    // ─── 9) Plot each “toShow” depot as a Feature on vectorSourceDepot ──────────────
+    const iconWithLabel = (label: string) =>
+      new Style({
+        image: new Icon({
+          anchor: [0.5, 1],
+          anchorOrigin: 'bottom-left',
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          crossOrigin: 'anonymous',
+          opacity: 1,
+          scale: 1,
+          src: `assets/image/depot.png`,
+        }),
+        text: new Text({
+          text: label,
+          offsetY: 25,
+          font: '12px Arial',
+          fill: new Fill({ color: '#000000' }),
+          stroke: new Stroke({ color: '#ffffff', width: 2 }),
+        }),
+      });
 
-  // ─── 9) Plot each “toShow” depot as a Feature on vectorSourceDepot ──────────────
-  const iconWithLabel = (label: string) =>
-    new Style({
-      image: new Icon({
-        anchor: [0.5, 1],
-        anchorOrigin: 'bottom-left',
-        anchorXUnits: 'fraction',
-        anchorYUnits: 'pixels',
-        crossOrigin: 'anonymous',
-        opacity: 1,
-        scale: 1,
-        src: `assets/image/depot.png`,
-      }),
-      text: new Text({
-        text: label,
-        offsetY: 25,
-        font: '12px Arial',
-        fill: new Fill({ color: '#000000' }),
-        stroke: new Stroke({ color: '#ffffff', width: 2 }),
-      }),
+    toShow.forEach((depot) => {
+      const lon = Number(depot.longitude);
+      const lat = Number(depot.latitude);
+      const coord = OlProj.fromLonLat([lon, lat]);
+
+      const feature = new Feature({
+        geometry: new Point(coord),
+        data: { data: depot, isDepot: true },
+      });
+
+      feature.setStyle(iconWithLabel(depot.depotName));
+      this.vectorSourceDepot.addFeature(feature);
     });
-
-  toShow.forEach(depot => {
-    const lon = Number(depot.longitude);
-    const lat = Number(depot.latitude);
-    const coord = OlProj.fromLonLat([lon, lat]);
-
-    const feature = new Feature({
-      geometry: new Point(coord),
-      data: { data: depot, isDepot: true },
-    });
-
-    feature.setStyle(iconWithLabel(depot.depotName));
-    this.vectorSourceDepot.addFeature(feature);
-  });
-}
-
-
+  }
 
   private loadLocation(uploadDataGroupCustomers: DataGroup) {
     this.vectorSource.clear();
@@ -1902,7 +1929,6 @@ private loadLocationDepot(incoming: any[]) {
       next: (response: any) => {
         this.companyDepotType = response.myCompany.depotType;
         this.depots = response.myDepots;
-   
       },
       error: (error) => {
         console.error('Error fetching getMyDepots data:', error);
@@ -1911,10 +1937,10 @@ private loadLocationDepot(incoming: any[]) {
     });
   }
 
- 
-
   log() {
     console.log('this.depots', this.depots);
     console.log('selectedDepotId', this.selectedDepotId);
+
+    console.log('this.preOrderFiles', this.preOrderFiles);
   }
 }
