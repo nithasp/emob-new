@@ -742,58 +742,176 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private loadLocationDepot(depots: Array<Depot>) {
-    this.vectorSourceDepot.clear();
-
-    depots.forEach((depot) => {
-      if (depot.latitude && depot.longitude) {
-        const location: Feature = new Feature({
-          geometry: new Point(
-            OlProj.fromLonLat([Number(depot.longitude), Number(depot.latitude)])
-          ),
-          data: { data: depot, isDepot: true },
-        });
-
-        const iconWithLabel = new Style({
-          image: new Icon({
-            anchor: [0.5, 1],
-            anchorOrigin: 'bottom-left',
-            anchorXUnits: 'fraction',
-            anchorYUnits: 'pixels',
-            crossOrigin: 'anonymous',
-            opacity: 1,
-            scale: 1,
-            src: `assets/image/depot.png`,
-          }),
-          text: new Text({
-            text: depot.name,
-            offsetY: 25,
-            font: '12px Arial',
-            fill: new Fill({ color: '#000000' }),
-            stroke: new Stroke({ color: '#ffffff', width: 2 }),
-          }),
-        });
-
-        location.setStyle(iconWithLabel);
-        this.vectorSourceDepot.addFeature(location);
-
-        console.log('location', location);
-        console.log('depot', depot);
-        this.depots = [
-          {
-            depotName: depot.name,
-            latitude: depot.latitude,
-            longitude: depot.longitude,
-          },
-          ...this.depots,
-        ];
-
-
-        
-        this.selectedDepotId = depot.name;
-      }
-    });
+private loadLocationDepot(incoming: any[]) {
+  // ─── 1) Ensure this.depots is at least an array ─────────────────────────────────
+  if (!this.depots) {
+    this.depots = [];
   }
+
+  // ─── 2) Normalize existing this.depots into simple objects ───────────────────────
+  //    (They should already be in the form { depotName, latitude, longitude } if coming
+  //     from getMyDepots, but we rebuild to be safe.)
+  const normalizedExisting: Array<{ depotName: string; latitude: number; longitude: number }> =
+    this.depots.map(d => ({
+      depotName: d.depotName,
+      latitude: Number(d.latitude),
+      longitude: Number(d.longitude)
+    }));
+
+    console.log('normalizedExisting', normalizedExisting);
+
+  // ─── 3) Normalize the incoming array → always produce objects of the form:
+  //        { depotName: string, latitude: number, longitude: number }
+  const normalizedIncoming: Array<{ depotName: string; latitude: number; longitude: number }> =
+    incoming.map(item => {
+      // If item already has depotName, use it; otherwise, fall back to item.name
+      const nameKey = (typeof item.depotName === 'string')
+        ? item.depotName
+        : (typeof item.name === 'string' ? item.name : '');
+
+      return {
+        depotName: nameKey,
+        latitude: Number(item.latitude),
+        longitude: Number(item.longitude)
+      };
+    });
+
+    console.log('normalizedIncoming', normalizedIncoming);
+
+  // ─── 4) Merge normalizedExisting + normalizedIncoming into allDepots ──────────────
+  //    If you want to avoid duplicates by depotName, filter them out here.
+  let allDepots = [...normalizedIncoming, ...normalizedExisting];
+
+  console.log('allDepots', allDepots);
+
+  // ─── Optional deduplication by depotName ───────────────────────────────────────────
+  // (Uncomment if you do not want the same depotName repeated):
+  //
+  // const seen = new Set<string>();
+  // allDepots = allDepots.filter(d => {
+  //   if (seen.has(d.depotName)) return false;
+  //   seen.add(d.depotName);
+  //   return true;
+  // });
+
+  // ─── 5) Rebuild this.depots so that it contains unique “full” Depot‐objects
+  //         (for later reference, e.g. storing other fields if needed).
+  //
+  // We’ll pick the first occurrence of each depotName from:
+  //    1) this.depots (the original server‐fetched objects)
+  //    2) incoming (the BRS‐like objects)
+  //
+  // This ensures this.depots always has one object per depotName.
+
+  // const mergedByName: { [name: string]: any } = {};
+  // [...this.depots, ...incoming].forEach(obj => {
+  //   const key = (typeof obj.depotName === 'string')
+  //     ? obj.depotName
+  //     : (typeof obj.name === 'string' ? obj.name : '');
+
+  //   if (key && !mergedByName[key]) {
+  //     mergedByName[key] = obj;
+  //   }
+  // });
+  // this.depots = Object.values(mergedByName);
+
+  this.depots = allDepots;
+
+  console.log(' this.depots after merge', this.depots);
+
+  // ─── 6) Clear any existing depot‐features on the map ──────────────────────────────
+  this.vectorSourceDepot.clear();
+
+  // ─── 7) Read stored selection (if any) from localStorage ─────────────────────────
+  const singleId = localStorage.getItem('selectedDepotId');
+  let multiIds: string[] = [];
+  const rawMulti = localStorage.getItem('selectedDepotIds');
+  if (rawMulti) {
+    try {
+      const parsed = JSON.parse(rawMulti);
+      if (Array.isArray(parsed)) {
+        multiIds = parsed;
+      }
+    } catch {
+      multiIds = [];
+    }
+  }
+
+  // ─── 8) Decide which depot(s) to display ────────────────────────────────────────
+  let toShow: Array<{ depotName: string; latitude: number; longitude: number }> = [];
+
+  // 8a) If a valid single‐depot ID is stored, show only that one
+  if (singleId) {
+    const found = allDepots.find(d => d.depotName === singleId);
+    if (found) {
+      this.selectedDepotId = singleId;
+      this.selectedDepotIds = [];
+      toShow = [found];
+    } else { console.log('c1');
+      // invalid singleId → remove it
+      localStorage.removeItem('selectedDepotId');
+    }
+  }
+
+  // 8b) Otherwise, if there’s a valid array of multiIds, show those
+  if (!toShow.length && multiIds.length) {
+    const validMulti = multiIds.filter(id => allDepots.some(d => d.depotName === id));
+    if (validMulti.length) {
+      this.selectedDepotIds = validMulti;
+      this.selectedDepotId = null;
+      toShow = allDepots.filter(d => validMulti.includes(d.depotName));
+    } else {
+      // invalid saved multiIds → clear them
+      localStorage.removeItem('selectedDepotIds'); console.log('c1');
+      multiIds = [];
+    }
+  }
+
+  // 8c) If neither single nor multi selection is valid → default to all depots
+  if (!toShow.length) {
+    this.selectedDepotId = null;
+    this.selectedDepotIds = [];
+    toShow = allDepots.slice();
+  }
+
+  // ─── 9) Plot each “toShow” depot as a Feature on vectorSourceDepot ──────────────
+  const iconWithLabel = (label: string) =>
+    new Style({
+      image: new Icon({
+        anchor: [0.5, 1],
+        anchorOrigin: 'bottom-left',
+        anchorXUnits: 'fraction',
+        anchorYUnits: 'pixels',
+        crossOrigin: 'anonymous',
+        opacity: 1,
+        scale: 1,
+        src: `assets/image/depot.png`,
+      }),
+      text: new Text({
+        text: label,
+        offsetY: 25,
+        font: '12px Arial',
+        fill: new Fill({ color: '#000000' }),
+        stroke: new Stroke({ color: '#ffffff', width: 2 }),
+      }),
+    });
+
+  toShow.forEach(depot => {
+    const lon = Number(depot.longitude);
+    const lat = Number(depot.latitude);
+    const coord = OlProj.fromLonLat([lon, lat]);
+
+    const feature = new Feature({
+      geometry: new Point(coord),
+      data: { data: depot, isDepot: true },
+    });
+
+    feature.setStyle(iconWithLabel(depot.depotName));
+    this.vectorSourceDepot.addFeature(feature);
+  });
+}
+
+
 
   private loadLocation(uploadDataGroupCustomers: DataGroup) {
     this.vectorSource.clear();
@@ -1712,7 +1830,10 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     // Persist multiple selection array (or clear it)
     if (this.selectedDepotIds && this.selectedDepotIds.length > 0) {
-      localStorage.setItem('selectedDepotIds', JSON.stringify(this.selectedDepotIds));
+      localStorage.setItem(
+        'selectedDepotIds',
+        JSON.stringify(this.selectedDepotIds)
+      );
     } else {
       localStorage.removeItem('selectedDepotIds');
     }
@@ -1733,6 +1854,8 @@ export class RunComponent implements OnInit, AfterViewInit {
       [key: string]: any;
     }>
   ) {
+    console.log('updateDepotLocationOnMap depots', depots);
+
     this.vectorSourceDepot.clear();
 
     const iconWithLabel = (label: string) =>
@@ -1769,16 +1892,17 @@ export class RunComponent implements OnInit, AfterViewInit {
       feature.setStyle(iconWithLabel(depot.depotName));
 
       this.vectorSourceDepot.addFeature(feature);
+
+      console.log('feature', feature);
     });
   }
 
-getMyDepots() {
+  getMyDepots() {
     this.experimentService.getMyDepots().subscribe({
       next: (response: any) => {
         this.companyDepotType = response.myCompany.depotType;
         this.depots = response.myDepots;
- 
-        this.restoreDepotSelectionFromLocalStorage();
+   
       },
       error: (error) => {
         console.error('Error fetching getMyDepots data:', error);
@@ -1787,45 +1911,10 @@ getMyDepots() {
     });
   }
 
-  restoreDepotSelectionFromLocalStorage() {
-    const singleId = localStorage.getItem('selectedDepotId');
-    if (singleId) {
-      console.log('singleId', singleId);
-      const found = this.depots.find((d) => d.depotName === singleId);
-      if (found) {
-        this.selectedDepotId = singleId;
-        this.updateDepotLocationOnMap([found]);
-        return;
-      } else {
-        localStorage.removeItem('selectedDepotId');
-      }
-    }
-
-    const multiJson = localStorage.getItem('selectedDepotIds');
-    if (multiJson) {
-      try {
-        const arrayOfIds: string[] = JSON.parse(multiJson);
-        const validIds = arrayOfIds.filter((id) =>
-          this.depots.some((d) => d.depotName === id)
-        );
-        if (validIds.length) {
-          this.selectedDepotIds = validIds;
-          const selectedDepots = this.depots.filter((d) =>
-            validIds.includes(d.depotName)
-          );
-          this.updateDepotLocationOnMap(selectedDepots);
-          return;
-        } else {
-          localStorage.removeItem('selectedDepotIds');
-        }
-      } catch {
-        localStorage.removeItem('selectedDepotIds');
-      }
-    }
-  }
+ 
 
   log() {
+    console.log('this.depots', this.depots);
     console.log('selectedDepotId', this.selectedDepotId);
- 
   }
 }

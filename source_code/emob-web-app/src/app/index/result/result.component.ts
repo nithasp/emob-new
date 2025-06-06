@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   HostListener,
@@ -11,7 +12,7 @@ import {
 } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Circle, Fill, Stroke, Text } from 'ol/style';
-import Style from 'ol/style/Style';
+import Style, { StyleFunction } from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
 import Feature, { FeatureLike } from 'ol/Feature';
 import VectorSource from 'ol/source/Vector';
@@ -29,7 +30,8 @@ import {
 import * as OlProj from 'ol/proj';
 import GeoJSON from 'ol/format/GeoJSON';
 import Overlay from 'ol/Overlay';
-import { Coordinate } from 'ol/coordinate';
+import { Coordinate, equals } from 'ol/coordinate';
+
 import {
   animate,
   state,
@@ -48,7 +50,7 @@ import {
 import Tile from 'ol/Tile';
 import TileState from 'ol/TileState';
 import ImageTile from 'ol/ImageTile';
-import { Cluster, Vector as OlVectorSource, XYZ } from 'ol/source';
+import { Cluster, Vector, XYZ } from 'ol/source';
 import CircleStyle from 'ol/style/Circle';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { MapDetailsDialogComponent } from '../components/map-details-dialog/map-details-dialog.component';
@@ -67,15 +69,6 @@ import { DownloadResultFile } from '../../models/experiment.model';
 import { TranslocoService } from '@jsverse/transloco';
 import { LanguageChangeService } from 'src/app/services/language-change.service';
 
-/**
- * Interface representing a Depot. In a real application, replace with a model from your backend.
- */
-interface Depot {
-  id: number;
-  name: string;
-  coords: [number, number]; // [longitude, latitude]
-}
-
 @Component({
   selector: 'app-result',
   templateUrl: './result.component.html',
@@ -92,11 +85,15 @@ interface Depot {
   ],
 })
 export class ResultComponent implements OnInit, AfterViewInit {
-  // ─── Existing properties ───────────────────────────────────────────────────
-  public activeFilters: Array<{ column: string; criteria: string; value: string }> =
-    [];
+  public activeFilters: Array<{
+    column: string;
+    criteria: string;
+    value: string;
+  }> = [];
 
   public map!: Map;
+  public iconStyle?: Style;
+  allFiles: File[] = [];
   public popUp?: Overlay;
   public popupContent?: any;
   private dimStyle: Style;
@@ -163,15 +160,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   hasOverflow = false;
   showAllLines = false;
 
-  // ─── (NEW) Properties for “Change Depot Location” feature ───────────────
-  /** FormControl bound to the mat-select multiple dropdown */
-  depotsControl = new FormControl<number[]>([]);
-  /** All depots available for selection (mock data for now) */
-  availableDepots: Depot[] = [];
-  /** Currently selected depot IDs */
-  selectedDepotIds: number[] = [];
-
-  // ─── Data store for experiment and loading state ─────────────────────────
+  // data store
   experiment?: Experiment;
   isLoading: boolean = true;
 
@@ -187,7 +176,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     private readonly toastr: ToastrService,
     private readonly router: Router,
     private readonly transloco: TranslocoService,
-    private readonly languageChangeService: LanguageChangeService
+    private languageChangeService: LanguageChangeService
   ) {
     this.spinner.show();
 
@@ -205,10 +194,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // 1) Load mock depot list so the <mat-select> has options immediately
-    this.loadMockDepots();
-
-    // 2) Fetch experiment result data
     this.route.params
       .pipe(take(1))
       .subscribe((params: { [x: string]: string }) => {
@@ -218,15 +203,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
             console.log(response);
             this.experiment = { ...response };
             this.expandedElement = [];
-
-            // 3) Load and parse report (Excel) first
             await this.loadReportData(response.fileUrl.outputReportUrl);
             this.spinner.hide();
-
-            // 4) Load and process GeoJSON (routes + depots), then initialize map
             await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
-
-            // 5) After routing data is loaded, set up filtering logic
             this.dataRouteInfo.filterPredicate =
               this.multiFilterPredicate.bind(this);
 
@@ -234,112 +213,81 @@ export class ResultComponent implements OnInit, AfterViewInit {
           });
       });
 
-    // 6) Re-check chip overflow when language toggles
     this.checkFilterOverflowTwolinesWhenLanguageChange();
   }
 
   ngAfterViewInit(): void {
-    // Ensure overflow check after view init
+    //this.searchControl.valueChanges.subscribe((v) => this.applyFilter(v));
     setTimeout(() => this.checkOverflow(), 0);
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // ─── (NEW) Load mock depots for the multiple-select dropdown ───────────────
-  private loadMockDepots() {
-    // Replace these with a real API call in production.
-    this.availableDepots = [
-      { id: 1, name: 'Bangkok Depot', coords: [100.5018, 13.7563] },
-      { id: 2, name: 'Chiang Mai Depot', coords: [98.9817, 18.7969] },
-      { id: 3, name: 'Phuket Depot', coords: [98.3879, 7.9519] },
-          {
-      id: 4,
-      name: 'North-East Depot',
-      coords: [100.93639488523458, 13.991463255129673]
-    },
-    {
-      id: 5,
-      name: 'South-West Depot',
-      coords: [100.92639488523458, 13.981463255129673]
-    }
-    ];
-
-    // Preselect the first depot by default
-    this.selectedDepotIds = [1, 4];
-    this.depotsControl.setValue(this.selectedDepotIds);
-
-    // If the map is already initialized, draw the preselected depots
-    setTimeout(() => this.updateDepotLocations(), 200);
+  filterPredicate(data: RouteInfo, filter: string): boolean {
+    if (!filter) return true;
+    const { column, value } = JSON.parse(filter) as {
+      column: string;
+      value: string;
+    };
+    const rawValue = data[column as keyof RouteInfo];
+    return this.evaluateFilter(column, rawValue, value);
   }
 
-  // ─── (NEW) Called whenever user changes the depot selection dropdown ─────
-  onDepotSelectionChange(): void {
-    const selected = this.depotsControl.value as number[];
-    this.selectedDepotIds = Array.isArray(selected) ? selected : [];
-    this.updateDepotLocations();
+  evaluateFilter(
+    column: string,
+    rawValue: any,
+    searchValue: string,
+    crit?: string
+  ): boolean {
+    const critUsed = crit ?? this.selectedFilterCriteria;
+    const search = searchValue.trim().toLowerCase();
+    let displayValue: number | string;
+    switch (column) {
+      case 'service_time':
+        displayValue = Number(rawValue) / 60;
+        break;
+      case 'travel_duration':
+        displayValue = Number((Number(rawValue) / 60).toFixed(2));
+        break;
+      case 'travel_distance':
+      case 'weight':
+        displayValue = Math.round(Number(rawValue));
+        break;
+      default:
+        displayValue = rawValue;
+    }
+    const dvStr = displayValue.toString().toLowerCase();
+    const dvNum =
+      typeof displayValue === 'number' ? displayValue : Number(dvStr);
+
+    switch (critUsed) {
+      case 'equal':
+        return !isNaN(dvNum) ? dvNum === Number(search) : dvStr === search;
+      case 'does_not_equal':
+        return !isNaN(dvNum) ? dvNum !== Number(search) : dvStr !== search;
+      case 'greater_than':
+        return !isNaN(dvNum) && dvNum > Number(search);
+      case 'greater_than_or_equal':
+        return !isNaN(dvNum) && dvNum >= Number(search);
+      case 'less_than':
+        return !isNaN(dvNum) && dvNum < Number(search);
+      case 'less_than_or_equal':
+        return !isNaN(dvNum) && dvNum <= Number(search);
+      case 'contains':
+        return dvStr.includes(search);
+      case 'does_not_contain':
+        return !dvStr.includes(search);
+      case 'starts_with':
+        return dvStr.startsWith(search);
+      case 'does_not_start_with':
+        return !dvStr.startsWith(search);
+      case 'ends_with':
+        return dvStr.endsWith(search);
+      case 'does_not_end_with':
+        return !dvStr.endsWith(search);
+      default:
+        return false;
+    }
   }
 
-  // ─── (NEW) Remove old depot points and draw new ones on the map ───────────
-  updateDepotLocations(): void {
-    if (!this.map || !this.vectorLayer) {
-      return; // Map not ready yet
-    }
-    const source = this.vectorLayer.getSource() as VectorSource;
-    if (!source) {
-      return;
-    }
-
-    // 1) Remove any existing features tagged isDepot = true
-    source.getFeatures().forEach((feat) => {
-      if (feat.get('isDepot') === true) {
-        source.removeFeature(feat);
-      }
-    });
-
-    // 2) For each selected depot ID, create a new Point and add it
-    this.selectedDepotIds.forEach((depotId) => {
-      const depot = this.availableDepots.find((d) => d.id === depotId);
-      if (!depot) return;
-
-      const [lon, lat] = depot.coords;
-      const projected = OlProj.fromLonLat([lon, lat]);
-
-      const pointFeature = new Feature({
-        geometry: new Point(projected),
-        depot_id: depotId,
-        name: depot.name,
-        isDepot: true,
-      });
-
-      // Style the depot point with an icon + label
-      pointFeature.setStyle(
-        new Style({
-          image: new Icon({
-            anchor: [0.5, 0.5],
-            anchorOrigin: 'bottom-left',
-            anchorXUnits: 'fraction',
-            anchorYUnits: 'pixels',
-            src: `assets/image/depot.png`,
-            crossOrigin: 'anonymous',
-            scale: 0.8,
-          }),
-          text: new Text({
-            text: depot.name,
-            font: '12px Calibri, sans-serif',
-            fill: new Fill({ color: '#000' }),
-            stroke: new Stroke({ color: '#fff', width: 2 }),
-            offsetY: -25,
-          }),
-        })
-      );
-
-      source.addFeature(pointFeature);
-    });
-
-    // 3) Trigger a redraw of the vector source
-    source.changed();
-  }
-
-  // ─── Load and parse the report Excel file to populate headersReport & dataSourceReport ───
   async loadReportData(url: string) {
     if (!url) {
       console.warn('loadReportData called with null URL, skipping.');
@@ -353,7 +301,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
     await this.fetchAndParseExcel(arrayBuffer, 0);
     await this.fetchAndParseExcel(arrayBuffer, 1);
   }
-
   calculateDuration(start: any, end: any): number {
     if (!start || !end) return 0;
     const startTime = new Date(start).getTime();
@@ -376,7 +323,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         .getRow(1)
         .eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
           headers[colNumber - 1] =
-            cell.value !== null ? String(cell.value) : `column_${colNumber}`;
+             cell.value !== null ? String(cell.value) : `column_${colNumber}`;
         });
       if (options === 0) this.headersReport = headers;
 
@@ -451,119 +398,85 @@ export class ResultComponent implements OnInit, AfterViewInit {
     };
   }
 
-private async loadAndProcessGeoJSON(url: string): Promise<void> {
-  // 1) Fetch the raw GeoJSON (routes + depots)
-  const geoJson = await this.dataFromFileUrlToJson(url);
+  private async loadAndProcessGeoJSON(url: string): Promise<void> {
+    const geoJson = await this.dataFromFileUrlToJson(url);
+    this.featureCollections = geoJson.routes.map(
+      (rc: { features: { properties: { route_index: number } }[] }) => ({
+        ...rc,
+        route_index: rc.features[0]?.properties?.route_index,
+      })
+    );
+    this.featureDepots = geoJson.depots;
+    console.log(geoJson);
 
-  // 2) Extract and index each "route collection" by its first feature's route_index
-  this.featureCollections = (geoJson.routes as any[]).map((rc) => ({
-    ...rc,
-    route_index: rc.features[0]?.properties?.route_index,
-  }));
+    const allFeatures: Feature<Geometry>[] = [];
+    geoJson.routes.forEach((item: any, index_: number) => {
+      const itemFeatures = new GeoJSON().readFeatures(item, {
+        dataProjection: 'EPSG:4326',
+        featureProjection: 'EPSG:3857',
+      });
 
-  // 3) Keep the raw GeoJSON depot‐features for later (e.g., in openRouteDetails)
-  this.featureDepots = geoJson.depots;
-
-  console.log('Loaded GeoJSON:', geoJson);
-
-  // 4) Build a flat list of all Features (LineStrings + Points) from the "routes" array
-  const allFeatures: Feature<Geometry>[] = [];
-  (geoJson.routes as any[]).forEach((item: any, index_: number) => {
-    // Read each route's GeoJSON into OL Features (in EPSG:3857)
-    const itemFeatures = new GeoJSON().readFeatures(item, {
-      dataProjection: 'EPSG:4326',
-      featureProjection: 'EPSG:3857',
+      const reducedItemFeatures = itemFeatures.map((feature, index, arr) => {
+        const geometry = feature.getGeometry();
+        if (geometry?.getType() === 'LineString') {
+          const lineString = geometry as LineString;
+          const coordinates = lineString.getCoordinates();
+          const reducedCoordinates = coordinates.filter((_, i) => i % 10 === 0);
+          console.log(
+            index_,
+            'Original coordinates:',
+            coordinates.length,
+            'Reduced coordinates:',
+            reducedCoordinates.length
+          );
+          lineString.setCoordinates(reducedCoordinates);
+        }
+        return feature;
+      });
+      allFeatures.push(...reducedItemFeatures);
     });
 
-    // For any LineString, reduce the number of points for performance (every 10th)
-    const reducedItemFeatures = itemFeatures.map((feature) => {
-      const geometry = feature.getGeometry();
-      if (geometry?.getType() === 'LineString') {
-        const lineString = geometry as LineString;
-        const coords = lineString.getCoordinates();
-        // Keep every 10th coordinate
-        const reducedCoords = coords.filter((_, idx) => idx % 10 === 0);
-        lineString.setCoordinates(reducedCoords);
-      }
-      return feature;
-    });
-
-    allFeatures.push(...reducedItemFeatures);
-  });
-
-  // 5) Create a clustering source for any Point features (these are stops along routes)
-  const clusterSource = new Cluster({
-    distance: 40,
-    source: new VectorSource({
-      features: allFeatures.filter((feat) => {
-        const geom = feat.getGeometry();
-        return geom?.getType() === 'Point';
+    const clusterSource = new Cluster({
+      distance: 40,
+      source: new VectorSource({
+        features: allFeatures.filter((feature) => {
+          if (feature.getGeometry() && feature.getGeometry()!.getType()) {
+            return feature.getGeometry()!.getType() === 'Point';
+          } else {
+            return false;
+          }
+        }),
       }),
-    }),
-  });
-
-  // 6) Make a VectorLayer for clustered points, using our clusterStyleFunction
-  const clusterLayerInstance = new VectorLayer({
-    source: clusterSource,
-    style: this.clusterStyleFunction.bind(this),
-  });
-
-  // 7) Make a VectorSource for all non-Point features (LineStrings only)
-  const vectorSource = new VectorSource({
-    features: allFeatures.filter((feat) => {
-      const geom = feat.getGeometry();
-      return geom?.getType() !== 'Point';
-    }),
-  });
-
-  // 8) Read each depot GeoJSON feature and add it to vectorSource 
-  const depotFeatures: Feature<Geometry>[] = [];
-  (geoJson.depots as any[]).forEach((depotGeo: any) => {
-    const featuresFromDepot = new GeoJSON().readFeatures(depotGeo, {
-      dataProjection: 'EPSG:4326',
-      featureProjection: 'EPSG:3857',
     });
-    depotFeatures.push(...featuresFromDepot);
-  });
-  vectorSource.addFeatures(depotFeatures);
+    const vectorSource = new VectorSource({
+      features: allFeatures.filter((feature) => {
+        if (feature.getGeometry() && feature.getGeometry()!.getType()) {
+          return feature.getGeometry()!.getType() !== 'Point';
+        } else {
+          return false;
+        }
+      }),
+    });
+    console.log(clusterSource);
+    const clusterLayer = new VectorLayer({
+      source: clusterSource,
+      style: this.clusterStyleFunction.bind(this),
+    });
 
-  // ─── Merge “default” depots into availableDepots and mark them selected ───
-  const defaultDepots: Depot[] = (geoJson.depots as any[]).map((d: any) => {
-    const props = d.properties as { depot_id: number; name?: string };
-    const coords = (d.geometry.coordinates as [number, number]);
-    return {
-      id: props.depot_id,
-      name: props.name ?? `Depot ${props.depot_id}`,
-      coords: coords,
-    };
-  });
+    const depotFeatures: Feature<Geometry>[] = [];
+    geoJson.depots.forEach((depot: any) => {
+      const itemFeatures = new GeoJSON().readFeatures(depot, {
+        dataProjection: 'EPSG:4326',
+        featureProjection: 'EPSG:3857',
+      });
+      depotFeatures.push(...itemFeatures);
+    });
+    vectorSource.addFeatures(depotFeatures);
 
-  // Append GeoJSON depots to any existing mock depots
-  this.availableDepots = [
-    ...defaultDepots,
-   ...this.availableDepots,  
-  ];
-
-  // Add default depot IDs to selectedDepotIds (deduplicated)
-  const defaultIds = defaultDepots.map((d) => d.id);
-  this.selectedDepotIds = Array.from(
-    new Set([...this.selectedDepotIds, ...defaultIds])
-  );
-  // Update the FormControl so the mat-select shows them as selected
-  this.depotsControl.setValue(this.selectedDepotIds);
-
-  // 9) Now that we have our two vector sources (one for lines+depot GeoJSON, one for clusters),
-  //    initialize the OL Map with both layers:
-  this.initMap(clusterLayerInstance, vectorSource);
-  this.mapAlreadyRendered = true;
-
-  // 10) Finally, draw any pre‐selected depots (both mock and default) on the map
-  this.updateDepotLocations();
-}
-
-
-
-  private async fetchDataFromFileUrl(url: string) {
+    this.initMap(clusterLayer, vectorSource);
+    this.mapAlreadyRendered = true;
+  }
+  async fetchDataFromFileUrl(url: string) {
     const blob = await firstValueFrom(
       this.configurationService.getDatafromUrl(url)
     );
@@ -571,7 +484,7 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
     return arrayBuffer;
   }
 
-  private async dataFromFileUrlToJson(url: string) {
+  async dataFromFileUrlToJson(url: string) {
     console.log(`Fetching data from url: ${url}`);
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
     console.log(`Fetched array buffer with length: ${arrayBuffer.byteLength}`);
@@ -579,14 +492,11 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
     console.log(`Decoded text: ${text}`);
     const jsonData = JSON.parse(text);
     console.log(`Parsed JSON data: ${JSON.stringify(jsonData)}`);
+
     return jsonData;
   }
 
-  private initMap(
-    clusterLayerInstance: VectorLayer,
-    vectorSource: VectorSource
-  ): void {
-    // ─── Create the vectorLayer for route lines & depot GeoJSON features ──────
+  private initMap(clusterLayer: VectorLayer, vectorSource: VectorSource): void {
     this.vectorLayer = new VectorLayer({
       source: vectorSource,
       style: this.styleFunction.bind(this),
@@ -594,10 +504,11 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
       updateWhileAnimating: true,
     });
 
-    // ─── Assign the clusterLayer created earlier ───────────────────────────────
-    this.clusterLayer = clusterLayerInstance;
+    this.clusterLayer = new VectorLayer({
+      source: clusterLayer.getSource() || undefined,
+      style: this.clusterStyleFunction.bind(this),
+    });
 
-    // ─── Tile layer (Carto Light basemap) ─────────────────────────────────────
     const tileLoadFunction = (tile: Tile, src: string) => {
       if (tile instanceof ImageTile) {
         const imageEl = tile.getImage() as HTMLImageElement;
@@ -610,41 +521,45 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
             imageEl.src = URL.createObjectURL(blob);
           })
           .catch((err) => {
-            if (err.name !== 'AbortError') console.error('Tile load error', err);
+            if (err.name !== 'AbortError')
+              console.error('Tile load error', err);
           });
 
         tile.setState(TileState.LOADED);
       }
     };
 
-    const tileLayer = new TileLayer({
-      source: new XYZ({
-        url: 'https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-        attributions:
-          '&copy;<a href="https://carto.com" target="_blank"> CARTO</a>' +
-          '&copy;<a href="http://openmaptiles.org/" target="_blank"> OpenMapTiles</a>' +
-          '&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank"> OpenStreetMap contributors</a>' +
-          '&copy;<a href="http://map.project-osrm.org" target="_blank"> Project OSRM contributors</a>',
-        crossOrigin: 'anonymous',
-        cacheSize: 500000,
-        tileLoadFunction,
-      }),
-    });
+    const attribution = new Attribution({ collapsible: true });
 
-    // ─── Instantiate the map with all layers ──────────────────────────────────
     this.map = new Map({
       target: 'mapResult',
-      layers: [tileLayer, this.vectorLayer, this.clusterLayer],
+      layers: [
+        new TileLayer({
+          source: new XYZ({
+            url: 'https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+            attributions:
+              '&copy;<a href="https://carto.com" target="_blank"> CARTO</a>' +
+              '&copy;<a href="http://openmaptiles.org/" target="_blank"> OpenMapTiles</a>' +
+              '&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank"> OpenStreetMap contributors</a>' +
+              '&copy;<a href="http://map.project-osrm.org" target="_blank"> Project OSRM contributors</a>',
+            crossOrigin: 'anonymous',
+            cacheSize: 500000,
+            tileLoadFunction,
+          }),
+        }),
+        this.vectorLayer,
+        this.clusterLayer,
+      ],
       view: new View({
         center: OlProj.fromLonLat([100.53139488523458, 13.786463255129673]),
         zoom: 10,
-        //minZoom: 10,
-        //maxZoom: 17,
+        minZoom: 10,
+        maxZoom: 17,
       }),
       controls: defaultControls({ attribution: false }).extend([
         new ZoomSlider(),
         new FullScreen(),
-        new Attribution(),
+        attribution,
       ]),
       interactions: defaultInteractions().extend([
         new DragPan(),
@@ -652,20 +567,21 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
       ]),
     });
 
-    // ─── Overlay for popups ─────────────────────────────────────────────────────
-    this.popUp = new Overlay({
-      element: document.getElementById('popupMapResult')!,
-      offset: [0, -30],
-    });
-    this.map.addOverlay(this.popUp);
-
-    // ─── Event listeners for pointer move & click ─────────────────────────────
     this.map.on('pointermove', this.handlePointerMove.bind(this));
     this.map.on('pointermove', (event) => this.pointMove(event));
     this.map.on('click', this.handleClick.bind(this));
+
+    // Initialize overlay for popup
+    const element = document.getElementById('popupMapResult')!;
+    this.popUp = new Overlay({
+      element: element,
+      offset: [0, -30],
+    });
+    this.map.addOverlay(this.popUp);
   }
 
   handlePointerMove(event: any): void {
+    // show popup and compute hovered feature
     let coordinates: Coordinate;
     const feature = this.map.forEachFeatureAtPixel(event.pixel, (feat) => feat);
 
@@ -682,10 +598,13 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
         coordinates = [];
       }
 
+      // position and fill popup
       this.popUp?.setPosition(coordinates);
       const props = feature.getProperties();
       if (props['features'] && props['features'].length > 0) {
-        this.popupContent = (props['features'][0] as FeatureLike).getProperties();
+        this.popupContent = (
+          props['features'][0] as FeatureLike
+        ).getProperties();
       } else {
         this.popupContent = props;
       }
@@ -693,10 +612,13 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
       this.popUp?.setPosition(undefined);
     }
 
-    // Determine hovered route index
+    // determine which route (if any) is hovered
     if (feature && feature.getGeometry()?.getType() === 'LineString') {
-      this.highlightedFeatureCollectionId = feature.get('route_index') as number;
+      this.highlightedFeatureCollectionId = feature.get(
+        'route_index'
+      ) as number;
     } else if (feature && feature.get('features')) {
+      // if it's a cluster, pick one child route_index
       const members = feature.get('features') as FeatureLike[];
       this.highlightedFeatureCollectionId =
         (members[0]?.get('route_index') as number) || null;
@@ -704,9 +626,10 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
       this.highlightedFeatureCollectionId = null;
     }
 
-    // Clear dim styles on hovered route
+    // ─── CLEAR OUT “DIM” STYLES ON HOVERED ROUTE ───────────────────────────────
     const hoverId = this.highlightedFeatureCollectionId;
     if (hoverId != null) {
+      // 1) reset any manual style on the line itself
       this.vectorLayer
         .getSource()!
         .getFeatures()
@@ -716,6 +639,7 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
           }
         });
 
+      // 2) reset any manual style on its cluster(s)
       this.clusterLayer
         .getSource()!
         .getFeatures()
@@ -727,7 +651,7 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
         });
     }
 
-    // Force redraw
+    // force a redraw so styleFunction / clusterStyleFunction re-runs
     this.vectorLayer.getSource()?.changed();
     this.clusterLayer.getSource()?.changed();
   }
@@ -772,31 +696,27 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
 
   styleFunction(feature: FeatureLike): Style | Style[] {
     const geom = feature.getGeometry();
-    if (geom?.getType() === 'Point' && feature.get('isDepot') === true) {
-      // Style for dynamically added depot points
-      return (feature as Feature<Geometry>).getStyle() as Style;
+    // ─── DEPOT POINTS ───────────────────────────────────────────────────────────
+    if (geom?.getType() === 'Point') {
+      return new Style({
+        image: new Icon({
+          anchor: [0.5, 0.5],
+          anchorOrigin: 'bottom-left',
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          crossOrigin: 'anonymous',
+          opacity: 1,
+          src: `assets/image/depot.png`,
+        }),
+        text: new Text({
+          text: feature.get('depot_id')?.toString() || '',
+          font: '12px Calibri,sans-serif',
+          fill: new Fill({ color: '#000' }),
+        }),
+      });
     }
 
-    // if (geom?.getType() === 'Point') {
-    //   // Style for depot features from GeoJSON
-    //   return new Style({
-    //     image: new Icon({
-    //       anchor: [0.5, 0.5],
-    //       anchorOrigin: 'bottom-left',
-    //       anchorXUnits: 'fraction',
-    //       anchorYUnits: 'pixels',
-    //       crossOrigin: 'anonymous',
-    //       opacity: 1,
-    //       src: `assets/image/depot.png`,
-    //     }),
-    //     text: new Text({
-    //       text: feature.get('depot_id')?.toString() || '',
-    //       font: '12px Calibri,sans-serif',
-    //       fill: new Fill({ color: '#000' }),
-    //     }),
-    //   });
-    // }
-
+    // ─── ROUTE LINES ────────────────────────────────────────────────────────────
     const idx = feature.get('route_index') as number;
     const color = feature.get('color') as string;
     const hovered = this.highlightedFeatureCollectionId;
@@ -840,9 +760,10 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
 
     const hovered = this.highlightedFeatureCollectionId;
 
-    // 1) HOVER-ONLY MODE
+    //─── 1) HOVER-ONLY MODE ────────────────────────────────────────────────────────
     if (hovered != null) {
       if (idxs.includes(hovered)) {
+        // only draw the hovered cluster, highlighted
         return new Style({
           image: new CircleStyle({
             radius: 15,
@@ -859,10 +780,11 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
       return []; // hide all other clusters
     }
 
-    // 2) FILTER-AWARE MODE
+    //─── 2) FILTER-AWARE MODE ──────────────────────────────────────────────────────
     if (this.visibleRoutes.size > 0) {
       const anyVisible = idxs.some((i) => this.visibleRoutes.has(i));
       if (!anyVisible) {
+        // out-of-filter clusters get dimmed
         return new Style({
           image: new CircleStyle({
             radius: 10,
@@ -876,6 +798,7 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
           }),
         });
       }
+      // in-filter & not hovered → normal color/size
       return new Style({
         image: new CircleStyle({
           radius: 10,
@@ -890,7 +813,7 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
       });
     }
 
-    // 3) NO HOVER, NO FILTERS
+    //─── 3) NO HOVER, NO FILTERS → ORIGINAL BEHAVIOR ───────────────────────────────
     if (idxs.includes(hovered!)) {
       return new Style({
         image: new CircleStyle({
@@ -934,13 +857,15 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
     const index = this.expandedElement.findIndex(
       (x) => x.route_index == row.route_index
     );
-    return index === -1 ? 'collapsed' : 'expanded';
+    if (index === -1) {
+      return 'collapsed';
+    }
+    return 'expanded';
   }
 
   isNumber(value: any): boolean {
     return !isNaN(value);
   }
-
   haveTime(): boolean {
     return (
       this.experiment?.timeStart !== null && this.experiment?.timeEnd !== null
@@ -1034,7 +959,8 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
     const featureDepots: any[] = [];
     if (this.featureDepots.length === 1) {
       featureDepots.push(this.featureDepots[0]);
-    } else {
+    }
+    {
       const matchingDepots = this.featureDepots.filter((depot: any) =>
         [depotStartId, depotEndId].includes(depot.properties.depot_id)
       );
@@ -1267,11 +1193,17 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
   }
 
   resetRouteMapUi(): void {
+    // Clear the current highlight
     this.highlightedFeatureCollectionId = null;
+
+    // Grab your vector and cluster layers by index
     const vectorLayer = this.map.getLayers().item(1) as VectorLayer;
     const clusterLayer = this.map.getLayers().item(2) as VectorLayer;
+
+    // Tell OL that the source changed so it re-runs your style functions
     vectorLayer.getSource()?.changed();
     clusterLayer.getSource()?.changed();
+
     this.popUp?.setPosition(undefined);
     this.popupContent = undefined;
   }
@@ -1371,12 +1303,13 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
   }
 
   applyMapFilter() {
+    // compute visibleRoutes array exactly as you do now
     const visibleRoutesArr = (
       this.dataRouteInfo.filteredData as RouteInfo[]
     ).map((r) => r.route_index);
     this.visibleRoutes = new Set(visibleRoutesArr);
 
-    // 1) Vector lines
+    // 1) vector lines
     this.vectorLayer
       .getSource()!
       .getFeatures()
@@ -1384,26 +1317,30 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
         if (feat.getGeometry()?.getType() === 'LineString') {
           const idx = feat.get('route_index') as number;
           if (!this.visibleRoutes.has(idx)) {
+            // outside filter → dim
             feat.setStyle(this.dimStyle);
           } else {
+            // inside filter → let styleFunction handle normal vs hover
             feat.setStyle(undefined);
           }
         }
       });
 
-    // 2) Clusters
+    // 2) clusters (points)
     this.clusterLayer
       .getSource()!
       .getFeatures()
       .forEach((clusterFeat) => {
         const members = clusterFeat.get('features') as FeatureLike[];
         const routeIndexes = members.map((m) => m.get('route_index') as number);
+        // if *none* of the member routes is in your filter → dim
         const isAnyVisible = routeIndexes.some((i) =>
           this.visibleRoutes.has(i)
         );
         if (isAnyVisible) {
           clusterFeat.setStyle(undefined);
         } else {
+          // dim circle for “hidden” clusters
           clusterFeat.setStyle(
             new Style({
               image: new CircleStyle({
@@ -1430,62 +1367,5 @@ private async loadAndProcessGeoJSON(url: string): Promise<void> {
       this.applyFilter();
       setTimeout(() => this.checkOverflow(), 0);
     });
-  }
-
-  evaluateFilter(
-    column: string,
-    rawValue: any,
-    searchValue: string,
-    crit?: string
-  ): boolean {
-    const critUsed = crit ?? this.selectedFilterCriteria;
-    const search = searchValue.trim().toLowerCase();
-    let displayValue: number | string;
-    switch (column) {
-      case 'service_time':
-        displayValue = Number(rawValue) / 60;
-        break;
-      case 'travel_duration':
-        displayValue = Number((Number(rawValue) / 60).toFixed(2));
-        break;
-      case 'travel_distance':
-      case 'weight':
-        displayValue = Math.round(Number(rawValue));
-        break;
-      default:
-        displayValue = rawValue;
-    }
-    const dvStr = displayValue.toString().toLowerCase();
-    const dvNum =
-      typeof displayValue === 'number' ? displayValue : Number(dvStr);
-
-    switch (critUsed) {
-      case 'equal':
-        return !isNaN(dvNum) ? dvNum === Number(search) : dvStr === search;
-      case 'does_not_equal':
-        return !isNaN(dvNum) ? dvNum !== Number(search) : dvStr !== search;
-      case 'greater_than':
-        return !isNaN(dvNum) && dvNum > Number(search);
-      case 'greater_than_or_equal':
-        return !isNaN(dvNum) && dvNum >= Number(search);
-      case 'less_than':
-        return !isNaN(dvNum) && dvNum < Number(search);
-      case 'less_than_or_equal':
-        return !isNaN(dvNum) && dvNum <= Number(search);
-      case 'contains':
-        return dvStr.includes(search);
-      case 'does_not_contain':
-        return !dvStr.includes(search);
-      case 'starts_with':
-        return dvStr.startsWith(search);
-      case 'does_not_start_with':
-        return !dvStr.startsWith(search);
-      case 'ends_with':
-        return dvStr.endsWith(search);
-      case 'does_not_end_with':
-        return !dvStr.endsWith(search);
-      default:
-        return false;
-    }
   }
 }
