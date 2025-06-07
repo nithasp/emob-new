@@ -79,9 +79,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
 
   ngOnInit(): void {
     this.loadDisplayedColumns();
-    this.spinner.show();
     this.loadData();
-    this.spinner.hide();
   }
 
   ngAfterViewInit() {
@@ -101,12 +99,13 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     this.experimentService.getExperiments().subscribe({
       next: (response) => {
         this.dataSource.data = response;
-        this.dataSource.paginator = this.paginator;
-
+        this.dataSource.paginator = this.paginator;    
         this.hiddenSpinner();
+        this.spinner.hide();
       },
       error: () => {
         this.hiddenSpinner();
+        this.spinner.hide();
       },
     });
   }
