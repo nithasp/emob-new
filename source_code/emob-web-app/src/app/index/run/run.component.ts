@@ -1315,8 +1315,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       const data: PreOrder[] = [];
       console.log('Worksheet length:', workbook.worksheets.length);
 
-      const worksheet =
-        workbook.getWorksheet(1) || workbook.getWorksheet('PreOrder');
+      let worksheet =
+        workbook.getWorksheet('PreOrder') || workbook.worksheets[0];
+
       if (!worksheet) {
         this.toastr.warning('Worksheet not found');
         return false;
