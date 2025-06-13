@@ -59,7 +59,7 @@
                 <div class="card p-3 mb-4">
                   <h4><mat-icon>location_on</mat-icon> Manage Depots</h4>
 
-                  <!-- <h1 (click)="log()">log</h1> -->
+                  <h1 (click)="log()">log</h1>
 
                   <mat-form-field
                     *ngIf="companyDepotType === 'Single'"
@@ -70,6 +70,7 @@
                     <mat-select
                       [(value)]="selectedDepotId"
                       (selectionChange)="onDepotSelectionChange()"
+                      [disabled]="!isFilePreview"
                     >
                       <mat-option
                         *ngFor="let depot of depots"
@@ -142,8 +143,8 @@
                       <button
                         mat-stroked-button
                         class="bg-custom-primary"
-                        class="border-primary"
                         (click)="fileUpload.click()"
+                        [disabled]="!this.selectedDepotId"
                       >
                         <mat-icon class="icon-browser">attach_file</mat-icon>
                         <span>{{ t("browse_file") }}</span>
@@ -211,15 +212,18 @@
                     }
                   </div>
                 </div>
-                <button
-                  *ngIf="isFilePreview"
-                  mat-raised-button
-                  class="bg-custom-primary mt-3"
-                  [disabled]="!preOrderFiles.length"
-                  (click)="handleUploadSubmit()"
-                >
-                  {{ "confirm" | transloco }}
-                </button>
+
+                <div class="text-end p-0">
+                  <button
+                    *ngIf="isFilePreview"
+                    mat-raised-button
+                    class="upload-submit-button bg-custom-primary mt-3 mr-0"
+                    [disabled]="!preOrderFiles.length"
+                    (click)="handleUploadSubmit()"
+                  >
+                    {{ "confirm" | transloco }}
+                  </button>
+                </div>
 
                 <ng-container *ngIf="!isFilePreview">
                   <div

@@ -7,8 +7,7 @@ import { Response } from '../models/graphql.model';
 import {
   DownloadResultFile,
   Experiment,
-  ExperimentState,
-  myDepots,
+  ExperimentState
 } from '../models/experiment.model';
 import { Constraint } from '../models/constraint.model';
 import { Location } from '../models/location.model';
@@ -325,6 +324,7 @@ export class ExperimentService {
             depotName
             latitude
             longitude
+            columns
           }
         }
       `,

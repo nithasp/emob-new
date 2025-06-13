@@ -119,23 +119,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
   ];
-  private readonly requiredColumns: Array<string> = [
-    'ORDERID_ORG',
-    'CHANNEL',
-    'ORDERDATE',
-    'DELIVERYDATE',
-    'ADDRESS',
-    'TUMBOL',
-    'AUMPHER',
-    'PROVICE',
-    'ZIPCODE',
-    'PRODUCTID',
-    'PRODUCTNAME',
-    'QUANTITYMAIN',
-    'QUANTITYMINOR',
-    'DELIVERYDATE_CONFIRM',
-    'ORDER_ID',
-  ];
+
+  private requiredColumns: Array<string> = [];
+
   public haveUpdateAfterValidated: boolean = false;
   haveValidated = false;
   public isValidateShowMessage = {
@@ -1847,6 +1833,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     const depot = this.depots.find((d) => d.depotName === this.selectedDepotId);
     if (depot) {
       this.updateDepotLocationOnMap([depot]);
+      this.requiredColumns = depot.columns || [];
     }
   }
 
@@ -1942,5 +1929,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     console.log('selectedDepotId', this.selectedDepotId);
 
     console.log('this.preOrderFiles', this.preOrderFiles);
+    console.log('this.requiredColumns', this.requiredColumns);
   }
 }
