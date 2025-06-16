@@ -1,212 +1,306 @@
-<div class=" card mt-2 container-fluid main_container" style="min-height:100vh;">
-  <div class="row mt-5 justify-content-center">
-    <div class="col-12 mb-3 text-right">
-      <button mat-raised-button class="bg-custom-secondary" (click)="createNewExperiment()">
-        <mat-icon>add</mat-icon>
-        New
-      </button>
-      <button mat-raised-button  class="ml-3 bg-custom-primary"
-      [hidden]="!isSelectedStatusValue('InProgress') && !isSelectedStatusValue('Succeeded') && !isSelectedStatusValue('Canceled')"
-      (click)="tryToRerunExperiment(selection.selected[0])">
-        <mat-icon>content_copy</mat-icon>
-        Try to Rerun
-      </button>
-      <button mat-raised-button  class="ml-3 bg-custom-primary"
-      [hidden]="!isSelectedStatusValue('Canceled') && !isSelectedStatusValue('Failed')"
-      (click)="retryExperiment(selection.selected[0])">
-        <mat-icon>replay</mat-icon>
-        Retry
-      </button>
-      <button mat-raised-button  class="ml-3 bg-custom-primary"
-      [hidden]="true"
-      (click)="cancelExperiment(selection.selected[0])">
-        <mat-icon>block</mat-icon>
-        Cancel
-      </button>
-    </div>
-    <div class="col-12">
-      <mat-form-field class="full-width">
-        <mat-label>Filter</mat-label>
-        <input
-          matInput
-          (keyup)="applyFilter($event)"
-          placeholder="Search Columns"
-          #input />
-      </mat-form-field>
-      <div class="text-right border-bottom">
-        <button mat-button   
-        (click)="loadData()">
-          <mat-icon>refresh</mat-icon>
-          Refresh
+<ng-container *transloco="let t; read: 'index'">
+  <div
+    class="card mt-2 container-fluid main_container"
+    style="min-height: 100vh"
+  >
+    <div class="row mt-5 justify-content-center">
+      <div class="col-12 mb-3 text-right">
+        <button
+          mat-raised-button
+          class="bg-custom-secondary"
+          (click)="createNewExperiment()"
+        >
+          <mat-icon>add</mat-icon>
+          {{ t("new_experiment") }}
         </button>
-        <button mat-button [matMenuTriggerFor]="menu">
-          <mat-icon >view_list</mat-icon>
-          Edit Columns
-          <mat-menu #menu="matMenu">
-            <span class="table-config-menu-label">Edit Columns</span>
-            <div class="table-config-menu-options">
-              <mat-checkbox color="primary"
-                *ngFor="let cd of displayedColumns; let i = index"
-                (click)="$event.stopPropagation()"
-                [(ngModel)]="cd.visible">
-                {{cd.label}}
-              </mat-checkbox>
-            </div>
-          </mat-menu>
+        <button
+          mat-raised-button
+          class="ml-3 bg-custom-primary"
+          [hidden]="
+            !isSelectedStatusValue('InProgress') &&
+            !isSelectedStatusValue('Succeeded') &&
+            !isSelectedStatusValue('Canceled')
+          "
+          (click)="tryToRerunExperiment(selection.selected[0])"
+        >
+          <mat-icon>content_copy</mat-icon>
+          {{ t("try_to_rerun") }}
+        </button>
+        <button
+          mat-raised-button
+          class="ml-3 bg-custom-primary"
+          [hidden]="
+            !isSelectedStatusValue('Canceled') &&
+            !isSelectedStatusValue('Failed')
+          "
+          (click)="retryExperiment(selection.selected[0])"
+        >
+          <mat-icon>replay</mat-icon>
+          Retry
+        </button>
+        <button
+          mat-raised-button
+          class="ml-3 bg-custom-primary"
+          [hidden]="true"
+          (click)="cancelExperiment(selection.selected[0])"
+        >
+          <mat-icon>block</mat-icon>
+          Cancel
         </button>
       </div>
-    </div>
-    <div class="col-12 ">
-
-      <div class="table-container p-md-2 " style="height: 700px;">
-        <ngx-spinner name="experiment">
-          <p class="h-3">Reloading ...</p>
-        </ngx-spinner>
-        <table mat-table  [dataSource]="dataSource" class="mat-elevation-z8 ">
-          <ng-container matColumnDef="select">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let row">
-              <mat-checkbox color="primary" (click)="$event.stopPropagation()"
-                (change)="$event ? selection.toggle(row) : null"
-                [checked]="selection.isSelected(row)"
-                [aria-label]="checkboxLabel(row)">
-              </mat-checkbox>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="Name">
-            <th mat-header-cell *matHeaderCellDef> Name </th>
-            <td mat-cell *matCellDef="let element"> <a
-                class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
-                (click)="selectExperiment(element)" href="javascript:void(0)" >{{element.name}}</a> </td>
-          </ng-container>
-
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
-            <td mat-cell *matCellDef="let element">
-              
-              <button mat-icon-button class="custom-icon-button"
-              placement="top"
-              [ngbTooltip]="'Consumption'"
-              (click)="getConsumption(element)">
-                <mat-icon class="icon-custom-primary" style="float: right;">
-                  receipt_long</mat-icon>
-              </button>
-              <button mat-icon-button class="custom-icon-button ml-2"
-              [hidden]="element.status !=='Failed' && element.status !=='Canceled'"
-              placement="top"
-              [ngbTooltip]="'Retry'"
-              (click)="retryExperiment(element)">
-                <mat-icon class="icon-custom-primary"
-                style="float: right;">replay</mat-icon> 
-              </button>
-              <button mat-icon-button class="custom-icon-button ml-2"
-              [hidden]="true"
-              placement="top"
-              [ngbTooltip]="'Cancel'"
-              (click)="cancelExperiment(element)" >
-                <mat-icon class="icon-custom-primary"
-                style="float: right;">block</mat-icon> 
-              </button>
-            </td>
-          </ng-container>
-          <ng-container matColumnDef="TimeStamp">
-            <th mat-header-cell *matHeaderCellDef> TimeStamp </th>
-            <td mat-cell *matCellDef="let element"> {{element.timestamp | date:'MM/dd/yy h:mm:ss a'}}
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="TimeStart">
-            <th mat-header-cell *matHeaderCellDef> Run Start </th>
-            <td mat-cell *matCellDef="let element"> {{element.timeStart | date:'MM/dd/yy h:mm:ss a'}}
-              <mat-spinner [diameter]="15" [hidden]="element.timeStart"></mat-spinner>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="TimeEnd">
-            <th mat-header-cell *matHeaderCellDef> Run End </th>
-            <td mat-cell *matCellDef="let element">{{element.timeEnd | date:'MM/dd/yy h:mm:ss a'}}
-              <mat-spinner [diameter]="15" [hidden]="element.timeEnd"></mat-spinner>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="TimeDuration">
-            <th mat-header-cell *matHeaderCellDef> Duration </th>
-            <td mat-cell *matCellDef="let element"> {{(element.timeDuration || 0) | date:'mm\'m\' ss\'s\''}} 
-            </td>
-          </ng-container>
-          <ng-container matColumnDef="TriggeredBy">
-            <th mat-header-cell *matHeaderCellDef> Triggered By </th>
-            <td mat-cell *matCellDef="let element"> {{element.triggeredByName}}
-            </td>
-          </ng-container>
-          <ng-container matColumnDef="Status">
-            <th mat-header-cell *matHeaderCellDef> Status </th>
-            <td mat-cell *matCellDef="let element">
-              @if(element.status =='Succeeded'){
-              <mat-icon style="color: green;vertical-align: middle;">check_circle</mat-icon>
-              {{element.status}}
-              }
-              @else if(element.status =='InProgress'){
-              <mat-icon style="color: blue;vertical-align: middle;">pending</mat-icon>
-              {{'In Progress'}}
-              }
-              @else if(element.status =='Failed'){
-              <mat-icon style="color: red;vertical-align: middle;">cancel</mat-icon>
-              {{element.status}}
-              }
-              @else if(element.status =='Canceled'){
-              <mat-icon style="color: gray;vertical-align: middle;">block</mat-icon>
-              {{element.status}}
-              }
-              @else if(element.status =='Queued'){
-              <mat-icon style="color: blue;vertical-align: middle;">update</mat-icon>
-              {{element.status}}
-              }
-              @else if(element.status =='Initializing'){
-                <mat-icon style="color: blue;vertical-align: middle;">draw</mat-icon>
-                {{element.status}}
-                }
+      <div class="col-12">
+        <mat-form-field class="full-width">
+          <mat-label>{{ "filter" | transloco }}</mat-label>
+          <input
+            matInput
+            (keyup)="applyFilter($event)"
+            [placeholder]="t('search_columns')"
+            #input
+          />
+        </mat-form-field>
+        <div class="text-right border-bottom">
+          <button mat-button (click)="loadData()">
+            <mat-icon>refresh</mat-icon>
+            {{ t("refresh") }}
+          </button>
+          <button mat-button [matMenuTriggerFor]="menu">
+            <mat-icon>view_list</mat-icon>
+            {{ t("edit_columns") }}
+            <mat-menu #menu="matMenu">
+              <span class="table-config-menu-label">{{
+                t("edit_columns")
+              }}</span>
+              <div class="table-config-menu-options">
+                <mat-checkbox
+                  color="primary"
+                  *ngFor="let cd of displayedColumns; let i = index"
+                  (click)="$event.stopPropagation()"
+                  [(ngModel)]="cd.visible"
+                  (ngModelChange)="saveDisplayedColumns()"
+                  >{{ t(cd.label) }}
+                </mat-checkbox>
+              </div>
+            </mat-menu>
+          </button>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="table-container p-md-2" style="height: 700px">
+          <ngx-spinner name="experiment">
+            <p class="h-3">{{ "reloading" | transloco }} ...</p>
+          </ngx-spinner>
+          <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+            <ng-container matColumnDef="select">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let row">
+                <mat-checkbox
+                  color="primary"
+                  (click)="$event.stopPropagation()"
+                  (change)="$event ? selection.toggle(row) : null"
+                  [checked]="selection.isSelected(row)"
+                  [aria-label]="checkboxLabel(row)"
+                >
+                </mat-checkbox>
               </td>
-          </ng-container>
-          <ng-container matColumnDef="Run">
-            <th mat-header-cell *matHeaderCellDef> Run </th>
-            <td mat-cell *matCellDef="let element"> {{element.run}} </td>
-          </ng-container>
-          <ng-container matColumnDef="parameter">
-            <th mat-header-cell *matHeaderCellDef> Parameter </th>
-            <td mat-cell *matCellDef="let element" >
-              <button 
-              *ngIf="(element.status | lowercase) !== 'initializing'"
-              mat-icon-button class="custom-icon-button ml-2"
-              placement="top"
-              [ngbTooltip]="'Parameters'"
-              (click)="getParameter(element.runId)">
-              <mat-icon class="icon-custom-primary">list_alt</mat-icon>
-              </button>
-            </td>
-          </ng-container>
-          <ng-container matColumnDef="RunId">
-            <th mat-header-cell *matHeaderCellDef> Run ID </th>
-            <td mat-cell *matCellDef="let element"> {{element.runId}} </td>
-          </ng-container>
-          <ng-container matColumnDef="GroupId">
-            <th mat-header-cell *matHeaderCellDef> Group ID </th>
-            <td mat-cell *matCellDef="let element"> {{element.groupId}} </td>
-          </ng-container>
+            </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="getDisplayedColumns()">
-          </tr>
-          <tr mat-row *matRowDef="let row; columns: getDisplayedColumns()" class="hover-row "></tr>
+            <ng-container matColumnDef="Name">
+              <th mat-header-cell *matHeaderCellDef>{{ t("name") }}</th>
+              <td mat-cell *matCellDef="let element">
+                <a
+                  class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+                  (click)="selectExperiment(element)"
+                  href="javascript:void(0)"
+                  >{{ element.name }}</a
+                >
+              </td>
+            </ng-container>
 
-        </table>
-        <div *ngIf="dataSource.data.length === 0" class="h1 text-table-container text-muted">No records found</div>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef aria-label="row actions">
+                &nbsp;
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <button
+                  mat-icon-button
+                  class="custom-icon-button"
+                  placement="top"
+                  [ngbTooltip]="'Consumption'"
+                  (click)="getConsumption(element)"
+                >
+                  <mat-icon class="icon-custom-primary" style="float: right">
+                    receipt_long</mat-icon
+                  >
+                </button>
+                <button
+                  mat-icon-button
+                  class="custom-icon-button ml-2"
+                  [hidden]="
+                    element.status !== 'Failed' && element.status !== 'Canceled'
+                  "
+                  placement="top"
+                  [ngbTooltip]="'Retry'"
+                  (click)="retryExperiment(element)"
+                >
+                  <mat-icon class="icon-custom-primary" style="float: right"
+                    >replay</mat-icon
+                  >
+                </button>
+                <button
+                  mat-icon-button
+                  class="custom-icon-button ml-2"
+                  [hidden]="true"
+                  placement="top"
+                  [ngbTooltip]="'Cancel'"
+                  (click)="cancelExperiment(element)"
+                >
+                  <mat-icon class="icon-custom-primary" style="float: right"
+                    >block</mat-icon
+                  >
+                </button>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="TimeStamp">
+              <th mat-header-cell *matHeaderCellDef>{{ t("timestamp") }}</th>
+              <td mat-cell *matCellDef="let element">
+                {{ element.timestamp | date : "MM/dd/yy h:mm:ss a" }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="TimeStart">
+              <th mat-header-cell *matHeaderCellDef>{{ t("run_start") }}</th>
+              <td mat-cell *matCellDef="let element">
+                {{ element.timeStart | date : "MM/dd/yy h:mm:ss a" }}
+                <mat-spinner
+                  [diameter]="15"
+                  [hidden]="element.timeStart"
+                ></mat-spinner>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="TimeEnd">
+              <th mat-header-cell *matHeaderCellDef>{{ t("run_end") }}</th>
+              <td mat-cell *matCellDef="let element">
+                {{ element.timeEnd | date : "MM/dd/yy h:mm:ss a" }}
+                <mat-spinner
+                  [diameter]="15"
+                  [hidden]="element.timeEnd"
+                ></mat-spinner>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="TimeDuration">
+              <th mat-header-cell *matHeaderCellDef>{{ t("duration") }}</th>
+              <td mat-cell *matCellDef="let element">
+                {{ element.timeDuration || 0 | date : "mm'm' ss's'" }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="TriggeredBy">
+              <th mat-header-cell *matHeaderCellDef>{{ t("triggered_by") }}</th>
+              <td mat-cell *matCellDef="let element">
+                {{ element.triggeredByName }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="Status">
+              <th mat-header-cell *matHeaderCellDef>
+                {{ t("status") }}
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <ng-container [ngSwitch]="element.status">
+                  <ng-container *ngSwitchCase="'Succeeded'">
+                    <mat-icon style="color: green; vertical-align: middle"
+                      >check_circle</mat-icon
+                    >
+                    {{ t("status_succeeded") }}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'InProgress'">
+                    <mat-icon style="color: blue; vertical-align: middle"
+                      >pending</mat-icon
+                    >
+                    {{ t("status_in_progress") }}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'Failed'">
+                    <mat-icon style="color: red; vertical-align: middle"
+                      >cancel</mat-icon
+                    >
+                    {{ t("status_failed") }}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'Canceled'">
+                    <mat-icon style="color: gray; vertical-align: middle"
+                      >block</mat-icon
+                    >
+                    {{ t("status_canceled") }}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'Queued'">
+                    <mat-icon style="color: blue; vertical-align: middle"
+                      >update</mat-icon
+                    >
+                    {{ t("status_queued") }}
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'Initializing'">
+                    <mat-icon style="color: blue; vertical-align: middle"
+                      >draw</mat-icon
+                    >
+                    {{ t("status_initializing") }}
+                  </ng-container>
+                  <ng-container *ngSwitchDefault>
+                    <mat-icon style="vertical-align: middle"
+                      >help_outline</mat-icon
+                    >
+                    {{ element.status | lowercase | transloco }}
+                  </ng-container>
+                </ng-container>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="Run">
+              <th mat-header-cell *matHeaderCellDef>{{ t("run") }}</th>
+              <td mat-cell *matCellDef="let element">
+                {{ t('status_' + (element?.run || '').toLowerCase()) }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="parameter">
+              <th mat-header-cell *matHeaderCellDef>{{ t("parameter") }}</th>
+              <td mat-cell *matCellDef="let element">
+                <button
+                  *ngIf="(element.status | lowercase) !== 'initializing'"
+                  mat-icon-button
+                  class="custom-icon-button ml-2"
+                  placement="top"
+                  [ngbTooltip]="'Parameters'"
+                  (click)="getParameter(element.runId)"
+                >
+                  <mat-icon class="icon-custom-primary">list_alt</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="RunId">
+              <th mat-header-cell *matHeaderCellDef>{{ t("run_id") }}</th>
+              <td mat-cell *matCellDef="let element">{{ element.runId }}</td>
+            </ng-container>
+            <ng-container matColumnDef="GroupId">
+              <th mat-header-cell *matHeaderCellDef>{{ t("group_id") }}</th>
+              <td mat-cell *matCellDef="let element">{{ element.groupId }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="getDisplayedColumns()"></tr>
+            <tr
+              mat-row
+              *matRowDef="let row; columns: getDisplayedColumns()"
+              class="hover-row"
+            ></tr>
+          </table>
+          <div
+            *ngIf="dataSource.data.length === 0"
+            class="h1 text-table-container text-muted"
+          >
+            {{ t("no_records_found") }}
+          </div>
+        </div>
+        <mat-paginator [pageSize]="10" [pageSizeOptions]="[10, 20, 40, 50]">
+        </mat-paginator>
       </div>
-      <mat-paginator
-        [pageSize]="10"
-        [pageSizeOptions]="[10,20,40,50]">
-      </mat-paginator>
-
     </div>
   </div>
-</div>
+</ng-container>

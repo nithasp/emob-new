@@ -29,6 +29,7 @@
     "@azure/msal-angular": "^4.0.6",
     "@azure/msal-browser": "^4.7.0",
     "@azure/msal-node": "^3.3.0",
+    "@jsverse/transloco": "^7.6.1",
     "@ng-bootstrap/ng-bootstrap": "^17.0.1",
     "@ngx-popovers/core": "^18.2.0",
     "@ngx-popovers/popover": "^18.2.0",

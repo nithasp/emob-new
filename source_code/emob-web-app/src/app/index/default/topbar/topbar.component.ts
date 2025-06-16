@@ -1,44 +1,52 @@
 import { Component, Inject, Input, OnInit } from '@angular/core';
 import { GuardsCheckEnd, NavigationEnd, Router, Scroll } from '@angular/router';
-import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalService } from '@azure/msal-angular';
+import {
+  MSAL_GUARD_CONFIG,
+  MsalBroadcastService,
+  MsalGuardConfiguration,
+  MsalService,
+} from '@azure/msal-angular';
 import { InteractionType } from '@azure/msal-browser';
 import { UserADProfile } from 'src/app/models/profile.model';
-import { version } from 'package.json'
+import { version } from 'package.json';
+import { TranslocoService } from '@jsverse/transloco';
+import { LanguageChangeService } from 'src/app/services/language-change.service';
 
 @Component({
   selector: 'app-topbar',
   templateUrl: './topbar.component.html',
-  styleUrl: './topbar.component.scss'
+  styleUrl: './topbar.component.scss',
 })
-export class TopbarComponent implements OnInit{
+export class TopbarComponent implements OnInit {
   @Input() public userADprofile?: UserADProfile;
   public activeRoute: string;
   version: string = version;
 
   constructor(
     private readonly router: Router,
-    @Inject(MSAL_GUARD_CONFIG) private readonly msalGuardConfig: MsalGuardConfiguration,
+    @Inject(MSAL_GUARD_CONFIG)
+    private readonly msalGuardConfig: MsalGuardConfiguration,
     private readonly authService: MsalService,
-  ){
+    private transloco: TranslocoService,
+    private languageChangeService: LanguageChangeService
+  ) {
     this.activeRoute = '';
   }
 
   ngOnInit() {
-    this.router.events.subscribe(event => {
+    this.getLanguage();
+    this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.activeRoute = event.urlAfterRedirects.split('/')[2];
-
-      }else if (event instanceof Scroll) {
-        console.log("Scroll event detected");
+      } else if (event instanceof Scroll) {
+        console.log('Scroll event detected');
         this.activeRoute = event.routerEvent.url.split('/')[2];
-        
       }
-      console.log("Active Route", this.activeRoute);
+      console.log('Active Route', this.activeRoute);
     });
   }
 
   logout() {
-
     if (this.msalGuardConfig.interactionType === InteractionType.Popup) {
       this.authService.logoutPopup({
         account: this.authService.instance.getActiveAccount(),
@@ -57,4 +65,19 @@ export class TopbarComponent implements OnInit{
     return this.activeRoute === route;
   }
 
+  get currentLang(): string {
+    return this.transloco.getActiveLang();
+  }
+
+  toggleLang(lang: 'en' | 'th') {
+    this.transloco.setActiveLang(lang);
+    localStorage.setItem('lang', lang);
+    this.languageChangeService.notifyLangToggle();
+  }
+
+  getLanguage() {
+    const currentLang =
+      localStorage.getItem('lang') || this.transloco.getDefaultLang();
+    this.transloco.setActiveLang(currentLang);
+  }
 }

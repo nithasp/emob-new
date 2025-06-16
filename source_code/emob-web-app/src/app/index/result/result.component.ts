@@ -66,6 +66,8 @@ import { FormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
 import { DownloadResultFile } from '../../models/experiment.model';
+import { TranslocoService } from '@jsverse/transloco';
+import { LanguageChangeService } from 'src/app/services/language-change.service';
 
 @Component({
   selector: 'app-result',
@@ -149,7 +151,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   expandedElement: Array<any> = [];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-  @ViewChild('filterModal', { static: true })
+  @ViewChild('filterModal', { static: false, read: TemplateRef })
   filterModal!: TemplateRef<any>;
   vectorLayer!: VectorLayer;
   clusterLayer!: VectorLayer;
@@ -172,7 +174,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
     private readonly experimentService: ExperimentService,
     private readonly configurationService: ConfigurationService,
     private readonly toastr: ToastrService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly transloco: TranslocoService,
+    private languageChangeService: LanguageChangeService
   ) {
     this.spinner.show();
 
@@ -202,13 +206,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
             await this.loadReportData(response.fileUrl.outputReportUrl);
             this.spinner.hide();
             await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
-
             this.dataRouteInfo.filterPredicate =
               this.multiFilterPredicate.bind(this);
 
             this.isLoading = false;
           });
       });
+
+    this.checkFilterOverflowTwolinesWhenLanguageChange();
   }
 
   ngAfterViewInit(): void {
@@ -284,6 +289,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   async loadReportData(url: string) {
+    if (!url) {
+      console.warn('loadReportData called with null URL, skipping.');
+      this.toastr.warning(
+        this.transloco.translate('no_report_available_to_load', {}, 'index'),
+        this.transloco.translate('warning')
+      );
+      return;
+    }
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
     await this.fetchAndParseExcel(arrayBuffer, 0);
     await this.fetchAndParseExcel(arrayBuffer, 1);
@@ -310,7 +323,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         .getRow(1)
         .eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
           headers[colNumber - 1] =
-            cell.value !== null ? String(cell.value) : `Column ${colNumber}`;
+             cell.value !== null ? String(cell.value) : `column_${colNumber}`;
         });
       if (options === 0) this.headersReport = headers;
 
@@ -525,8 +538,10 @@ export class ResultComponent implements OnInit, AfterViewInit {
           source: new XYZ({
             url: 'https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
             attributions:
-              '&copy;<a href="https://carto.com">CARTO</a>' +
-              '&copy;<a href="https://www.openstreetmap.org">OSM</a>',
+              '&copy;<a href="https://carto.com" target="_blank"> CARTO</a>' +
+              '&copy;<a href="http://openmaptiles.org/" target="_blank"> OpenMapTiles</a>' +
+              '&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank"> OpenStreetMap contributors</a>' +
+              '&copy;<a href="http://map.project-osrm.org" target="_blank"> Project OSRM contributors</a>',
             crossOrigin: 'anonymous',
             cacheSize: 500000,
             tileLoadFunction,
@@ -1010,10 +1025,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   tryToRerunExperiment() {
     const dialogRef = this.openConfirmDialog(
-      'Try to Rerun experiment',
-      'Confirm to try to Rerun experiment',
-      'Are you sure to try to rerun experiment ?'
+      this.transloco.translate('rerun_experiment_try', {}, 'index'),
+      this.transloco.translate('retry_experiment_confirmation', {}, 'index'),
+      this.transloco.translate('retry_experiment_message', {}, 'index')
     );
+
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
         this.spinner.show();
@@ -1022,8 +1038,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
           .subscribe((response) => {
             this.spinner.hide();
             this.toastr.success(
-              'Success to replicate experiment',
-              'Replicate Experiment'
+              this.transloco.translate(
+                'success_to_replicate_experiment',
+                {},
+                'index'
+              ),
+              this.transloco.translate('replicate_experiment', {}, 'index')
             );
             this.router.navigate(['/users/run', response.runId]);
           });
@@ -1035,36 +1055,60 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.spinner.show();
     this.experimentService
       .getExperimentResultUrl(this.experiment!.runId)
-      .subscribe((response: DownloadResultFile) => {
-        this.configurationService
-          .downloadFile(response.fileUrl.resultFileBlobPathUrl)
-          .subscribe((response) => {
-            const contentDisposition = response.headers.get(
-              'Content-Disposition'
-            );
-            let fileName = 'downloadedFile';
-            if (contentDisposition) {
-              const matches = /filename="([^"]*)"/.exec(contentDisposition);
-              if (matches && matches.length > 0) {
-                fileName = matches[1];
-              }
-            }
-
-            const blob = response.body;
-            if (blob) {
-              const link = document.createElement('a');
-              link.href = window.URL.createObjectURL(blob);
-              link.download = fileName;
-              link.target = '_blank';
-              link.click();
-              this.spinner.hide();
-              this.toastr.success('Success to download plan', 'Download Plan');
-              window.URL.revokeObjectURL(link.href);
-            } else {
-              console.error('Download failed: Blob is null');
-              this.spinner.hide();
-            }
-          });
+      .subscribe({
+        next: (response: DownloadResultFile) => {
+          this.configurationService
+            .downloadFile(response.fileUrl.resultFileBlobPathUrl)
+            .subscribe({
+              next: (resp) => {
+                const contentDisposition = resp.headers.get(
+                  'Content-Disposition'
+                );
+                let fileName = 'downloadedFile';
+                if (contentDisposition) {
+                  const m = /filename="([^"]*)"/.exec(contentDisposition);
+                  if (m) fileName = m[1];
+                }
+                const blob = resp.body;
+                if (blob) {
+                  const link = document.createElement('a');
+                  link.href = window.URL.createObjectURL(blob);
+                  link.download = fileName;
+                  link.click();
+                  window.URL.revokeObjectURL(link.href);
+                  this.toastr.success(
+                    this.transloco.translate(
+                      'success_to_download_plan',
+                      {},
+                      'index'
+                    ),
+                    this.transloco.translate('download_plan', {}, 'index')
+                  );
+                }
+                this.spinner.hide();
+              },
+              error: (err) => {
+                console.error('Download failed', err);
+                this.spinner.hide();
+                this.toastr.error(
+                  this.transloco.translate(
+                    'failed_to_download_plan',
+                    {},
+                    'index'
+                  ),
+                  this.transloco.translate('download_plan', {}, 'index')
+                );
+              },
+            });
+        },
+        error: (err) => {
+          console.error('Could not get download URL', err);
+          this.spinner.hide();
+          this.toastr.error(
+            this.transloco.translate('failed_to_get_download_url', {}, 'index'),
+            this.transloco.translate('download_plan', {}, 'index')
+          );
+        },
       });
   }
 
@@ -1316,5 +1360,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     this.vectorLayer.changed();
     this.clusterLayer.changed();
+  }
+
+  checkFilterOverflowTwolinesWhenLanguageChange() {
+    this.languageChangeService.langToggled$.subscribe(() => {
+      this.applyFilter();
+      setTimeout(() => this.checkOverflow(), 0);
+    });
   }
 }

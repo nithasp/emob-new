@@ -1,21 +1,23 @@
-<div class="mt-3 mb-4 mx-3">
-  <div
-    class="modal-header p-0"
-    style="padding-bottom: 5px !important; margin-bottom: -2px"
-  >
-    <p mat-dialog-title class="modal-title w-bold text-danger fs-5 m-0">
-      Consumption
-    </p>
-    <button
-      class="btn close-button"
-      (click)="onCancleClick()"
-      aria-label="Close"
+<ng-container *transloco="let t; read: 'index'">
+  <div class="mt-3 mb-4 mx-3">
+    <div
+      class="modal-header p-0"
+      style="padding-bottom: 5px !important; margin-bottom: -2px"
     >
-      <mat-icon>clear</mat-icon>
-    </button>
+      <p mat-dialog-title class="modal-title w-bold text-danger fs-5 m-0">
+        {{ t("consumption") }}
+      </p>
+      <button
+        class="btn close-button"
+        (click)="onCancleClick()"
+        aria-label="Close"
+      >
+        <mat-icon>clear</mat-icon>
+      </button>
+    </div>
+    <mat-dialog-content class="ml-3">
+      <p>{{ t("count_geocoding") }}: {{ paramsConsumption.countGeocoding }}</p>
+      <p>{{ t("count_reroute") }}: {{ paramsConsumption.countReroute }}</p>
+    </mat-dialog-content>
   </div>
-  <mat-dialog-content class="ml-3">
-    <p>countGeocoding: {{ paramsConsumption.countGeocoding }}</p>
-    <p>countReroute: {{ paramsConsumption.countReroute }}</p>
-  </mat-dialog-content>
-</div>
+</ng-container>
