@@ -8,7 +8,6 @@ import {
   ViewChild,
 } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -16,14 +15,13 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { Experiment, ExperimentCounts } from 'src/app/models/experiment.model';
 import { ConstraintService } from 'src/app/services/constraint.service';
 import { ExperimentService } from 'src/app/services/experiment.service';
-import { DetailsDialogComponent } from '../components/details-dialog/details-dialog.component';
 import { ToastrService } from 'ngx-toastr';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
-import { distinctUntilChanged } from 'rxjs';
 import { ParametersDialogComponent } from '../components/parameters-dialog/parameters-dialog.component';
 import { TimingAndCapacity } from 'src/app/models/constraint.model';
 import { ConsumptionDialogComponent } from '../components/consumption-dialog/consumption-dialog.component';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-experiment',
@@ -31,72 +29,21 @@ import { ConsumptionDialogComponent } from '../components/consumption-dialog/con
   styleUrl: './experiment.component.scss',
 })
 export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
+  columnsStorageKey = 'experimentDisplayedColumns';
   public displayedColumns = [
-    {
-      def: 'select',
-      label: 'select',
-      visible: true,
-    },
-    {
-      def: 'Name',
-      label: 'Name',
-      visible: true,
-    },
-    {
-      def: 'actions',
-      label: 'Actions',
-      visible: true,
-    },
-    {
-      def: 'TimeStamp',
-      label: 'TimeStamp',
-      visible: true,
-    },
-    {
-      def: 'TimeStart',
-      label: 'Run Start',
-      visible: true,
-    },
-    {
-      def: 'TimeEnd',
-      label: 'Run End',
-      visible: true,
-    },
-    {
-      def: 'TimeDuration',
-      label: 'Duration',
-      visible: true,
-    },
-    {
-      def: 'TriggeredBy',
-      label: 'Triggered By',
-      visible: true,
-    },
-    {
-      def: 'Status',
-      label: 'Status',
-      visible: true,
-    },
-    {
-      def: 'Run',
-      label: 'Run',
-      visible: true,
-    },
-    {
-      def: 'parameter',
-      label: 'Parameter',
-      visible: true,
-    },
-    {
-      def: 'RunId',
-      label: 'Run ID',
-      visible: false,
-    },
-    {
-      def: 'GroupId',
-      label: 'Group ID',
-      visible: false,
-    },
+    { def: 'select', label: 'select', visible: true },
+    { def: 'Name', label: 'name', visible: true },
+    { def: 'actions', label: 'actions', visible: true },
+    { def: 'TimeStamp', label: 'timestamp', visible: true },
+    { def: 'TimeStart', label: 'run_start', visible: true },
+    { def: 'TimeEnd', label: 'run_end', visible: true },
+    { def: 'TimeDuration', label: 'duration', visible: true },
+    { def: 'TriggeredBy', label: 'triggered_by', visible: true },
+    { def: 'Status', label: 'status', visible: true },
+    { def: 'Run', label: 'run', visible: true },
+    { def: 'parameter', label: 'parameter', visible: true },
+    { def: 'RunId', label: 'run_id', visible: false },
+    { def: 'GroupId', label: 'group_id', visible: false },
   ];
   paramsVehicle: TimingAndCapacity = {
     backToDepotTime: '',
@@ -126,13 +73,13 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     private readonly router: Router,
     private readonly ngbModal: NgbModal,
     private readonly toastr: ToastrService,
-    private readonly userMsGraphService: UserMSGraphService
-  ) {}
-  
+    private readonly userMsGraphService: UserMSGraphService,
+    private readonly transloco: TranslocoService
+  ) { }
+
   ngOnInit(): void {
-    this.spinner.show();
+    this.loadDisplayedColumns();
     this.loadData();
-    this.spinner.hide();
   }
 
   ngAfterViewInit() {
@@ -152,12 +99,13 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     this.experimentService.getExperiments().subscribe({
       next: (response) => {
         this.dataSource.data = response;
-        this.dataSource.paginator = this.paginator;
-
+        this.dataSource.paginator = this.paginator;    
         this.hiddenSpinner();
+        this.spinner.hide();
       },
       error: () => {
         this.hiddenSpinner();
+        this.spinner.hide();
       },
     });
   }
@@ -210,17 +158,20 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
 
   createNewExperiment() {
     const openConfirmDialog = this.openConfirmDialog(
-      'Create Experiment Confirmation',
+      this.transloco.translate('create_experiment_confirmation', {}, 'index'),
       '',
-      'Do you want to create a new experiment?',
-      'Confirm',
+      this.transloco.translate('create_experiment_message', {}, 'index'),
+      this.transloco.translate('confirm'),
       false
     );
     openConfirmDialog.result.then((confirmed) => {
       if (confirmed) {
         this.spinner.show();
         this.experimentService.createExperiment().subscribe((response) => {
-          this.toastr.info('create experiment', response.runId);
+          this.toastr.info(
+            this.transloco.translate('create_experiment', {}, 'index'),
+            response.runId
+          );
           this.router.navigate(['/users/run', response.runId], {
             state: { isCreateMode: true },
           });
@@ -343,9 +294,9 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
 
   retryExperiment(experiment: Experiment) {
     const dialogRef = this.openConfirmDialog(
-      'Retry experiment',
-      'Confirm to retry experiment',
-      'Are you sure to retry experiment ?'
+      this.transloco.translate('retry_experiment', {}, 'index'),
+      this.transloco.translate('retry_experiment_confirmation', {}, 'index'),
+      this.transloco.translate('retry_experiment_message', {}, 'index')
     );
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
@@ -354,16 +305,19 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
           .rerunExperiment(experiment.runId)
           .subscribe((response) => {
             this.spinner.hide();
-            this.toastr.success(response.message, 'Rerun Experiment');
+            this.toastr.success(
+              response.message,
+              this.transloco.translate('rerun_experiment', {}, 'index')
+            );
           });
       }
     });
   }
   tryToRerunExperiment(experiment: Experiment) {
     const dialogRef = this.openConfirmDialog(
-      'Try to Rerun experiment',
-      'Confirm to try to Rerun experiment',
-      'Are you sure to try to rerun experiment ?'
+      this.transloco.translate('rerun_experiment_try', {}, 'index'),
+      this.transloco.translate('rerun_experiment_confirmation', {}, 'index'),
+      this.transloco.translate('rerun_experiment_message', {}, 'index')
     );
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
@@ -373,8 +327,12 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
           .subscribe((response) => {
             this.spinner.hide();
             this.toastr.success(
-              'Success to replicate experiment',
-              'Replicate Experiment'
+              this.transloco.translate(
+                'success_to_replicate_experiment',
+                {},
+                'index'
+              ),
+              this.transloco.translate('replicate_experiment', {}, 'index')
             );
             this.router.navigate(['/users/run', response.runId]);
           });
@@ -384,9 +342,9 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
 
   cancelExperiment(experiment: Experiment) {
     const dialogRef = this.openConfirmDialog(
-      'Cancel experiment',
-      'Confirm to cancel experiment',
-      'Are you sure to cancel experiment ?'
+      this.transloco.translate('cancel_experiment', {}, 'index'),
+      this.transloco.translate('cancel_experiment_confirmation', {}, 'index'),
+      this.transloco.translate('cancel_experiment_message', {}, 'index')
     );
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
@@ -395,7 +353,10 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
           .cancelExperiment(experiment.runId)
           .subscribe((response) => {
             this.spinner.hide();
-            this.toastr.info(response.message, 'Cancel Experiment');
+            this.toastr.info(
+              response.message,
+              this.transloco.translate('cancel_experiment', {}, 'index')
+            );
           });
       }
     });
@@ -410,17 +371,28 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
         if (userId === experiment.triggeredBy) {
           console.log('open run experiment');
           this.router.navigate(['/users/run', experiment.runId]);
-          this.toastr.info('opening experiment', experiment.name);
+          this.toastr.info(
+            this.transloco.translate('opening_experiment', {}, 'index'),
+            experiment.name
+          );
         } else {
           this.openConfirmDialog(
-            'cannot open Experiment',
-            'You cannot open an experiment that you did not create',
-            ' ',
-            'Acknowledge'
+            this.transloco.translate('cannot_open_experiment', {}, 'index'),
+            this.transloco.translate(
+              'cannot_open_experiment_not_creator',
+              {},
+              'index'
+            ),
+            '',
+            this.transloco.translate('acknowledge', {}, 'index')
           );
           this.toastr.warning(
-            'cannot open Experiment',
-            'You cannot open an experiment that you did not create'
+            this.transloco.translate('cannot_open_experiment', {}, 'index'),
+            this.transloco.translate(
+              'cannot_open_experiment_not_creator',
+              {},
+              'index'
+            )
           );
         }
       });
@@ -429,14 +401,22 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       this.router.navigate(['/users/result', experiment.runId]);
     } else {
       this.toastr.warning(
-        'cannot open Experiment',
-        'You cannot open an experiment that is not succeeded'
+        this.transloco.translate('cannot_open_experiment', {}, 'index'),
+        this.transloco.translate(
+          'cannot_open_experiment_not_succeeded',
+          {},
+          'index'
+        )
       );
       this.openConfirmDialog(
-        'cannot open Experiment',
-        'You cannot open an experiment that is not succeeded',
+        this.transloco.translate('cannot_open_experiment', {}, 'index'),
+        this.transloco.translate(
+          'cannot_open_experiment_not_succeeded',
+          {},
+          'index'
+        ),
         '',
-        'Acknowledge'
+        this.transloco.translate('acknowledge', {}, 'index')
       );
     }
     this.spinner.hide();
@@ -451,10 +431,28 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       fullScreen: false,
     });
   }
+
   hiddenSpinner() {
     console.log('hidden spinner');
     setTimeout(() => {
       this.spinner.hide('experiment');
     }, 500);
+  }
+
+  loadDisplayedColumns(): void {
+    const savedColumns = localStorage.getItem(this.columnsStorageKey);
+    if (savedColumns) {
+      const visibleDefs: string[] = JSON.parse(savedColumns);
+      this.displayedColumns.forEach((col) => {
+        col.visible = visibleDefs.includes(col.def);
+      });
+    }
+  }
+
+  saveDisplayedColumns(): void {
+    const visibleDefs = this.displayedColumns
+      .filter((c) => c.visible)
+      .map((c) => c.def);
+    localStorage.setItem(this.columnsStorageKey, JSON.stringify(visibleDefs));
   }
 }

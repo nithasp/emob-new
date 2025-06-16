@@ -372,3 +372,9 @@ mat-icon{
   pointer-events: none;
   opacity: 0.5;
 }
+
+.table-order-data {
+  td {
+    place-content: center;
+  }
+}

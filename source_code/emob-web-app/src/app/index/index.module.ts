@@ -9,14 +9,18 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavbarComponent } from './default/navbar/navbar.component';
 import { RouterLinkActive } from '@angular/router';
 import { IndexComponent } from './index.component';
-import { NgbModule, NgbNavModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbModule,
+  NgbNavModule,
+  NgbTooltipModule,
+} from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
 import { PopoverModule } from '@ngx-popovers/popover';
 import { Arrow } from '@ngx-popovers/core';
 import { DropzoneDirective } from '../directives/dropzone.directive';
 import { TruncatePipe } from '../directives/truncate-pipe.directive';
-import { NgxSpinnerModule } from "ngx-spinner";
+import { NgxSpinnerModule } from 'ngx-spinner';
 import { NumberCounterInputComponent } from './components/number-counter-input/number-counter-input.component';
 import { TimeFormatPipe } from '../directives/timeformat-pipe.directive';
 import { TopbarComponent } from './default/topbar/topbar.component';
@@ -26,6 +30,7 @@ import { VerifyLocationDialogComponent } from './components/verify-location-dial
 import { MarkLocationDialogComponent } from './components/mark-location-dialog/mark-location-dialog.component';
 import { CustomerListComponent } from './components/customer-list/customer-list.component';
 import { FilterPipe } from '../directives/filter-pipe.directive';
+import { SnakeCasePipe } from '../directives/snakecase.pipe.directive';
 import { ResizableDirective } from '../directives/resizable.directive';
 import { UploadFileComponent } from './configuration/upload-file/upload-file.component';
 import { MapDetailsDialogComponent } from './components/map-details-dialog/map-details-dialog.component';
@@ -34,6 +39,8 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ParametersDialogComponent } from './components/parameters-dialog/parameters-dialog.component';
 import { ConsumptionDialogComponent } from './components/consumption-dialog/consumption-dialog.component';
 import { ErrorDialogComponent } from './components/error-dialog/error-dialog.component';
+
+import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
 
 @NgModule({
   declarations: [
@@ -55,12 +62,13 @@ import { ErrorDialogComponent } from './components/error-dialog/error-dialog.com
     MarkLocationDialogComponent,
     CustomerListComponent,
     FilterPipe,
+    SnakeCasePipe,
     ResizableDirective,
     UploadFileComponent,
     MapDetailsDialogComponent,
     ParametersDialogComponent,
     ConsumptionDialogComponent,
-    ErrorDialogComponent
+    ErrorDialogComponent,
   ],
   imports: [
     IndexRoutingModule,
@@ -76,10 +84,10 @@ import { ErrorDialogComponent } from './components/error-dialog/error-dialog.com
     NgxSpinnerModule,
     NgbTooltipModule,
     OverlayModule,
-    DragDropModule
-    
+    DragDropModule,
+    TranslocoModule
   ],
-  schemas :[CUSTOM_ELEMENTS_SCHEMA ],
-
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'index' }],
 })
-export class IndexModule { }
+export class IndexModule {}

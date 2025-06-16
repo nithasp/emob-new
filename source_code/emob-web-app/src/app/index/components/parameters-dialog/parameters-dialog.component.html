@@ -1,42 +1,64 @@
-<div class="mt-3 mb-4 mx-3">
-  <div class="modal-header p-0" style="padding-bottom: 5px !important; margin-bottom: -2px;">
-    <p mat-dialog-title class="modal-title w-bold text-danger fs-5 m-0">
-      Parameter
-    </p>
-    <button
-      class="btn close-button"
-      (click)="onCancleClick()"
-      aria-label="Close"
+<ng-container *transloco="let t; read: 'index'">
+  <div class="mt-3 mb-4 mx-3">
+    <div
+      class="modal-header p-0"
+      style="padding-bottom: 5px !important; margin-bottom: -2px"
     >
-      <mat-icon>clear</mat-icon>
-    </button>
+      <p mat-dialog-title class="modal-title w-bold text-danger fs-5 m-0">
+        {{ t("parameter") }}
+      </p>
+      <button
+        class="btn close-button"
+        (click)="onCancleClick()"
+        aria-label="Close"
+      >
+        <mat-icon>clear</mat-icon>
+      </button>
+    </div>
+    <mat-dialog-content class="ml-3">
+      <div class="generals">
+        <h3 class="mb-0">{{ t("generals") }}</h3>
+        <ul>
+          <li>
+            {{ t("early_delivery_time_is") }}:
+            {{ paramsVehicle.earlyDeliveryTime }}
+          </li>
+          <li>
+            {{ t("back_to_depot_time_is") }}:
+            {{ paramsVehicle.backToDepotTime }}
+          </li>
+          <li>
+            {{ t("maximum_work_duration_is") }}:
+            {{ paramsVehicle.maximumWorkDuration }}
+          </li>
+        </ul>
+      </div>
+      <div class="vehicle">
+        <h3 class="mb-0">{{ t("vehicle") }}</h3>
+        <ul>
+          <li>
+            {{ t("number_of_vehicle_available_is_set_to") }}:
+            {{ paramsVehicle.numberOfVehicleAvailable | number : "1.0-0" }}
+          </li>
+          <li>
+            {{ t("vehicle_order_size_capacity_is") }}:
+            {{ paramsVehicle.vehicleOrderSizeCapacity | number : "1.0-0" }}
+          </li>
+          <li>
+            {{ t("maximum_travel_distance_is") }}:
+            {{ paramsVehicle.maximumTravelDistance | number : "1.0-0" }}
+          </li>
+        </ul>
+      </div>
+      <div class="customer">
+        <h3 class="mb-0">{{ t("customer") }}</h3>
+        <ul>
+          <li>
+            {{ t("service_time_is") }}:
+            {{ paramsVehicle.serviceDurationTime | timeFormat }}
+          </li>
+        </ul>
+      </div>
+    </mat-dialog-content>
   </div>
-  <mat-dialog-content class="ml-3">
-    <div class="generals">
-      <h3 class="mb-0">Generals</h3>
-      <ul>
-        <li>Early delivery Time is: {{ paramsVehicle.earlyDeliveryTime }}</li>
-        <li>Back to depot time is: {{ paramsVehicle.backToDepotTime }}</li>
-        <li>
-          Maximum work duration is: {{ paramsVehicle.maximumWorkDuration }}
-        </li>
-      </ul>
-    </div>
-    <div class="vehicle">
-      <h3 class="mb-0">Vehicle</h3>
-      <ul>
-        <li>Number of vehicle available is set to: {{paramsVehicle.numberOfVehicleAvailable | number : '1.0-0' }}</li>
-        <li>Vehicle order-size capacity
-            is: {{paramsVehicle.vehicleOrderSizeCapacity | number : '1.0-0' }}</li>
-        <li>Maximum travel distance is: {{paramsVehicle.maximumTravelDistance | number : '1.0-0' }}</li>
-      </ul>
-    </div>
-    <div class="customer">
-      <h3 class="mb-0">Customer</h3>
-      <ul>
-        <li>Service time is: {{paramsVehicle.serviceDurationTime
-            | timeFormat}}</li>
-      </ul>
-    </div>
-  </mat-dialog-content>
-</div>
+</ng-container>

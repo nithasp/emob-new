@@ -1,49 +1,89 @@
-<div id="markLocationMap" class="map"></div>
-<div class="m-3 row justify-content-sm-center">
+<ng-container *transloco="let t; read: 'index'">
+  <div id="markLocationMap" class="map"></div>
+  <div class="m-3 row justify-content-sm-center">
     @if(address){
-        <div class="col-sm-12">
-            <div class="input-group input-group-sm mb-3">
-                <div class="input-group-prepend" style="height: 100px;">
-                    <span class="input-group-text"
-                        style="height: 100px;display: flex;align-items: center;">ADDRESS</span>
-                </div>
-                <textarea class="form-control bg-white" aria-label="Small"
-                    aria-describedby="inputGroup-sizing-sm" rows="3"
-                    [value]="address"
-                    style="height: 100px; overflow: auto;" disabled></textarea>
-            </div>
-        </div>  
+    <div class="col-sm-12">
+      <div class="input-group input-group-sm mb-3">
+        <div class="input-group-prepend" style="height: 100px">
+          <span
+            class="input-group-text"
+            style="height: 100px; display: flex; align-items: center"
+            >{{ "address" | transloco }}</span
+          >
+        </div>
+        <textarea
+          class="form-control bg-white"
+          aria-label="Small"
+          aria-describedby="inputGroup-sizing-sm"
+          rows="3"
+          [value]="address"
+          style="height: 100px; overflow: auto"
+          disabled
+        ></textarea>
+      </div>
+    </div>
     }
-     
+
     <div class="col-sm-5">
-        <div class="input-group input-group-sm mb-3">
-            <div class="input-group-prepend">
-                <span
-                    class="input-group-text bg-primary bg-gradient text-white"
-                    style="width: fit-content;">Latitude</span>
-            </div>
-            <input type="text" class="form-control bg-white"
-            [(ngModel)]="location.latitude">
+      <div class="input-group input-group-sm mb-3">
+        <div class="input-group-prepend">
+          <span
+            class="input-group-text bg-primary bg-gradient text-white"
+            style="width: fit-content"
+            >{{ "latitude" | transloco }}</span
+          >
         </div>
+        <input
+          type="text"
+          class="form-control bg-white"
+          [(ngModel)]="location.latitude"
+        />
+      </div>
     </div>
     <div class="col-sm-5">
-        <div class="input-group input-group-sm mb-3">
-            <div class="input-group-prepend ">
-                <span
-                    class="input-group-text bg-primary bg-gradient text-white"
-                    style="width: fit-content;">Longitude</span>
-            </div>
-            <input type="text" class="form-control bg-white"
-            [(ngModel)]="location.longitude">
+      <div class="input-group input-group-sm mb-3">
+        <div class="input-group-prepend">
+          <span
+            class="input-group-text bg-primary bg-gradient text-white"
+            style="width: fit-content"
+            >{{ "longitude" | transloco }}</span
+          >
         </div>
+        <input
+          type="text"
+          class="form-control bg-white"
+          [(ngModel)]="location.longitude"
+        />
+      </div>
     </div>
-    
+
     <div class="col-sm-2">
-        <button mat-mini-fab placement="top" ngbTooltip="sync Latitude and Longitude to Map" (click)="updateLocation()" class="center-icon-button bg-custom-primary">
-            <mat-icon>sync</mat-icon>
-          </button> 
+      <button
+        mat-mini-fab
+        placement="top"
+        [ngbTooltip]="t('sync_latitude_and_longitude_to_map')"
+        (click)="updateLocation()"
+        class="center-icon-button bg-custom-primary"
+      >
+        <mat-icon>sync</mat-icon>
+      </button>
     </div>
-    <mat-error *ngIf="messageError" class="mb-2 mt-2">Please mark location on map or Input Latitude and Longtitude</mat-error>
-    <button mat-flat-button class="bg-custom-primary col-sm-2 btn-block" (click)="closeLocation()">Confirm</button>
-    <button mat-flat-button class="mt-0 ml-3 col-sm-2 btn-block" (click)="cancel()">Cancel</button>
-</div>
+    <mat-error *ngIf="messageError" class="mb-2 mt-2">{{
+      t("please_mark_location_on_map_or_input_latitude_and_longitude")
+    }}</mat-error>
+    <button
+      mat-flat-button
+      class="bg-custom-primary col-sm-2 btn-block"
+      (click)="closeLocation()"
+    >
+      {{ "confirm" | transloco }}
+    </button>
+    <button
+      mat-flat-button
+      class="mt-0 ml-3 col-sm-2 btn-block"
+      (click)="cancel()"
+    >
+      {{ "cancel" | transloco }}
+    </button>
+  </div>
+</ng-container>

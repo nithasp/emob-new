@@ -1,35 +1,119 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand text-center font-weight-bold logo pl-lg-3 pr-lg-3" [routerLink]="['/users/experiments']" (click)="setActive('experiments')"><span class="icon-custom-primary">E-Mobility</span><br><span class="icon-custom-primary">BANPU</span><span class="icon-custom-secondary">NEXT</span></a>
-  <button class="navbar-toggler navbar-toggler-right collapsed" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="my-1 mx-2 close ">X</span>
-      <span class="navbar-toggler-icon"></span>
+  <a
+    class="navbar-brand text-center font-weight-bold logo pl-lg-3 pr-lg-3"
+    [routerLink]="['/users/experiments']"
+    (click)="setActive('experiments')"
+    ><span class="icon-custom-primary">E-Mobility</span><br /><span
+      class="icon-custom-primary"
+      >BANPU</span
+    ><span class="icon-custom-secondary">NEXT</span></a
+  >
+  <button
+    class="navbar-toggler navbar-toggler-right collapsed"
+    type="button"
+    data-toggle="collapse"
+    data-target="#navbar"
+    aria-controls="navbar"
+    aria-expanded="false"
+    aria-label="Toggle navigation"
+  >
+    <span class="my-1 mx-2 close">X</span>
+    <span class="navbar-toggler-icon"></span>
   </button>
 
   <div class="collapse navbar-collapse" id="navbar">
-      <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+      <li
+        class="nav-item"
+        [class.active]="isActive('experiments')"
+        (click)="setActive('experiments')"
+      >
+        <a
+          class="nav-link"
+          [routerLink]="['/users/experiments']"
+          routerLinkActive
+          >{{ "experiments" | transloco }}</a
+        >
+      </li>
+      <li
+        class="nav-item"
+        [class.active]="isActive('configurations')"
+        (click)="setActive('configurations')"
+      >
+        <a
+          class="nav-link"
+          [routerLink]="['/users/configurations']"
+          routerLinkActive
+          >{{ "configurations" | transloco }}</a
+        >
+      </li>
+    </ul>
+    <ul class="navbar-nav ml-auto nav-flex-icons">
+      <div class="d-flex gap-1 align-items-center mr-1">
+        <div
+          class="lang-wrapper"
+          (click)="toggleLang('en')"
+          [class.active]="currentLang === 'en'"
+        >
+          <img
+            src="assets/image/flag/Flag_of_the_United_States.svg.png"
+            class="flag-navbar"
+            width="20"
+            height="15"
+          />
+          <span class="lang">EN</span>
+        </div>
 
-          <li class="nav-item"  [class.active]="isActive('experiments')" (click)="setActive('experiments')">
-              <a class="nav-link " [routerLink]="['/users/experiments']" routerLinkActive>Experiments</a>
-          </li>
-          <li class="nav-item" [class.active]="isActive('configurations')" (click)="setActive('configurations')">
-              <a class="nav-link" [routerLink]="['/users/configurations']" routerLinkActive>Configurations</a>
-          </li>
-      </ul>
-      <ul class="navbar-nav ml-auto nav-flex-icons" >
-          <li class="avatar dropdown">
-              <button class="nav-link dropdown-toggle btn btn-light btn-block" id="navbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <ng-container >
-                    
-                        <b class="pr-2" *ngIf="userADprofile?.name">{{userADprofile?.name }}</b>
-              <img src="assets/image/person.png" class="rounded-circle z-depth-0" width="30" >
+        <div
+          class="lang-wrapper"
+          (click)="toggleLang('th')"
+          [class.active]="currentLang === 'th'"
+        >
+          <img
+            src="assets/image/flag/Flag_of_Thailand.svg.webp"
+            class="flag-navbar"
+            width="20"
+            height="15"
+          />
+          <span class="lang">TH</span>
+        </div>
+      </div>
+
+      <li class="avatar dropdown">
+        <button
+          class="nav-link dropdown-toggle btn btn-light btn-block"
+          id="navbarDropdown"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          <ng-container>
+            <b class="pr-2" *ngIf="userADprofile?.name">{{
+              userADprofile?.name
+            }}</b>
+            <img
+              src="assets/image/person.png"
+              class="rounded-circle z-depth-0"
+              width="30"
+            />
           </ng-container>
-          
-      </button>
-              <div class="dropdown-menu dropdown-menu-right dropdown-secondary " aria-labelledby="navbarDropdown">
-                <button class="dropdown-item btn btn-block" style="font-size: 12px; padding:2px;" disabled>version : {{version}}</button>
-                  <button class="dropdown-item btn btn-block" (click)="logout()"><mat-icon>logout</mat-icon> Logout</button>
-              </div>
-          </li>
-      </ul>
+        </button>
+        <div
+          class="dropdown-menu dropdown-menu-right dropdown-secondary"
+          aria-labelledby="navbarDropdown"
+        >
+          <button
+            class="dropdown-item btn btn-block m-lg-2"
+            style="font-size: 12px; padding: 2px"
+            disabled
+          >
+            version : {{ version }}
+          </button>
+          <button class="dropdown-item btn btn-block" (click)="logout()">
+            <mat-icon>logout</mat-icon> {{ "logout" | transloco }}
+          </button>
+        </div>
+      </li>
+    </ul>
   </div>
 </nav>

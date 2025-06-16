@@ -1,109 +1,141 @@
-<div class="modal-header">
-  <h4 class="modal-title">Overview Routing Plan</h4>
-  <button type="button" class="close" aria-label="Close" (click)="close()">
-    <span aria-hidden="true">&times;</span>
-  </button>
-</div>
-<div class="modal-body">
-  <div id="modalMap" class="map"></div>
-  <div
-    id="popupMapDeatils"
-    class="ol-popup"
-    [ngClass]="{ 'depot-popup': popupContent?.is_depot }"
-  >
+<ng-container *transloco="let t; read: 'index'">
+  <div class="modal-header">
+    <h4 class="modal-title">{{ t("overview_routing_plan") }}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="close()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div id="modalMap" class="map"></div>
     <div
-      id="popup-content"
-      class="row justify-content-end"
-      style="font-size: smaller"
-      *ngIf="popupContent"
+      id="popupMapDeatils"
+      class="ol-popup"
+      [ngClass]="{ 'depot-popup': popupContent?.is_depot }"
     >
-      <p
-        class="d-inline-block text-truncate mr-2"
-        *ngIf="popupContent?.route_label"
+      <div
+        id="popup-content"
+        class="row justify-content-end"
+        style="font-size: smaller"
+        *ngIf="popupContent"
       >
-        <strong>Route Label:</strong> {{ popupContent?.route_label }}
-      </p>
-      <p
-        class="d-inline-block text-truncate mr-2"
-        *ngIf="popupContent?.node_index"
-      >
-        <strong>Point Index : </strong> {{ popupContent["node_index"] }}
-      </p>
-      <p
-        class="d-inline-block text-truncate mr-2"
-        *ngIf="popupContent?.route_order"
-      >
-        <strong>Route Order : </strong> {{ popupContent["route_order"] }}
-      </p>
-      <p class="d-inline-block text-truncate mr-2" *ngIf="popupContent?.name">
-        <strong>
-          <span> {{ popupContent.is_depot ? "DEPOT NAME" : "ORDER ID" }}</span>
-          <span> : </span>
-        </strong>
-        <span>{{ popupContent["name"] }}</span>
-      </p>
-      <p
-        class="d-inline-block text-truncate mr-2"
-        *ngIf="popupContent?.num_customers"
-      >
-        <strong>Total Points : </strong>{{ popupContent["num_customers"] }}
-      </p>
-      <p
-        class="d-inline-block text-truncate mr-2"
-        *ngIf="popupContent?.distance"
-      >
-        <strong>Distance : </strong>
-        {{ popupContent["distance"] | number : "1.2-2" }}
-        KM.
-      </p>
-      <p
-        class="d-inline-block text-truncate mr-2"
-        *ngIf="popupContent?.duration"
-      >
-        <strong>Duration : </strong>
-        {{ popupContent["duration"] / 60 | number : "1.2-2" }} Hours.
-      </p>
-      <p class="d-inline-block text-truncate mr-2" *ngIf="popupContent?.weight">
-        <strong>Weight : </strong>
-        {{ popupContent["weight"] | number : "1.2-2" }}
-        KG.
-      </p>
-      <p class="d-inline-block text-truncate mr-2" *ngIf="popupContent?.zone">
-        <strong>Zone : </strong> {{ popupContent["zone"] }}
-      </p>
-      <p
-        class="d-inline-block text-truncate mr-2"
-        *ngIf="popupContent?.customers"
-      >
-        <strong>Customers : </strong> {{ popupContent["customers"].join(", ") }}
-      </p>
-      <p
-        class="d-inline-block text-truncate mr-2"
-        *ngIf="popupContent?.num_customers"
-      >
-        <strong>Total Customers : </strong> {{ popupContent["num_customers"] }}
-      </p>
-      <p
-        class="d-inline-block text-truncate mr-2"
-        *ngIf="popupContent?.service_duration"
-      >
-        <strong>Service Duration : </strong>
-        {{ popupContent["service_duration"] / 60 | number : "1.2-2" }} Hrs.
-      </p>
-      <p
-        class="d-inline-block text-truncate mr-2"
-        *ngIf="popupContent?.travel_duration"
-      >
-        <strong>Travel duration : </strong>
-        {{ popupContent["travel_duration"] | number : "1.2-2" }} KM.
-      </p>
-      <p
-        class="d-inline-block text-truncate mr-2 text-wrap"
-        *ngIf="popupContent.original_address?.address"
-      >
-        <strong>Address : </strong>
-        {{ popupContent["original_address"]["address"] }}
-      </p>
+        <p
+          class="d-inline-block text-truncate mr-2"
+          *ngIf="popupContent?.route_label"
+        >
+          <strong>{{ t("route_label") }} : </strong>
+          <span>{{ popupContent?.route_label }}</span>
+        </p>
+        <p
+          class="d-inline-block text-truncate mr-2"
+          *ngIf="popupContent?.node_index"
+        >
+          <strong>{{ t("point_index") }} : </strong>
+          <span>{{ popupContent["node_index"] }}</span>
+        </p>
+        <p
+          class="d-inline-block text-truncate mr-2"
+          *ngIf="popupContent?.route_order"
+        >
+          <strong>{{ t("route_order") }} : </strong>
+          <span>{{ popupContent["route_order"] }}</span>
+        </p>
+        <p class="d-inline-block text-truncate mr-2" *ngIf="popupContent?.name">
+          <strong>
+            <span>
+              {{
+                popupContent.is_depot ? t("depot_name") : t("order_id")
+              }}</span
+            >
+            <span> : </span>
+          </strong>
+          <span>{{ popupContent["name"] }}</span>
+        </p>
+        <p
+          class="d-inline-block text-truncate mr-2"
+          *ngIf="popupContent?.num_customers"
+        >
+          <strong>{{ t("total_points") }} : </strong>
+          <span>{{ popupContent["num_customers"] }}</span>
+        </p>
+
+        <p
+          class="d-inline-block text-truncate mr-2"
+          *ngIf="popupContent?.distance"
+        >
+          <strong>{{ t("distance") }} : </strong>
+          <span
+            >{{ popupContent["distance"] | number : "1.2-2" }}
+            {{ "kilometer" | transloco }}</span
+          >
+        </p>
+        <p
+          class="d-inline-block text-truncate mr-2"
+          *ngIf="popupContent?.duration"
+        >
+          <strong>{{ t("duration") }} : </strong>
+          <span>
+            {{ popupContent["duration"] / 60 | number : "1.2-2" }}
+            {{ "hours" | transloco }}</span
+          >
+        </p>
+
+        <p
+          class="d-inline-block text-truncate mr-2"
+          *ngIf="popupContent?.weight"
+        >
+          <strong>{{ t("weight") }} : </strong>
+          <span
+            >{{ popupContent["weight"] | number : "1.2-2" }}
+            {{ "kg" | transloco }}.</span
+          >
+        </p>
+
+        <p class="d-inline-block text-truncate mr-2" *ngIf="popupContent?.zone">
+          <strong>{{ t("zone") }} : </strong>
+          <span>{{ popupContent["zone"] }}</span>
+        </p>
+        <p
+          class="d-inline-block text-truncate mr-2"
+          *ngIf="popupContent?.customers"
+        >
+          <strong>{{ t("customers") }} : </strong>
+          <span>{{ popupContent["customers"].join(", ") }}</span>
+        </p>
+        <p
+          class="d-inline-block text-truncate mr-2"
+          *ngIf="popupContent?.num_customers"
+        >
+          <strong>{{ t("total_customers") }} : </strong>
+          <span>{{ popupContent["num_customers"] }}</span>
+        </p>
+        <p
+          class="d-inline-block text-truncate mr-2"
+          *ngIf="popupContent?.service_duration"
+        >
+          <strong>{{ t("service_duration") }} : </strong>
+          <span>{{
+            popupContent["service_duration"] / 60 | number : "1.2-2"
+          }}</span>
+          <span class="text-capitalize"> {{ "hours" | transloco }}</span>
+        </p>
+
+        <p
+          class="d-inline-block text-truncate mr-2"
+          *ngIf="popupContent?.travel_duration"
+        >
+          <strong>{{ t("travel_duration") }} : </strong>
+          <span>{{ popupContent["travel_duration"] | number : "1.2-2" }}</span>
+          <span class="text-capitalize"> {{ "hours" | transloco }}</span>
+        </p>
+
+        <p
+          class="d-inline-block text-truncate mr-2 text-wrap"
+          *ngIf="popupContent.original_address?.address"
+        >
+          <strong>{{ t("address") }} : </strong>
+          <span>{{ popupContent["original_address"]["address"] }}</span>
+        </p>
+      </div>
     </div>
   </div>
-</div>
+</ng-container>
