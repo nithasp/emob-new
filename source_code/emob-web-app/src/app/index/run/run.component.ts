@@ -967,42 +967,41 @@ export class RunComponent implements OnInit, AfterViewInit {
     // Trigger change detection to refresh the table
     this.cdr.detectChanges();
   }
+
   private reInitializeDataTable(): void {
-    if (this.uploadDataGroupCustomers) {
-      const keys = Object.keys(this.uploadDataGroupCustomers).sort((a, b) =>
-        a.localeCompare(b)
-      );
-      console.log(keys); // Output: ['verify', 'uncertain', 'unverify']
+    if (!this.uploadDataGroupCustomers) {
       this.dataSource.data = [];
-      keys.forEach((key) => {
-        if (this.displayLocationType[key as keyof DisplayLocationType]) {
-          const customers: Customer[] =
-            this.uploadDataGroupCustomers![key as keyof DataGroup]?.customers ||
-            [];
-          this.dataSource.data.push(...customers);
-        }
-      });
-    } else {
-      console.log('uploadDataGroupCustomers is undefined');
+      return;
     }
+
+    const keys = Object.keys(this.uploadDataGroupCustomers).sort();
+
+    const newData: Customer[] = [];
+
+    for (const key of keys) {
+      if (this.displayLocationType[key as keyof DisplayLocationType]) {
+        newData.push(
+          ...this.uploadDataGroupCustomers[key as keyof DataGroup].customers
+        );
+      }
+    }
+
+    this.dataSource.data = newData;
   }
 
   displayDataInTable(locationType: LocationType) {
-    console.log(
-      locationType,
-      this.displayLocationType[locationType],
-      !this.displayLocationType[locationType]
-    );
-
     this.displayLocationType[locationType] =
       !this.displayLocationType[locationType];
+
     this.reInitializeDataTable();
-    this.ngAfterViewInit();
-    if (this.paginator) {
-      this.paginator.firstPage();
+
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
     }
+
     this.loadLocation(this.uploadDataGroupCustomers!);
   }
+
   openCustomerOrderDetails(customer: Customer) {
     const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
       centered: true,
