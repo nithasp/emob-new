@@ -2,42 +2,44 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { ExperimentComponent } from './experiment/experiment.component';
-import { ConfigurationComponent } from './configuration/configuration.component';
 import { RunComponent } from './run/run.component';
 import { ResultComponent } from './result/result.component';
 import { IndexComponent } from './index.component';
 
 const routes: Routes = [
   {
-    path: "",
+    path: '',
     component: IndexComponent,
     children: [
       {
-        path: "experiments",
-        component: ExperimentComponent
+        path: 'experiments',
+        component: ExperimentComponent,
       },
       {
-        path: "configurations",
-        component: ConfigurationComponent
+        path: 'configurations',
+        loadChildren: () =>
+          import('./configuration/configuration.module').then(
+            (m) => m.ConfigurationModule
+          ),
       },
       {
-        path: "run/:runId",
-        component: RunComponent
+        path: 'run/:runId',
+        component: RunComponent,
       },
       {
-        path: "result/:experimentId",
-        component: ResultComponent
+        path: 'result/:experimentId',
+        component: ResultComponent,
       },
       {
-        path: "**",
-        redirectTo: "experiments"
-      }
-    ]
-  }
-]
+        path: '**',
+        redirectTo: 'experiments',
+      },
+    ],
+  },
+];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class IndexRoutingModule { }
+export class IndexRoutingModule {}
