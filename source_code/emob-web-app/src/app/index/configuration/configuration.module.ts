@@ -15,9 +15,10 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import { IndexModule } from '../index.module';
 import { NgxSpinnerModule } from 'ngx-spinner';
+import { VehicleComponent } from './vehicle/vehicle.component';
 
 @NgModule({
-  declarations: [ConfigurationComponent, UploadComponent, UploadFileComponent],
+  declarations: [ConfigurationComponent, UploadComponent, UploadFileComponent, VehicleComponent],
   imports: [
     CommonModule,
     ConfigurationRoutingModule,
