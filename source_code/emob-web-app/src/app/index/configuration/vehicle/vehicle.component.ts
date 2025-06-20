@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-//import { VehicleDialogComponent } from '../components/vehicle-dialog/vehicle-dialog.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
+import { VehicleDialogComponent } from '../../components/vehicle-dialog/vehicle-dialog.component';
 
 @Component({
   selector: 'app-vehicle',
@@ -27,24 +27,25 @@ export class VehicleComponent {
   ];
 
   openVehicleModal(vehicle?: any, index?: number) {
-    // const dialogRef = this.dialog.open(VehicleDialogComponent, {
-    //   width: '400px',
-    //   data: { vehicle: vehicle ? { ...vehicle } : null },
-    // });
+    (document.activeElement as HTMLElement)?.blur();
+    const dialogRef = this.dialog.open(VehicleDialogComponent, {
+      width: '400px',
+      data: { vehicle: vehicle ? { ...vehicle } : null },
+    });
 
-    // dialogRef.afterClosed().subscribe((result) => {
-    //   if (!result?.vehicle) {
-    //     return;
-    //   }
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result?.vehicle) {
+        return;
+      }
 
-    //   if (vehicle && typeof index === 'number') {
-    //     this.dataSource[index] = result.vehicle;
-    //   } else {
-    //     this.dataSource.push(result.vehicle);
-    //   }
+      if (vehicle && typeof index === 'number') {
+        this.dataSource[index] = result.vehicle;
+      } else {
+        this.dataSource.push(result.vehicle);
+      }
 
-    //   this.dataSource = [...this.dataSource];
-    // });
+      this.dataSource = [...this.dataSource];
+    });
   }
 
   deleteVehicle(index: number) {

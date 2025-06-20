@@ -10,14 +10,14 @@ const routes: Routes = [
     component: ConfigurationComponent,
     children: [
       { path: 'upload', component: UploadComponent },
-      {path: 'vehicle', component: VehicleComponent},
-      { path: '', redirectTo: 'upload', pathMatch: 'full' }
-    ]
-  }
+      { path: 'vehicle', component: VehicleComponent },
+      { path: '', redirectTo: 'upload', pathMatch: 'full' },
+    ],
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class ConfigurationRoutingModule { }
+export class ConfigurationRoutingModule {}
