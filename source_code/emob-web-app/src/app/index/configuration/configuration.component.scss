@@ -1,11 +1,20 @@
 .configuration-shell {
+  --sidebar-width: 300px;
+  --toggle-btn-size: 32px;
+
   position: relative;
+
+  mat-icon {
+    color: white;
+    position: relative;
+    left: -2px;
+  }
 
   .sidebar {
     position: fixed;
     top: 0;
-    left: -300px;
-    width: 300px;
+    left: calc(-1 * var(--sidebar-width));
+    width: var(--sidebar-width);
     height: 100%;
     background: #0e145f;
     transition: left 0.3s ease;
@@ -20,7 +29,7 @@
 
       mat-icon {
         font-size: 1.5rem;
-        color: #e91e63;
+        color: white;
         margin-right: 0.5rem;
       }
 
@@ -64,28 +73,24 @@
   }
 
   .toggle-btn {
-    position: fixed;
+    position: absolute;
     top: 10%;
     left: 0;
-    width: 32px;
-    height: 32px;
-    color: #fff;
+    width: var(--toggle-btn-size);
+    height: var(--toggle-btn-size);
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: left 0.3s ease, background 0.2s ease;
-    z-index: 20;
-
     background: #0e145f;
     border: 2px solid rgba(255, 255, 255, 0.6);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     border-radius: 50%;
+    cursor: pointer;
+    transition: left 0.3s ease, background 0.2s ease;
+    z-index: 20;
 
     mat-icon {
-      position: relative;
-      left: -2px;
-      transition: transform 0.3s ease, left 0.3s ease;
+      transition: transform 0.3s ease;
     }
   }
 
@@ -101,8 +106,7 @@
     }
 
     .toggle-btn {
-      left: 283px;
-
+      left: calc(var(--sidebar-width) - (var(--toggle-btn-size) / 2));
       mat-icon {
         transform: rotate(180deg);
         left: 2px;
