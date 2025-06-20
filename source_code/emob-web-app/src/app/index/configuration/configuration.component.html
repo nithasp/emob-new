@@ -1,11 +1,20 @@
-<div class="configuration-shell">
+<div class="configuration-shell" [class.open]="isSidebarOpen">
+  <button class="toggle-btn" (click)="toggleSidebar()">
+    <mat-icon>chevron_right</mat-icon>
+  </button>
+
   <nav class="sidebar">
+    <div class="sidebar-header">
+      <mat-icon>settings</mat-icon>
+      <h1>Configuration</h1>
+    </div>
+
     <ul>
       <li><a routerLink="upload" routerLinkActive="active">Upload</a></li>
-      <li><a routerLink="spy" routerLinkActive="active">spy</a></li>
-      <!-- future links: <li><a routerLink="other-child">Other</a></li> -->
+      <li><a routerLink="spy" routerLinkActive="active">Spy</a></li>
     </ul>
   </nav>
+
   <section class="content">
     <router-outlet></router-outlet>
   </section>

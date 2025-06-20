@@ -14,6 +14,7 @@ import {
   NgbModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { IndexModule } from '../index.module';
+import { NgxSpinnerModule } from 'ngx-spinner';
 
 @NgModule({
   declarations: [ConfigurationComponent, UploadComponent, UploadFileComponent],
@@ -25,6 +26,7 @@ import { IndexModule } from '../index.module';
     NgbModule,
     MaterialModule,
     FormsModule,
+    NgxSpinnerModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'index' }],
