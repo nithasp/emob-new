@@ -100,6 +100,27 @@
   bottom: 2px;
 }
 
+.nav-item {
+  button {
+    &.active {
+      transition: border-width 0.4s linear;
+      border-bottom: solid 4px #04948c;
+    }
+  }
+  a {
+    font-size: 14px;
+    &.active {
+      background-color: #f1f1f1;
+      color: #007bff;
+      font-weight: 600;
+    }
+    &:hover,
+    &:focus {
+      background-color: #e2e6ea;
+    }
+  }
+}
+
 @media screen and (max-width: 992px) {
   .dropdown-menu {
     width: 100%;

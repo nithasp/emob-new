@@ -9,6 +9,7 @@ import { NavbarComponent } from './default/navbar/navbar.component';
 import { RouterLinkActive } from '@angular/router';
 import { IndexComponent } from './index.component';
 import {
+  NgbDropdownModule,
   NgbModule,
   NgbNavModule,
   NgbTooltipModule,
@@ -80,6 +81,7 @@ import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
     Arrow,
     NgxSpinnerModule,
     NgbTooltipModule,
+    NgbDropdownModule,
     OverlayModule,
     DragDropModule,
     TranslocoModule

@@ -4,119 +4,15 @@
 
   position: relative;
 
-
   mat-icon {
     color: black;
     position: relative;
     left: -3px;
   }
 
-  .sidebar {
-    position: absolute;
-    top: 0;
-    left: calc(-1 * var(--sidebar-width));
-    width: var(--sidebar-width);
-    height: 100%;
-    background: #fff;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-    transition: left 0.3s ease;
-    z-index: 10;
-    color: black;
- 
-
-
-    .sidebar-header {
-      display: flex;
-      align-items: center;
-      padding: 1rem 1rem 0.5rem;
-      margin-bottom: 1rem;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-
-      mat-icon {
-        font-size: 1.5rem;
-        margin-right: 0.5rem;
-        color: black;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: 1.25rem;
-        font-weight: 500;
-        color: black;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-      }
-    }
-
-    ul {
-      list-style: none;
-      margin: 0;
-      padding: 0 1rem;
-
-      li + li {
-        margin-top: 0.5rem;
-      }
-
-      a {
-        display: block;
-        padding: 0.5rem 0.75rem;
-        color: black;
-        text-decoration: none;
-        border-radius: 4px;
-        transition: background 0.2s ease;
-
-        &:hover {
-          background: rgba(0, 0, 0, 0.05);
-        }
-
-        &.active {
-          font-weight: 500;
-          color: #e91e63;
-        }
-      }
-    }
-  }
-
-  .toggle-btn {
-    position: absolute;
-    top: 7%;
-    left: 18px;
-    width: var(--toggle-btn-size);
-    height: var(--toggle-btn-size);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    border: 2px solid rgba(0, 0, 0, 0.2);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: left 0.3s ease, background 0.2s ease;
-    z-index: 20;
-
-    mat-icon {
-      color: black;
-      transition: transform 0.3s ease;
-    }
-  }
-
   .content {
     margin-left: 0;
     padding: 1rem;
     transition: margin-left 0.3s ease;
-  }
-
-  &.open {
-    .sidebar {
-      left: 0;
-    }
-
-    .toggle-btn {
-      left: calc(var(--sidebar-width) - (var(--toggle-btn-size) / 2));
-      mat-icon {
-        transform: rotate(180deg);
-        left: 3px;
-      }
-    }
   }
 }
