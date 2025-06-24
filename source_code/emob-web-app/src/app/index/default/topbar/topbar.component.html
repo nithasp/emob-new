@@ -47,7 +47,7 @@
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }" (click)="setActive('configurations')"
           >
-            Upload
+            {{ "upload" | transloco }}
           </a>
           <a
             class="nav-link dropdown-item"
@@ -57,7 +57,7 @@
             [routerLinkActiveOptions]="{ exact: true }"
             (click)="setActive('configurations')"
           >
-            Vehicle
+            {{ "vehicle" | transloco }}
           </a>
         </div>
       </li>
