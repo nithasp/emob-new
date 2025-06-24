@@ -8,6 +8,7 @@ import { filter } from 'rxjs/operators';
   styleUrl: './configuration.component.scss',
 })
 export class ConfigurationComponent implements OnInit {
+  
   isSidebarOpen = false;
 
   constructor(private router: Router) {}

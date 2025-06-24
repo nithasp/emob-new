@@ -1,18 +1,20 @@
-<div class="configuration-shell" [class.open]="isSidebarOpen">
+<div id="configuration" [class.open]="isSidebarOpen">
   <button class="toggle-btn" (click)="toggleSidebar()">
     <mat-icon>chevron_right</mat-icon>
   </button>
 
   <nav class="sidebar">
-    <div class="sidebar-header">
-      <mat-icon>settings</mat-icon>
-      <h1>Configuration</h1>
-    </div>
+    <div>
+      <div class="sidebar-header">
+        <mat-icon>settings</mat-icon>
+        <h1>Configuration</h1>
+      </div>
 
-    <ul>
-      <li><a routerLink="upload" routerLinkActive="active">Upload</a></li>
-      <li><a routerLink="vehicle" routerLinkActive="active">Vehicle</a></li>
-    </ul>
+      <ul>
+        <li><a routerLink="upload" routerLinkActive="active">Upload</a></li>
+        <li><a routerLink="vehicle" routerLinkActive="active">Vehicle</a></li>
+      </ul>
+    </div>
   </nav>
 
   <section class="content">
