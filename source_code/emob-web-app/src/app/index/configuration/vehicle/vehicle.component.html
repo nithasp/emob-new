@@ -1,64 +1,103 @@
 <div id="vehicle" class="p-3 mt-5">
   <div class="text-right">
-    <button
-      mat-raised-button
-      color="primary"
-      class="mb-3"
-      (click)="openVehicleModal()"
-    >
+    <button mat-raised-button color="primary" (click)="openVehicleModal()">
       Add Vehicle
     </button>
   </div>
 
   <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
-    <ng-container matColumnDef="position">
-      <th mat-header-cell *matHeaderCellDef>No.</th>
-      <td mat-cell *matCellDef="let element">{{ element.position }}</td>
+
+    <!-- Company Name -->
+    <ng-container matColumnDef="companyName">
+      <th mat-header-cell *matHeaderCellDef>Company</th>
+      <td mat-cell *matCellDef="let v">{{ v.companyName }}</td>
     </ng-container>
 
-    <ng-container matColumnDef="name">
+    <!-- License Plate -->
+    <ng-container matColumnDef="licensePlate">
+      <th mat-header-cell *matHeaderCellDef>Plate</th>
+      <td mat-cell *matCellDef="let v">{{ v.licensePlate }}</td>
+    </ng-container>
+
+    <!-- Vehicle Name -->
+    <ng-container matColumnDef="vehicleName">
       <th mat-header-cell *matHeaderCellDef>Name</th>
-      <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+      <td mat-cell *matCellDef="let v">{{ v.vehicleName }}</td>
     </ng-container>
 
-    <ng-container matColumnDef="weight">
-      <th mat-header-cell *matHeaderCellDef>Weight</th>
-      <td mat-cell *matCellDef="let element">{{ element.weight }}</td>
+    <!-- Vehicle Type -->
+    <ng-container matColumnDef="vehicleType">
+      <th mat-header-cell *matHeaderCellDef>Type</th>
+      <td mat-cell *matCellDef="let v">{{ v.vehicleType }}</td>
     </ng-container>
 
-    <ng-container matColumnDef="symbol">
-      <th mat-header-cell *matHeaderCellDef>Symbol</th>
-      <td mat-cell *matCellDef="let element">{{ element.symbol }}</td>
+    <!-- Brand -->
+    <ng-container matColumnDef="vehicleBrand">
+      <th mat-header-cell *matHeaderCellDef>Brand</th>
+      <td mat-cell *matCellDef="let v">{{ v.vehicleBrand || '-' }}</td>
     </ng-container>
 
-    <ng-container matColumnDef="menu">
+    <!-- Model -->
+    <ng-container matColumnDef="vehicleModel">
+      <th mat-header-cell *matHeaderCellDef>Model</th>
+      <td mat-cell *matCellDef="let v">{{ v.vehicleModel }}</td>
+    </ng-container>
+
+    <!-- Weight -->
+    <ng-container matColumnDef="vehicleWeight">
+      <th mat-header-cell *matHeaderCellDef>Weight (t)</th>
+      <td mat-cell *matCellDef="let v">{{ v.vehicleWeight }}</td>
+    </ng-container>
+
+    <!-- Max Load -->
+    <ng-container matColumnDef="maxLoadWeight">
+      <th mat-header-cell *matHeaderCellDef>Max Load (t)</th>
+      <td mat-cell *matCellDef="let v">{{ v.maxLoadWeight }}</td>
+    </ng-container>
+
+    <!-- Dimensions -->
+    <ng-container matColumnDef="cargoWidth">
+      <th mat-header-cell *matHeaderCellDef>Width (cm)</th>
+      <td mat-cell *matCellDef="let v">{{ v.cargoWidth }}</td>
+    </ng-container>
+    <ng-container matColumnDef="cargoLength">
+      <th mat-header-cell *matHeaderCellDef>Length (cm)</th>
+      <td mat-cell *matCellDef="let v">{{ v.cargoLength }}</td>
+    </ng-container>
+    <ng-container matColumnDef="cargoHeight">
+      <th mat-header-cell *matHeaderCellDef>Height (cm)</th>
+      <td mat-cell *matCellDef="let v">{{ v.cargoHeight }}</td>
+    </ng-container>
+
+    <!-- Pallet Count -->
+    <ng-container matColumnDef="maxPalletCount">
+      <th mat-header-cell *matHeaderCellDef>Pallets</th>
+      <td mat-cell *matCellDef="let v">{{ v.maxPalletCount }}</td>
+    </ng-container>
+
+    <!-- Active -->
+    <ng-container matColumnDef="isActive">
+      <th mat-header-cell *matHeaderCellDef>Active</th>
+      <td mat-cell *matCellDef="let v">
+        <mat-icon *ngIf="v.isActive">check_circle</mat-icon>
+        <mat-icon *ngIf="!v.isActive">cancel</mat-icon>
+      </td>
+    </ng-container>
+
+    <!-- Actions -->
+    <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef>Actions</th>
-      <td mat-cell *matCellDef="let element; let i = index">
-        <button
-          mat-icon-button
-          color="primary"
-          (click)="openVehicleModal(element, i)"
-          matTooltip="Edit"
-          matTooltipPosition="above"
-          aria-label="Edit vehicle"
-        >
+      <td mat-cell *matCellDef="let v; let i = index">
+        <button mat-icon-button (click)="openVehicleModal(v, i)">
           <mat-icon>edit</mat-icon>
         </button>
-
-        <button
-          mat-icon-button
-          color="warn"
-          (click)="deleteVehicle(i)"
-          matTooltip="Delete"
-          matTooltipPosition="above"
-          aria-label="Delete vehicle"
-        >
+        <button mat-icon-button color="warn" (click)="deleteVehicle(i)">
           <mat-icon>delete</mat-icon>
         </button>
       </td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    <tr mat-row        *matRowDef="let row; columns: displayedColumns"></tr>
   </table>
 </div>

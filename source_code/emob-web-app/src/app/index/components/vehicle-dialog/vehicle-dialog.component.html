@@ -1,36 +1,87 @@
 <h2 mat-dialog-title>
-  {{ isEdit ? "Edit Vehicle" : "New Vehicle" }}
+  {{ isEdit ? 'Edit Vehicle' : 'New Vehicle' }}
 </h2>
 
 <mat-dialog-content [formGroup]="form">
+
   <mat-form-field appearance="fill" class="w-full">
-    <mat-label>Name</mat-label>
-    <input matInput formControlName="name" />
-    <mat-error *ngIf="form.get('name')?.hasError('required')">
-      Name is required
+    <mat-label>Company Name</mat-label>
+    <input matInput formControlName="companyName">
+    <mat-error *ngIf="form.get('companyName')?.hasError('required')">
+      Company is required
     </mat-error>
   </mat-form-field>
 
   <mat-form-field appearance="fill" class="w-full">
-    <mat-label>Weight</mat-label>
-    <input matInput type="number" formControlName="weight" />
-    <mat-error *ngIf="form.get('weight')?.hasError('min')">
-      Weight must be positive
+    <mat-label>License Plate</mat-label>
+    <input matInput formControlName="licensePlate">
+    <mat-error *ngIf="form.get('licensePlate')?.hasError('required')">
+      License plate is required
     </mat-error>
   </mat-form-field>
 
+  <!-- Repeat similarly for vehicleName, vehicleType, vehicleBrand, vehicleModel -->
+
   <mat-form-field appearance="fill" class="w-full">
-    <mat-label>Symbol</mat-label>
-    <input matInput formControlName="symbol" />
-    <mat-error *ngIf="form.get('symbol')?.hasError('required')">
-      Symbol is required
-    </mat-error>
+    <mat-label>Vehicle Name</mat-label>
+    <input matInput formControlName="vehicleName">
   </mat-form-field>
+
+  <mat-form-field appearance="fill" class="w-full">
+    <mat-label>Vehicle Type</mat-label>
+    <input matInput formControlName="vehicleType">
+  </mat-form-field>
+
+  <mat-form-field appearance="fill" class="w-full">
+    <mat-label>Brand</mat-label>
+    <input matInput formControlName="vehicleBrand">
+  </mat-form-field>
+
+  <mat-form-field appearance="fill" class="w-full">
+    <mat-label>Model</mat-label>
+    <input matInput formControlName="vehicleModel">
+  </mat-form-field>
+
+  <!-- Numeric fields: -->
+  <mat-form-field appearance="fill" class="w-full">
+    <mat-label>Weight (t)</mat-label>
+    <input matInput type="number" formControlName="vehicleWeight">
+  </mat-form-field>
+
+  <mat-form-field appearance="fill" class="w-full">
+    <mat-label>Max Load (t)</mat-label>
+    <input matInput type="number" formControlName="maxLoadWeight">
+  </mat-form-field>
+
+  <!-- Dimensions: width, length, height -->
+  <div class="grid grid-cols-3 gap-2">
+    <mat-form-field appearance="fill">
+      <mat-label>Width (cm)</mat-label>
+      <input matInput type="number" formControlName="cargoWidth">
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Length (cm)</mat-label>
+      <input matInput type="number" formControlName="cargoLength">
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Height (cm)</mat-label>
+      <input matInput type="number" formControlName="cargoHeight">
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="fill" class="w-full">
+    <mat-label>Max Pallet Count</mat-label>
+    <input matInput type="number" formControlName="maxPalletCount">
+  </mat-form-field>
+
+  <mat-checkbox formControlName="isActive">
+    Active
+  </mat-checkbox>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button mat-button (click)="cancel()">Cancel</button>
   <button mat-raised-button color="primary" (click)="save()">
-    {{ isEdit ? "Update" : "Create" }}
+    {{ isEdit ? 'Update' : 'Create' }}
   </button>
 </mat-dialog-actions>

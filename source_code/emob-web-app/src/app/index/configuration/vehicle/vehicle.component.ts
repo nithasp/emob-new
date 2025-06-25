@@ -4,6 +4,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import { VehicleDialogComponent } from '../../components/vehicle-dialog/vehicle-dialog.component';
 import { VehicleService } from 'src/app/services/vehicle.service';
+import { myVehicles } from 'src/app/models/vehicle.model';
 
 @Component({
   selector: 'app-vehicle',
@@ -11,35 +12,40 @@ import { VehicleService } from 'src/app/services/vehicle.service';
   styleUrl: './vehicle.component.scss',
 })
 export class VehicleComponent implements OnInit {
-  constructor(private dialog: MatDialog, private modalSvc: NgbModal, private vehicleService: VehicleService) {}
-
-  displayedColumns: string[] = ['position', 'name', 'weight', 'symbol', 'menu'];
-  dataSource = [
-    { position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },
-    { position: 2, name: 'Helium', weight: 4.0026, symbol: 'He' },
-    { position: 3, name: 'Lithium', weight: 6.941, symbol: 'Li' },
-    { position: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be' },
-    { position: 5, name: 'Boron', weight: 10.811, symbol: 'B' },
-    { position: 6, name: 'Carbon', weight: 12.0107, symbol: 'C' },
-    { position: 7, name: 'Nitrogen', weight: 14.0067, symbol: 'N' },
-    { position: 8, name: 'Oxygen', weight: 15.9994, symbol: 'O' },
-    { position: 9, name: 'Fluorine', weight: 18.9984, symbol: 'F' },
-    { position: 10, name: 'Neon', weight: 20.1797, symbol: 'Ne' },
+  displayedColumns: string[] = [
+    'companyName',
+    'licensePlate',
+    'vehicleName',
+    'vehicleType',
+    'vehicleBrand',
+    'vehicleModel',
+    'vehicleWeight',
+    'maxLoadWeight',
+    'cargoWidth',
+    'cargoLength',
+    'cargoHeight',
+    'maxPalletCount',
+    'isActive',
+    'actions',
   ];
 
+  dataSource: myVehicles[] = [];
+
+  constructor(
+    private dialog: MatDialog,
+    private modalSvc: NgbModal,
+    private vehicleService: VehicleService
+  ) {}
 
   ngOnInit(): void {
     this.vehicleService.getMyVehicles().subscribe((vehicles) => {
-      console.log('vehicles', vehicles);
+      this.dataSource = vehicles;
     });
-
-    console.log('qqq');
   }
 
-  openVehicleModal(vehicle?: any, index?: number) {
-    (document.activeElement as HTMLElement)?.blur();
+  openVehicleModal(vehicle?: myVehicles, index?: number) {
     const dialogRef = this.dialog.open(VehicleDialogComponent, {
-      width: '400px',
+      width: '600px',
       data: { vehicle: vehicle ? { ...vehicle } : null },
     });
 
@@ -60,25 +66,17 @@ export class VehicleComponent implements OnInit {
 
   deleteVehicle(index: number) {
     const vehicle = this.dataSource[index];
-
-    const modalRef = this.modalSvc.open(ConfirmationDialogComponent, {
-      centered: true,
-      backdrop: 'static',
-    });
-
+    const modalRef = this.modalSvc.open(ConfirmationDialogComponent);
     modalRef.componentInstance.title = 'Delete Vehicle';
-    modalRef.componentInstance.question = `Delete "${vehicle.name}"?`;
+    modalRef.componentInstance.question = `Delete "${vehicle.vehicleName}"?`;
     modalRef.componentInstance.message = 'This action cannot be undone.';
     modalRef.componentInstance.acceptButton = 'Delete';
-    modalRef.componentInstance.disableCancelButton = false;
 
-    modalRef.result
-      .then((confirmed: boolean) => {
-        if (confirmed) {
-          this.dataSource.splice(index, 1);
-          this.dataSource = [...this.dataSource];
-        }
-      })
-      .catch(() => {});
+    modalRef.result.then((confirmed: boolean) => {
+      if (confirmed) {
+        this.dataSource.splice(index, 1);
+        this.dataSource = [...this.dataSource];
+      }
+    });
   }
 }
