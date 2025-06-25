@@ -1,87 +1,88 @@
-<h2 mat-dialog-title>
-  {{ isEdit ? 'Edit Vehicle' : 'New Vehicle' }}
-</h2>
+<ng-container *transloco="let t; read: 'vehicle'">
+  <div id="vehicle-dialog">
+    <h2 mat-dialog-title>
+      {{ isEdit ? t("edit_vehicle") : t("add_vehicle") }}
+    </h2>
 
-<mat-dialog-content [formGroup]="form">
+    <mat-dialog-content [formGroup]="form">
+      <mat-form-field appearance="fill" class="w-full">
+        <mat-label>{{ t("company_name") }}</mat-label>
+        <input matInput formControlName="companyName" />
+        <mat-error *ngIf="form.get('companyName')?.hasError('required')">
+          {{ t("company_required") }}
+        </mat-error>
+      </mat-form-field>
 
-  <mat-form-field appearance="fill" class="w-full">
-    <mat-label>Company Name</mat-label>
-    <input matInput formControlName="companyName">
-    <mat-error *ngIf="form.get('companyName')?.hasError('required')">
-      Company is required
-    </mat-error>
-  </mat-form-field>
+      <mat-form-field appearance="fill" class="w-full">
+        <mat-label>{{ t("license_plate") }}</mat-label>
+        <input matInput formControlName="licensePlate" />
+        <mat-error *ngIf="form.get('licensePlate')?.hasError('required')">
+          {{ t("license_plate_required") }}
+        </mat-error>
+      </mat-form-field>
 
-  <mat-form-field appearance="fill" class="w-full">
-    <mat-label>License Plate</mat-label>
-    <input matInput formControlName="licensePlate">
-    <mat-error *ngIf="form.get('licensePlate')?.hasError('required')">
-      License plate is required
-    </mat-error>
-  </mat-form-field>
+      <mat-form-field appearance="fill" class="w-full">
+        <mat-label>{{ t("vehicle_name") }}</mat-label>
+        <input matInput formControlName="vehicleName" />
+      </mat-form-field>
 
-  <!-- Repeat similarly for vehicleName, vehicleType, vehicleBrand, vehicleModel -->
+      <mat-form-field appearance="fill" class="w-full">
+        <mat-label>{{ t("vehicle_type") }}</mat-label>
+        <input matInput formControlName="vehicleType" />
+      </mat-form-field>
 
-  <mat-form-field appearance="fill" class="w-full">
-    <mat-label>Vehicle Name</mat-label>
-    <input matInput formControlName="vehicleName">
-  </mat-form-field>
+      <mat-form-field appearance="fill" class="w-full">
+        <mat-label>{{ t("vehicle_brand") }}</mat-label>
+        <input matInput formControlName="vehicleBrand" />
+      </mat-form-field>
 
-  <mat-form-field appearance="fill" class="w-full">
-    <mat-label>Vehicle Type</mat-label>
-    <input matInput formControlName="vehicleType">
-  </mat-form-field>
+      <mat-form-field appearance="fill" class="w-full">
+        <mat-label>{{ t("vehicle_model") }}</mat-label>
+        <input matInput formControlName="vehicleModel" />
+      </mat-form-field>
 
-  <mat-form-field appearance="fill" class="w-full">
-    <mat-label>Brand</mat-label>
-    <input matInput formControlName="vehicleBrand">
-  </mat-form-field>
+      <mat-form-field appearance="fill" class="w-full">
+        <mat-label>{{ t("vehicle_weight") }} (t)</mat-label>
+        <input matInput type="number" formControlName="vehicleWeight" />
+      </mat-form-field>
 
-  <mat-form-field appearance="fill" class="w-full">
-    <mat-label>Model</mat-label>
-    <input matInput formControlName="vehicleModel">
-  </mat-form-field>
+      <mat-form-field appearance="fill" class="w-full">
+        <mat-label>{{ t("max_load_weight") }}</mat-label>
+        <input matInput type="number" formControlName="maxLoadWeight" />
+      </mat-form-field>
 
-  <!-- Numeric fields: -->
-  <mat-form-field appearance="fill" class="w-full">
-    <mat-label>Weight (t)</mat-label>
-    <input matInput type="number" formControlName="vehicleWeight">
-  </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>{{ t("cargo_width") }} (cm)</mat-label>
+        <input matInput type="number" formControlName="cargoWidth" />
+      </mat-form-field>
 
-  <mat-form-field appearance="fill" class="w-full">
-    <mat-label>Max Load (t)</mat-label>
-    <input matInput type="number" formControlName="maxLoadWeight">
-  </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>{{ t("cargo_length") }} (cm)</mat-label>
+        <input matInput type="number" formControlName="cargoLength" />
+      </mat-form-field>
 
-  <!-- Dimensions: width, length, height -->
-  <div class="grid grid-cols-3 gap-2">
-    <mat-form-field appearance="fill">
-      <mat-label>Width (cm)</mat-label>
-      <input matInput type="number" formControlName="cargoWidth">
-    </mat-form-field>
-    <mat-form-field appearance="fill">
-      <mat-label>Length (cm)</mat-label>
-      <input matInput type="number" formControlName="cargoLength">
-    </mat-form-field>
-    <mat-form-field appearance="fill">
-      <mat-label>Height (cm)</mat-label>
-      <input matInput type="number" formControlName="cargoHeight">
-    </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>{{ t("cargo_height") }} (cm)</mat-label>
+        <input matInput type="number" formControlName="cargoHeight" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="w-full">
+        <mat-label>{{ t("max_pallet_count") }}</mat-label>
+        <input matInput type="number" formControlName="maxPalletCount" />
+      </mat-form-field>
+
+      <mat-checkbox formControlName="isActive">
+        {{ t("is_active") }}
+      </mat-checkbox>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <button mat-button (click)="cancel()">
+        {{ "cancel" | transloco }}
+      </button>
+      <button mat-raised-button color="primary" (click)="save()">
+        {{ isEdit ? ("update" | transloco) : ("confirm" | transloco) }}
+      </button>
+    </mat-dialog-actions>
   </div>
-
-  <mat-form-field appearance="fill" class="w-full">
-    <mat-label>Max Pallet Count</mat-label>
-    <input matInput type="number" formControlName="maxPalletCount">
-  </mat-form-field>
-
-  <mat-checkbox formControlName="isActive">
-    Active
-  </mat-checkbox>
-</mat-dialog-content>
-
-<mat-dialog-actions align="end">
-  <button mat-button (click)="cancel()">Cancel</button>
-  <button mat-raised-button color="primary" (click)="save()">
-    {{ isEdit ? 'Update' : 'Create' }}
-  </button>
-</mat-dialog-actions>
+</ng-container>

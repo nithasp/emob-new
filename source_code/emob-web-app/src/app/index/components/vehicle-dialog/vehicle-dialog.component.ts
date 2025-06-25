@@ -48,7 +48,6 @@ export class VehicleDialogComponent implements OnInit {
       return;
     }
     const values = this.form.value;
-    // merge with original so we don’t lose createdAt/modifiedAt/etc.
     const payload: myVehicles = this.data.vehicle
       ? { ...this.data.vehicle, ...values }
       : { ...values } as myVehicles;

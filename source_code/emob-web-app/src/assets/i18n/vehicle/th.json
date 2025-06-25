@@ -1,0 +1,18 @@
+{
+  "actions": "การดำเนินการ",
+  "add_vehicle": "เพิ่มรถ",
+  "cargo_height": "ความสูงพื้นที่บรรทุก",
+  "cargo_length": "ความยาวพื้นที่บรรทุก",
+  "cargo_width": "ความกว้างพื้นที่บรรทุก",
+  "edit_vehicle": "แก้ไขรถ",
+  "company_name": "ชื่อบริษัท",
+  "is_active": "สถานะใช้งาน",
+  "license_plate": "ป้ายทะเบียน",
+  "max_load_weight": "น้ำหนักบรรทุกสูงสุด",
+  "max_pallet_count": "จำนวนพาเลทสูงสุด",
+  "vehicle_brand": "ยี่ห้อรถ",
+  "vehicle_model": "รุ่นรถ",
+  "vehicle_name": "ชื่อรถ",
+  "vehicle_type": "ประเภทยานพาหนะ",
+  "vehicle_weight": "น้ำหนักรถ"
+}

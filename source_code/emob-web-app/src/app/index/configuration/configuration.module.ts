@@ -37,6 +37,6 @@ import { VehicleDialogComponent } from '../components/vehicle-dialog/vehicle-dia
     NgbModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'index' }],
+  providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'vehicle' }],
 })
 export class ConfigurationModule {}

@@ -1,0 +1,18 @@
+{
+  "actions": "Actions",
+  "add_vehicle": "Add Vehicle",
+  "cargo_height": "Cargo Height",
+  "cargo_length": "Cargo Length",
+  "cargo_width": "Cargo Width",
+  "edit_vehicle": "Edit Vehicle",
+  "company_name": "Company Name",
+  "is_active": "Active",
+  "license_plate": "License Plate",
+  "max_load_weight": "Max Load Weight",
+  "max_pallet_count": "Max Pallet Count",
+  "vehicle_brand": "Vehicle Brand",
+  "vehicle_model": "Vehicle Model",
+  "vehicle_name": "Vehicle Name",
+  "vehicle_type": "Vehicle Type",
+  "vehicle_weight": "Vehicle Weight"
+}
