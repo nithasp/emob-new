@@ -1,16 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import { VehicleDialogComponent } from '../../components/vehicle-dialog/vehicle-dialog.component';
+import { VehicleService } from 'src/app/services/vehicle.service';
 
 @Component({
   selector: 'app-vehicle',
   templateUrl: './vehicle.component.html',
   styleUrl: './vehicle.component.scss',
 })
-export class VehicleComponent {
-  constructor(private dialog: MatDialog, private modalSvc: NgbModal) {}
+export class VehicleComponent implements OnInit {
+  constructor(private dialog: MatDialog, private modalSvc: NgbModal, private vehicleService: VehicleService) {}
 
   displayedColumns: string[] = ['position', 'name', 'weight', 'symbol', 'menu'];
   dataSource = [
@@ -25,6 +26,15 @@ export class VehicleComponent {
     { position: 9, name: 'Fluorine', weight: 18.9984, symbol: 'F' },
     { position: 10, name: 'Neon', weight: 20.1797, symbol: 'Ne' },
   ];
+
+
+  ngOnInit(): void {
+    this.vehicleService.getMyVehicles().subscribe((vehicles) => {
+      console.log('vehicles', vehicles);
+    });
+
+    console.log('qqq');
+  }
 
   openVehicleModal(vehicle?: any, index?: number) {
     (document.activeElement as HTMLElement)?.blur();
