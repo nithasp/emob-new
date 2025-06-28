@@ -13,7 +13,6 @@ import { myVehicles } from 'src/app/models/vehicle.model';
 })
 export class VehicleComponent implements OnInit {
   displayedColumns: string[] = [
-    'companyName',
     'licensePlate',
     'vehicleName',
     'vehicleType',

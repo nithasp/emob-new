@@ -21,7 +21,12 @@
 .icon-custom-secondary {
   color: #04948c !important;
 }
-
+.mat-success {
+  color: green;
+}
+.mat-warning {
+  color: red;
+}
 .main-wrapper {
   height: 100vh;
 }

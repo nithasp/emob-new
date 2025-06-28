@@ -21,7 +21,6 @@ export class VehicleDialogComponent implements OnInit {
   ngOnInit() {
     this.isEdit = !!this.data.vehicle;
     this.form = this.fb.group({
-      companyName:   [ this.data.vehicle?.companyName   || '', [Validators.required] ],
       licensePlate:  [ this.data.vehicle?.licensePlate  || '', [Validators.required] ],
       vehicleName:   [ this.data.vehicle?.vehicleName   || '', [Validators.required] ],
       vehicleType:   [ this.data.vehicle?.vehicleType   || '', [Validators.required] ],

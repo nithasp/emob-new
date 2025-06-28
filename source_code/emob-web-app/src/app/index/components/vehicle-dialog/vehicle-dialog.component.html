@@ -6,14 +6,6 @@
 
     <mat-dialog-content [formGroup]="form">
       <mat-form-field appearance="fill" class="w-full">
-        <mat-label>{{ t("company_name") }}</mat-label>
-        <input matInput formControlName="companyName" />
-        <mat-error *ngIf="form.get('companyName')?.hasError('required')">
-          {{ t("company_required") }}
-        </mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" class="w-full">
         <mat-label>{{ t("license_plate") }}</mat-label>
         <input matInput formControlName="licensePlate" />
         <mat-error *ngIf="form.get('licensePlate')?.hasError('required')">
