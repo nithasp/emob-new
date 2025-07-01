@@ -1373,4 +1373,65 @@
       </div>
     </div>
   </div>
+
+
+  <!-- <app-dynamic-popover placement="bottom-start">
+  <button popover-trigger class="link link-primary">
+    {{ constraintsData.earlyDeliveryTime }}
+  </button>
+<div popover-content>
+      <div class="card p-3">
+        <div class="card-body p-2">
+          <p class="card-title">{{ t("time_is") }}:</p>
+          <ngb-timepicker
+            [(ngModel)]="constraintsData.earlyDeliveryTime"
+            key="key"
+          >
+          </ngb-timepicker>
+        </div>
+        <div class="popover__controls d-flex justify-content-end mt-2">
+          <button ngx-popover-close class="btn">
+            {{ "close" | transloco }}
+          </button>
+        </div>
+      </div>
+      <ngx-arrow padding="8"></ngx-arrow>
+    </div>
+</app-dynamic-popover> -->
+
+<p>
+  {{ t("maximum_work_duration_is") }}
+  <app-dynamic-popover [placement]="'bottom-start'">
+    <button popover-trigger class="link link-primary link-opacity-75-hover">
+      {{ constraintsData.maximumWorkDuration | timeFormat }}
+    </button>
+
+    <div popover-content>
+      <p class="card-title">
+        {{ t("maximum_work_duration") }} (0 - 23 {{ "hours" | transloco }}):
+      </p>
+      <ngb-timepicker [(ngModel)]="constraintsData.maximumWorkDuration" />
+    </div>
+  </app-dynamic-popover>
+</p>
+
+ <p>
+  {{ t("number_of_vehicle_available_is_set_to") }}
+  <app-dynamic-popover [placement]="'bottom-start'">
+    <button popover-trigger class="link link-primary link-opacity-75-hover">
+      {{ constraintsData.numberOfVehicleAvailable | number : "1.0-0" }}
+    </button>
+
+    <div popover-content>
+      <p class="card-title">{{ t("number_of_vehicle_available") }}:</p>
+      <app-number-counter-input
+        [(value)]="constraintsData.numberOfVehicleAvailable"
+        [maxValue]="250"
+        [minValue]="0"
+        (valueChange)="onValueChange($event, 'numberOfVehicleAvailable')"
+      >
+      </app-number-counter-input>
+    </div>
+  </app-dynamic-popover>
+</p>
 </ng-container>
