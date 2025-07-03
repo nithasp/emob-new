@@ -415,6 +415,7 @@
                     mat-icon-button
                     aria-label="expand row"
                     (click)="toggleRow(element); $event.stopPropagation()"
+                    [disabled]="isLoading"
                   >
                     <mat-icon *ngIf="expandedElement.includes(element)"
                       >keyboard_arrow_up</mat-icon
@@ -426,8 +427,8 @@
                   <button
                     mat-raised-button
                     class="bg-custom-secondary small-button"
-                    *ngIf="mapAlreadyRendered"
                     (click)="openRouteDetails(element.route_index)"
+                    [disabled]="isLoading"
                   >
                     <mat-icon>route</mat-icon>
                     <span>{{ t("details") }}</span>
