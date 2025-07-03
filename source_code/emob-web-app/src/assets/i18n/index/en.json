@@ -265,5 +265,7 @@
   "file_fetch_or_parse_error": "Error fetching or parsing file",
   "error": "Error",
   "group_id": "Group ID",
-  "run_id": "Run ID"
+  "run_id": "Run ID",
+  "delivery_points": "Delivery Points",
+  "route_information": "Route Information"
 }

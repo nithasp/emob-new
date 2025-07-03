@@ -320,3 +320,20 @@ mat-icon {
 .button-expand {
   border-radius: 16px;
 }
+
+.route-box {
+  &:not(:first-child):not(:last-child) {
+    transition: 0.1s;
+    cursor: pointer;
+
+    &:hover {
+      color: white;
+      background: #242484;
+
+      .text {
+        transition: 0.1s;
+        color: white;
+      }
+    }
+  }
+}

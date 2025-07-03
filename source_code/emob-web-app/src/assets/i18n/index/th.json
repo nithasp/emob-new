@@ -265,5 +265,7 @@
   "file_fetch_or_parse_error": "เกิดข้อผิดพลาดในการดึงหรือแปลงไฟล์",
   "error": "เกิดข้อผิดพลาด",
   "group_id": "ID กลุ่ม",
-  "run_id": "ID เรียกใช้งาน"
+  "run_id": "ID เรียกใช้งาน",
+  "delivery_points": "จุดส่งของ",
+  "route_information": "ข้อมูลเส้นทาง"
 }

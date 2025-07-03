@@ -21,7 +21,6 @@ import {
   ReplaceType,
   ValidationType,
   getDescription,
-  enumDescriptions,
 } from 'src/app/models/pre-order.model';
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -44,6 +43,7 @@ import { MarkLocationDialogComponent } from '../mark-location-dialog/mark-locati
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 import { SnakeCasePipe } from 'src/app/directives/snakecase.pipe.directive';
+import { set } from 'ol/transform';
 
 @Component({
   selector: 'app-customer-details',
@@ -58,11 +58,13 @@ export class CustomerDetailsComponent
   @Input() dataCustomer!: Customer;
   @Input() locationType: LocationType = LocationType.Verify;
   @Input() isModal: boolean = true;
+  @Input() isGeolocationDisplay: boolean = true;
   @Output() dataEmitter: EventEmitter<Location> = new EventEmitter<Location>();
   location: Location = {
     latitude: 0,
     longitude: 0,
   };
+
   page = 1;
 
   // Map
@@ -78,6 +80,7 @@ export class CustomerDetailsComponent
     private readonly toastr: ToastrService,
     private readonly transloco: TranslocoService
   ) {}
+
   ngOnInit(): void {
     if (this.isModal) {
       console.log('Component is used as a modal');
@@ -96,9 +99,14 @@ export class CustomerDetailsComponent
     });
     this.initIconStyle();
   }
+  
   ngAfterViewInit(): void {
     this.initMap();
     this.setLocation(this.dataCustomer, this.location);
+  }
+
+  ngOnDestroy(): void {
+    this.isGeolocationDisplay = true;
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -196,6 +204,8 @@ export class CustomerDetailsComponent
     ) {
       location.setStyle(this.iconStyle.unverify);
       this.locationType = LocationType.Unverify;
+    } else {
+      location.setStyle(this.iconStyle.verify);
     }
 
     this.vectorSource.addFeature(location);
@@ -206,6 +216,7 @@ export class CustomerDetailsComponent
       );
     this.map.getView().setZoom(18);
   }
+
   private initIconStyle() {
     Object.values(LocationType).forEach((type) => {
       let iconLocation = new Style({
@@ -239,11 +250,11 @@ export class CustomerDetailsComponent
   close() {
     this.ngbModalActive.close(this.location);
   }
+
   getEnumDescription(enumValue: ReplaceType | ValidationType): string {
-    const key = enumDescriptions[enumValue] || '';
-    const snakeCaseKey = new SnakeCasePipe().transform(key);
-    return this.transloco.translate(snakeCaseKey, {}, 'index');
+    return getDescription(enumValue);
   }
+
   isVerified(): boolean {
     return this.locationType === LocationType.Verify;
   }
@@ -291,10 +302,7 @@ export class CustomerDetailsComponent
           this.locationType = LocationType.Edit;
           this.dataEmitter.emit(this.location);
           this.setLocation(this.dataCustomer, this.location);
-          this.toastr.success(
-            this.transloco.translate('update_location', {}, 'index'),
-            this.transloco.translate('succeed', {}, 'index')
-          );
+          this.toastr.success('Update Location', 'Succeed');
         }
       })
       .catch((error) => {
