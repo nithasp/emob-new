@@ -34,9 +34,12 @@ import {
   Address,
   Customer,
   CustomerUpdated,
+  DataCustomer,
+  DataPreOrder,
   Depot,
   GroupedDataPreOrder,
   PreOrder,
+  ProductInfo,
   ReplaceType,
   ValidationType,
 } from 'src/app/models/pre-order.model';
@@ -1021,8 +1024,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       modalRef.componentInstance.locationType = LocationType.Edit;
     }
 
-    let dataPreOder: any = {};
-    dataPreOder = {
+    let dataPreOder: DataPreOrder = {
       ZIPCODE: customer.original_address.postal_code,
       CUSTOMER_NAME: customer.extra.customer_name,
       ORDERID_ORG: customer.name,
@@ -1030,7 +1032,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       AUMPHER: customer.original_address.district,
       PROVINCE: customer.original_address.province,
 
-      details: customer.extra.products_info.map((product: any) => ({
+      details: customer.extra.products_info.map((product: ProductInfo) => ({
         PRODUCTID: product.product_id,
         ORDER_ID: product.order_id,
         PRODUCTNAME: product.product_name,
@@ -1041,8 +1043,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       })),
     };
 
-    let dataCustomer: any = {};
-    dataCustomer = {
+    let dataCustomer: DataCustomer = {
       ORDERID_ORG: customer.name,
       CHANNEL: customer.extra.channel,
       CUSTOMER_NAME: customer.extra.customer_name,
@@ -1055,7 +1056,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       longitude: customer.longitude,
       validation_type: customer.validation_type,
       replace_type: customer.replace_type,
-      details: customer.extra.products_info.map((product: any) => ({
+      details: customer.extra.products_info.map((product: ProductInfo) => ({
         PRODUCTID: product.product_id,
         ORDER_ID: product.order_id,
         PRODUCTNAME: product.product_name,
@@ -1068,7 +1069,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     modalRef.componentInstance.dataPreOder = dataPreOder;
     modalRef.componentInstance.dataCustomer = dataCustomer;
- 
+
     console.log('customer details previous', customer);
     modalRef.result.then((locationUpdated: Location) => {
       console.log('new value customer details', locationUpdated);
