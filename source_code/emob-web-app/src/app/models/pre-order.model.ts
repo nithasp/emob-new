@@ -41,6 +41,25 @@ export interface CustomerUpdated {
   longitude: number ;
 }
 
+
+export interface ProductInfo {
+  product_id: string;
+  product_name: string;
+  quantity_major: number;
+  quantity_minor: number;
+  order_id: string | null;
+  user_confirm: string | null;
+  date_confirm: string | null;
+}
+
+export interface Extra {
+  order_id: string | null;
+  channel: string | null;
+  customer_name: string;
+  tel: string | null;
+  products_info: ProductInfo[];
+}
+
 export interface Customer {
   delivery: number | string;
   index: number;
@@ -62,6 +81,7 @@ export interface Customer {
   volumn_delivery: number | string;
   volumn_pickup: number;
   zone: string;
+  extra: any;
 }
 
 interface Metrics {
