@@ -171,7 +171,20 @@ export class RunComponent implements OnInit, AfterViewInit {
   public uploadDataGroupCustomers?: DataGroup | null;
   public customersLocationUpdated: Array<CustomerUpdated> = [];
   public countUploadedCustomers: number = 0;
-  public constraintsData!: Constraint;
+  public constraintsData: Constraint = {
+    MaxWorkDuration: 0,
+    maxTravelDistance: 0,
+    deliveryTime: '',
+    limitVehicleCapacity: 0,
+    availableCar: 0,
+    earlyDeliveryTime: '',
+    backToDepotTime: '',
+    maximumWorkDuration: '',
+    numberOfVehicleAvailable: 0,
+    vehicleOrderSizeCapacity: 0,
+    maximumTravelDistance: 0,
+    serviceDurationTime: '',
+  };
   public validateExperiment: Validate | null = null;
 
   //display table and virtualization
@@ -889,6 +902,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     // display popup on click
     this.map.on('singleclick', (event) => this.popupShow(event, element));
     this.map.on('pointermove', (event) => this.pointMove(event));
+
+
+    console.log( this.haveUpdateAfterValidated, this.haveValidated);
   }
 
   private pointMove(evt: any): void {
@@ -1648,5 +1664,9 @@ export class RunComponent implements OnInit, AfterViewInit {
           },
         };
       });
+  }
+
+  log() {
+    console.log( this.haveUpdateAfterValidated, this.haveValidated);
   }
 }
