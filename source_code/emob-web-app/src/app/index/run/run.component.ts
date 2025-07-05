@@ -903,8 +903,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.map.on('singleclick', (event) => this.popupShow(event, element));
     this.map.on('pointermove', (event) => this.pointMove(event));
 
-
-    console.log( this.haveUpdateAfterValidated, this.haveValidated);
+    console.log(this.haveUpdateAfterValidated, this.haveValidated);
   }
 
   private pointMove(evt: any): void {
@@ -1545,8 +1544,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     return this.experiment.run === 'Original';
   }
 
-  onValueChange(newValue: number, property: keyof Constraint): void {
-    this.updateConstraint(this.constraintsData, property, newValue);
+  onValueChange(newValue: number | string, property: keyof Constraint): void {
+    this.updateConstraint(this.constraintsData, property, newValue as any);
     console.log(`${property} changed to:`, newValue);
     this.haveUpdateAfterValidated = true;
   }
@@ -1667,6 +1666,6 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   log() {
-    console.log( this.haveUpdateAfterValidated, this.haveValidated);
+    console.log(this.haveUpdateAfterValidated, this.haveValidated);
   }
 }
