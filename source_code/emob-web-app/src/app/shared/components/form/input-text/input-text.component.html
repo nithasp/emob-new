@@ -1,0 +1,23 @@
+<mat-form-field appearance="outline" class="w-100">
+  <mat-label>{{ placeholder }}</mat-label>
+  <input #inputElement matInput [formControl]="control || internalControl" (input)="onInput($event)"
+    (keypress)="onKeyPress($event)" (blur)="onBlur()" [type]="computedInputType" />
+
+  <ng-container *ngIf="type === 'password'">
+    <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button" class="password-toggle-button">
+      <mat-icon>{{
+        passwordVisible ? "visibility" : "visibility_off"
+        }}</mat-icon>
+    </button>
+  </ng-container>
+
+  <span *ngIf="suffix" matSuffix class="mat-suffix">{{ suffix }}</span>
+  <mat-error *ngIf="
+      (control || internalControl) &&
+      (control || internalControl).invalid &&
+      ((control || internalControl).touched ||
+        (control || internalControl).dirty)
+    " class="text-red-600">
+    {{ getErrorMessage() }}
+  </mat-error>
+</mat-form-field>

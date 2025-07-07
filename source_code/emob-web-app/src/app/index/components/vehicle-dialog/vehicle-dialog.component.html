@@ -1,72 +1,36 @@
 <ng-container *transloco="let t; read: 'vehicle'">
   <div id="vehicle-dialog">
-    <h2 mat-dialog-title>
+    <h2 mat-dialog-title class="p-0">
       {{ isEdit ? t("edit_vehicle") : t("add_vehicle") }}
     </h2>
 
-    <mat-dialog-content [formGroup]="form">
-      <mat-form-field appearance="fill" class="w-full">
-        <mat-label>{{ t("license_plate") }}</mat-label>
-        <input matInput formControlName="licensePlate" />
-        <mat-error *ngIf="form.get('licensePlate')?.hasError('required')">
-          {{ t("license_plate_required") }}
-        </mat-error>
-      </mat-form-field>
+    <form [formGroup]="form">
+      <app-input-text placeholder="licensePlate" [control]="form.controls.licensePlate"
+        [required]="true"></app-input-text>
+      <app-input-text placeholder="vehicleName" [control]="form.controls.vehicleName"
+        [required]="true"></app-input-text>
+      <app-input-text placeholder="vehicleType" [control]="form.controls.vehicleType"
+        [required]="true"></app-input-text>
+      <app-input-text placeholder="vehicleBrand" [control]="form.controls.vehicleBrand"></app-input-text>
+      <app-input-text placeholder="vehicleModel" [control]="form.controls.vehicleModel"
+        [required]="true"></app-input-text>
+      <app-input-text placeholder="vehicleWeight" type="number" [control]="form.controls.vehicleWeight"
+        [required]="true" [suffix]="'t'"></app-input-text>
+      <app-input-text placeholder="maxLoadWeight" type="number" [control]="form.controls.maxLoadWeight"
+        [required]="true"></app-input-text>
+      <app-input-text placeholder="cargoWidth" type="number" [control]="form.controls.cargoWidth" [required]="true"
+        [suffix]="'cm'"></app-input-text>
+      <app-input-text placeholder="cargoLength" type="number" [control]="form.controls.cargoLength" [required]="true"
+        [suffix]="'cm'"></app-input-text>
+      <app-input-text placeholder="cargoHeight" type="number" [control]="form.controls.cargoHeight" [required]="true"
+        [suffix]="'cm'"></app-input-text>
+      <app-input-text placeholder="maxPalletCount" type="number" [decimal]="2" [control]="form.controls.maxPalletCount"
+        [required]="true"></app-input-text>
 
-      <mat-form-field appearance="fill" class="w-full">
-        <mat-label>{{ t("vehicle_name") }}</mat-label>
-        <input matInput formControlName="vehicleName" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" class="w-full">
-        <mat-label>{{ t("vehicle_type") }}</mat-label>
-        <input matInput formControlName="vehicleType" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" class="w-full">
-        <mat-label>{{ t("vehicle_brand") }}</mat-label>
-        <input matInput formControlName="vehicleBrand" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" class="w-full">
-        <mat-label>{{ t("vehicle_model") }}</mat-label>
-        <input matInput formControlName="vehicleModel" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" class="w-full">
-        <mat-label>{{ t("vehicle_weight") }} (t)</mat-label>
-        <input matInput type="number" formControlName="vehicleWeight" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" class="w-full">
-        <mat-label>{{ t("max_load_weight") }}</mat-label>
-        <input matInput type="number" formControlName="maxLoadWeight" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>{{ t("cargo_width") }} (cm)</mat-label>
-        <input matInput type="number" formControlName="cargoWidth" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>{{ t("cargo_length") }} (cm)</mat-label>
-        <input matInput type="number" formControlName="cargoLength" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>{{ t("cargo_height") }} (cm)</mat-label>
-        <input matInput type="number" formControlName="cargoHeight" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" class="w-full">
-        <mat-label>{{ t("max_pallet_count") }}</mat-label>
-        <input matInput type="number" formControlName="maxPalletCount" />
-      </mat-form-field>
-
-      <mat-checkbox formControlName="isActive">
+      <mat-checkbox formControlName="isActive" class="mt-4">
         {{ t("is_active") }}
       </mat-checkbox>
-    </mat-dialog-content>
+    </form>
 
     <mat-dialog-actions align="end">
       <button mat-button (click)="cancel()">
