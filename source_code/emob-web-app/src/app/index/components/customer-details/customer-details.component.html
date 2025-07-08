@@ -10,7 +10,7 @@
 
     <div class="row" *ngIf="dataPreOder !== null">
       <div class="col-md-6">
-        <div class="col-sm-12">
+        <div class="col-sm-12" *ngIf="dataPreOder.ORDERID_ORG">
           <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text">ORDERID ORG</span>
@@ -23,7 +23,8 @@
             />
           </div>
         </div>
-        <div class="col-sm-12">
+
+        <div class="col-sm-12" *ngIf="dataPreOder.CHANNEL">
           <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text">{{ t("channel") }}</span>
@@ -36,7 +37,8 @@
             />
           </div>
         </div>
-        <div class="col-sm-12">
+
+        <div class="col-sm-12" *ngIf="dataPreOder.CUSTOMER_NAME">
           <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text">{{ t("customer_name") }}</span>
@@ -49,7 +51,8 @@
             />
           </div>
         </div>
-        <div class="col-sm-12">
+
+        <div class="col-sm-12" *ngIf="dataPreOder.TEL">
           <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text">{{ "tel" | transloco }}</span>
@@ -62,7 +65,8 @@
             />
           </div>
         </div>
-        <div class="col-sm-12">
+
+        <div class="col-sm-12" *ngIf="dataPreOder.AUMPHER">
           <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text">{{ "district" | transloco }}</span>
@@ -75,7 +79,8 @@
             />
           </div>
         </div>
-        <div class="col-sm-12">
+
+        <div class="col-sm-12" *ngIf="dataPreOder.PROVINCE">
           <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text">{{ "province" | transloco }}</span>
@@ -88,7 +93,8 @@
             />
           </div>
         </div>
-        <div class="col-sm-12">
+
+        <div class="col-sm-12" *ngIf="dataPreOder.ZIPCODE">
           <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text">{{ "zipcode" | transloco }}</span>
@@ -101,7 +107,8 @@
             />
           </div>
         </div>
-        <div class="col-sm-12">
+
+        <div class="col-sm-12" *ngIf="dataPreOder.ADDRESS">
           <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend" style="height: 100px">
               <span
@@ -122,6 +129,7 @@
           </div>
         </div>
       </div>
+
       <div class="col-md-6 mb-2">
         <div
           id="customerProfileMap"
@@ -211,6 +219,7 @@
         </div>
       </div>
     </div>
+
     <h3 mat-dialog-title class="text-center">{{ t("order_details") }}</h3>
     <div mat-dialog-content>
       <div class="modal-body" *ngIf="dataPreOder.details.length > 0">
@@ -238,7 +247,7 @@
                 <td>{{ order.QUANTITYMINOR }}</td>
                 <td>{{ order.UserConfirm }}</td>
                 <td>
-                  {{ order.DateConfirm }}
+                  {{ order.DateConfirm | date : "dd MMM yy h:mm:ss a" }}
                 </td>
               </tr>
             </tbody>
