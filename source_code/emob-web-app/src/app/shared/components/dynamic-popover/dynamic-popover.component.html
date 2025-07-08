@@ -1,0 +1,17 @@
+<ngx-popover [placement]="placement">
+  <ng-content select="[popover-trigger]"></ng-content>
+
+  <ng-template ngx-popover-template>
+    <div class="card p-3">
+      <div class="card-body p-2">
+        <ng-content select="[popover-content]"></ng-content>
+      </div>
+      <div class="popover__controls d-flex justify-content-end mt-2">
+        <button ngx-popover-close class="btn">
+          {{ "close" | transloco }}
+        </button>
+      </div>
+    </div>
+  </ng-template>
+  <ngx-arrow padding="8" />
+</ngx-popover>
