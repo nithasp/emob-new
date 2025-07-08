@@ -99,7 +99,7 @@ export class CustomerDetailsComponent
     });
     this.initIconStyle();
   }
-  
+
   ngAfterViewInit(): void {
     this.initMap();
     this.setLocation(this.dataCustomer, this.location);
@@ -205,7 +205,19 @@ export class CustomerDetailsComponent
       location.setStyle(this.iconStyle.unverify);
       this.locationType = LocationType.Unverify;
     } else {
-      location.setStyle(this.iconStyle.verify);
+      location.setStyle(
+        new Style({
+          image: new Icon({
+            anchor: [0.5, 0.5],
+            anchorOrigin: 'bottom-left',
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'pixels',
+            crossOrigin: 'anonymous',
+            opacity: 0.8,
+            src: `assets/image/position.png`
+          }),
+        })
+      );
     }
 
     this.vectorSource.addFeature(location);
