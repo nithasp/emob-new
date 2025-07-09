@@ -41,6 +41,7 @@ import { ConsumptionDialogComponent } from './components/consumption-dialog/cons
 import { ErrorDialogComponent } from './components/error-dialog/error-dialog.component';
 
 import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
+import { DynamicPopoverComponent } from '../shared/components/dynamic-popover/dynamic-popover.component';
 
 @NgModule({
   declarations: [
@@ -69,6 +70,7 @@ import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
     ParametersDialogComponent,
     ConsumptionDialogComponent,
     ErrorDialogComponent,
+    
   ],
   imports: [
     IndexRoutingModule,
@@ -85,7 +87,8 @@ import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
     NgbTooltipModule,
     OverlayModule,
     DragDropModule,
-    TranslocoModule
+    TranslocoModule,
+    DynamicPopoverComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'index' }],
