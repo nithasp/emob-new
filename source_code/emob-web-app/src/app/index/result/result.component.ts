@@ -427,9 +427,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.featureDepots = geoJson.depots;
     this.featureRoutes = geoJson.routes;
 
-    console.log('geoJson', geoJson);
-    console.log(' this.featureRoutes', this.featureRoutes);
-
     const allFeatures: Feature<Geometry>[] = [];
     geoJson.routes.forEach((item: any, index_: number) => {
       const itemFeatures = new GeoJSON().readFeatures(item, {
@@ -443,13 +440,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
           const lineString = geometry as LineString;
           const coordinates = lineString.getCoordinates();
           const reducedCoordinates = coordinates.filter((_, i) => i % 10 === 0);
-          // console.log(
-          //   index_,
-          //   'Original coordinates:',
-          //   coordinates.length,
-          //   'Reduced coordinates:',
-          //   reducedCoordinates.length
-          // );
+          console.log(
+            index_,
+            'Original coordinates:',
+            coordinates.length,
+            'Reduced coordinates:',
+            reducedCoordinates.length
+          );
           lineString.setCoordinates(reducedCoordinates);
         }
         return feature;
