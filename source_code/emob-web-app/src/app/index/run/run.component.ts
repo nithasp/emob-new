@@ -34,9 +34,12 @@ import {
   Address,
   Customer,
   CustomerUpdated,
+  DataCustomer,
+  DataPreOrder,
   Depot,
   GroupedDataPreOrder,
   PreOrder,
+  ProductInfo,
   ReplaceType,
   ValidationType,
 } from 'src/app/models/pre-order.model';
@@ -1035,9 +1038,52 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (existingIndex !== -1) {
       modalRef.componentInstance.locationType = LocationType.Edit;
     }
-    modalRef.componentInstance.dataPreOder =
-      this.groupedDataPreOrder[customer.name];
-    modalRef.componentInstance.dataCustomer = customer;
+
+    let dataPreOder: DataPreOrder = {
+      ZIPCODE: customer.original_address.postal_code,
+      CUSTOMER_NAME: customer.extra.customer_name,
+      ORDERID_ORG: customer.name,
+      ADDRESS: customer.original_address.address,
+      AUMPHER: customer.original_address.district,
+      PROVINCE: customer.original_address.province,
+
+      details: customer.extra.products_info.map((product: ProductInfo) => ({
+        PRODUCTID: product.product_id,
+        ORDER_ID: product.order_id,
+        PRODUCTNAME: product.product_name,
+        QUANTITYMAIN: product.quantity_major,
+        QUANTITYMINOR: product.quantity_minor,
+        UserConfirm: product.user_confirm,
+        DateConfirm: product.date_confirm,
+      })),
+    };
+
+    let dataCustomer: DataCustomer = {
+      ORDERID_ORG: customer.name,
+      CHANNEL: customer.extra.channel,
+      CUSTOMER_NAME: customer.extra.customer_name,
+      TEL: customer.extra.tel,
+      AUMPHER: customer.original_address.district,
+      PROVINCE: customer.original_address.province,
+      ZIPCODE: customer.original_address.postal_code,
+      ADDRESS: customer.original_address.address,
+      latitude: customer.latitude,
+      longitude: customer.longitude,
+      validation_type: customer.validation_type,
+      replace_type: customer.replace_type,
+      details: customer.extra.products_info.map((product: ProductInfo) => ({
+        PRODUCTID: product.product_id,
+        ORDER_ID: product.order_id,
+        PRODUCTNAME: product.product_name,
+        QUANTITYMAIN: product.quantity_major,
+        QUANTITYMINOR: product.quantity_minor,
+        UserConfirm: product.user_confirm,
+        DateConfirm: product.date_confirm,
+      })),
+    };
+
+    modalRef.componentInstance.dataPreOder = dataPreOder;
+    modalRef.componentInstance.dataCustomer = dataCustomer;
 
     console.log('customer details previous', customer);
     modalRef.result.then((locationUpdated: Location) => {

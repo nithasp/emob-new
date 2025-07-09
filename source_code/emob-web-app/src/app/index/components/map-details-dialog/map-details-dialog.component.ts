@@ -29,6 +29,7 @@ import { Coordinate } from 'ol/coordinate';
   styleUrl: './map-details-dialog.component.scss',
 })
 export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
+  @Input() routeInfo!: any;
   @Input() featureCollection: any;
   @Input() featureDepots: any[] = [];
   private map!: Map;
@@ -36,11 +37,18 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   public popupContent?: any;
   private highlightedFeatureCollectionId: number | null = null;
 
+  public pointDetails: Array<{
+    name: string;
+    weight: number;
+    route_order: number;
+  }> = [];
+
   constructor(private readonly ngbActiveModal: NgbActiveModal) {}
 
   ngOnInit(): void {
-    console.log(this.featureCollection);
+    this.getDepotDetailsPoint();
   }
+
   ngAfterViewInit() {
     setTimeout(() => {
       this.loadAndProcessGeoJSON(this.featureCollection, this.featureDepots);
@@ -251,5 +259,29 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
 
   close(): void {
     this.ngbActiveModal.dismiss(false);
+  }
+
+  getDepotDetailsPoint(): void {
+    const allFeatures = new GeoJSON().readFeatures(this.featureCollection, {
+      dataProjection: 'EPSG:4326',
+      featureProjection: 'EPSG:3857',
+    });
+
+    const pointFeatures = allFeatures.filter(
+      (f) => f.getGeometry()?.getType() === 'Point'
+    );
+
+    this.pointDetails = pointFeatures.map((f) => {
+      const props = f.getProperties();
+      return {
+        route_order: props['route_order'],
+        name: props['name'],
+        weight: props['weight'],
+      };
+    });
+  }
+
+  sortedPointDetails() {
+    return [...this.pointDetails].sort((a, b) => a.route_order - b.route_order);
   }
 }

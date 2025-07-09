@@ -57,7 +57,11 @@ import { MapDetailsDialogComponent } from '../components/map-details-dialog/map-
 import { Workbook } from 'exceljs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExperimentService } from 'src/app/services/experiment.service';
-import { Experiment } from 'src/app/models/experiment.model';
+import {
+  Experiment,
+  NodeSheet,
+  PlanDetail,
+} from 'src/app/models/experiment.model';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import { firstValueFrom, take } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
@@ -68,6 +72,7 @@ import { ConfirmationDialogComponent } from '../components/confirmation-dialog/c
 import { DownloadResultFile } from '../../models/experiment.model';
 import { TranslocoService } from '@jsverse/transloco';
 import { LanguageChangeService } from 'src/app/services/language-change.service';
+import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
 
 @Component({
   selector: 'app-result',
@@ -100,6 +105,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   private highlightedFeatureCollectionId: number | null = null;
   private featureCollections: any[] = [];
   private featureDepots: any[] = [];
+  private featureRoutes: any[] = [];
   public mapAlreadyRendered: boolean = false;
   readonly panelOpenState = signal(false);
 
@@ -162,9 +168,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   // data store
   experiment?: Experiment;
-  isLoading: boolean = true;
-
+  nodeSheetData: NodeSheet[] = [];
+  planDetailData: PlanDetail[] = [];
+  preOrderData: any[] = [];
+  routeInfoDetails: any = null;
   visibleRoutes = new Set<number>();
+
+  isLoading: boolean = true;
 
   constructor(
     private readonly http: HttpClient,
@@ -204,20 +214,25 @@ export class ResultComponent implements OnInit, AfterViewInit {
             this.experiment = { ...response };
             this.expandedElement = [];
             await this.loadReportData(response.fileUrl.outputReportUrl);
+            await this.loadPlanDetailData(
+              this.experiment.fileUrl.outputPlanDetailUrl
+            );
+
+            await this.downloadExcelFromUrlAsJson(response.fileUrl.preOrderUrl);
+
             this.spinner.hide();
             await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
+
             this.dataRouteInfo.filterPredicate =
               this.multiFilterPredicate.bind(this);
 
+            this.checkFilterOverflowTwolinesWhenLanguageChange();
             this.isLoading = false;
           });
       });
-
-    this.checkFilterOverflowTwolinesWhenLanguageChange();
   }
 
   ngAfterViewInit(): void {
-    //this.searchControl.valueChanges.subscribe((v) => this.applyFilter(v));
     setTimeout(() => this.checkOverflow(), 0);
   }
 
@@ -288,6 +303,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
     }
   }
 
+  async loadPlanDetailData(url: string) {
+    const arrayBuffer = await this.fetchDataFromFileUrl(url);
+    await this.fetchAndParseExcel(arrayBuffer, 0, true);
+  }
+
   async loadReportData(url: string) {
     if (!url) {
       console.warn('loadReportData called with null URL, skipping.');
@@ -300,6 +320,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
     await this.fetchAndParseExcel(arrayBuffer, 0);
     await this.fetchAndParseExcel(arrayBuffer, 1);
+    await this.fetchAndParseExcel(arrayBuffer, 3);
   }
   calculateDuration(start: any, end: any): number {
     if (!start || !end) return 0;
@@ -308,69 +329,66 @@ export class ResultComponent implements OnInit, AfterViewInit {
     return endTime - startTime;
   }
 
-  async fetchAndParseExcel(data: any, options: any = 0): Promise<void> {
-    try {
-      const workbook = new Workbook();
-      await workbook.xlsx.load(data);
+  async fetchAndParseExcel(
+    data: ArrayBuffer,
+    sheetIndex: number = 0,
+    isPlanDetail: boolean = false
+  ): Promise<void> {
+    const workbook = new Workbook();
+    await workbook.xlsx.load(data);
+    const worksheet = workbook.worksheets[sheetIndex];
+    if (!worksheet) throw new Error(`Worksheet ${sheetIndex} not found`);
 
-      const worksheet = workbook.worksheets[options];
-      const headers: any[] = [];
-      if (!worksheet) {
-        throw new Error('Worksheet not found');
-      }
-
-      worksheet
-        .getRow(1)
-        .eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
-          headers[colNumber - 1] =
-             cell.value !== null ? String(cell.value) : `column_${colNumber}`;
-        });
-      if (options === 0) this.headersReport = headers;
-
-      worksheet.eachRow((row: any, rowIndex: any) => {
-        if (rowIndex === 1) return;
-        const rowData: any = {};
-        row.eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
-          let cellValue = cell.value;
-          if (cellValue === null) {
-            cellValue = '';
-          }
-          switch (typeof cellValue) {
-            case 'string':
-              cellValue = cellValue.trim();
-              break;
-            case 'number':
-              cellValue = Number(cellValue);
-              break;
-            case 'boolean':
-              cellValue = cellValue ? 'Yes' : 'No';
-              break;
-            default:
-              cellValue = String(cellValue);
-          }
-          rowData[headers[colNumber - 1]] = cellValue;
-        });
-        console.log(rowData);
-        if (options === 0) this.dataSourceReport.push(rowData);
-        if (options === 1) {
-          rowData['customers_distance'] = rowData['customers_distance']
-            .split('➠')
-            .map(Number);
-          rowData['route'] = JSON.parse(rowData['route']) as number[];
-          rowData['zone'] = JSON.parse(
-            rowData['zone'].replace(/'/g, '"')
-          ) as string[];
-          console.log(rowData);
-
-          this.dataRouteInfo.data.push(rowData);
-          this.dataRouteInfo.sort = this.sort;
-          this.dataRouteInfo.paginator = this.paginator;
-          this.dataRouteInfo.filterPredicate = this.createFilter();
-        }
-      });
-    } catch (error) {
-      console.error('Error fetching or parsing file:', error);
+    const headers: string[] = [];
+    worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell, col) => {
+      headers[col - 1] =
+        cell.value != null ? String(cell.value).trim() : `Column ${col}`;
+    });
+    if (!isPlanDetail && sheetIndex === 0) {
+      this.headersReport = headers;
     }
+
+    worksheet.eachRow((row, rowIndex) => {
+      if (rowIndex === 1) return;
+      const rowData: Record<string, any> = {};
+      row.eachCell({ includeEmpty: true }, (cell, col) => {
+        let v = cell.value;
+        if (v == null) v = '';
+        else if (typeof v === 'string') v = v.trim();
+        else if (typeof v === 'boolean') v = v ? 'Yes' : 'No';
+        else if (typeof v === 'number') v = Number(v);
+        else v = String(v);
+        rowData[headers[col - 1]] = v;
+      });
+
+      if (isPlanDetail) {
+        this.planDetailData.push(rowData as PlanDetail);
+      } else {
+        switch (sheetIndex) {
+          case 0:
+            this.dataSourceReport.push(rowData);
+            break;
+          case 1:
+            rowData['customers_distance'] = (
+              rowData['customers_distance'] as string
+            )
+              .split('➠')
+              .map(Number);
+            rowData['route'] = JSON.parse(rowData['route'] as string);
+            rowData['zone'] = JSON.parse(
+              (rowData['zone'] as string).replace(/'/g, '"')
+            );
+            this.dataRouteInfo.data.push(rowData as any);
+            this.dataRouteInfo.sort = this.sort;
+            this.dataRouteInfo.paginator = this.paginator;
+            this.dataRouteInfo.filterPredicate = this.createFilter();
+            break;
+          case 3:
+            this.nodeSheetData.push(rowData as NodeSheet);
+            break;
+        }
+      }
+    });
   }
 
   createFilter(): (data: RouteInfo, filter: string) => boolean {
@@ -407,7 +425,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       })
     );
     this.featureDepots = geoJson.depots;
-    console.log(geoJson);
+    this.featureRoutes = geoJson.routes;
 
     const allFeatures: Feature<Geometry>[] = [];
     geoJson.routes.forEach((item: any, index_: number) => {
@@ -692,6 +710,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     });
     modalRef.componentInstance.featureCollection = featureCollection;
     modalRef.componentInstance.featureDepots = featureDepots;
+    modalRef.componentInstance.routeInfo = this.routeInfoDetails;
   }
 
   styleFunction(feature: FeatureLike): Style | Style[] {
@@ -939,6 +958,10 @@ export class ResultComponent implements OnInit, AfterViewInit {
   openRouteDetails(routeIndex: number): void {
     let depotStartId: number | null = null;
     let depotEndId: number | null = null;
+
+    this.routeInfoDetails = this.dataRouteInfo.data.find(
+      (r) => r.route_index === routeIndex
+    );
 
     const collection = this.featureCollections.find((collection: any) => {
       return collection.features.some((feature: any) => {
@@ -1367,5 +1390,147 @@ export class ResultComponent implements OnInit, AfterViewInit {
       this.applyFilter();
       setTimeout(() => this.checkOverflow(), 0);
     });
+  }
+
+  handleDistance(distance: number) {
+    if (distance) {
+      const matchedItem = this.nodeSheetData.find(
+        (item) => item.node_index === distance
+      );
+
+      const matchedOrderId = this.planDetailData.find(
+        (item) => item.ORDERID_ORG === matchedItem?.node_name
+      );
+
+      const matchedPreOrderData = this.preOrderData.find(
+        (item) => item.ORDERID === matchedItem?.node_name
+      );
+
+      const matchedFC = this.featureRoutes.find((fc) =>
+        fc.features.some(
+          (feature: any) => feature.properties.node_index === distance
+        )
+      );
+
+      let planDetails = null;
+      const refactormatchedPreOrderData = {
+        ...matchedPreOrderData,
+        validation_type: matchedItem?.validation_type,
+        replace_type: matchedItem?.replace_type,
+        PROVINCE: matchedPreOrderData.PROVICE || '',
+      };
+
+      planDetails = {
+        ...refactormatchedPreOrderData,
+        details: [refactormatchedPreOrderData],
+      };
+      const matchedFeatureRoutes = {
+        ...matchedFC,
+        features: matchedFC.features.filter(
+          (feature: any) => feature.properties.node_index === distance
+        ),
+      };
+
+      if (matchedFC) {
+        const { type, properties, geometry } = matchedFeatureRoutes.features[0];
+
+        planDetails = {
+          ORDERID_ORG: properties.name,
+          CHANNEL: properties.extra.channel,
+          CUSTOMER_NAME: properties.extra.customer_name,
+          TEL: properties.extra.tel,
+          AUMPHER: properties.original_address.district,
+          PROVINCE: properties.original_address.province,
+          ZIPCODE: properties.original_address.postal_code,
+          ADDRESS: properties.original_address.address,
+          latitude: geometry.coordinates[1],
+          longitude: geometry.coordinates[0],
+
+          details: properties.extra.products_info.map((product: any) => ({
+            PRODUCTID: product.product_id,
+            ORDER_ID: product.order_id,
+            PRODUCTNAME: product.product_name,
+            QUANTITYMAIN: product.quantity_major,
+            QUANTITYMINOR: product.quantity_minor,
+            UserConfirm: product.user_confirm,
+            DateConfirm: product.date_confirm,
+          })),
+        };
+      } else {
+        planDetails = {
+          ...refactormatchedPreOrderData,
+          details: [refactormatchedPreOrderData],
+        };
+      }
+
+      const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
+        centered: true,
+        size: 'xl',
+        animation: true,
+        backdrop: 'static',
+        keyboard: false,
+        beforeDismiss: () => {
+          return false;
+        },
+      });
+
+      modalRef.componentInstance.dataPreOder = planDetails;
+      modalRef.componentInstance.dataCustomer = planDetails;
+      modalRef.componentInstance.isGeolocationDisplay = false;
+    }
+  }
+
+  splitLatLng(order: Record<string, any>): Record<string, any> {
+    if (typeof order['LatLng'] === 'string') {
+      const [latStr, lngStr] = order['LatLng'].split(',');
+      order['latitude'] = parseFloat(latStr.trim());
+      order['longitude'] = parseFloat(lngStr.trim());
+    }
+    return order;
+  }
+
+  async downloadExcelFromUrlAsJson(
+    location: string
+  ): Promise<Array<{ [key: string]: any }>> {
+    try {
+      const arrayBuffer = await this.fetchDataFromFileUrl(location);
+      const workbook = new Workbook();
+      await workbook.xlsx.load(arrayBuffer);
+
+      const worksheet =
+        workbook.getWorksheet('PreOrder') || workbook.worksheets[0];
+      if (!worksheet) {
+        this.toastr.warning('Worksheet "PreOrder" not found');
+        return [];
+      }
+
+      // build headers
+      const headers: string[] = [];
+      worksheet.getRow(1).eachCell((cell, colNumber) => {
+        headers[colNumber] = cell.text.trim();
+      });
+
+      // parse rows
+      const result: Array<Record<string, any>> = [];
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return;
+        const obj: Record<string, any> = {};
+        row.eachCell((cell, colNumber) => {
+          const key = headers[colNumber];
+          if (key) obj[key] = cell.value;
+        });
+        result.push(obj);
+      });
+
+      const transformed = result.map((r) => this.splitLatLng(r));
+
+      this.preOrderData = transformed;
+      console.log('this.preOrderData', this.preOrderData);
+      return transformed;
+    } catch (err) {
+      console.error('downloadExcelFromUrlAsJson failed', err);
+      this.toastr.error('Failed to fetch or parse PreOrder file');
+      return [];
+    }
   }
 }
