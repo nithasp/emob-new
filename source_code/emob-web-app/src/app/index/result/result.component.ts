@@ -1396,8 +1396,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   handleDistance(distance: number) {
-    console.log('test', distance);
-
     if (distance) {
       const matchedItem = this.nodeSheetData.find(
         (item) => item.node_index === distance
@@ -1440,7 +1438,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
         const { type, properties, geometry } = matchedFeatureRoutes.features[0];
 
         planDetails = {
-          //...refactormatchedPreOrderData,
           ORDERID_ORG: properties.name,
           CHANNEL: properties.extra.channel,
           CUSTOMER_NAME: properties.extra.customer_name,
@@ -1480,24 +1477,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
         },
       });
 
-      console.log('planDetails', planDetails);
-
       modalRef.componentInstance.dataPreOder = planDetails;
       modalRef.componentInstance.dataCustomer = planDetails;
       modalRef.componentInstance.isGeolocationDisplay = false;
-
-      console.log('matchedFC', matchedFC);
-
-      console.log('this.planDetailData', this.planDetailData);
-      console.log('this.nodeSheetData', this.nodeSheetData);
-      console.log('this.preOrderData', this.preOrderData);
-      console.log('distance', distance);
-      console.log('matchedItem', matchedItem);
-      console.log('matchedOrderId', matchedOrderId);
-      console.log('matchedPreOrderData', matchedPreOrderData);
-
-      console.log('matchedFeatureRoutes', matchedFeatureRoutes);
-      console.log(matchedFeatureRoutes.features[0].properties.node_index); // === distance
     }
   }
 
@@ -1553,13 +1535,5 @@ export class ResultComponent implements OnInit, AfterViewInit {
       this.toastr.error('Failed to fetch or parse PreOrder file');
       return [];
     }
-  }
-
-  displayInfo() {
-    console.log('this.planDetailData:', this.planDetailData);
-    console.log('this.dataSourceReport:', this.dataSourceReport);
-    console.log('this.dataRouteInfo.data:', this.dataRouteInfo.data);
-    console.log('this.nodeSheetData:', this.nodeSheetData);
-    console.log('this.featureDepots:', this.featureDepots);
   }
 }
