@@ -47,14 +47,6 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.getDepotDetailsPoint();
-
-    console.log(this.featureCollection);
-    this.loadAndProcessGeoJSON(this.featureCollection, this.featureDepots);
-
-    console.log('featureDepots', this.featureDepots);
-    console.log('featureCollection', this.featureCollection);
-
-    console.log('routeInfo', this.routeInfo);
   }
 
   ngAfterViewInit() {
