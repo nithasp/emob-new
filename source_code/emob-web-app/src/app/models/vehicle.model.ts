@@ -7,20 +7,36 @@ export interface Vehicle {
   MaxWorkDuration: number;
 }
 
-export interface myVehicles {
+export interface MyVehicles {
   companyName: string;
+  vehicleIds: string;
   licensePlate: string;
-  vehicleName: string;
-  vehicleType: string;
-  vehicleBrand: string | null;
-  vehicleModel: string;
-  vehicleWeight: number;
-  maxLoadWeight: number;
-  cargoWidth: number;
-  cargoLength: number;
-  cargoHeight: number;
-  maxPalletCount: number;
+  startDepotId: string;
+  endDepotId: string;
+  vehicleTypeId: string;
+  vehicleType: VehicleType;
   isActive: boolean;
+  createdAt: string;
+  modifiedAt: string;
+}
+
+export interface VehicleType {
+  vehicleTypeId: string;
+  name: string;
+  width: number;
+  height: number;
+  length: number;
+  access: string[];
+  capacity: number;
+  volume: number;
+  twEarly: number;
+  twLate: number;
+  maxDistance: number;
+  maxDuration: number;
+  fixedCost: number;
+  unitDistanceCost: number;
+  unitDurationCost: number;
+  vehicleProfileType: string;
   createdAt: string;
   modifiedAt: string;
 }

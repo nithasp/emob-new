@@ -4,7 +4,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import { VehicleDialogComponent } from '../../components/vehicle-dialog/vehicle-dialog.component';
 import { VehicleService } from 'src/app/services/vehicle.service';
-import { myVehicles } from 'src/app/models/vehicle.model';
+import { MyVehicles } from 'src/app/models/vehicle.model';
 
 @Component({
   selector: 'app-vehicle',
@@ -28,7 +28,7 @@ export class VehicleComponent implements OnInit {
     'actions',
   ];
 
-  dataSource: myVehicles[] = [];
+  dataSource: MyVehicles[] = [];
 
   constructor(
     private dialog: MatDialog,
@@ -39,10 +39,12 @@ export class VehicleComponent implements OnInit {
   ngOnInit(): void {
     this.vehicleService.getMyVehicles().subscribe((vehicles) => {
       this.dataSource = vehicles;
+
+      console.log('this.dataSource', this.dataSource);
     });
   }
 
-  openVehicleModal(vehicle?: myVehicles, index?: number) {
+  openVehicleModal(vehicle?: MyVehicles, index?: number) {
     const dialogRef = this.dialog.open(VehicleDialogComponent, {
       width: '600px',
       data: { vehicle: vehicle ? { ...vehicle } : null },
@@ -67,7 +69,7 @@ export class VehicleComponent implements OnInit {
     const vehicle = this.dataSource[index];
     const modalRef = this.modalSvc.open(ConfirmationDialogComponent);
     modalRef.componentInstance.title = 'Delete Vehicle';
-    modalRef.componentInstance.question = `Delete "${vehicle.vehicleName}"?`;
+    modalRef.componentInstance.question = `Delete "${vehicle.vehicleType.name}"?`;
     modalRef.componentInstance.message = 'This action cannot be undone.';
     modalRef.componentInstance.acceptButton = 'Delete';
 

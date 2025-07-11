@@ -6,7 +6,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { myVehicles } from 'src/app/models/vehicle.model';
+import { MyVehicles } from 'src/app/models/vehicle.model';
 
 interface VehicleFormControls {
   licensePlate: FormControl<string | null>;
@@ -35,7 +35,7 @@ export class VehicleDialogComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<VehicleDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { vehicle: myVehicles | null }
+    @Inject(MAT_DIALOG_DATA) public data: { vehicle: any | null }
   ) { }
 
   ngOnInit() {
@@ -94,7 +94,7 @@ export class VehicleDialogComponent implements OnInit {
     const values = this.form.value;
     const payload: any = this.data.vehicle
       ? { ...this.data.vehicle, ...values }
-      : ({ ...values } as myVehicles);
+      : ({ ...values } as any);
 
     this.dialogRef.close({ vehicle: payload });
   }
