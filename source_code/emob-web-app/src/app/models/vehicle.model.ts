@@ -26,7 +26,7 @@ export interface VehicleType {
   width: number;
   height: number;
   length: number;
-  access: string[];
+  access: AccessType[];
   capacity: number;
   volume: number;
   twEarly: number;
@@ -39,4 +39,19 @@ export interface VehicleType {
   vehicleProfileType: string;
   createdAt: string;
   modifiedAt: string;
+}
+
+export enum AccessType {
+  FRONT = "FRONT",
+  REAR = "REAR",
+  SIDE = "SIDE",
+  TOP = "TOP",
+}
+
+export interface UpdateVehicleInput {
+  licensePlate?: string;
+  startDepotId?: string;
+  endDepotId?: string;
+  vehicleTypeId?: string;
+  isActive?: boolean;
 }

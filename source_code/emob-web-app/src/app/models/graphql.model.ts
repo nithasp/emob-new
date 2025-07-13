@@ -1,6 +1,10 @@
 import { ActualLocation, Configuration } from './configuration.model';
 import { Constraint } from './constraint.model';
-import { DownloadResultFile, Experiment, ExperimentState } from './experiment.model';
+import {
+  DownloadResultFile,
+  Experiment,
+  ExperimentState,
+} from './experiment.model';
 import { MyVehicles, VehicleType } from './vehicle.model';
 
 export interface Response {
@@ -31,6 +35,14 @@ export interface Response {
   myVehicles: [MyVehicles];
   myVehicleType: VehicleType;
   myVehicleTypes: [VehicleType];
+
+  createVehicle: MyVehicles;
+  updateVehicle: MyVehicles;
+  deleteVehicle: boolean;
+  softDeleteVehicle: MyVehicles;
+  createVehicleType: VehicleType;
+  updateVehicleType: VehicleType;
+  deleteVehicleType: boolean;
 }
 
 export interface Error {
@@ -38,4 +50,3 @@ export interface Error {
   timestamp: string;
   statusCode: number;
 }
-
