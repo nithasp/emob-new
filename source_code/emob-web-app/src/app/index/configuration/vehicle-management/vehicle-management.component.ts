@@ -6,5 +6,5 @@ import { Component } from '@angular/core';
   styleUrl: './vehicle-management.component.scss',
 })
 export class VehicleManagementComponent {
-  activeNavId = 1;
+  activeNavId = 2;
 }

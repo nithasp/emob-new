@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 
-import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslocoModule } from '@jsverse/transloco';
 import { MaterialModule } from 'src/app/material.module';
 import { VehicleManagementRoutingModule } from './vehicle-management-routing.module';
@@ -23,6 +23,7 @@ import { VehicleComponent } from './vehicle/vehicle.component';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    NgbModule,
     NgbNavModule,
     TranslocoModule,
     MaterialModule,

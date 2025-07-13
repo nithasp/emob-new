@@ -1,1 +1,91 @@
-<p>vehicle-type works!</p>
+<div id="vehicle-type">
+  <div class="mb-4 pb-3 text-end">
+    <button mat-raised-button class="bg-custom-primary">New</button>
+  </div>
+
+  <div *ngIf="allVehicleTypes.length > 0; else noVehicleTypes" class="vehicle-type-list">
+    <div
+      *ngFor="let vehicleType of paginatedVehicleTypes"
+      class="vehicle-type-item item-card card mb-3"
+    >
+      <div class="item-details p-3">
+        <h2 class="card-title">
+          <strong>{{ vehicleType.name }}</strong>
+        </h2>
+        <hr />
+        <div class="item-details-info">
+          <div class="row">
+            <div class="col-md-6">
+              <p>
+                <strong>Dimensions (W x H x L):</strong>
+                {{ vehicleType.width }}m x {{ vehicleType.height }}m x
+                {{ vehicleType.length }}m
+              </p>
+              <p>
+                <strong>Capacity:</strong>
+                {{ vehicleType.capacity | number }} kg
+              </p>
+              <p>
+                <strong>Volume:</strong> {{ vehicleType.volume | number }} m³
+              </p>
+              <p>
+                <strong>Access Points:</strong>
+                {{ vehicleType.access.join(", ") }}
+              </p>
+            </div>
+            <div class="col-md-6">
+              <p>
+                <strong>Max Distance:</strong>
+                {{ vehicleType.maxDistance | number }} km
+              </p>
+              <p>
+                <strong>Max Duration:</strong>
+                {{ vehicleType.maxDuration | number }} min
+              </p>
+              <p>
+                <strong>Fixed Cost:</strong>
+                {{
+                  vehicleType.fixedCost | currency : "USD" : "symbol" : "1.2-2"
+                }}
+              </p>
+              <p>
+                <strong>Unit Distance Cost:</strong>
+                {{
+                  vehicleType.unitDistanceCost
+                    | currency : "USD" : "symbol" : "1.2-2"
+                }}
+                / km
+              </p>
+            </div>
+          </div>
+          <div
+            class="item-actions card-footer bg-transparent border-top-0 text-end"
+          >
+            <button mat-raised-button class="bg-custom-success">Details</button>
+            <button mat-raised-button class="bg-custom-primary">แก้ไข</button>
+            <button mat-raised-button class="bg-custom-danger">ลบ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+      <ngb-pagination
+        [(page)]="page"
+        [pageSize]="pageSize"
+        [collectionSize]="collectionSize"
+        (pageChange)="refreshVehicleTypes()"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+      >
+      </ngb-pagination>
+    </div>
+  </div>
+
+  <ng-template #noVehicleTypes>
+    <div class="text-center mt-5">
+      <p>No vehicle types found.</p>
+    </div>
+  </ng-template>
+</div>
