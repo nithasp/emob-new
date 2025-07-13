@@ -27,6 +27,9 @@
       <app-input-text placeholder="maxPalletCount" type="number" [decimal]="2" [control]="form.controls.maxPalletCount"
         [required]="true"></app-input-text>
 
+      <app-input-select placeholder="Country" [options]="countryOptions">
+      </app-input-select>
+
       <mat-checkbox formControlName="isActive" class="mt-4">
         {{ t("is_active") }}
       </mat-checkbox>

@@ -32,6 +32,12 @@ export class VehicleDialogComponent implements OnInit {
   form!: FormGroup<VehicleFormControls>;
   isEdit = false;
 
+    countryOptions = [
+    { id: 1,code: 'TH', value: 'Thailand' },
+    { id: 2,code: 'US', value: 'United States' },
+    { id: 3,code: 'UK', value: 'United Kingdom' }
+  ];
+
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<VehicleDialogComponent>,
