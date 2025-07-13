@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
-import { VehicleDialogComponent } from '../../components/vehicle-dialog/vehicle-dialog.component';
+import { ConfirmationDialogComponent } from '../../../components/confirmation-dialog/confirmation-dialog.component';
+import { VehicleDialogComponent } from '../../../components/vehicle-dialog/vehicle-dialog.component';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import { MyVehicles } from 'src/app/models/vehicle.model';
 

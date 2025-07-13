@@ -11,8 +11,6 @@ import { NgxSpinnerModule } from 'ngx-spinner';
 import { ConfigurationComponent } from './configuration.component';
 import { UploadComponent } from './upload/upload.component';
 import { UploadFileComponent } from './upload-file/upload-file.component';
-import { VehicleComponent } from './vehicle/vehicle.component';
-import { VehicleDialogComponent } from '../components/vehicle-dialog/vehicle-dialog.component';
 import { InputTextComponent } from 'src/app/shared/components/form/input-text/input-text.component';
 import { InputSelectComponent } from 'src/app/shared/components/form/input-select/input-select.component';
 
