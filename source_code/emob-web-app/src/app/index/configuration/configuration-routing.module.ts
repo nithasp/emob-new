@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ConfigurationComponent } from './configuration.component';
 import { UploadComponent } from './upload/upload.component';
-import { VehicleComponent } from './vehicle/vehicle.component';
 
 const routes: Routes = [
   {
@@ -10,7 +9,7 @@ const routes: Routes = [
     component: ConfigurationComponent,
     children: [
       { path: 'upload', component: UploadComponent },
-      { path: 'vehicle', component: VehicleComponent },
+      { path: 'vehicle-management', loadChildren: () => import('./vehicle-management/vehicle-management.module').then(m => m.VehicleManagementModule) },
       { path: '', redirectTo: 'upload', pathMatch: 'full' },
     ],
   },

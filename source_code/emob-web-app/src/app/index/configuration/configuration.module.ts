@@ -20,9 +20,7 @@ import { InputSelectComponent } from 'src/app/shared/components/form/input-selec
   declarations: [
     ConfigurationComponent,
     UploadComponent,
-    UploadFileComponent,
-    VehicleComponent,
-    VehicleDialogComponent,
+    UploadFileComponent
   ],
   imports: [
     CommonModule,
@@ -33,7 +31,6 @@ import { InputSelectComponent } from 'src/app/shared/components/form/input-selec
     MaterialModule,
     FormsModule,
     NgxSpinnerModule,
-    FormsModule,
     ReactiveFormsModule,
     MaterialModule,
     NgbModule,
