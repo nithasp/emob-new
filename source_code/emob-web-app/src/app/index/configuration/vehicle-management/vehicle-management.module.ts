@@ -11,6 +11,7 @@ import { VehicleDialogComponent } from '../../components/vehicle-dialog/vehicle-
 import { VehicleManagementComponent } from './vehicle-management.component';
 import { VehicleTypeComponent } from './vehicle-type/vehicle-type.component';
 import { VehicleComponent } from './vehicle/vehicle.component';
+import { VehicleTypeDialogComponent } from './dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,7 @@ import { VehicleComponent } from './vehicle/vehicle.component';
     VehicleComponent,
     VehicleTypeComponent,
     VehicleDialogComponent,
+    VehicleTypeDialogComponent
   ],
   imports: [
     CommonModule,

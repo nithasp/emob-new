@@ -1,6 +1,6 @@
 <div id="vehicle-type">
-  <div class="mb-4 pb-3 text-end">
-    <button mat-raised-button class="bg-custom-primary">New</button>
+  <div class="my-4 text-end">
+    <button mat-raised-button class="bg-custom-primary" (click)="openVehicleTypeModal()">New</button>
   </div>
 
   <div *ngIf="allVehicleTypes.length > 0; else noVehicleTypes" class="vehicle-type-list">

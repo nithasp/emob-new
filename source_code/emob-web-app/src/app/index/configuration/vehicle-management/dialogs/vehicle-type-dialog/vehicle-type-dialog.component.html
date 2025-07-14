@@ -1,0 +1,128 @@
+<div id="vehicle-type-dialog" class="modal-container">
+  <h2 class="modal-title">Add Vehicle Type</h2>
+
+  <div class="form-grid">
+    <div class="form-section">
+      <div class="input-container">
+        <input
+          class="text-input text-input-filled"
+          placeholder="Name"
+          type="text"
+        />
+      </div>
+
+      <div class="input-container">
+        <h3 class="radio-group-label">Access Points</h3>
+
+        <div class="radio-grid">
+          <div class="radio-item">
+            <input
+              class="radio-button"
+              id="right"
+              name="access_point"
+              type="radio"
+            />
+
+            <label class="radio-label" for="right">Right</label>
+          </div>
+
+          <div class="radio-item">
+            <input
+              class="radio-button"
+              id="left"
+              name="access_point"
+              type="radio"
+            />
+
+            <label class="radio-label" for="left">Left</label>
+          </div>
+
+          <div class="radio-item">
+            <input
+              class="radio-button"
+              id="top"
+              name="access_point"
+              type="radio"
+            />
+
+            <label class="radio-label" for="top">Top</label>
+          </div>
+
+          <div class="radio-item">
+            <input
+              class="radio-button"
+              id="rear"
+              name="access_point"
+              type="radio"
+            />
+
+            <label class="radio-label" for="rear">Rear</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-container">
+        <input class="text-input" placeholder="Capacity" type="text" />
+      </div>
+
+      <div class="input-container">
+        <input class="text-input" placeholder="Start Time" type="text" />
+      </div>
+
+      <div>
+        <input class="text-input" placeholder="End Time" type="text" />
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="input-container">
+        <label class="dimension-label"
+          >Dimensions (Width x Height x Length)</label
+        >
+
+        <div class="dimension-grid">
+          <input class="text-input" placeholder="Width" type="text" />
+
+          <input class="text-input" placeholder="Height" type="text" />
+
+          <input class="text-input" placeholder="Length" type="text" />
+        </div>
+      </div>
+
+      <div class="select-container">
+        <select class="select-input">
+          <option>Vehicle Profile Type</option>
+        </select>
+
+        <div class="select-arrow-container">
+          <span class="material-icons select-arrow-up">arrow_drop_up</span>
+
+          <span class="material-icons select-arrow-down">arrow_drop_down</span>
+        </div>
+      </div>
+
+      <div class="input-grid-cols-2">
+        <input class="text-input" placeholder="Max Distance" type="text" />
+
+        <input class="text-input" placeholder="Max Duration" type="text" />
+      </div>
+
+      <div class="input-grid-cols-2">
+        <input class="text-input" placeholder="Cost Per Distance" type="text" />
+
+        <input
+          class="text-input"
+          placeholder="Cost Per Time Unit"
+          type="text"
+        />
+      </div>
+
+      <div class="">
+        <input class="text-input" placeholder="Fixed Cost" type="text" />
+      </div>
+    </div>
+  </div>
+  <div class="button-container">
+    <button class="save-button">Save</button>
+  </div>
+</div>

@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { VehicleType } from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
+import { VehicleTypeDialogComponent } from '../dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
 
 @Component({
   selector: 'app-vehicle-type',
@@ -16,7 +18,7 @@ export class VehicleTypeComponent implements OnInit {
   allVehicleTypes: any[] = [];
   paginatedVehicleTypes: any[] = [];
 
-  constructor(private spinner: NgxSpinnerService, private vehicleService: VehicleService) {}
+  constructor(private spinner: NgxSpinnerService, private dialog: MatDialog, private vehicleService: VehicleService) {}
 
   ngOnInit(): void {
     this.getMyVehicleTypes();
@@ -666,4 +668,18 @@ export class VehicleTypeComponent implements OnInit {
       (this.page - 1) * this.pageSize + this.pageSize
     );
   }
+
+    openVehicleTypeModal() {
+      const dialogRef = this.dialog.open(VehicleTypeDialogComponent, {
+        width: '800px'
+      });
+  
+      dialogRef.afterClosed().subscribe((result) => {
+        if (!result?.vehicle) {
+          return;
+        }
+
+      });
+    }
+  
 }
