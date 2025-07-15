@@ -122,7 +122,8 @@ export class VehicleService {
               modifiedAt
             }
           }
-        `,
+        `, 
+        fetchPolicy: 'network-only' 
       })
       .pipe(
         map((result) => result.data.myVehicleTypes),
@@ -151,11 +152,11 @@ export class VehicleService {
       );
   }
 
-  createVehicle(input: UpdateVehicleInput): Observable<MyVehicles> {
+  createVehicle(input: any): Observable<MyVehicles> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
-          mutation createVehicle($input: CreateVehicleInput!) {
+          mutation createVehicle($input: VehicleTypeInput!) {
             createVehicle(input: $input) {
               companyName
               vehicleIds
@@ -199,7 +200,7 @@ export class VehicleService {
 
   updateVehicle(
     vehicleIds: string,
-    input: UpdateVehicleInput
+    input: any
   ): Observable<MyVehicles> {
     return this.apollo
       .mutate<Response>({
@@ -315,7 +316,7 @@ export class VehicleService {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
-          mutation createVehicleType($input: CreateVehicleTypeInput!) {
+          mutation createVehicleType($input: VehicleTypeInput!) {
             createVehicleType(input: $input) {
               vehicleTypeId
               name

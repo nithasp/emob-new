@@ -12,6 +12,8 @@ import { VehicleManagementComponent } from './vehicle-management.component';
 import { VehicleTypeComponent } from './vehicle-type/vehicle-type.component';
 import { VehicleComponent } from './vehicle/vehicle.component';
 import { VehicleTypeDialogComponent } from './dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
+import { InputTextComponent } from 'src/app/shared/components/form/input-text/input-text.component';
+import { InputSelectComponent } from 'src/app/shared/components/form/input-select/input-select.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +32,8 @@ import { VehicleTypeDialogComponent } from './dialogs/vehicle-type-dialog/vehicl
     TranslocoModule,
     MaterialModule,
     VehicleManagementRoutingModule,
+    InputTextComponent,
+    InputSelectComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

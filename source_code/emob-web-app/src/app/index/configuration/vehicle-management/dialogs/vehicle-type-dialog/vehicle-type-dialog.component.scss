@@ -1,3 +1,9 @@
+::ng-deep {
+  .mdc-label {
+    margin: 0;
+  }
+}
+
 .modal-container {
   background-color: #ffffff;
   border-radius: 0.5rem;
@@ -22,7 +28,7 @@
 
 @media (min-width: 768px) {
   .form-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 0.5fr 1fr;
   }
 }
 
@@ -32,7 +38,6 @@
   flex-direction: column;
   justify-content: space-between;
 }
-
 
 .input-container {
   margin-bottom: 1rem;
@@ -176,4 +181,23 @@
 .save-button:focus {
   outline: none;
   box-shadow: 0 0 0 2px #a5b4fc, 0 0 0 2px #6366f1;
+}
+
+.access-points {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.dimension-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.input-grid-cols-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
 }

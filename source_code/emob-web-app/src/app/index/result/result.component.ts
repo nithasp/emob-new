@@ -303,9 +303,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
   calculateDuration(start: any, end: any): number {
     if (!start || !end) return 0;
-    const startTime = new Date(start).getTime();
-    const endTime = new Date(end).getTime();
-    return endTime - startTime;
+    const twEarly = new Date(start).getTime();
+    const twLate = new Date(end).getTime();
+    return twLate - twEarly;
   }
 
   async fetchAndParseExcel(data: any, options: any = 0): Promise<void> {
@@ -323,7 +323,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         .getRow(1)
         .eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
           headers[colNumber - 1] =
-             cell.value !== null ? String(cell.value) : `column_${colNumber}`;
+            cell.value !== null ? String(cell.value) : `column_${colNumber}`;
         });
       if (options === 0) this.headersReport = headers;
 

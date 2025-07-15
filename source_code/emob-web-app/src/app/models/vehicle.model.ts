@@ -44,10 +44,11 @@ export interface VehicleType {
 export enum AccessType {
   FRONT = "FRONT",
   REAR = "REAR",
-  SIDE = "SIDE",
+  LEFT = "LEFT",
+  RIGHT = "RIGHT",
   TOP = "TOP",
+  BOTTOM = "BOTTOM",
 }
-
 export interface UpdateVehicleInput {
   licensePlate?: string;
   startDepotId?: string;

@@ -6,182 +6,82 @@
     <div class="form-grid">
       <div class="form-section">
         <div class="input-container">
-          <input
-            formControlName="name"
-            class="text-input text-input-filled"
-            placeholder="Name"
-            type="text"
-          />
+          <app-input-text placeholder="Name" [control]="form.controls.name" [required]="true"></app-input-text>
         </div>
 
         <div class="input-container">
-          <h3 class="radio-group-label">Access Points</h3>
-
-          <div class="radio-grid">
-            <div class="radio-item">
-              <input
-                class="radio-button"
-                id="right"
-                value="right"
-                name="access"
-                type="radio"
-                formControlName="access"
-              />
-              <label class="radio-label" for="right">Right</label>
-            </div>
-            <div class="radio-item">
-              <input
-                class="radio-button"
-                id="left"
-                value="left"
-                name="access"
-                type="radio"
-                formControlName="access"
-              />
-              <label class="radio-label" for="left">Left</label>
-            </div>
-            <div class="radio-item">
-              <input
-                class="radio-button"
-                id="top"
-                value="top"
-                name="access"
-                type="radio"
-                formControlName="access"
-              />
-              <label class="radio-label" for="top">Top</label>
-            </div>
-            <div class="radio-item">
-              <input
-                class="radio-button"
-                id="rear"
-                value="rear"
-                name="access"
-                type="radio"
-                formControlName="access"
-              />
-              <label class="radio-label" for="rear">Rear</label>
+          <h3 class="checkbox-group-label">Access Points</h3>
+          <div class="checkbox-grid access-points">
+            <div class="checkbox-item" *ngFor="let option of accessPointOptions">
+              <mat-checkbox [checked]="isAccessPointChecked(option)" (change)="onAccessPointChange($event, option)">
+                {{ option | titlecase }}
+              </mat-checkbox>
             </div>
           </div>
+          <mat-error *ngIf="
+              form.get('access')?.hasError('minlength') &&
+              form.get('access')?.touched
+            ">
+            Please select at least one access point.
+          </mat-error>
         </div>
 
         <div class="input-container">
-          <input
-            formControlName="capacity"
-            class="text-input"
-            placeholder="Capacity"
-            type="number"
-          />
+          <app-input-text placeholder="Capacity" type="number" [control]="form.controls.capacity"></app-input-text>
         </div>
 
         <div class="input-container">
-          <input
-            formControlName="startTime"
-            class="text-input"
-            placeholder="Start Time (e.g., 08:00)"
-            type="text"
-          />
+          <app-input-text placeholder="Start Time (e.g., 08:00)" [control]="form.controls.twEarly"></app-input-text>
         </div>
 
         <div>
-          <input
-            formControlName="endTime"
-            class="text-input"
-            placeholder="End Time (e.g., 17:00)"
-            type="text"
-          />
+          <app-input-text placeholder="End Time (e.g., 17:00)" [control]="form.controls.twLate"></app-input-text>
         </div>
       </div>
 
       <div class="form-section">
         <div class="input-container">
-          <label class="dimension-label"
-            >Dimensions (Width x Height x Length)</label
-          >
+          <label class="dimension-label">Dimensions (Width x Height x Length)</label>
           <div class="dimension-grid">
-            <input
-              formControlName="width"
-              class="text-input"
-              placeholder="Width"
-              type="number"
-            />
-            <input
-              formControlName="height"
-              class="text-input"
-              placeholder="Height"
-              type="number"
-            />
-            <input
-              formControlName="length"
-              class="text-input"
-              placeholder="Length"
-              type="number"
-            />
+            <app-input-text placeholder="Width" type="number" [control]="form.controls.width"
+              [suffix]="'m'"></app-input-text>
+            <app-input-text placeholder="Height" type="number" [control]="form.controls.height"
+              [suffix]="'m'"></app-input-text>
+            <app-input-text placeholder="Length" type="number" [control]="form.controls.length"
+              [suffix]="'m'"></app-input-text>
           </div>
         </div>
 
         <div class="select-container">
-          <select formControlName="vehicleProfileType" class="select-input">
-            <option [ngValue]="null" disabled>Vehicle Profile Type</option>
-            <option
-              *ngFor="let option of vehicleProfileTypeOptions"
-              [value]="option.id"
-            >
-              {{ option.value }}
-            </option>
-          </select>
-          <div class="select-arrow-container">
-            <span class="material-icons select-arrow-up">arrow_drop_up</span>
-            <span class="material-icons select-arrow-down"
-              >arrow_drop_down</span
-            >
-          </div>
+          <app-input-select placeholder="Vehicle Profile Type" [options]="vehicleProfileTypeOptions"
+            [control]="form.controls.vehicleProfileType">
+          </app-input-select>
         </div>
 
         <div class="input-grid-cols-2">
-          <input
-            formControlName="maxDistance"
-            class="text-input"
-            placeholder="Max Distance"
-            type="number"
-          />
-          <input
-            formControlName="maxDuration"
-            class="text-input"
-            placeholder="Max Duration"
-            type="number"
-          />
+          <app-input-text placeholder="Max Distance" type="number" [control]="form.controls.maxDistance"
+            [suffix]="'km'"></app-input-text>
+          <app-input-text placeholder="Max Duration" type="number" [control]="form.controls.maxDuration"
+            [suffix]="'hr'"></app-input-text>
         </div>
 
         <div class="input-grid-cols-2">
-          <input
-            formControlName="costPerDistance"
-            class="text-input"
-            placeholder="Cost Per Distance"
-            type="number"
-          />
-          <input
-            formControlName="costPerTimeUnit"
-            class="text-input"
-            placeholder="Cost Per Time Unit"
-            type="number"
-          />
+          <app-input-text placeholder="Cost Per Distance" type="number" [control]="form.controls.unitDistanceCost"
+            [decimal]="2"></app-input-text>
+          <app-input-text placeholder="Cost Per Time Unit" type="number" [control]="form.controls.unitDurationCost"
+            [decimal]="2"></app-input-text>
         </div>
 
         <div class="">
-          <input
-            formControlName="fixedCost"
-            class="text-input"
-            placeholder="Fixed Cost"
-            type="number"
-          />
+          <app-input-text placeholder="Fixed Cost" type="number" [control]="form.controls.fixedCost"
+            [decimal]="2"></app-input-text>
         </div>
       </div>
     </div>
   </form>
 
   <mat-dialog-actions align="end">
-    <button mat-button (click)="cancel()">cancel</button>
-    <button mat-raised-button color="primary" (click)="save()">save</button>
+    <button mat-raised-button class="bg-custom-danger" (click)="cancel()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="save()">Save</button>
   </mat-dialog-actions>
 </div>
