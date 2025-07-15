@@ -5,6 +5,9 @@ import { VehicleType } from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import { VehicleTypeDialogComponent } from '../dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
 import { ToastrService } from 'ngx-toastr';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-vehicle-type',
@@ -16,13 +19,14 @@ export class VehicleTypeComponent implements OnInit {
   pageSize = 5;
   collectionSize = 0;
 
-  allVehicleTypes: any[] = [];
-  paginatedVehicleTypes: any[] = [];
+  allVehicleTypes: VehicleType[] = [];
+  paginatedVehicleTypes: VehicleType[] = [];
 
   constructor(
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
     private dialog: MatDialog,
+    private ngbModal: NgbModal,
     private vehicleService: VehicleService
   ) {}
 
@@ -40,6 +44,8 @@ export class VehicleTypeComponent implements OnInit {
         this.spinner.hide();
       },
       error: (error) => {
+        this.spinner.hide();
+        this.toastr.error('Error fetching vehicle types', 'Error');
         console.error('Error fetching vehicle types:', error);
       },
     });
@@ -52,16 +58,50 @@ export class VehicleTypeComponent implements OnInit {
     );
   }
 
-  openVehicleTypeModal(): void {
+  openVehicleTypeModal(vehicleType?: VehicleType): void {
     const dialogRef = this.dialog.open(VehicleTypeDialogComponent, {
       width: '800px',
+      data: { vehicleType },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      if (result && result.vehicleType) {
-        console.log('New vehicle type created, refreshing list...');
-        this.toastr.success( 'Vehicle type created successfully', 'Success');
+      if (result?.refresh) {
+        const message = vehicleType
+          ? 'Vehicle type updated successfully'
+          : 'Vehicle type created successfully';
+        this.toastr.success(message, 'Success');
         this.getMyVehicleTypes();
+      }
+    });
+  }
+
+  deleteVehicleType(vehicleType: VehicleType): void {
+    const modalRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      centered: true,
+    });
+    modalRef.componentInstance.title = 'Delete Vehicle Type';
+    modalRef.componentInstance.message = `Are you sure you want to delete "${vehicleType.name}"? This action cannot be undone.`;
+
+    modalRef.result.then((confirmed) => {
+      if (confirmed) {
+        this.spinner.show();
+        this.vehicleService
+          .deleteVehicleType(vehicleType.vehicleTypeId)
+          .pipe(
+            finalize(() => {
+              this.spinner.hide();
+            })
+          )
+          .subscribe({
+            next: () => {
+              this.toastr.success('Vehicle type deleted successfully', 'Success');
+              this.getMyVehicleTypes();
+            },
+            error: (err) => {
+              this.toastr.error('Failed to delete vehicle type', 'Error');
+              console.error(err);
+            },
+          });
       }
     });
   }

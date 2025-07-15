@@ -58,7 +58,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<VehicleTypeDialogComponent>,
     @Inject(MAT_DIALOG_DATA)
-    private data: { vehicleType: Partial<VehicleType> | null },
+    public data: { vehicleType: VehicleType | null },
     private ngbModal: NgbModal,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService
@@ -67,6 +67,18 @@ export class VehicleTypeDialogComponent implements OnInit {
   ngOnInit() {
     this.isEdit = !!this.data?.vehicleType;
     this.initForm();
+    if (this.isEdit && this.data.vehicleType) {
+      const vehicleType = {
+        ...this.data.vehicleType,
+        twEarly: this.data.vehicleType.twEarly !== undefined && this.data.vehicleType.twEarly !== null
+          ? String(this.data.vehicleType.twEarly)
+          : '',
+        twLate: this.data.vehicleType.twLate !== undefined && this.data.vehicleType.twLate !== null
+          ? String(this.data.vehicleType.twLate)
+          : '',
+      };
+      this.form.patchValue(vehicleType);
+    }
   }
 
   initForm() {
@@ -133,15 +145,13 @@ export class VehicleTypeDialogComponent implements OnInit {
       centered: true,
       animation: true,
     });
-    dialogRef.componentInstance.title = 'Do you want to create a vehicle type?';
-    dialogRef.componentInstance.message = `Do you want to create a vehicle type?`;
+    const action = this.isEdit ? 'update' : 'create';
+    dialogRef.componentInstance.title = `Confirm ${action}`;
+    dialogRef.componentInstance.message = `Are you sure you want to ${action} this vehicle type?`;
 
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
-        console.log('confirmed');
         this.handleSubmit();
-      } else {
-        console.log('not confirmed');
       }
     });
   }
@@ -150,43 +160,35 @@ export class VehicleTypeDialogComponent implements OnInit {
     this.spinner.show();
     const formValue = this.form.getRawValue();
 
-    const numberFields: (keyof VehicleTypeFormControls)[] = [
-      'capacity',
-      'width',
-      'height',
-      'length',
-      'maxDistance',
-      'maxDuration',
-      'unitDistanceCost',
-      'unitDurationCost',
-      'fixedCost',
-      'twEarly',
-      'twLate',
-    ];
-
-    const sanitizedFormValue = Object.fromEntries(
-      Object.entries(formValue).map(([key, value]) => {
-        if (numberFields.includes(key as keyof VehicleTypeFormControls)) {
-          return [key, value !== null ? Number(value) : undefined];
+    // Sanitize payload: remove null/empty values and ensure correct types
+    const payload: Partial<VehicleType> = Object.entries(formValue).reduce(
+      (acc, [key, value]) => {
+        if (value !== null && value !== '') {
+          (acc as any)[key] =
+            typeof value === 'string' && !isNaN(Number(value)) && key !== 'name' && key !== 'vehicleProfileType'
+              ? Number(value)
+              : value;
         }
-        return [key, value === null ? undefined : value];
-      })
+        return acc;
+      },
+      {}
     );
 
-    const payload: Partial<VehicleType> = {
-      ...sanitizedFormValue,
-      access: formValue.access || [],
-    };
+    const request$ = this.isEdit
+      ? this.vehicleService.updateVehicleType(
+          this.data.vehicleType!.vehicleTypeId,
+          payload as VehicleType
+        )
+      : this.vehicleService.createVehicleType(payload as VehicleType);
 
-    this.vehicleService
-      .createVehicleType(payload as VehicleType)
+    request$
       .pipe(finalize(() => this.spinner.hide()))
       .subscribe({
         next: (res) => {
-          this.dialogRef.close({ vehicleType: res });
+          this.dialogRef.close({ refresh: true, vehicleType: res });
         },
         error: (err) => {
-          console.error('Failed to create vehicle type:', err);
+          console.error(`Failed to ${this.isEdit ? 'update' : 'create'} vehicle type:`, err);
         },
       });
   }

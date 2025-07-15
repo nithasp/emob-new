@@ -62,8 +62,8 @@
             class="item-actions card-footer bg-transparent border-top-0 text-end"
           >
             <button mat-raised-button class="bg-custom-success">Details</button>
-            <button mat-raised-button class="bg-custom-primary">Edit</button>
-            <button mat-raised-button class="bg-custom-danger">Delete</button>
+            <button mat-raised-button class="bg-custom-primary" (click)="openVehicleTypeModal(vehicleType)">Edit</button>
+            <button mat-raised-button class="bg-custom-danger" (click)="deleteVehicleType(vehicleType)">Delete</button>
           </div>
         </div>
       </div>

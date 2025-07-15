@@ -356,7 +356,7 @@ export class VehicleService {
         mutation: gql`
           mutation updateVehicleType(
             $vehicleTypeId: String!
-            $input: UpdateVehicleTypeInput!
+            $input: VehicleTypeUpdateInput!
           ) {
             updateVehicleType(vehicleTypeId: $vehicleTypeId, input: $input) {
               vehicleTypeId
