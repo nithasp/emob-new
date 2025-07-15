@@ -1,128 +1,187 @@
 <div id="vehicle-type-dialog" class="modal-container">
-  <h2 class="modal-title">Add Vehicle Type</h2>
+  <h1 (click)="log()">log</h1>
+  <h2 class="modal-title">{{ isEdit ? "Edit" : "Add" }} Vehicle Type</h2>
 
-  <div class="form-grid">
-    <div class="form-section">
-      <div class="input-container">
-        <input
-          class="text-input text-input-filled"
-          placeholder="Name"
-          type="text"
-        />
-      </div>
+  <form [formGroup]="form">
+    <div class="form-grid">
+      <div class="form-section">
+        <div class="input-container">
+          <input
+            formControlName="name"
+            class="text-input text-input-filled"
+            placeholder="Name"
+            type="text"
+          />
+        </div>
 
-      <div class="input-container">
-        <h3 class="radio-group-label">Access Points</h3>
+        <div class="input-container">
+          <h3 class="radio-group-label">Access Points</h3>
 
-        <div class="radio-grid">
-          <div class="radio-item">
-            <input
-              class="radio-button"
-              id="right"
-              name="access_point"
-              type="radio"
-            />
-
-            <label class="radio-label" for="right">Right</label>
+          <div class="radio-grid">
+            <div class="radio-item">
+              <input
+                class="radio-button"
+                id="right"
+                value="right"
+                name="access"
+                type="radio"
+                formControlName="access"
+              />
+              <label class="radio-label" for="right">Right</label>
+            </div>
+            <div class="radio-item">
+              <input
+                class="radio-button"
+                id="left"
+                value="left"
+                name="access"
+                type="radio"
+                formControlName="access"
+              />
+              <label class="radio-label" for="left">Left</label>
+            </div>
+            <div class="radio-item">
+              <input
+                class="radio-button"
+                id="top"
+                value="top"
+                name="access"
+                type="radio"
+                formControlName="access"
+              />
+              <label class="radio-label" for="top">Top</label>
+            </div>
+            <div class="radio-item">
+              <input
+                class="radio-button"
+                id="rear"
+                value="rear"
+                name="access"
+                type="radio"
+                formControlName="access"
+              />
+              <label class="radio-label" for="rear">Rear</label>
+            </div>
           </div>
+        </div>
 
-          <div class="radio-item">
-            <input
-              class="radio-button"
-              id="left"
-              name="access_point"
-              type="radio"
-            />
+        <div class="input-container">
+          <input
+            formControlName="capacity"
+            class="text-input"
+            placeholder="Capacity"
+            type="number"
+          />
+        </div>
 
-            <label class="radio-label" for="left">Left</label>
-          </div>
+        <div class="input-container">
+          <input
+            formControlName="startTime"
+            class="text-input"
+            placeholder="Start Time (e.g., 08:00)"
+            type="text"
+          />
+        </div>
 
-          <div class="radio-item">
-            <input
-              class="radio-button"
-              id="top"
-              name="access_point"
-              type="radio"
-            />
-
-            <label class="radio-label" for="top">Top</label>
-          </div>
-
-          <div class="radio-item">
-            <input
-              class="radio-button"
-              id="rear"
-              name="access_point"
-              type="radio"
-            />
-
-            <label class="radio-label" for="rear">Rear</label>
-          </div>
+        <div>
+          <input
+            formControlName="endTime"
+            class="text-input"
+            placeholder="End Time (e.g., 17:00)"
+            type="text"
+          />
         </div>
       </div>
 
-      <div class="input-container">
-        <input class="text-input" placeholder="Capacity" type="text" />
-      </div>
+      <div class="form-section">
+        <div class="input-container">
+          <label class="dimension-label"
+            >Dimensions (Width x Height x Length)</label
+          >
+          <div class="dimension-grid">
+            <input
+              formControlName="width"
+              class="text-input"
+              placeholder="Width"
+              type="number"
+            />
+            <input
+              formControlName="height"
+              class="text-input"
+              placeholder="Height"
+              type="number"
+            />
+            <input
+              formControlName="length"
+              class="text-input"
+              placeholder="Length"
+              type="number"
+            />
+          </div>
+        </div>
 
-      <div class="input-container">
-        <input class="text-input" placeholder="Start Time" type="text" />
-      </div>
+        <div class="select-container">
+          <select formControlName="vehicleProfileType" class="select-input">
+            <option [ngValue]="null" disabled>Vehicle Profile Type</option>
+            <option
+              *ngFor="let option of vehicleProfileTypeOptions"
+              [value]="option.id"
+            >
+              {{ option.value }}
+            </option>
+          </select>
+          <div class="select-arrow-container">
+            <span class="material-icons select-arrow-up">arrow_drop_up</span>
+            <span class="material-icons select-arrow-down"
+              >arrow_drop_down</span
+            >
+          </div>
+        </div>
 
-      <div>
-        <input class="text-input" placeholder="End Time" type="text" />
+        <div class="input-grid-cols-2">
+          <input
+            formControlName="maxDistance"
+            class="text-input"
+            placeholder="Max Distance"
+            type="number"
+          />
+          <input
+            formControlName="maxDuration"
+            class="text-input"
+            placeholder="Max Duration"
+            type="number"
+          />
+        </div>
+
+        <div class="input-grid-cols-2">
+          <input
+            formControlName="costPerDistance"
+            class="text-input"
+            placeholder="Cost Per Distance"
+            type="number"
+          />
+          <input
+            formControlName="costPerTimeUnit"
+            class="text-input"
+            placeholder="Cost Per Time Unit"
+            type="number"
+          />
+        </div>
+
+        <div class="">
+          <input
+            formControlName="fixedCost"
+            class="text-input"
+            placeholder="Fixed Cost"
+            type="number"
+          />
+        </div>
       </div>
     </div>
+  </form>
 
-    <div class="form-section">
-      <div class="input-container">
-        <label class="dimension-label"
-          >Dimensions (Width x Height x Length)</label
-        >
-
-        <div class="dimension-grid">
-          <input class="text-input" placeholder="Width" type="text" />
-
-          <input class="text-input" placeholder="Height" type="text" />
-
-          <input class="text-input" placeholder="Length" type="text" />
-        </div>
-      </div>
-
-      <div class="select-container">
-        <select class="select-input">
-          <option>Vehicle Profile Type</option>
-        </select>
-
-        <div class="select-arrow-container">
-          <span class="material-icons select-arrow-up">arrow_drop_up</span>
-
-          <span class="material-icons select-arrow-down">arrow_drop_down</span>
-        </div>
-      </div>
-
-      <div class="input-grid-cols-2">
-        <input class="text-input" placeholder="Max Distance" type="text" />
-
-        <input class="text-input" placeholder="Max Duration" type="text" />
-      </div>
-
-      <div class="input-grid-cols-2">
-        <input class="text-input" placeholder="Cost Per Distance" type="text" />
-
-        <input
-          class="text-input"
-          placeholder="Cost Per Time Unit"
-          type="text"
-        />
-      </div>
-
-      <div class="">
-        <input class="text-input" placeholder="Fixed Cost" type="text" />
-      </div>
-    </div>
-  </div>
-  <div class="button-container">
-    <button class="save-button">Save</button>
-  </div>
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">cancel</button>
+    <button mat-raised-button color="primary" (click)="save()">save</button>
+  </mat-dialog-actions>
 </div>
