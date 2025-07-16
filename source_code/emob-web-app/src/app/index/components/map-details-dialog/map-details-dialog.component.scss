@@ -53,3 +53,51 @@
 .depot-popup {
   bottom: 10px;
 }
+
+.modal-body {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 0.8rem;
+}
+
+.depot-details {
+  height: 800px;
+  overflow-y: auto;
+
+  .route-detail {
+    background-color: #ffffff;
+    padding: 1.5rem;
+
+    h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem !important;
+      color: #333333;
+    }
+
+    .info {
+      align-items: center;
+
+      strong {
+        width: 130px;
+        color: #555555;
+      }
+
+      span {
+        color: #212529;
+        font-weight: 500;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .info {
+        flex-wrap: wrap;
+
+        strong {
+          width: 100%;
+          margin-bottom: 0.25rem;
+        }
+      }
+    }
+  }
+}
