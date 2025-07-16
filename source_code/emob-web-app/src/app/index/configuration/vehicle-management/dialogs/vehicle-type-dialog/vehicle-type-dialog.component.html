@@ -1,87 +1,150 @@
 <div id="vehicle-type-dialog" class="modal-container">
   <h1 (click)="log()">log</h1>
-  <h2 class="modal-title">{{ isEdit ? "Edit" : "Add" }} Vehicle Type</h2>
 
   <form [formGroup]="form">
     <div class="form-grid">
       <div class="form-section">
         <div class="input-container">
-          <app-input-text placeholder="Name" [control]="form.controls.name" [required]="true"></app-input-text>
+          <h2 class="modal-title">
+            {{ isEdit ? "Edit" : "Add" }} Vehicle Type
+          </h2>
+          <app-input-text
+            placeholder="Name"
+            [control]="form.controls.name"
+            [required]="true"
+          ></app-input-text>
         </div>
 
         <div class="input-container">
           <h3 class="checkbox-group-label">Access Points</h3>
           <div class="checkbox-grid access-points">
-            <div class="checkbox-item" *ngFor="let option of accessPointOptions">
-              <mat-checkbox [checked]="isAccessPointChecked(option)" (change)="onAccessPointChange($event, option)">
+            <div
+              class="checkbox-item"
+              *ngFor="let option of accessPointOptions"
+            >
+              <mat-checkbox
+                [checked]="isAccessPointChecked(option)"
+                (change)="onAccessPointChange($event, option)"
+              >
                 {{ option | titlecase }}
               </mat-checkbox>
             </div>
           </div>
-          <mat-error *ngIf="
+          <mat-error
+            *ngIf="
               form.get('access')?.hasError('minlength') &&
               form.get('access')?.touched
-            ">
+            "
+          >
             Please select at least one access point.
           </mat-error>
         </div>
 
         <div class="input-container">
-          <app-input-text placeholder="Capacity" type="number" [control]="form.controls.capacity"></app-input-text>
+          <app-input-text
+            placeholder="Capacity"
+            type="number"
+            [control]="form.controls.capacity"
+          ></app-input-text>
         </div>
 
         <div class="input-container">
-          <app-input-text placeholder="Start Time (e.g., 08:00)" [control]="form.controls.twEarly"></app-input-text>
+          <app-input-text
+            placeholder="Start Time (e.g., 08:00)"
+            [control]="form.controls.twEarly"
+          ></app-input-text>
         </div>
 
         <div>
-          <app-input-text placeholder="End Time (e.g., 17:00)" [control]="form.controls.twLate"></app-input-text>
+          <app-input-text
+            placeholder="End Time (e.g., 17:00)"
+            [control]="form.controls.twLate"
+          ></app-input-text>
         </div>
       </div>
 
       <div class="form-section">
         <div class="input-container">
-          <label class="dimension-label">Dimensions (Width x Height x Length)</label>
+          <label class="dimension-label"
+            >Dimensions (Width x Height x Length)</label
+          >
           <div class="dimension-grid">
-            <app-input-text placeholder="Width" type="number" [control]="form.controls.width"
-              [suffix]="'m'"></app-input-text>
-            <app-input-text placeholder="Height" type="number" [control]="form.controls.height"
-              [suffix]="'m'"></app-input-text>
-            <app-input-text placeholder="Length" type="number" [control]="form.controls.length"
-              [suffix]="'m'"></app-input-text>
+            <app-input-text
+              placeholder="Width"
+              type="number"
+              [control]="form.controls.width"
+              [suffix]="'m'"
+            ></app-input-text>
+            <app-input-text
+              placeholder="Height"
+              type="number"
+              [control]="form.controls.height"
+              [suffix]="'m'"
+            ></app-input-text>
+            <app-input-text
+              placeholder="Length"
+              type="number"
+              [control]="form.controls.length"
+              [suffix]="'m'"
+            ></app-input-text>
           </div>
         </div>
 
         <div class="select-container">
-          <app-input-select placeholder="Vehicle Profile Type" [options]="vehicleProfileTypeOptions"
-            [control]="form.controls.vehicleProfileType">
+          <app-input-select
+            placeholder="Vehicle Profile Type"
+            [options]="vehicleProfileTypeOptions"
+            [control]="form.controls.vehicleProfileType"
+          >
           </app-input-select>
         </div>
 
         <div class="input-grid-cols-2">
-          <app-input-text placeholder="Max Distance" type="number" [control]="form.controls.maxDistance"
-            [suffix]="'km'"></app-input-text>
-          <app-input-text placeholder="Max Duration" type="number" [control]="form.controls.maxDuration"
-            [suffix]="'hr'"></app-input-text>
+          <app-input-text
+            placeholder="Max Distance"
+            type="number"
+            [control]="form.controls.maxDistance"
+            [suffix]="'km'"
+          ></app-input-text>
+          <app-input-text
+            placeholder="Max Duration"
+            type="number"
+            [control]="form.controls.maxDuration"
+            [suffix]="'hr'"
+          ></app-input-text>
         </div>
 
         <div class="input-grid-cols-2">
-          <app-input-text placeholder="Cost Per Distance" type="number" [control]="form.controls.unitDistanceCost"
-            [decimal]="2"></app-input-text>
-          <app-input-text placeholder="Cost Per Time Unit" type="number" [control]="form.controls.unitDurationCost"
-            [decimal]="2"></app-input-text>
+          <app-input-text
+            placeholder="Cost Per Distance"
+            type="number"
+            [control]="form.controls.unitDistanceCost"
+            [decimal]="2"
+          ></app-input-text>
+          <app-input-text
+            placeholder="Cost Per Time Unit"
+            type="number"
+            [control]="form.controls.unitDurationCost"
+            [decimal]="2"
+          ></app-input-text>
         </div>
 
         <div class="">
-          <app-input-text placeholder="Fixed Cost" type="number" [control]="form.controls.fixedCost"
-            [decimal]="2"></app-input-text>
+          <app-input-text
+            placeholder="Fixed Cost"
+            type="number"
+            [control]="form.controls.fixedCost"
+            [decimal]="2"
+          ></app-input-text>
         </div>
       </div>
     </div>
   </form>
-
+ 
   <mat-dialog-actions align="end">
-    <button mat-raised-button class="bg-custom-danger" (click)="cancel()">Cancel</button>
+    <button mat-raised-button class="bg-custom-danger" (click)="cancel()">
+      Cancel
+    </button>
     <button mat-raised-button color="primary" (click)="save()">Save</button>
   </mat-dialog-actions>
 </div>

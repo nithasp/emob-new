@@ -3,6 +3,7 @@
   <div class="my-4 text-end">
     <button mat-raised-button class="bg-custom-primary" (click)="openVehicleTypeModal()">New</button>
   </div>
+  
   <div *ngIf="allVehicleTypes.length > 0; else noVehicleTypes" class="vehicle-type-list">
     <div
       *ngFor="let vehicleType of paginatedVehicleTypes"
@@ -30,7 +31,7 @@
               </p>
               <p>
                 <strong>Access Points:</strong>
-                {{ vehicleType.access?.join(", ") }}
+                {{ vehicleType.access.join(", ") }}
               </p>
             </div>
             <div class="col-md-6">
