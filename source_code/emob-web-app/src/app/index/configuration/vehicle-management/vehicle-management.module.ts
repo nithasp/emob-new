@@ -12,7 +12,7 @@ import { VehicleManagementComponent } from './vehicle-management.component';
 import { VehicleTypeComponent } from './vehicle-type/vehicle-type.component';
 import { VehicleComponent } from './vehicle/vehicle.component';
 import { VehicleTypeDialogComponent } from './dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
-import { InputTextComponent } from 'src/app/shared/components/form/input-text/input-text.component';
+import { InputFieldComponent } from 'src/app/shared/components/form/input-field/input-field.component';
 import { InputSelectComponent } from 'src/app/shared/components/form/input-select/input-select.component';
 import { DynamicPopoverComponent } from 'src/app/shared/components/dynamic-popover/dynamic-popover.component';
 
@@ -33,7 +33,7 @@ import { DynamicPopoverComponent } from 'src/app/shared/components/dynamic-popov
     TranslocoModule,
     MaterialModule,
     VehicleManagementRoutingModule,
-    InputTextComponent,
+    InputFieldComponent,
     InputSelectComponent,
     DynamicPopoverComponent
   ],

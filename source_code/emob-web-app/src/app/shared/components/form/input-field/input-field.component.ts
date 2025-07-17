@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-input-text',
+  selector: 'app-input-field',
   standalone: true,
   imports: [
     CommonModule,
@@ -19,10 +19,10 @@ import { Subscription } from 'rxjs';
     MatIconModule,
     ReactiveFormsModule
   ],
-  templateUrl: './input-text.component.html',
-  styleUrls: ['./input-text.component.scss'],
+  templateUrl: './input-field.component.html',
+  styleUrls: ['./input-field.component.scss'],
 })
-export class InputTextComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges {
+export class InputFieldComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges {
   @Input() placeholder: string = 'Enter value';
   @Input() type: string = 'text';
   @Input() disabled: boolean = false;
@@ -39,18 +39,12 @@ export class InputTextComponent implements OnInit, OnDestroy, AfterViewInit, OnC
 
   private controlSubscription?: Subscription;
 
-  
   passwordVisible: boolean = false;
-
-  
-  
   internalControl: FormControl = new FormControl('');
-
 
   constructor(private renderer: Renderer2) { }
 
   ngOnInit(): void {
-    
     if (!this.control) {
       this.control = this.internalControl;
     }
@@ -98,7 +92,6 @@ export class InputTextComponent implements OnInit, OnDestroy, AfterViewInit, OnC
     this.controlSubscription?.unsubscribe();
   }
 
-  
   get computedInputType(): string {
     if (this.type === 'thaiCitizenId' || this.type === 'number') {
       return 'text';
@@ -143,7 +136,6 @@ export class InputTextComponent implements OnInit, OnDestroy, AfterViewInit, OnC
       }
       event.preventDefault();
     }
-    
   }
 
   onInput(event: Event): void {
@@ -164,7 +156,6 @@ export class InputTextComponent implements OnInit, OnDestroy, AfterViewInit, OnC
         this.value = formattedValue;
       }
     }
-    
   }
 
   onBlur(): void {
@@ -183,7 +174,6 @@ export class InputTextComponent implements OnInit, OnDestroy, AfterViewInit, OnC
           this.control.setValue(formattedValue, { emitEvent: false });
         }
       }
-      
     }
   }
 
@@ -233,8 +223,7 @@ export class InputTextComponent implements OnInit, OnDestroy, AfterViewInit, OnC
     return 'Invalid input';
   }
 
-  
   togglePasswordVisibility(): void {
     this.passwordVisible = !this.passwordVisible;
   }
-}
+} 

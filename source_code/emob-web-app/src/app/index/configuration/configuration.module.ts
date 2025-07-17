@@ -11,7 +11,7 @@ import { NgxSpinnerModule } from 'ngx-spinner';
 import { ConfigurationComponent } from './configuration.component';
 import { UploadComponent } from './upload/upload.component';
 import { UploadFileComponent } from './upload-file/upload-file.component';
-import { InputTextComponent } from 'src/app/shared/components/form/input-text/input-text.component';
+import { InputFieldComponent } from 'src/app/shared/components/form/input-field/input-field.component';
 import { InputSelectComponent } from 'src/app/shared/components/form/input-select/input-select.component';
 
 @NgModule({
@@ -32,7 +32,7 @@ import { InputSelectComponent } from 'src/app/shared/components/form/input-selec
     ReactiveFormsModule,
     MaterialModule,
     NgbModule,
-    InputTextComponent,
+    InputFieldComponent,
     InputSelectComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

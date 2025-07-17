@@ -212,7 +212,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     );
 
     console.log('payload:', payload);
-    return;
+    //return;
 
     const request$ = this.isEdit
       ? this.vehicleService.updateVehicleType(

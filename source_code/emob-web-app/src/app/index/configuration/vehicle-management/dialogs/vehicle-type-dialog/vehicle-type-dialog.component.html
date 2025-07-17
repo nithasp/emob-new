@@ -8,12 +8,12 @@
           <h2 class="modal-title">
             {{ isEdit ? "Edit" : "Add" }} Vehicle Type
           </h2>
-          <app-input-text
+          <app-input-field
             placeholder="Name"
             [control]="form.controls.name"
             [required]="true"
             [disabled]="isView"
-          ></app-input-text>
+          ></app-input-field>
         </div>
 
         <div class="input-container">
@@ -43,22 +43,22 @@
         </div>
 
         <div class="input-container">
-          <app-input-text
+          <app-input-field
             placeholder="Capacity"
             type="number"
             [control]="form.controls.capacity"
             [disabled]="isView"
-          ></app-input-text>
+          ></app-input-field>
         </div>
 
         <div class="input-container">
           <app-dynamic-popover [placement]="'bottom-start'">
-            <app-input-text
+            <app-input-field
               popover-trigger
               placeholder="Start Time"
               [control]="form.controls.twEarly"
               [disabled]="isView"
-            ></app-input-text>
+            ></app-input-field>
 
             <div popover-content>
               <div class="card-body p-2">
@@ -75,12 +75,12 @@
 
         <div>
           <app-dynamic-popover [placement]="'bottom-start'">
-            <app-input-text
+            <app-input-field
               popover-trigger
               placeholder="End Time"
               [control]="form.controls.twLate"
               [disabled]="isView"
-            ></app-input-text>
+            ></app-input-field>
 
             <div popover-content>
               <div class="card-body p-2">
@@ -102,27 +102,27 @@
             >Dimensions (Width x Height x Length)</label
           >
           <div class="dimension-grid">
-            <app-input-text
+            <app-input-field
               placeholder="Width"
               type="number"
               [control]="form.controls.width"
               [suffix]="'m'"
               [disabled]="isView"
-            ></app-input-text>
-            <app-input-text
+            ></app-input-field>
+            <app-input-field
               placeholder="Height"
               type="number"
               [control]="form.controls.height"
               [suffix]="'m'"
               [disabled]="isView"
-            ></app-input-text>
-            <app-input-text
+            ></app-input-field>
+            <app-input-field
               placeholder="Length"
               type="number"
               [control]="form.controls.length"
               [suffix]="'m'"
               [disabled]="isView"
-            ></app-input-text>
+            ></app-input-field>
           </div>
         </div>
 
@@ -137,47 +137,47 @@
         </div>
 
         <div class="input-grid-cols-2">
-          <app-input-text
+          <app-input-field
             placeholder="Max Distance"
             type="number"
             [control]="form.controls.maxDistance"
             [suffix]="'km'"
             [disabled]="isView"
-          ></app-input-text>
-          <app-input-text
+          ></app-input-field>
+          <app-input-field
             placeholder="Max Duration"
             type="number"
             [control]="form.controls.maxDuration"
             [suffix]="'hr'"
             [disabled]="isView"
-          ></app-input-text>
+          ></app-input-field>
         </div>
 
         <div class="input-grid-cols-2">
-          <app-input-text
+          <app-input-field
             placeholder="Cost Per Distance"
             type="number"
             [control]="form.controls.unitDistanceCost"
             [decimal]="2"
             [disabled]="isView"
-          ></app-input-text>
-          <app-input-text
+          ></app-input-field>
+          <app-input-field
             placeholder="Cost Per Time Unit"
             type="number"
             [control]="form.controls.unitDurationCost"
             [decimal]="2"
             [disabled]="isView"
-          ></app-input-text>
+          ></app-input-field>
         </div>
 
         <div class="">
-          <app-input-text
+          <app-input-field
             placeholder="Fixed Cost"
             type="number"
             [control]="form.controls.fixedCost"
             [decimal]="2"
             [disabled]="isView"
-          ></app-input-text>
+          ></app-input-field>
         </div>
       </div>
     </div>

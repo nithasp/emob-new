@@ -5,27 +5,27 @@
     </h2>
 
     <form [formGroup]="form">
-      <app-input-text placeholder="licensePlate" [control]="form.controls.licensePlate"
-        [required]="true"></app-input-text>
-      <app-input-text placeholder="vehicleName" [control]="form.controls.vehicleName"
-        [required]="true"></app-input-text>
-      <app-input-text placeholder="vehicleType" [control]="form.controls.vehicleType"
-        [required]="true"></app-input-text>
-      <app-input-text placeholder="vehicleBrand" [control]="form.controls.vehicleBrand"></app-input-text>
-      <app-input-text placeholder="vehicleModel" [control]="form.controls.vehicleModel"
-        [required]="true"></app-input-text>
-      <app-input-text placeholder="vehicleWeight" type="number" [control]="form.controls.vehicleWeight"
-        [required]="true" [suffix]="'t'"></app-input-text>
-      <app-input-text placeholder="maxLoadWeight" type="number" [control]="form.controls.maxLoadWeight"
-        [required]="true"></app-input-text>
-      <app-input-text placeholder="cargoWidth" type="number" [control]="form.controls.cargoWidth" [required]="true"
-        [suffix]="'cm'"></app-input-text>
-      <app-input-text placeholder="cargoLength" type="number" [control]="form.controls.cargoLength" [required]="true"
-        [suffix]="'cm'"></app-input-text>
-      <app-input-text placeholder="cargoHeight" type="number" [control]="form.controls.cargoHeight" [required]="true"
-        [suffix]="'cm'"></app-input-text>
-      <app-input-text placeholder="maxPalletCount" type="number" [decimal]="2" [control]="form.controls.maxPalletCount"
-        [required]="true"></app-input-text>
+      <app-input-field placeholder="licensePlate" [control]="form.controls.licensePlate"
+        [required]="true"></app-input-field>
+      <app-input-field placeholder="vehicleName" [control]="form.controls.vehicleName"
+        [required]="true"></app-input-field>
+      <app-input-field placeholder="vehicleType" [control]="form.controls.vehicleType"
+        [required]="true"></app-input-field>
+      <app-input-field placeholder="vehicleBrand" [control]="form.controls.vehicleBrand"></app-input-field>
+      <app-input-field placeholder="vehicleModel" [control]="form.controls.vehicleModel"
+        [required]="true"></app-input-field>
+      <app-input-field placeholder="vehicleWeight" type="number" [control]="form.controls.vehicleWeight"
+        [required]="true" [suffix]="'t'"></app-input-field>
+      <app-input-field placeholder="maxLoadWeight" type="number" [control]="form.controls.maxLoadWeight"
+        [required]="true"></app-input-field>
+      <app-input-field placeholder="cargoWidth" type="number" [control]="form.controls.cargoWidth" [required]="true"
+        [suffix]="'cm'"></app-input-field>
+      <app-input-field placeholder="cargoLength" type="number" [control]="form.controls.cargoLength" [required]="true"
+        [suffix]="'cm'"></app-input-field>
+      <app-input-field placeholder="cargoHeight" type="number" [control]="form.controls.cargoHeight" [required]="true"
+        [suffix]="'cm'"></app-input-field>
+      <app-input-field placeholder="maxPalletCount" type="number" [decimal]="2" [control]="form.controls.maxPalletCount"
+        [required]="true"></app-input-field>
 
       <app-input-select placeholder="Country" [options]="countryOptions">
       </app-input-select>
