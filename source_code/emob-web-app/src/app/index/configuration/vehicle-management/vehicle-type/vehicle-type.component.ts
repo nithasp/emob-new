@@ -58,18 +58,23 @@ export class VehicleTypeComponent implements OnInit {
     );
   }
 
-  openVehicleTypeModal(vehicleType?: VehicleType): void {
+  openVehicleTypeModal(mode: 'create' | 'edit' | 'view', vehicleType?: VehicleType): void {
     const dialogRef = this.dialog.open(VehicleTypeDialogComponent, {
       width: '800px',
-      data: { vehicleType },
+      data: { mode, vehicleType: vehicleType ?? null },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result?.refresh) {
-        const message = vehicleType
-          ? 'Vehicle type updated successfully'
-          : 'Vehicle type created successfully';
-        this.toastr.success(message, 'Success');
+        const message =
+          mode === 'edit'
+            ? 'Vehicle type updated successfully'
+            : mode === 'create'
+            ? 'Vehicle type created successfully'
+            : '';
+        if (message) {
+          this.toastr.success(message, 'Success');
+        }
         this.getMyVehicleTypes();
       }
     });

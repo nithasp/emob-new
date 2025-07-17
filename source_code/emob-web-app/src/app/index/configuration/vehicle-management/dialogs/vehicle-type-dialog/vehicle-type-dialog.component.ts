@@ -39,6 +39,7 @@ interface VehicleTypeFormControls {
 export class VehicleTypeDialogComponent implements OnInit {
   form!: FormGroup<VehicleTypeFormControls>;
   isEdit = false;
+  isView = false;
 
   vehicleProfileTypeOptions = [
     { id: 'CAR', value: 'CAR' },
@@ -58,14 +59,15 @@ export class VehicleTypeDialogComponent implements OnInit {
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<VehicleTypeDialogComponent>,
     @Inject(MAT_DIALOG_DATA)
-    public data: { vehicleType: VehicleType | null },
+    public data: { mode: 'create' | 'edit' | 'view'; vehicleType: VehicleType | null },
     private ngbModal: NgbModal,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit() {
-    this.isEdit = !!this.data?.vehicleType;
+    this.isEdit = this.data.mode === 'edit';
+    this.isView = this.data.mode === 'view';
     this.initForm();
     if (this.isEdit && this.data.vehicleType) {
       const vehicleType = {
@@ -78,6 +80,9 @@ export class VehicleTypeDialogComponent implements OnInit {
           : '',
       };
       this.form.patchValue(vehicleType);
+    }
+    if (this.isView) {
+      this.form.disable({ emitEvent: false });
     }
   }
 

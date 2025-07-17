@@ -1,7 +1,7 @@
 <div id="vehicle-type">
   <h1 (click)="getMyVehicleTypes()">test</h1>
   <div class="my-4 text-end">
-    <button mat-raised-button class="bg-custom-primary" (click)="openVehicleTypeModal()">New</button>
+    <button mat-raised-button class="bg-custom-primary" (click)="openVehicleTypeModal('create')">New</button>
   </div>
   
   <div *ngIf="allVehicleTypes.length > 0; else noVehicleTypes" class="vehicle-type-list">
@@ -62,8 +62,8 @@
           <div
             class="item-actions card-footer bg-transparent border-top-0 text-end"
           >
-            <button mat-raised-button class="bg-custom-success">Details</button>
-            <button mat-raised-button class="bg-custom-primary" (click)="openVehicleTypeModal(vehicleType)">Edit</button>
+            <button mat-raised-button class="bg-custom-success" (click)="openVehicleTypeModal('view', vehicleType)">Details</button>
+            <button mat-raised-button class="bg-custom-primary" (click)="openVehicleTypeModal('edit', vehicleType)">Edit</button>
             <button mat-raised-button class="bg-custom-danger" (click)="deleteVehicleType(vehicleType)">Delete</button>
           </div>
         </div>

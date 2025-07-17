@@ -12,6 +12,7 @@
             placeholder="Name"
             [control]="form.controls.name"
             [required]="true"
+            [disabled]="isView"
           ></app-input-text>
         </div>
 
@@ -25,6 +26,7 @@
               <mat-checkbox
                 [checked]="isAccessPointChecked(option)"
                 (change)="onAccessPointChange($event, option)"
+                [disabled]="isView"
               >
                 {{ option | titlecase }}
               </mat-checkbox>
@@ -45,6 +47,7 @@
             placeholder="Capacity"
             type="number"
             [control]="form.controls.capacity"
+            [disabled]="isView"
           ></app-input-text>
         </div>
 
@@ -52,6 +55,7 @@
           <app-input-text
             placeholder="Start Time (e.g., 08:00)"
             [control]="form.controls.twEarly"
+            [disabled]="isView"
           ></app-input-text>
         </div>
 
@@ -59,6 +63,7 @@
           <app-input-text
             placeholder="End Time (e.g., 17:00)"
             [control]="form.controls.twLate"
+            [disabled]="isView"
           ></app-input-text>
         </div>
       </div>
@@ -74,18 +79,21 @@
               type="number"
               [control]="form.controls.width"
               [suffix]="'m'"
+              [disabled]="isView"
             ></app-input-text>
             <app-input-text
               placeholder="Height"
               type="number"
               [control]="form.controls.height"
               [suffix]="'m'"
+              [disabled]="isView"
             ></app-input-text>
             <app-input-text
               placeholder="Length"
               type="number"
               [control]="form.controls.length"
               [suffix]="'m'"
+              [disabled]="isView"
             ></app-input-text>
           </div>
         </div>
@@ -95,6 +103,7 @@
             placeholder="Vehicle Profile Type"
             [options]="vehicleProfileTypeOptions"
             [control]="form.controls.vehicleProfileType"
+            [disabled]="isView"
           >
           </app-input-select>
         </div>
@@ -105,12 +114,14 @@
             type="number"
             [control]="form.controls.maxDistance"
             [suffix]="'km'"
+            [disabled]="isView"
           ></app-input-text>
           <app-input-text
             placeholder="Max Duration"
             type="number"
             [control]="form.controls.maxDuration"
             [suffix]="'hr'"
+            [disabled]="isView"
           ></app-input-text>
         </div>
 
@@ -120,12 +131,14 @@
             type="number"
             [control]="form.controls.unitDistanceCost"
             [decimal]="2"
+            [disabled]="isView"
           ></app-input-text>
           <app-input-text
             placeholder="Cost Per Time Unit"
             type="number"
             [control]="form.controls.unitDurationCost"
             [decimal]="2"
+            [disabled]="isView"
           ></app-input-text>
         </div>
 
@@ -135,6 +148,7 @@
             type="number"
             [control]="form.controls.fixedCost"
             [decimal]="2"
+            [disabled]="isView"
           ></app-input-text>
         </div>
       </div>
@@ -145,6 +159,6 @@
     <button mat-raised-button class="bg-custom-danger" (click)="cancel()">
       Cancel
     </button>
-    <button mat-raised-button color="primary" (click)="save()">Save</button>
+    <button *ngIf="!isView" mat-raised-button color="primary" (click)="save()">Save</button>
   </mat-dialog-actions>
 </div>
