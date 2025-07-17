@@ -14,6 +14,7 @@ import { VehicleComponent } from './vehicle/vehicle.component';
 import { VehicleTypeDialogComponent } from './dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
 import { InputTextComponent } from 'src/app/shared/components/form/input-text/input-text.component';
 import { InputSelectComponent } from 'src/app/shared/components/form/input-select/input-select.component';
+import { DynamicPopoverComponent } from 'src/app/shared/components/dynamic-popover/dynamic-popover.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { InputSelectComponent } from 'src/app/shared/components/form/input-selec
     MaterialModule,
     VehicleManagementRoutingModule,
     InputTextComponent,
-    InputSelectComponent
+    InputSelectComponent,
+    DynamicPopoverComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

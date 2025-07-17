@@ -2,6 +2,9 @@
   .mdc-label {
     margin: 0;
   }
+  .floating {
+    z-index: 1000 !important;
+  }
 }
 
 .modal-container {

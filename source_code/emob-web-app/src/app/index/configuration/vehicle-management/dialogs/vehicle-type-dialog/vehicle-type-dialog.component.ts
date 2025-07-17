@@ -13,6 +13,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
 import { VehicleType, AccessType } from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
+import { timeStringToMinutes } from 'src/app/directives/time-string-to-minutes.pipe';
 
 interface VehicleTypeFormControls {
   name: FormControl<string | null>;
@@ -55,11 +56,18 @@ export class VehicleTypeDialogComponent implements OnInit {
     'BOTTOM',
   ];
 
+  timeString: string = '00:00';
+  twEarlyObject: any = { hour: 0, minute: 0 };
+  twLateObject: any = { hour: 0, minute: 0 };
+
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<VehicleTypeDialogComponent>,
     @Inject(MAT_DIALOG_DATA)
-    public data: { mode: 'create' | 'edit' | 'view'; vehicleType: VehicleType | null },
+    public data: {
+      mode: 'create' | 'edit' | 'view';
+      vehicleType: VehicleType | null;
+    },
     private ngbModal: NgbModal,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService
@@ -69,17 +77,30 @@ export class VehicleTypeDialogComponent implements OnInit {
     this.isEdit = this.data.mode === 'edit';
     this.isView = this.data.mode === 'view';
     this.initForm();
-    if (this.isEdit && this.data.vehicleType) {
+    if ((this.isEdit || this.isView) && this.data.vehicleType) {
       const vehicleType = {
         ...this.data.vehicleType,
-        twEarly: this.data.vehicleType.twEarly !== undefined && this.data.vehicleType.twEarly !== null
-          ? String(this.data.vehicleType.twEarly)
-          : '',
-        twLate: this.data.vehicleType.twLate !== undefined && this.data.vehicleType.twLate !== null
-          ? String(this.data.vehicleType.twLate)
-          : '',
+        twEarly:
+          this.data.vehicleType.twEarly !== undefined &&
+          this.data.vehicleType.twEarly !== null
+            ? String(this.data.vehicleType.twEarly)
+            : '',
+        twLate:
+          this.data.vehicleType.twLate !== undefined &&
+          this.data.vehicleType.twLate !== null
+            ? String(this.data.vehicleType.twLate)
+            : '',
       };
       this.form.patchValue(vehicleType);
+      // Initialize twEarlyObject and twLateObject from form values
+      if (vehicleType.twEarly) {
+        const [hour, minute] = vehicleType.twEarly.split(':').map(Number);
+        this.twEarlyObject = { hour: hour || 0, minute: minute || 0 };
+      }
+      if (vehicleType.twLate) {
+        const [hour, minute] = vehicleType.twLate.split(':').map(Number);
+        this.twLateObject = { hour: hour || 0, minute: minute || 0 };
+      }
     }
     if (this.isView) {
       this.form.disable({ emitEvent: false });
@@ -165,12 +186,23 @@ export class VehicleTypeDialogComponent implements OnInit {
     this.spinner.show();
     const formValue = this.form.getRawValue();
 
+    // Convert twEarly and twLate to minutes since midnight
+    const twEarlyMinutes = timeStringToMinutes(formValue.twEarly);
+    const twLateMinutes = timeStringToMinutes(formValue.twLate);
+
     // Sanitize payload: remove null/empty values and ensure correct types
-    const payload: Partial<VehicleType> = Object.entries(formValue).reduce(
+    const payload: Partial<VehicleType> = Object.entries({
+      ...formValue,
+      twEarly: twEarlyMinutes,
+      twLate: twLateMinutes,
+    }).reduce(
       (acc, [key, value]) => {
         if (value !== null && value !== '') {
           (acc as any)[key] =
-            typeof value === 'string' && !isNaN(Number(value)) && key !== 'name' && key !== 'vehicleProfileType'
+            typeof value === 'string' &&
+            !isNaN(Number(value)) &&
+            key !== 'name' &&
+            key !== 'vehicleProfileType'
               ? Number(value)
               : value;
         }
@@ -179,6 +211,9 @@ export class VehicleTypeDialogComponent implements OnInit {
       {}
     );
 
+    console.log('payload:', payload);
+    return;
+
     const request$ = this.isEdit
       ? this.vehicleService.updateVehicleType(
           this.data.vehicleType!.vehicleTypeId,
@@ -186,15 +221,37 @@ export class VehicleTypeDialogComponent implements OnInit {
         )
       : this.vehicleService.createVehicleType(payload as VehicleType);
 
-    request$
-      .pipe(finalize(() => this.spinner.hide()))
-      .subscribe({
-        next: (res) => {
-          this.dialogRef.close({ refresh: true, vehicleType: res });
-        },
-        error: (err) => {
-          console.error(`Failed to ${this.isEdit ? 'update' : 'create'} vehicle type:`, err);
-        },
-      });
+    request$.pipe(finalize(() => this.spinner.hide())).subscribe({
+      next: (res) => {
+        this.dialogRef.close({ refresh: true, vehicleType: res });
+      },
+      error: (err) => {
+        console.error(
+          `Failed to ${this.isEdit ? 'update' : 'create'} vehicle type:`,
+          err
+        );
+      },
+    });
+  }
+
+  onTimeValueChange(key: 'twEarly' | 'twLate', event: any) {
+    if (key === 'twEarly') {
+      this.twEarlyObject = event;
+    } else {
+      this.twLateObject = event;
+    }
+    if (event && event.hour !== undefined && event.minute !== undefined) {
+      const hour = String(event.hour).padStart(2, '0');
+      const minute = String(event.minute).padStart(2, '0');
+      this.form.controls[key].setValue(`${hour}:${minute}`);
+    }
+  }
+
+  logtimeString() {
+    console.log(
+      'this.form.controls.twEarly.value:',
+      this.form.controls.twEarly.value
+    );
+    console.log('this.timeObject:', this.twEarlyObject);
   }
 }
