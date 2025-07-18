@@ -29,6 +29,7 @@ import { Subscription } from 'rxjs';
 export class InputSelectComponent implements OnInit, OnDestroy, OnChanges {
   @Input() placeholder: string = 'Select value';
   @Input() disabled: boolean = false;
+  @Input() required: boolean = false;
   @Input() control!: FormControl<any>;
   @Input() options: any[] = [];
   @Input() validatorMessage: string = '';

@@ -26,6 +26,7 @@ export class InputFieldComponent implements OnInit, OnDestroy, AfterViewInit, On
   @Input() placeholder: string = 'Enter value';
   @Input() type: string = 'text';
   @Input() disabled: boolean = false;
+  @Input() required: boolean = false;
   @Input() value: string = '';
   
   @Input() control?: FormControl<any>;

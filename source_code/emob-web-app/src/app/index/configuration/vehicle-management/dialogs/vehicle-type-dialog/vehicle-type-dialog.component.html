@@ -17,7 +17,7 @@
         </div>
 
         <div class="input-container">
-          <h3 class="checkbox-group-label">Access Points</h3>
+          <label class="checkbox-group-label">Access Points</label>
           <div class="checkbox-grid access-points">
             <div
               class="checkbox-item"
@@ -48,6 +48,7 @@
             type="number"
             [control]="form.controls.capacity"
             [disabled]="isView"
+            [required]="true"
           ></app-input-field>
         </div>
 
@@ -108,6 +109,7 @@
               [control]="form.controls.width"
               [suffix]="'m'"
               [disabled]="isView"
+              [required]="true"
             ></app-input-field>
             <app-input-field
               placeholder="Height"
@@ -115,6 +117,7 @@
               [control]="form.controls.height"
               [suffix]="'m'"
               [disabled]="isView"
+              [required]="true"
             ></app-input-field>
             <app-input-field
               placeholder="Length"
@@ -122,6 +125,7 @@
               [control]="form.controls.length"
               [suffix]="'m'"
               [disabled]="isView"
+              [required]="true"
             ></app-input-field>
           </div>
         </div>
