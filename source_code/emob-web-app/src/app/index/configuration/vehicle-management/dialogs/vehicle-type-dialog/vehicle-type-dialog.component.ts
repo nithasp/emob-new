@@ -23,7 +23,7 @@ import { VehicleTypeFormControls } from 'src/app/models/form-control.model';
   styleUrls: ['./vehicle-type-dialog.component.scss'],
 })
 export class VehicleTypeDialogComponent implements OnInit {
-  form!: FormGroup<VehicleTypeFormControls>;
+  formVehicleType!: FormGroup<VehicleTypeFormControls>;
   isEdit: boolean = false;
   isView: boolean = false;
 
@@ -57,7 +57,7 @@ export class VehicleTypeDialogComponent implements OnInit {
         twEarly: this.formatTimeForDisplay(this.data.vehicleType.twEarly),
         twLate: this.formatTimeForDisplay(this.data.vehicleType.twLate),
       };
-      this.form.patchValue(vehicleType);
+      this.formVehicleType.patchValue(vehicleType);
       if (vehicleType.twEarly) {
         const [hour, minute] = vehicleType.twEarly.split(':').map(Number);
         this.twEarlyObject = { hour: hour || 0, minute: minute || 0 };
@@ -68,7 +68,7 @@ export class VehicleTypeDialogComponent implements OnInit {
       }
     }
     if (this.isView) {
-      this.form.disable({ emitEvent: false });
+      this.formVehicleType.disable({ emitEvent: false });
     }
 
     this.getEnumValues();
@@ -85,7 +85,7 @@ export class VehicleTypeDialogComponent implements OnInit {
   }
 
   initForm() {
-    this.form = this.fb.group({
+    this.formVehicleType = this.fb.group({
       name: ['', Validators.required],
       access: [[]],
       capacity: [null, [Validators.required, Validators.min(0)]],
@@ -104,8 +104,8 @@ export class VehicleTypeDialogComponent implements OnInit {
   }
 
   save() {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+    if (this.formVehicleType.invalid) {
+      this.formVehicleType.markAllAsTouched();
       return;
     }
     this.openDialogConfirm();
@@ -116,13 +116,13 @@ export class VehicleTypeDialogComponent implements OnInit {
   }
 
   log() {
-    console.log('Form Value:', this.form.getRawValue());
-    console.log('Form Valid:', this.form.valid);
-    console.log('Errors:', this.form.errors);
+    console.log('Form Value:', this.formVehicleType.getRawValue());
+    console.log('Form Valid:', this.formVehicleType.valid);
+    console.log('Errors:', this.formVehicleType.errors);
   }
 
   onAccessPointChange(event: MatCheckboxChange, accessPoint: AccessType): void {
-    const accessPoints = this.form.get('access') as FormControl<AccessType[] | null>;
+    const accessPoints = this.formVehicleType.get('access') as FormControl<AccessType[] | null>;
     let currentValues = accessPoints.value || [];
     if (event.checked) {
       currentValues.push(accessPoint);
@@ -136,7 +136,7 @@ export class VehicleTypeDialogComponent implements OnInit {
   }
 
   isAccessPointChecked(accessPoint: AccessType): boolean {
-    return this.form.get('access')?.value?.includes(accessPoint) ?? false;
+    return this.formVehicleType.get('access')?.value?.includes(accessPoint) ?? false;
   }
 
   isAccessPointCheckedString(accessPointKey: string): boolean {
@@ -164,7 +164,7 @@ export class VehicleTypeDialogComponent implements OnInit {
 
   handleSubmit() {
     this.spinner.show();
-    const formValue = this.form.getRawValue();
+    const formValue = this.formVehicleType.getRawValue();
     const twEarlyMinutes = timeStringToMinutes(formValue.twEarly);
     const twLateMinutes = timeStringToMinutes(formValue.twLate);
     const payload: Partial<VehicleType> = Object.entries({
@@ -212,12 +212,12 @@ export class VehicleTypeDialogComponent implements OnInit {
     if (event && event.hour !== undefined && event.minute !== undefined) {
       const hour = String(event.hour).padStart(2, '0');
       const minute = String(event.minute).padStart(2, '0');
-      this.form.controls[key].setValue(`${hour}:${minute}`);
+      this.formVehicleType.controls[key].setValue(`${hour}:${minute}`);
     }
   }
 
   logtimeString() {
-    console.log('this.form.controls.twEarly.value:', this.form.controls.twEarly.value);
+    console.log('this.formVehicleType.controls.twEarly.value:', this.formVehicleType.controls.twEarly.value);
     console.log('this.timeObject:', this.twEarlyObject);
   }
 

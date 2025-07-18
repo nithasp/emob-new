@@ -1,14 +1,12 @@
 <div id="vehicle-type-dialog" class="modal-container">
-  <h1 (click)="log()">log</h1>
-
-  <form [formGroup]="form">
+  <form [formGroup]="formVehicleType">
     <div class="form-grid">
       <div class="form-section">
         <div class="form-group-emob">
           <h2 class="modal-title">
             {{ isEdit ? "Edit" : "Add" }} Vehicle Type
           </h2>
-          <app-input-field placeholder="Name" [control]="form.controls.name" [required]="true"
+          <app-input-field placeholder="Name" [control]="formVehicleType.controls.name" [required]="true"
             [disabled]="isView"></app-input-field>
         </div>
 
@@ -16,28 +14,28 @@
           <label class="checkbox-group-label">Access Points</label>
           <div class="checkbox-grid access-points">
             <div class="checkbox-item" *ngFor="let option of accessPointOptions">
-              <mat-checkbox [checked]="isAccessPointCheckedString(option.key)" (change)="onAccessPointChangeString($event, option.key)"
-                [disabled]="isView">
+              <mat-checkbox [checked]="isAccessPointCheckedString(option.key)"
+                (change)="onAccessPointChangeString($event, option.key)" [disabled]="isView">
                 {{ option.value | titlecase }}
               </mat-checkbox>
             </div>
           </div>
           <mat-error *ngIf="
-              form.get('access')?.hasError('minlength') &&
-              form.get('access')?.touched
+          formVehicleType.get('access')?.hasError('minlength') &&
+          formVehicleType.get('access')?.touched
             ">
             Please select at least one access point.
           </mat-error>
         </div>
 
         <div class="form-group-emob">
-          <app-input-field placeholder="Capacity" type="number" [control]="form.controls.capacity" [disabled]="isView"
-            [required]="true"></app-input-field>
+          <app-input-field placeholder="Capacity" type="number" [control]="formVehicleType.controls.capacity"
+            [disabled]="isView" [required]="true"></app-input-field>
         </div>
 
         <div class="form-group-emob">
           <app-dynamic-popover [placement]="'bottom-start'">
-            <app-input-field popover-trigger placeholder="Start Time" [control]="form.controls.twEarly"
+            <app-input-field popover-trigger placeholder="Start Time" [control]="formVehicleType.controls.twEarly"
               [disabled]="isView" [readonly]="true"></app-input-field>
 
             <div popover-content>
@@ -52,7 +50,7 @@
 
         <div class="form-group-emob mb-0">
           <app-dynamic-popover [placement]="'bottom-start'">
-            <app-input-field popover-trigger placeholder="End Time" [control]="form.controls.twLate"
+            <app-input-field popover-trigger placeholder="End Time" [control]="formVehicleType.controls.twLate"
               [disabled]="isView" [readonly]="true"></app-input-field>
 
             <div popover-content>
@@ -70,44 +68,42 @@
         <div class="form-group-emob">
           <label class="dimension-label">Dimensions (Width x Height x Length)</label>
           <div class="dimension-grid">
-            <app-input-field placeholder="Width" type="number" [control]="form.controls.width" [suffix]="'m'"
+            <app-input-field placeholder="Width" type="number" [control]="formVehicleType.controls.width" [suffix]="'m'"
               [disabled]="isView" [required]="true"></app-input-field>
-            <app-input-field placeholder="Height" type="number" [control]="form.controls.height" [suffix]="'m'"
-              [disabled]="isView" [required]="true"></app-input-field>
-            <app-input-field placeholder="Length" type="number" [control]="form.controls.length" [suffix]="'m'"
-              [disabled]="isView" [required]="true"></app-input-field>
+            <app-input-field placeholder="Height" type="number" [control]="formVehicleType.controls.height"
+              [suffix]="'m'" [disabled]="isView" [required]="true"></app-input-field>
+            <app-input-field placeholder="Length" type="number" [control]="formVehicleType.controls.length"
+              [suffix]="'m'" [disabled]="isView" [required]="true"></app-input-field>
           </div>
         </div>
 
         <div class="select-container">
           <app-input-select placeholder="Vehicle Profile Type" [options]="vehicleProfileTypeOptions"
-            [control]="form.controls.vehicleProfileType" [disabled]="isView" idAttribute="key">
+            [control]="formVehicleType.controls.vehicleProfileType" [disabled]="isView" idAttribute="key">
           </app-input-select>
         </div>
 
         <div class="input-grid-cols-2">
-          <app-input-field placeholder="Max Distance" type="number" [control]="form.controls.maxDistance"
+          <app-input-field placeholder="Max Distance" type="number" [control]="formVehicleType.controls.maxDistance"
             [suffix]="'km'" [disabled]="isView"></app-input-field>
-          <app-input-field placeholder="Max Duration" type="number" [control]="form.controls.maxDuration"
+          <app-input-field placeholder="Max Duration" type="number" [control]="formVehicleType.controls.maxDuration"
             [suffix]="'hr'" [disabled]="isView"></app-input-field>
         </div>
 
         <div class="input-grid-cols-2">
-          <app-input-field placeholder="Cost Per Distance" type="number" [control]="form.controls.unitDistanceCost"
-            [decimal]="2" [disabled]="isView"></app-input-field>
-          <app-input-field placeholder="Cost Per Time Unit" type="number" [control]="form.controls.unitDurationCost"
-            [decimal]="2" [disabled]="isView"></app-input-field>
+          <app-input-field placeholder="Cost Per Distance" type="number"
+            [control]="formVehicleType.controls.unitDistanceCost" [decimal]="2" [disabled]="isView"></app-input-field>
+          <app-input-field placeholder="Cost Per Time Unit" type="number"
+            [control]="formVehicleType.controls.unitDurationCost" [decimal]="2" [disabled]="isView"></app-input-field>
         </div>
 
         <div class="">
-          <app-input-field placeholder="Fixed Cost" type="number" [control]="form.controls.fixedCost" [decimal]="2"
-            [disabled]="isView"></app-input-field>
+          <app-input-field placeholder="Fixed Cost" type="number" [control]="formVehicleType.controls.fixedCost"
+            [decimal]="2" [disabled]="isView"></app-input-field>
         </div>
       </div>
     </div>
   </form>
-
-  <h1 (click)="logtimeString()">logtimeString</h1>
 
   <mat-dialog-actions align="end">
     <button mat-raised-button class="bg-custom-danger" (click)="cancel()">
