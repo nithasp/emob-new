@@ -36,7 +36,7 @@
         <div class="form-group-emob">
           <app-dynamic-popover [placement]="'bottom-start'">
             <app-input-field popover-trigger placeholder="Start Time" [control]="formVehicleType.controls.twEarly"
-              [disabled]="isView" [readonly]="true"></app-input-field>
+              [disabled]="isView" [readonly]="true" suffixIcon="access_time"></app-input-field>
 
             <div popover-content>
               <div class="card-body p-2">
@@ -51,7 +51,7 @@
         <div class="form-group-emob mb-0">
           <app-dynamic-popover [placement]="'bottom-start'">
             <app-input-field popover-trigger placeholder="End Time" [control]="formVehicleType.controls.twLate"
-              [disabled]="isView" [readonly]="true"></app-input-field>
+              [disabled]="isView" [readonly]="true" suffixIcon="access_time"></app-input-field>
 
             <div popover-content>
               <div class="card-body p-2">

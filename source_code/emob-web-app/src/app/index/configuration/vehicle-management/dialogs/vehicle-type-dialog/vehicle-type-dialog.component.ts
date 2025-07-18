@@ -234,4 +234,8 @@ export class VehicleTypeDialogComponent implements OnInit {
       });
     });
   }
+
+  onSearchClick() {
+    console.log('onSearchClick');
+  }
 }

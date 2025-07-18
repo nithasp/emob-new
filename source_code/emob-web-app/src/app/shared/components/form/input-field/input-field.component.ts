@@ -17,6 +17,7 @@ import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -27,6 +28,7 @@ import { Subscription } from 'rxjs';
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
+    MatButtonModule,
     ReactiveFormsModule,
   ],
   templateUrl: './input-field.component.html',
@@ -46,8 +48,11 @@ export class InputFieldComponent
   @Input() decimal: number = 0;
   @Input() comma: boolean = false;
   @Input() suffix: string = '';
+  @Input() suffixIcon?: string; // Icon name for dynamic suffix icon button
+  @Input() suffixClickable: boolean = false; // Whether the suffix icon should be clickable
 
   @Output() valueChange: EventEmitter<string> = new EventEmitter<string>();
+  @Output() suffixIconClick: EventEmitter<void> = new EventEmitter<void>(); // Event emitter for suffix icon clicks
 
   @ViewChild('inputElement') inputElement!: ElementRef<HTMLInputElement>;
 
@@ -251,6 +256,12 @@ export class InputFieldComponent
 
   togglePasswordVisibility(): void {
     this.passwordVisible = !this.passwordVisible;
+  }
+
+  onSuffixIconClick(): void {
+    if (this.suffixClickable && !this.disabled) {
+      this.suffixIconClick.emit();
+    }
   }
 
   updateParentDisabledState(): void {
