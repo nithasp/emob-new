@@ -68,12 +68,12 @@
         <div class="form-group-emob">
           <label class="dimension-label">Dimensions (Width x Height x Length)</label>
           <div class="dimension-grid">
-            <app-input-field placeholder="Width" type="number" [control]="formVehicleType.controls.width" [suffix]="'m'"
-              [disabled]="isView" [required]="true"></app-input-field>
+            <app-input-field placeholder="Width" type="number" [control]="formVehicleType.controls.width" [suffix]="'cm'"
+              [disabled]="isView" [required]="true" [decimal]="3"></app-input-field>
             <app-input-field placeholder="Height" type="number" [control]="formVehicleType.controls.height"
-              [suffix]="'m'" [disabled]="isView" [required]="true"></app-input-field>
+              [suffix]="'cm'" [disabled]="isView" [required]="true" [decimal]="3"></app-input-field>
             <app-input-field placeholder="Length" type="number" [control]="formVehicleType.controls.length"
-              [suffix]="'m'" [disabled]="isView" [required]="true"></app-input-field>
+              [suffix]="'cm'" [disabled]="isView" [required]="true" [decimal]="3"></app-input-field>
           </div>
         </div>
 
