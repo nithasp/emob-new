@@ -38,13 +38,13 @@
         <div class="form-group-emob">
           <app-dynamic-popover [placement]="'bottom-start'">
             <app-input-field popover-trigger placeholder="Start Time" [control]="form.controls.twEarly"
-              [disabled]="isView"></app-input-field>
+              [disabled]="isView" [readonly]="true"></app-input-field>
 
             <div popover-content>
               <div class="card-body p-2">
                 <p class="card-title">twEarly:</p>
                 <ngb-timepicker [(ngModel)]="twEarlyObject" [ngModelOptions]="{ standalone: true }"
-                  (ngModelChange)="onTimeValueChange('twEarly', $event)"></ngb-timepicker>
+                  (ngModelChange)="onTimeValueChange('twEarly', $event)" [readonly]="isView"></ngb-timepicker>
               </div>
             </div>
           </app-dynamic-popover>
@@ -53,13 +53,13 @@
         <div class="form-group-emob mb-0">
           <app-dynamic-popover [placement]="'bottom-start'">
             <app-input-field popover-trigger placeholder="End Time" [control]="form.controls.twLate"
-              [disabled]="isView"></app-input-field>
+              [disabled]="isView" [readonly]="true"></app-input-field>
 
             <div popover-content>
               <div class="card-body p-2">
                 <p class="card-title">twLate:</p>
                 <ngb-timepicker [(ngModel)]="twLateObject" [ngModelOptions]="{ standalone: true }"
-                  (ngModelChange)="onTimeValueChange('twLate', $event)"></ngb-timepicker>
+                  (ngModelChange)="onTimeValueChange('twLate', $event)" [readonly]="isView"></ngb-timepicker>
               </div>
             </div>
           </app-dynamic-popover>
@@ -106,25 +106,6 @@
       </div>
     </div>
   </form>
-
-  <!-- <app-dynamic-popover [placement]="'bottom-start'">
-    <app-input-text
-      popover-trigger
-      placeholder="Start Time (e.g., 08:00)"
-      [control]="form.controls.twEarly"
-      [disabled]="isView"
-    ></app-input-text>
-
-    <div popover-content>
-      <div class="card-body p-2">
-        <p class="card-title">time_is:</p>
-        <ngb-timepicker
-          [ngModel]="twEarlyObject"
-          (ngModelChange)="onValueChange($event)"
-        />
-      </div>
-    </div>
-  </app-dynamic-popover> -->
 
   <h1 (click)="logtimeString()">logtimeString</h1>
 

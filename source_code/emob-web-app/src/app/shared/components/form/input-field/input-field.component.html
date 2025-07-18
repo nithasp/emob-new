@@ -1,7 +1,7 @@
 <mat-form-field appearance="outline" class="w-100" [class.mat-form-field-required]="required && !disabled" [class.disabled-field]="disabled">
   <mat-label>{{ placeholder }}</mat-label>
   <input #inputElement matInput [formControl]="control || internalControl" (input)="onInput($event)"
-    (keypress)="onKeyPress($event)" (blur)="onBlur()" [type]="computedInputType" [required]="required && !disabled" />
+    (keypress)="onKeyPress($event)" (blur)="onBlur()" [type]="computedInputType" [required]="required && !disabled" [readonly]="readonly" />
 
   <ng-container *ngIf="type === 'password'">
     <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button" 

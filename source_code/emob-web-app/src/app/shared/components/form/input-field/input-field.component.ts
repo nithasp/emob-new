@@ -38,6 +38,7 @@ export class InputFieldComponent
   @Input() placeholder: string = 'Enter value';
   @Input() type: string = 'text';
   @Input() disabled: boolean = false;
+  @Input() readonly: boolean = false;
   @Input() required: boolean = false;
   @Input() value: string = '';
 
