@@ -9,6 +9,17 @@ export function timeStringToMinutes(
   return hours * 60 + minutes;
 }
 
+export function minutesToTimeString(
+  minutes: number | null | undefined
+): string {
+  if (minutes === null || minutes === undefined || typeof minutes !== 'number') {
+    return '';
+  }
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
 @Pipe({
   name: 'timeStringToMinutes',
 })
