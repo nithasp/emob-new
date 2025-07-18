@@ -1,4 +1,4 @@
-<mat-form-field appearance="outline" class="w-100" [class.mat-form-field-required]="required && !disabled">
+<mat-form-field appearance="outline" class="w-100" [class.mat-form-field-required]="required && !disabled" [class.disabled-field]="disabled">
   <mat-label>{{ placeholder }}</mat-label>
   <input #inputElement matInput [formControl]="control || internalControl" (input)="onInput($event)"
     (keypress)="onKeyPress($event)" (blur)="onBlur()" [type]="computedInputType" [required]="required && !disabled" />

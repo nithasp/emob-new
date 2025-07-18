@@ -1,6 +1,16 @@
 import {
-  Component, Input, Output, EventEmitter, OnInit, OnDestroy,
-  AfterViewInit, OnChanges, SimpleChanges, ViewChild, ElementRef, Renderer2
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnDestroy,
+  AfterViewInit,
+  OnChanges,
+  SimpleChanges,
+  ViewChild,
+  ElementRef,
+  Renderer2,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -17,18 +27,20 @@ import { Subscription } from 'rxjs';
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   templateUrl: './input-field.component.html',
   styleUrls: ['./input-field.component.scss'],
 })
-export class InputFieldComponent implements OnInit, OnDestroy, AfterViewInit, OnChanges {
+export class InputFieldComponent
+  implements OnInit, OnDestroy, AfterViewInit, OnChanges
+{
   @Input() placeholder: string = 'Enter value';
   @Input() type: string = 'text';
   @Input() disabled: boolean = false;
   @Input() required: boolean = false;
   @Input() value: string = '';
-  
+
   @Input() control?: FormControl<any>;
   @Input() decimal: number = 0;
   @Input() comma: boolean = false;
@@ -43,7 +55,7 @@ export class InputFieldComponent implements OnInit, OnDestroy, AfterViewInit, On
   passwordVisible: boolean = false;
   internalControl: FormControl = new FormControl('');
 
-  constructor(private renderer: Renderer2) { }
+  constructor(private renderer: Renderer2, private elementRef: ElementRef) {}
 
   ngOnInit(): void {
     if (!this.control) {
@@ -51,7 +63,7 @@ export class InputFieldComponent implements OnInit, OnDestroy, AfterViewInit, On
     }
 
     if (this.control) {
-      this.controlSubscription = this.control.valueChanges.subscribe(val => {
+      this.controlSubscription = this.control.valueChanges.subscribe((val) => {
         this.value = val;
         this.valueChange.emit(val);
       });
@@ -60,11 +72,17 @@ export class InputFieldComponent implements OnInit, OnDestroy, AfterViewInit, On
     if (this.disabled && this.control) {
       this.control.disable({ emitEvent: false });
     }
+
+    this.updateParentDisabledState();
   }
 
   ngAfterViewInit(): void {
     if (this.type === 'thaiCitizenId' && this.inputElement) {
-      this.renderer.setAttribute(this.inputElement.nativeElement, 'maxLength', '17');
+      this.renderer.setAttribute(
+        this.inputElement.nativeElement,
+        'maxLength',
+        '17'
+      );
     }
   }
 
@@ -75,14 +93,16 @@ export class InputFieldComponent implements OnInit, OnDestroy, AfterViewInit, On
       } else {
         this.control.enable({ emitEvent: false });
       }
+
+      this.updateParentDisabledState();
     }
-    
+
     if (changes['control'] && changes['control'].currentValue) {
       if (this.controlSubscription) {
         this.controlSubscription.unsubscribe();
       }
       this.control = changes['control'].currentValue;
-      this.controlSubscription = this.control!.valueChanges.subscribe(val => {
+      this.controlSubscription = this.control!.valueChanges.subscribe((val) => {
         this.value = val;
         this.valueChange.emit(val);
       });
@@ -117,10 +137,12 @@ export class InputFieldComponent implements OnInit, OnDestroy, AfterViewInit, On
     }
 
     return result;
-  }
+  };
 
   onKeyPress(event: KeyboardEvent): void {
-    if (!this.control) { return; } 
+    if (!this.control) {
+      return;
+    }
     if (this.type === 'thaiCitizenId') {
       if (!/[0-9]/.test(event.key)) {
         event.preventDefault();
@@ -140,7 +162,9 @@ export class InputFieldComponent implements OnInit, OnDestroy, AfterViewInit, On
   }
 
   onInput(event: Event): void {
-    if (!this.control) { return; } 
+    if (!this.control) {
+      return;
+    }
     const input = event.target as HTMLInputElement;
     if (this.type === 'thaiCitizenId') {
       const digitsOnly = input.value.replace(/\D/g, '');
@@ -227,4 +251,15 @@ export class InputFieldComponent implements OnInit, OnDestroy, AfterViewInit, On
   togglePasswordVisibility(): void {
     this.passwordVisible = !this.passwordVisible;
   }
-} 
+
+  updateParentDisabledState(): void {
+    const parentElement = this.elementRef.nativeElement.parentElement;
+    if (parentElement) {
+      if (this.disabled) {
+        this.renderer.addClass(parentElement, 'input-field-disabled');
+      } else {
+        this.renderer.removeClass(parentElement, 'input-field-disabled');
+      }
+    }
+  }
+}

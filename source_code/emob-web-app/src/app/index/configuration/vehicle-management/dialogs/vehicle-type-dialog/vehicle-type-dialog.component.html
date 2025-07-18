@@ -4,7 +4,7 @@
   <form [formGroup]="form">
     <div class="form-grid">
       <div class="form-section">
-        <div class="input-container">
+        <div class="form-group-emob">
           <h2 class="modal-title">
             {{ isEdit ? "Edit" : "Add" }} Vehicle Type
           </h2>
@@ -12,7 +12,7 @@
             [disabled]="isView"></app-input-field>
         </div>
 
-        <div class="input-container">
+        <div class="form-group-emob">
           <label class="checkbox-group-label">Access Points</label>
           <div class="checkbox-grid access-points">
             <div class="checkbox-item" *ngFor="let option of accessPointOptions">
@@ -30,12 +30,12 @@
           </mat-error>
         </div>
 
-        <div class="input-container">
+        <div class="form-group-emob">
           <app-input-field placeholder="Capacity" type="number" [control]="form.controls.capacity" [disabled]="isView"
             [required]="true"></app-input-field>
         </div>
 
-        <div class="input-container">
+        <div class="form-group-emob">
           <app-dynamic-popover [placement]="'bottom-start'">
             <app-input-field popover-trigger placeholder="Start Time" [control]="form.controls.twEarly"
               [disabled]="isView"></app-input-field>
@@ -50,7 +50,7 @@
           </app-dynamic-popover>
         </div>
 
-        <div>
+        <div class="form-group-emob mb-0">
           <app-dynamic-popover [placement]="'bottom-start'">
             <app-input-field popover-trigger placeholder="End Time" [control]="form.controls.twLate"
               [disabled]="isView"></app-input-field>
@@ -67,7 +67,7 @@
       </div>
 
       <div class="form-section">
-        <div class="input-container">
+        <div class="form-group-emob">
           <label class="dimension-label">Dimensions (Width x Height x Length)</label>
           <div class="dimension-grid">
             <app-input-field placeholder="Width" type="number" [control]="form.controls.width" [suffix]="'m'"

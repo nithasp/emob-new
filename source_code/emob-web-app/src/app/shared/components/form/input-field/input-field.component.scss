@@ -1,3 +1,14 @@
+::ng-deep .input-field-disabled {
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+
+  &.form-group-emob {
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+  }
+}
+
 .disabled-suffix {
   color: rgba(0, 0, 0, 0.38) !important;
 
@@ -36,5 +47,11 @@
   .mat-mdc-form-field.mat-form-field-disabled.mat-form-field-required
     .mdc-floating-label::after {
     display: none !important;
+  }
+
+  .mat-form-field-disabled {
+    mat-form-field, label {
+      pointer-events: none !important;
+    }
   }
 }
