@@ -49,10 +49,29 @@ export enum AccessType {
   TOP = "TOP",
   BOTTOM = "BOTTOM",
 }
+
+export const VehicleEnumConfigs = [
+  { 
+    type: 'VehicleProfileTypeEnum', 
+    property: 'vehicleProfileTypeOptions',
+    errorMessage: 'Failed to fetch vehicle profile types'
+  },
+  { 
+    type: 'AccessTypeEnum', 
+    property: 'accessPointOptions',
+    errorMessage: 'Failed to fetch access types'
+  }
+];
+
 export interface UpdateVehicleInput {
   licensePlate?: string;
   startDepotId?: string;
   endDepotId?: string;
   vehicleTypeId?: string;
   isActive?: boolean;
+}
+
+export interface VehicleEnumOption {
+  key: string;
+  value: string;
 }

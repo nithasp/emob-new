@@ -43,6 +43,7 @@ export interface Response {
   createVehicleType: VehicleType;
   updateVehicleType: VehicleType;
   deleteVehicleType: boolean;
+  getEnumValues: string[];
 }
 
 export interface Error {

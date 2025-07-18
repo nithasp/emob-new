@@ -11,26 +11,11 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
-import { VehicleType, AccessType } from 'src/app/models/vehicle.model';
+import { VehicleType, AccessType, VehicleEnumOption, VehicleEnumConfigs } from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import { timeStringToMinutes, minutesToTimeString } from 'src/app/directives/time-string-to-minutes.pipe';
+import { VehicleTypeFormControls } from 'src/app/models/form-control.model';
 
-interface VehicleTypeFormControls {
-  name: FormControl<string | null>;
-  access: FormControl<AccessType[] | null>;
-  capacity: FormControl<number | null>;
-  twEarly: FormControl<string | null>;
-  twLate: FormControl<string | null>;
-  width: FormControl<number | null>;
-  height: FormControl<number | null>;
-  length: FormControl<number | null>;
-  vehicleProfileType: FormControl<string | null>;
-  maxDistance: FormControl<number | null>;
-  maxDuration: FormControl<number | null>;
-  unitDistanceCost: FormControl<number | null>;
-  unitDurationCost: FormControl<number | null>;
-  fixedCost: FormControl<number | null>;
-}
 
 @Component({
   selector: 'app-vehicle-type-dialog',
@@ -39,22 +24,11 @@ interface VehicleTypeFormControls {
 })
 export class VehicleTypeDialogComponent implements OnInit {
   form!: FormGroup<VehicleTypeFormControls>;
-  isEdit = false;
-  isView = false;
+  isEdit: boolean = false;
+  isView: boolean = false;
 
-  vehicleProfileTypeOptions = [
-    { id: 'CAR', value: 'CAR' },
-    { id: 'TRUCK', value: 'TRUCK' },
-  ];
-
-  accessPointOptions: any[] = [
-    'FRONT',
-    'REAR',
-    'LEFT',
-    'RIGHT',
-    'TOP',
-    'BOTTOM',
-  ];
+  vehicleProfileTypeOptions: VehicleEnumOption[] = [];
+  accessPointOptions: VehicleEnumOption[] = [];
 
   timeString: string = '00:00';
   twEarlyObject: any = { hour: 0, minute: 0 };
@@ -71,7 +45,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     private ngbModal: NgbModal,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.isEdit = this.data.mode === 'edit';
@@ -96,6 +70,8 @@ export class VehicleTypeDialogComponent implements OnInit {
     if (this.isView) {
       this.form.disable({ emitEvent: false });
     }
+
+    this.getEnumValues();
   }
 
   private formatTimeForDisplay(timeValue: any): string {
@@ -163,6 +139,14 @@ export class VehicleTypeDialogComponent implements OnInit {
     return this.form.get('access')?.value?.includes(accessPoint) ?? false;
   }
 
+  isAccessPointCheckedString(accessPointKey: string): boolean {
+    return this.isAccessPointChecked(accessPointKey as AccessType);
+  }
+
+  onAccessPointChangeString(event: MatCheckboxChange, accessPointKey: string): void {
+    this.onAccessPointChange(event, accessPointKey as AccessType);
+  }
+
   openDialogConfirm() {
     const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
       centered: true,
@@ -191,9 +175,9 @@ export class VehicleTypeDialogComponent implements OnInit {
       if (value !== null && value !== '') {
         (acc as any)[key] =
           typeof value === 'string' &&
-          !isNaN(Number(value)) &&
-          key !== 'name' &&
-          key !== 'vehicleProfileType'
+            !isNaN(Number(value)) &&
+            key !== 'name' &&
+            key !== 'vehicleProfileType'
             ? Number(value)
             : value;
       }
@@ -202,9 +186,9 @@ export class VehicleTypeDialogComponent implements OnInit {
     console.log('payload:', payload);
     const request$ = this.isEdit
       ? this.vehicleService.updateVehicleType(
-          this.data.vehicleType!.vehicleTypeId,
-          payload as VehicleType
-        )
+        this.data.vehicleType!.vehicleTypeId,
+        payload as VehicleType
+      )
       : this.vehicleService.createVehicleType(payload as VehicleType);
     request$.pipe(finalize(() => this.spinner.hide())).subscribe({
       next: (res) => {
@@ -235,5 +219,19 @@ export class VehicleTypeDialogComponent implements OnInit {
   logtimeString() {
     console.log('this.form.controls.twEarly.value:', this.form.controls.twEarly.value);
     console.log('this.timeObject:', this.twEarlyObject);
+  }
+
+  getEnumValues() {
+    VehicleEnumConfigs.forEach(config => {
+      this.vehicleService.getEnumValues(config.type).subscribe({
+        next: (res) => {
+          console.log(`${config.type} response:`, res);
+          (this as any)[config.property] = res;
+        },
+        error: (err) => {
+          console.error(config.errorMessage, err);
+        },
+      });
+    });
   }
 }

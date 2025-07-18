@@ -6,9 +6,10 @@ import { Response } from '../models/graphql.model';
 import { ErrorHandlingService } from './handle-error.service';
 import {
   MyVehicles,
-  UpdateVehicleInput,
+  VehicleEnumOption,
   VehicleType,
 } from '../models/vehicle.model';
+
 
 @Injectable({
   providedIn: 'root',
@@ -18,6 +19,24 @@ export class VehicleService {
     private readonly apollo: Apollo,
     private readonly errorHandlingService: ErrorHandlingService
   ) {}
+
+  getEnumValues(enumName: string): Observable<VehicleEnumOption[]> {
+    return this.apollo
+      .query<Response>({
+        query: gql`
+          query getEnumValues($enumName: String!) {
+            getEnumValues(enumName: $enumName)
+          }
+        `,
+        variables: {
+          enumName: enumName,
+        },
+      })
+      .pipe(
+        map((result) => result.data.getEnumValues),
+        this.errorHandlingService.handleError
+      );
+  }
 
   getMyVehicles(): Observable<MyVehicles[]> {
     return this.apollo
