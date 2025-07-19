@@ -8,6 +8,7 @@ import {
   MyVehicles,
   VehicleEnumOption,
   VehicleType,
+  Depot,
 } from '../models/vehicle.model';
 
 @Injectable({ providedIn: 'root' })
@@ -31,6 +32,31 @@ export class VehicleService {
       })
       .pipe(
         map((result) => result.data.getEnumValues),
+        this.errorHandlingService.handleError
+      );
+  }
+
+  getMyDepots(): Observable<Depot[]> {
+    return this.apollo
+      .query<Response>({
+        query: gql`
+          query myDepots {
+            myDepots {
+              depotId
+              depotName
+              latitude
+              longitude
+              tw_early
+              tw_late
+              columns
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+      })
+      .pipe(
+        map((result) => result.data.myDepots),
         this.errorHandlingService.handleError
       );
   }

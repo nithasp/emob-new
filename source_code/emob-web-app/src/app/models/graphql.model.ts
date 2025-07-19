@@ -5,7 +5,7 @@ import {
   Experiment,
   ExperimentState,
 } from './experiment.model';
-import { MyVehicles, VehicleType } from './vehicle.model';
+import { MyVehicles, VehicleType, Depot } from './vehicle.model';
 
 export interface Response {
   timestamp: string;
@@ -44,6 +44,7 @@ export interface Response {
   updateVehicleType: VehicleType;
   deleteVehicleType: boolean;
   getEnumValues: string[];
+  myDepots: [Depot];
 }
 
 export interface Error {

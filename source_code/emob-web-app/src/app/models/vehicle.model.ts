@@ -7,6 +7,18 @@ export interface Vehicle {
   MaxWorkDuration: number;
 }
 
+export interface Depot {
+  depotId: string;
+  depotName: string;
+  latitude: number;
+  longitude: number;
+  tw_early: string;
+  tw_late: string;
+  columns: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface MyVehicles {
   companyName: string;
   vehicleIds: string;
