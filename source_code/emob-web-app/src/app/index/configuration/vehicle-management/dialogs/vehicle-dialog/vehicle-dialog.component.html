@@ -1,46 +1,81 @@
 <ng-container *transloco="let t; read: 'vehicle'">
   <div id="vehicle-dialog">
     <h2 mat-dialog-title class="p-0">
-      {{ isEdit ? t("edit_vehicle") : t("add_vehicle") }}
+      {{ t("add_vehicle") }}
     </h2>
 
-    <form [formGroup]="form">
-      <app-input-field placeholder="licensePlate" [control]="form.controls.licensePlate"
-        [required]="true"></app-input-field>
-      <app-input-field placeholder="vehicleName" [control]="form.controls.vehicleName"
-        [required]="true"></app-input-field>
-      <app-input-field placeholder="vehicleType" [control]="form.controls.vehicleType"
-        [required]="true"></app-input-field>
-      <app-input-field placeholder="vehicleBrand" [control]="form.controls.vehicleBrand"></app-input-field>
-      <app-input-field placeholder="vehicleModel" [control]="form.controls.vehicleModel"
-        [required]="true"></app-input-field>
-      <app-input-field placeholder="vehicleWeight" type="number" [control]="form.controls.vehicleWeight"
-        [required]="true" [suffix]="'t'"></app-input-field>
-      <app-input-field placeholder="maxLoadWeight" type="number" [control]="form.controls.maxLoadWeight"
-        [required]="true"></app-input-field>
-      <app-input-field placeholder="cargoWidth" type="number" [control]="form.controls.cargoWidth" [required]="true"
-        [suffix]="'cm'"></app-input-field>
-      <app-input-field placeholder="cargoLength" type="number" [control]="form.controls.cargoLength" [required]="true"
-        [suffix]="'cm'"></app-input-field>
-      <app-input-field placeholder="cargoHeight" type="number" [control]="form.controls.cargoHeight" [required]="true"
-        [suffix]="'cm'"></app-input-field>
-      <app-input-field placeholder="maxPalletCount" type="number" [decimal]="2" [control]="form.controls.maxPalletCount"
-        [required]="true"></app-input-field>
-
-      <app-input-select placeholder="Country" [options]="countryOptions">
+    <form [formGroup]="form" class="vehicle-form">
+      
+      <app-input-select 
+        placeholder="Vehicle Type" 
+        [options]="vehicleTypeOptions"
+        [control]="form.controls.vehicleType"
+        [required]="true">
       </app-input-select>
 
-      <mat-checkbox formControlName="isActive" class="mt-4">
-        {{ t("is_active") }}
-      </mat-checkbox>
+      <div class="depot-row">
+        <app-input-select 
+          placeholder="Start Depot" 
+          [options]="startDepotOptions"
+          [control]="form.controls.startDepot"
+          [required]="true">
+        </app-input-select>
+
+        <app-input-select 
+          placeholder="End Depot" 
+          [options]="endDepotOptions"
+          [control]="form.controls.endDepot"
+          [required]="true">
+        </app-input-select>
+      </div>
+
+      <div class="license-input-row">
+        <app-input-field 
+          placeholder="License Plate" 
+          [control]="form.controls.licensePlate"
+          [required]="true"
+          class="license-input">
+        </app-input-field>
+        
+        <button 
+          mat-raised-button 
+          color="accent" 
+          type="button"
+          (click)="addLicensePlate()"
+          [disabled]="!form.controls.licensePlate.valid"
+          class="add-button">
+          ADD
+        </button>
+      </div>
+
+      <div class="license-list" *ngIf="licensePlates.length > 0">
+        <div class="license-item" *ngFor="let plate of licensePlates; let i = index">
+          <div class="license-content">
+            <span class="bullet-dot">•</span>
+            <span class="license-text">{{ plate }}</span>
+          </div>
+          <button 
+            mat-icon-button 
+            color="warn" 
+            (click)="removeLicensePlate(i)"
+            class="remove-button">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+
     </form>
 
-    <mat-dialog-actions align="end">
+    <mat-dialog-actions align="end" class="dialog-actions">
       <button mat-button (click)="cancel()">
         {{ "cancel" | transloco }}
       </button>
-      <button mat-raised-button color="primary" (click)="save()">
-        {{ isEdit ? ("update" | transloco) : ("confirm" | transloco) }}
+      <button 
+        mat-raised-button 
+        color="primary" 
+        (click)="save()"
+        [disabled]="licensePlates.length === 0">
+        {{ "save" | transloco }}
       </button>
     </mat-dialog-actions>
   </div>

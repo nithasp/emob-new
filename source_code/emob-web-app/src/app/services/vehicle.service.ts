@@ -10,15 +10,12 @@ import {
   VehicleType,
 } from '../models/vehicle.model';
 
-
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class VehicleService {
   constructor(
     private readonly apollo: Apollo,
     private readonly errorHandlingService: ErrorHandlingService
-  ) {}
+  ) { }
 
   getEnumValues(enumName: string): Observable<VehicleEnumOption[]> {
     return this.apollo
@@ -47,8 +44,28 @@ export class VehicleService {
               companyName
               vehicleIds
               licensePlate
-              startDepotId
-              endDepotId
+              startDepotId {
+                depotId
+                depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                columns
+                createdAt
+                updatedAt
+              }
+              endDepotId {
+                depotId
+                depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                columns
+                createdAt
+                updatedAt
+              }
               vehicleTypeId
               vehicleType {
                 vehicleTypeId
@@ -141,8 +158,8 @@ export class VehicleService {
               modifiedAt
             }
           }
-        `, 
-        fetchPolicy: 'network-only' 
+        `,
+        fetchPolicy: 'network-only',
       })
       .pipe(
         map((result) => result.data.myVehicleTypes),
@@ -209,7 +226,9 @@ export class VehicleService {
             }
           }
         `,
-        variables: { input },
+        variables: {
+          input,
+        },
       })
       .pipe(
         map((result) => result.data?.createVehicle),
@@ -217,10 +236,7 @@ export class VehicleService {
       );
   }
 
-  updateVehicle(
-    vehicleIds: string,
-    input: any
-  ): Observable<MyVehicles> {
+  updateVehicle(vehicleIds: string, input: any): Observable<MyVehicles> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
@@ -261,7 +277,10 @@ export class VehicleService {
             }
           }
         `,
-        variables: { vehicleIds, input },
+        variables: {
+          vehicleIds,
+          input,
+        },
       })
       .pipe(
         map((result) => result.data?.updateVehicle),
@@ -277,7 +296,9 @@ export class VehicleService {
             deleteVehicle(vehicleIds: $vehicleIds)
           }
         `,
-        variables: { vehicleIds },
+        variables: {
+          vehicleIds,
+        },
       })
       .pipe(
         map((result) => result.data?.deleteVehicle),
@@ -323,7 +344,9 @@ export class VehicleService {
             }
           }
         `,
-        variables: { vehicleIds },
+        variables: {
+          vehicleIds,
+        },
       })
       .pipe(
         map((result) => result.data?.softDeleteVehicle),
@@ -358,7 +381,9 @@ export class VehicleService {
             }
           }
         `,
-        variables: { input },
+        variables: {
+          input,
+        },
       })
       .pipe(
         map((result) => result.data?.createVehicleType),
@@ -399,7 +424,10 @@ export class VehicleService {
             }
           }
         `,
-        variables: { vehicleTypeId, input },
+        variables: {
+          vehicleTypeId,
+          input,
+        },
       })
       .pipe(
         map((result) => result.data?.updateVehicleType),
@@ -415,7 +443,9 @@ export class VehicleService {
             deleteVehicleType(vehicleTypeId: $vehicleTypeId)
           }
         `,
-        variables: { vehicleTypeId },
+        variables: {
+          vehicleTypeId,
+        },
       })
       .pipe(
         map((result) => result.data?.deleteVehicleType),

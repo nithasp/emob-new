@@ -1,10 +1,91 @@
 #vehicle-dialog {
   padding: 12px;
-  form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+  min-width: 500px;
+
+  .vehicle-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     margin-top: 12px;
+
+    .depot-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .license-input-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+
+      .license-input {
+        flex: 1;
+      }
+
+      .add-button {
+        height: 56px;
+        min-width: 80px;
+        font-weight: 500;
+      }
+    }
+
+    .license-list {
+      background-color: #f5f5f5;
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 100px;
+      max-height: 200px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+
+      .license-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background-color: white;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+
+        .license-content {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .bullet-dot {
+          font-size: 33px;
+          color: #333;
+        }
+
+        .license-text {
+          font-size: 14px;
+          font-weight: 500;
+          color: #333;
+        }
+
+        .remove-button {
+          width: 32px;
+          height: 32px;
+          color: #f44336;
+
+          mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+          }
+        }
+      }
+    }
+  }
+
+  .dialog-actions {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e0e0e0;
   }
 
   mat-dialog-content {
