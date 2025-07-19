@@ -251,6 +251,10 @@ export class InputFieldComponent
     if (this.control.hasError('invalidLength')) {
       return 'Thai citizen ID must be exactly 13 digits long';
     }
+    if (this.control.hasError('timeRangeInvalid')) {
+      return this.control.getError('timeRangeInvalid');
+    }
+    
     return 'Invalid input';
   }
 

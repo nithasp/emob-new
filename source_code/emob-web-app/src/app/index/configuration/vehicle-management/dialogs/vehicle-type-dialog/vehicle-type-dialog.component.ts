@@ -11,11 +11,19 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
-import { VehicleType, AccessType, VehicleEnumOption, VehicleEnumConfigs } from 'src/app/models/vehicle.model';
+import {
+  VehicleType,
+  AccessType,
+  VehicleEnumOption,
+  VehicleEnumConfigs,
+} from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
-import { timeStringToMinutes, minutesToTimeString } from 'src/app/directives/time-string-to-minutes.pipe';
+import {
+  timeStringToMinutes,
+  minutesToTimeString,
+} from 'src/app/directives/time-string-to-minutes.pipe';
 import { VehicleTypeFormControls } from 'src/app/models/form-control.model';
-
+import { createTimeWindowValidator } from 'src/app/shared/validators/time-range.validator';
 
 @Component({
   selector: 'app-vehicle-type-dialog',
@@ -30,7 +38,6 @@ export class VehicleTypeDialogComponent implements OnInit {
   vehicleProfileTypeOptions: VehicleEnumOption[] = [];
   accessPointOptions: VehicleEnumOption[] = [];
 
-  timeString: string = '00:00';
   twEarlyObject: any = { hour: 0, minute: 0 };
   twLateObject: any = { hour: 0, minute: 0 };
 
@@ -45,7 +52,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     private ngbModal: NgbModal,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.isEdit = this.data.mode === 'edit';
@@ -74,7 +81,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     this.getEnumValues();
   }
 
-  private formatTimeForDisplay(timeValue: any): string {
+  formatTimeForDisplay(timeValue: any): string {
     if (typeof timeValue === 'string' && timeValue.includes(':')) {
       return timeValue;
     }
@@ -85,22 +92,25 @@ export class VehicleTypeDialogComponent implements OnInit {
   }
 
   initForm() {
-    this.formVehicleType = this.fb.group({
-      name: ['', Validators.required],
-      access: [[]],
-      capacity: [null, [Validators.required, Validators.min(0)]],
-      twEarly: [''],
-      twLate: [''],
-      width: [null, [Validators.required, Validators.min(0)]],
-      height: [null, [Validators.required, Validators.min(0)]],
-      length: [null, [Validators.required, Validators.min(0)]],
-      vehicleProfileType: [null, Validators.required],
-      maxDistance: [null, Validators.min(0)],
-      maxDuration: [null, Validators.min(0)],
-      unitDistanceCost: [null, Validators.min(0)],
-      unitDurationCost: [null, Validators.min(0)],
-      fixedCost: [null, Validators.min(0)],
-    }) as FormGroup<VehicleTypeFormControls>;
+    this.formVehicleType = this.fb.group(
+      {
+        name: ['', Validators.required],
+        access: [[]],
+        capacity: [null, [Validators.required, Validators.min(0)]],
+        twEarly: [''],
+        twLate: [''],
+        width: [null, [Validators.required, Validators.min(0)]],
+        height: [null, [Validators.required, Validators.min(0)]],
+        length: [null, [Validators.required, Validators.min(0)]],
+        vehicleProfileType: [null, Validators.required],
+        maxDistance: [null, Validators.min(0)],
+        maxDuration: [null, Validators.min(0)],
+        unitDistanceCost: [null, Validators.min(0)],
+        unitDurationCost: [null, Validators.min(0)],
+        fixedCost: [null, Validators.min(0)],
+      },
+      { validators: createTimeWindowValidator() }
+    ) as FormGroup<VehicleTypeFormControls>;
   }
 
   save() {
@@ -115,14 +125,10 @@ export class VehicleTypeDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  log() {
-    console.log('Form Value:', this.formVehicleType.getRawValue());
-    console.log('Form Valid:', this.formVehicleType.valid);
-    console.log('Errors:', this.formVehicleType.errors);
-  }
-
   onAccessPointChange(event: MatCheckboxChange, accessPoint: AccessType): void {
-    const accessPoints = this.formVehicleType.get('access') as FormControl<AccessType[] | null>;
+    const accessPoints = this.formVehicleType.get('access') as FormControl<
+      AccessType[] | null
+    >;
     let currentValues = accessPoints.value || [];
     if (event.checked) {
       currentValues.push(accessPoint);
@@ -136,14 +142,19 @@ export class VehicleTypeDialogComponent implements OnInit {
   }
 
   isAccessPointChecked(accessPoint: AccessType): boolean {
-    return this.formVehicleType.get('access')?.value?.includes(accessPoint) ?? false;
+    return (
+      this.formVehicleType.get('access')?.value?.includes(accessPoint) ?? false
+    );
   }
 
   isAccessPointCheckedString(accessPointKey: string): boolean {
     return this.isAccessPointChecked(accessPointKey as AccessType);
   }
 
-  onAccessPointChangeString(event: MatCheckboxChange, accessPointKey: string): void {
+  onAccessPointChangeString(
+    event: MatCheckboxChange,
+    accessPointKey: string
+  ): void {
     this.onAccessPointChange(event, accessPointKey as AccessType);
   }
 
@@ -175,20 +186,20 @@ export class VehicleTypeDialogComponent implements OnInit {
       if (value !== null && value !== '') {
         (acc as any)[key] =
           typeof value === 'string' &&
-            !isNaN(Number(value)) &&
-            key !== 'name' &&
-            key !== 'vehicleProfileType'
+          !isNaN(Number(value)) &&
+          key !== 'name' &&
+          key !== 'vehicleProfileType'
             ? Number(value)
             : value;
       }
       return acc;
     }, {});
-    console.log('payload:', payload);
+
     const request$ = this.isEdit
       ? this.vehicleService.updateVehicleType(
-        this.data.vehicleType!.vehicleTypeId,
-        payload as VehicleType
-      )
+          this.data.vehicleType!.vehicleTypeId,
+          payload as VehicleType
+        )
       : this.vehicleService.createVehicleType(payload as VehicleType);
     request$.pipe(finalize(() => this.spinner.hide())).subscribe({
       next: (res) => {
@@ -213,16 +224,17 @@ export class VehicleTypeDialogComponent implements OnInit {
       const hour = String(event.hour).padStart(2, '0');
       const minute = String(event.minute).padStart(2, '0');
       this.formVehicleType.controls[key].setValue(`${hour}:${minute}`);
+    } else {
+      this.formVehicleType.controls[key].setValue('');
     }
-  }
 
-  logtimeString() {
-    console.log('this.formVehicleType.controls.twEarly.value:', this.formVehicleType.controls.twEarly.value);
-    console.log('this.timeObject:', this.twEarlyObject);
+    this.formVehicleType.updateValueAndValidity();
+    this.formVehicleType.controls.twEarly.markAsTouched();
+    this.formVehicleType.controls.twLate.markAsTouched();
   }
 
   getEnumValues() {
-    VehicleEnumConfigs.forEach(config => {
+    VehicleEnumConfigs.forEach((config) => {
       this.vehicleService.getEnumValues(config.type).subscribe({
         next: (res) => {
           console.log(`${config.type} response:`, res);
@@ -233,9 +245,5 @@ export class VehicleTypeDialogComponent implements OnInit {
         },
       });
     });
-  }
-
-  onSearchClick() {
-    console.log('onSearchClick');
   }
 }
