@@ -5,32 +5,40 @@
 .mat-mdc-raised-button.mat-primary {
   --mdc-protected-button-container-color: #242484 !important;
 }
+
 .mat-suffix {
   margin-right: 12px;
 }
+
 .mat-mdc-form-field-error-wrapper {
   padding: 0 !important;
 }
+
 .bg-custom-primary {
   background-color: #242484 !important;
   color: #ffffff !important;
+
   &:disabled {
     color: rgba(0, 0, 0, 0.38) !important;
     background: rgb(0 0 0 / 12%) !important;
   }
 }
+
 .bg-custom-secondary {
   background-color: #04948c !important;
   color: #ffffff !important;
+
   &:disabled {
     color: rgba(0, 0, 0, 0.38) !important;
     background: rgb(0 0 0 / 12%) !important;
   }
 }
+
 .bg-custom-danger {
   background-color: #dc3545 !important;
   color: #ffffff !important;
 }
+
 .bg-custom-success {
   background-color: #28a745 !important;
   color: #ffffff !important;
@@ -39,15 +47,19 @@
 .icon-custom-primary {
   color: #242484 !important;
 }
+
 .icon-custom-secondary {
   color: #04948c !important;
 }
+
 .mat-success {
   color: green;
 }
+
 .mat-warning {
   color: red;
 }
+
 .main-wrapper {
   height: 100vh;
 }
@@ -56,6 +68,7 @@
   width: 100%;
   max-height: 100%;
 }
+
 .mat-form-field-infix {
   width: 90px !important;
 }
@@ -83,6 +96,7 @@ h6 {
 * {
   font-family: Kanit;
 }
+
 .fullscreen-fit-content {
   min-height: 100vh;
   height: auto;
@@ -103,7 +117,8 @@ mat-icon {
 
 .custom-tooltip .tooltip-inner {
   background-color: white;
-  color: black; /* Optional: Change text color if needed */
+  color: black;
+  /* Optional: Change text color if needed */
 }
 
 .mat-step-header .mat-step-icon-selected,
@@ -139,7 +154,7 @@ mat-icon {
   justify-content: center;
 }
 
-.test-class > img {
+.test-class>img {
   width: 210px;
   z-index: 999;
   position: relative;
@@ -149,19 +164,24 @@ mat-icon {
   background: white !important;
   border: 1px solid #242484 !important;
   transition: 0.2s;
+
   .mat-mdc-chip-action-label,
   span {
     color: #3f51b5 !important;
   }
+
   mat-icon {
     color: #3f51b5 !important;
   }
+
   &:hover {
     background: #242484 !important;
+
     .mat-mdc-chip-action-label,
     span {
       color: white !important;
     }
+
     mat-icon {
       color: white !important;
     }
@@ -179,19 +199,23 @@ mat-icon {
 /* Global styles.scss */
 #toast-container {
   .toast-success {
-    background-color: #28a745 !important; /* Green background for success toasts */
+    background-color: #28a745 !important;
+    /* Green background for success toasts */
   }
 
   .toast-error {
-    background-color: #dc3545 !important; /* Red background for error toasts */
+    background-color: #dc3545 !important;
+    /* Red background for error toasts */
   }
 
   .toast-info {
-    background-color: #18b3cb !important; /* Blue background for info toasts */
+    background-color: #18b3cb !important;
+    /* Blue background for info toasts */
   }
 
   .toast-warning {
-    background-color: #ffc507 !important; /* Yellow background for warning toasts */
+    background-color: #ffc507 !important;
+    /* Yellow background for warning toasts */
   }
 }
 
@@ -200,7 +224,8 @@ mat-icon {
 }
 
 .custom-modal-width .modal-dialog {
-  max-width: 90%; /* Adjust the width as needed */
+  max-width: 90%;
+  /* Adjust the width as needed */
 }
 
 .custom-modal-content {
@@ -208,7 +233,8 @@ mat-icon {
 }
 
 .custom-modal-width-sm .modal-dialog {
-  max-width: 90%; /* Adjust the width as needed */
+  max-width: 90%;
+  /* Adjust the width as needed */
 }
 
 .custom-modal-content-sm {
@@ -217,4 +243,11 @@ mat-icon {
 
 .modal.fade:not(.show) .from-left.modal-dialog {
   transform: translate(-50%, 0);
+}
+
+// Fix for iOS bold text rendering
+strong {
+  font-weight: bold !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
