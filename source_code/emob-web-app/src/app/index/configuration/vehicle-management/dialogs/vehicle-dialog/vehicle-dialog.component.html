@@ -4,79 +4,101 @@
       {{ t("add_vehicle") }}
     </h2>
 
-    <form [formGroup]="form" class="vehicle-form">
-      
-      <app-input-select 
-        placeholder="Vehicle Type" 
+    <h1 (click)="log()">log</h1>
+
+    <!-- Loading indicator -->
+    <div *ngIf="isLoading" class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Loading vehicle types and depots...</p>
+    </div>
+
+    <!-- Form content -->
+    <form [formGroup]="form" class="vehicle-form" *ngIf="!isLoading">
+      <app-input-select
+        idAttribute="vehicleTypeId"
+        valueAttribute="name"
+        placeholder="Vehicle Type"
         [options]="vehicleTypeOptions"
         [control]="form.controls.vehicleType"
-        [required]="true">
+        [required]="true"
+      >
       </app-input-select>
 
       <div class="depot-row">
-        <app-input-select 
-          placeholder="Start Depot" 
+        <app-input-select
+          idAttribute="depotId"
+          valueAttribute="depotName"
+          placeholder="Start Depot"
           [options]="startDepotOptions"
           [control]="form.controls.startDepot"
-          [required]="true">
+          [required]="true"
+        >
         </app-input-select>
 
-        <app-input-select 
-          placeholder="End Depot" 
+        <app-input-select
+          idAttribute="depotId"
+          valueAttribute="depotName"
+          placeholder="End Depot"
           [options]="endDepotOptions"
           [control]="form.controls.endDepot"
-          [required]="true">
+          [required]="true"
+        >
         </app-input-select>
       </div>
 
       <div class="license-input-row">
-        <app-input-field 
-          placeholder="License Plate" 
+        <app-input-field
+          placeholder="License Plate"
           [control]="form.controls.licensePlate"
           [required]="true"
-          class="license-input">
+          class="license-input"
+        >
         </app-input-field>
-        
-        <button 
-          mat-raised-button 
-          color="accent" 
+
+        <button
+          mat-raised-button
+          color="accent"
           type="button"
           (click)="addLicensePlate()"
           [disabled]="!form.controls.licensePlate.valid"
-          class="add-button">
+          class="add-button"
+        >
           ADD
         </button>
       </div>
 
       <div class="license-list" *ngIf="licensePlates.length > 0">
-        <div class="license-item" *ngFor="let plate of licensePlates; let i = index">
+        <div
+          class="license-item"
+          *ngFor="let plate of licensePlates; let i = index"
+        >
           <div class="license-content">
             <span class="bullet-dot">•</span>
             <span class="license-text">{{ plate }}</span>
           </div>
-          <button 
-            mat-icon-button 
-            color="warn" 
+          <button
+            mat-icon-button
+            color="warn"
             (click)="removeLicensePlate(i)"
-            class="remove-button">
+            class="remove-button"
+          >
             <mat-icon>close</mat-icon>
           </button>
         </div>
       </div>
-
     </form>
 
     <mat-dialog-actions align="end" class="dialog-actions">
-      <button mat-button (click)="cancel()">
-        {{ "cancel" | transloco }}
+      <button mat-raised-button class="bg-custom-danger" (click)="cancel()">
+        Cancel
       </button>
-      <button 
-        mat-raised-button 
-        color="primary" 
+      <button
+        mat-raised-button
+        color="primary"
         (click)="save()"
-        [disabled]="licensePlates.length === 0">
-        {{ "save" | transloco }}
+      >
+        Save
       </button>
     </mat-dialog-actions>
   </div>
-</ng-container> 
+</ng-container>
