@@ -254,6 +254,9 @@ export class InputFieldComponent
     if (this.control.hasError('timeRangeInvalid')) {
       return this.control.getError('timeRangeInvalid');
     }
+    if (this.control.hasError('licensePlatesEmpty')) {
+      return 'License plates need to be added';
+    }
     
     return 'Invalid input';
   }

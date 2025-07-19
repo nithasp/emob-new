@@ -49,7 +49,7 @@ export class VehicleDialogComponent implements OnInit {
       vehicleType: ['', [Validators.required]],
       startDepot: ['', [Validators.required]],
       endDepot: ['', [Validators.required]],
-      licensePlate: ['', [Validators.required]]
+      licensePlate: ['']
     });
   }
 
@@ -103,7 +103,11 @@ export class VehicleDialogComponent implements OnInit {
   }
 
   save() {
-    if (this.form.invalid || this.licensePlates.length === 0) {
+    if (this.licensePlates.length === 0) {
+      this.form.controls.licensePlate.setErrors({ licensePlatesEmpty: true });
+    }
+
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
