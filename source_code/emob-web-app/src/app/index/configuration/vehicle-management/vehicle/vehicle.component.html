@@ -1,8 +1,9 @@
 <ng-container *transloco="let t; read: 'vehicle'">
   <div id="vehicle" class="p-3 mt-5 bg-white">
     <div class="text-right">
-      <button mat-raised-button color="primary" (click)="openVehicleModal()">
-        {{ t("add_vehicle") }}
+      <button mat-raised-button class="bg-custom-secondary" (click)="openVehicleModal()">
+        <mat-icon>add</mat-icon>
+        <span>New</span>
       </button>
     </div>
 
@@ -95,13 +96,26 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>{{ t("actions") }}</th>
           <td mat-cell *matCellDef="let v">
-            <button mat-icon-button (click)="openVehicleModal(v, 'view')">
+            <button
+              mat-icon-button
+              (click)="openVehicleModal(v, 'view')"
+              ngbTooltip="View Vehicle Details"
+            >
               <mat-icon>visibility</mat-icon>
             </button>
-            <button mat-icon-button (click)="openVehicleModal(v, 'edit')">
+            <button
+              mat-icon-button
+              (click)="openVehicleModal(v, 'edit')"
+              ngbTooltip="Edit Vehicle"
+            >
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button color="warn" (click)="deleteVehicle(v)">
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="deleteVehicle(v)"
+              ngbTooltip="Delete Vehicle"
+            >
               <mat-icon>delete</mat-icon>
             </button>
           </td>
@@ -110,10 +124,10 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
       </table>
-      <mat-paginator
-        [pageSize]="10"
-        [pageSizeOptions]="[10, 20, 40, 50]"
-      ></mat-paginator>
     </div>
+    <mat-paginator
+      [pageSize]="10"
+      [pageSizeOptions]="[10, 20, 40, 50]"
+    ></mat-paginator>
   </div>
 </ng-container>

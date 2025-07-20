@@ -1,18 +1,20 @@
-
 <ng-container *transloco="let t; read: 'vehicle'">
   <div id="vehicle-dialog">
     <h2 mat-dialog-title class="p-0">
-      {{ isView ? t("view_vehicle") : (isEditMode ? t("edit_vehicle") : t("add_vehicle")) }}
+      {{
+        isView
+          ? t("view_vehicle")
+          : isEditMode
+          ? t("edit_vehicle")
+          : t("add_vehicle")
+      }}
     </h2>
 
-    <h1 (click)="log()">log</h1>
-
-        <!-- Loading indicator -->
-        <div *ngIf="isLoading" class="loading-container">
-          <mat-spinner diameter="40"></mat-spinner>
-          <p>Loading vehicle types and depots...</p>
-        </div>
-    
+    <!-- Loading indicator -->
+    <div *ngIf="isLoading" class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Loading vehicle types and depots...</p>
+    </div>
 
     <!-- Form content -->
     <form [formGroup]="form" class="vehicle-form" *ngIf="!isLoading">
@@ -54,6 +56,7 @@
       <!-- License Plate Input for Edit Mode -->
       <div *ngIf="isEditMode || isView" class="license-input-row">
         <app-input-field
+          class="w-full"
           placeholder="License Plate"
           [control]="form.controls.licensePlate"
           [required]="true"
@@ -74,11 +77,10 @@
 
           <button
             mat-raised-button
-            color="accent"
+            class="bg-custom-secondary add-button"
             type="button"
             (click)="addLicensePlate()"
             [disabled]="!form.controls.licensePlate.value"
-            class="add-button"
           >
             Add
           </button>
