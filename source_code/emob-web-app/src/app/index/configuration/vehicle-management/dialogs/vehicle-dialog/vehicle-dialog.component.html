@@ -2,7 +2,7 @@
 <ng-container *transloco="let t; read: 'vehicle'">
   <div id="vehicle-dialog">
     <h2 mat-dialog-title class="p-0">
-      {{ t("add_vehicle") }}
+      {{ isView ? t("view_vehicle") : (isEditMode ? t("edit_vehicle") : t("add_vehicle")) }}
     </h2>
 
     <h1 (click)="log()">log</h1>
@@ -23,6 +23,7 @@
         [options]="vehicleTypeOptions"
         [control]="form.controls.vehicleType"
         [required]="true"
+        [disabled]="isView"
       >
       </app-input-select>
 
@@ -34,6 +35,7 @@
           [options]="startDepotOptions"
           [control]="form.controls.startDepot"
           [required]="true"
+          [disabled]="isView"
         >
         </app-input-select>
 
@@ -44,22 +46,24 @@
           [options]="endDepotOptions"
           [control]="form.controls.endDepot"
           [required]="true"
+          [disabled]="isView"
         >
         </app-input-select>
       </div>
 
       <!-- License Plate Input for Edit Mode -->
-      <div *ngIf="isEditMode" class="license-input-row">
+      <div *ngIf="isEditMode || isView" class="license-input-row">
         <app-input-field
           placeholder="License Plate"
           [control]="form.controls.licensePlate"
           [required]="true"
+          [disabled]="isView"
         >
         </app-input-field>
       </div>
 
       <!-- License Plate Input for Add Mode -->
-      <div *ngIf="!isEditMode">
+      <div *ngIf="!isEditMode && !isView">
         <div class="license-input-row">
           <app-input-field
             placeholder="License Plate"
@@ -107,6 +111,7 @@
         Cancel
       </button>
       <button
+        *ngIf="!isView"
         mat-raised-button
         color="primary"
         (click)="save()"

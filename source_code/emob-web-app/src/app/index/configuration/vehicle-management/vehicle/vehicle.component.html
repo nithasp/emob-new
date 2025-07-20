@@ -95,7 +95,10 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>{{ t("actions") }}</th>
           <td mat-cell *matCellDef="let v">
-            <button mat-icon-button (click)="openVehicleModal(v)">
+            <button mat-icon-button (click)="openVehicleModal(v, 'view')">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button (click)="openVehicleModal(v, 'edit')">
               <mat-icon>edit</mat-icon>
             </button>
             <button mat-icon-button color="warn" (click)="deleteVehicle(v)">

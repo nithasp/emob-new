@@ -62,10 +62,13 @@ export class VehicleComponent implements OnInit {
       });
   }
 
-  openVehicleModal(vehicle?: MyVehicles) {
+  openVehicleModal(vehicle?: MyVehicles, mode: 'create' | 'edit' | 'view' = 'create') {
     const dialogRef = this.dialog.open(VehicleDialogComponent, {
       width: '600px',
-      data: { vehicle: vehicle ? { ...vehicle } : null },
+      data: { 
+        mode: mode,
+        vehicle: vehicle ? { ...vehicle } : null 
+      },
     });
 
     dialogRef.afterClosed().subscribe((result) => {

@@ -31,6 +31,7 @@ export class VehicleDialogComponent implements OnInit {
   isLoading = true;
   isSaving = false;
   isEditMode = false;
+  isView = false;
 
   vehicleTypeOptions: any[] = [];
   startDepotOptions: any[] = [];
@@ -41,11 +42,15 @@ export class VehicleDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<VehicleDialogComponent>,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService,
-    @Inject(MAT_DIALOG_DATA) public data: { vehicle: MyVehicles | null }
+    @Inject(MAT_DIALOG_DATA) public data: { 
+      mode: 'create' | 'edit' | 'view';
+      vehicle: MyVehicles | null;
+    }
   ) { }
 
   ngOnInit() {
-    this.isEditMode = !!(this.data.vehicle && this.data.vehicle.vehicleIds);
+    this.isEditMode = this.data.mode === 'edit';
+    this.isView = this.data.mode === 'view';
     this.initializeForm();
     this.loadData();
   }
@@ -58,8 +63,12 @@ export class VehicleDialogComponent implements OnInit {
       licensePlate: ['']
     });
 
-    if (this.isEditMode) {
+    if (this.isEditMode || this.isView) {
       this.form.controls.licensePlate.setValidators([Validators.required]);
+    }
+
+    if (this.isView) {
+      this.form.disable({ emitEvent: false });
     }
   }
 
@@ -82,8 +91,8 @@ export class VehicleDialogComponent implements OnInit {
         this.startDepotOptions = data.depots;
         this.endDepotOptions = data.depots;
 
-        // If in edit mode, fetch fresh vehicle data and patch form
-        if (this.isEditMode && this.data.vehicle?.vehicleIds) {
+        // If in edit or view mode, fetch fresh vehicle data and patch form
+        if ((this.isEditMode || this.isView) && this.data.vehicle?.vehicleIds) {
           this.fetchAndPatchVehicleData();
         }
       },
