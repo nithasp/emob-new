@@ -5,6 +5,8 @@ import { ConfirmationDialogComponent } from '../../../components/confirmation-di
 import { VehicleDialogComponent } from '../dialogs/vehicle-dialog/vehicle-dialog.component';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import { MyVehicles } from 'src/app/models/vehicle.model';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-vehicle',
@@ -33,15 +35,27 @@ export class VehicleComponent implements OnInit {
   constructor(
     private dialog: MatDialog,
     private modalSvc: NgbModal,
-    private vehicleService: VehicleService
+    private vehicleService: VehicleService,
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(): void {
-    this.vehicleService.getMyVehicles().subscribe((vehicles) => {
-      this.dataSource = vehicles;
+    this.getMyVehicles();
+  }
 
-      console.log('this.dataSource', this.dataSource);
-    });
+  getMyVehicles() {
+    this.spinner.show();
+    this.vehicleService
+      .getMyVehicles()
+      .pipe(finalize(() => this.spinner.hide()))
+      .subscribe({
+        next: (res) => {
+          this.dataSource = res;
+        },
+        error: (err) => {
+          console.error(err);
+        },
+      });
   }
 
   openVehicleModal(vehicle?: MyVehicles, index?: number) {
@@ -50,18 +64,11 @@ export class VehicleComponent implements OnInit {
       data: { vehicle: vehicle ? { ...vehicle } : null },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (!result?.vehicle) {
-        return;
+    dialogRef.afterClosed().subscribe((result) => {  console.log('c1');
+      if (result) {
+        console.log('c1');
+        this.getMyVehicles();
       }
-
-      if (vehicle && typeof index === 'number') {
-        this.dataSource[index] = result.vehicle;
-      } else {
-        this.dataSource.push(result.vehicle);
-      }
-
-      this.dataSource = [...this.dataSource];
     });
   }
 
@@ -75,8 +82,18 @@ export class VehicleComponent implements OnInit {
 
     modalRef.result.then((confirmed: boolean) => {
       if (confirmed) {
-        this.dataSource.splice(index, 1);
-        this.dataSource = [...this.dataSource];
+        this.spinner.show();
+        this.vehicleService
+          .deleteVehicle(vehicle.vehicleIds)
+          .pipe(finalize(() => this.spinner.hide()))
+          .subscribe({
+            next: () => {
+              this.getMyVehicles();
+            },
+            error: (err) => {
+              console.error(err);
+            },
+          });
       }
     });
   }

@@ -1,3 +1,4 @@
+
 <ng-container *transloco="let t; read: 'vehicle'">
   <div id="vehicle-dialog">
     <h2 mat-dialog-title class="p-0">
@@ -6,11 +7,12 @@
 
     <h1 (click)="log()">log</h1>
 
-    <!-- Loading indicator -->
-    <div *ngIf="isLoading" class="loading-container">
-      <mat-spinner diameter="40"></mat-spinner>
-      <p>Loading vehicle types and depots...</p>
-    </div>
+        <!-- Loading indicator -->
+        <div *ngIf="isLoading" class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Loading vehicle types and depots...</p>
+        </div>
+    
 
     <!-- Form content -->
     <form [formGroup]="form" class="vehicle-form" *ngIf="!isLoading">
@@ -46,43 +48,56 @@
         </app-input-select>
       </div>
 
-      <div class="license-input-row">
+      <!-- License Plate Input for Edit Mode -->
+      <div *ngIf="isEditMode" class="license-input-row">
         <app-input-field
           placeholder="License Plate"
           [control]="form.controls.licensePlate"
-          class="license-input"
+          [required]="true"
         >
         </app-input-field>
-
-        <button
-          mat-raised-button
-          color="accent"
-          type="button"
-          (click)="addLicensePlate()"
-          [disabled]="!form.controls.licensePlate.valid"
-          class="add-button"
-        >
-          ADD
-        </button>
       </div>
 
-      <div class="license-list" *ngIf="licensePlates.length > 0">
-        <div
-          class="license-item"
-          *ngFor="let plate of licensePlates; let i = index"
-        >
-          <div class="license-content">
-            <span class="bullet-dot">•</span>
-            <span class="license-text">{{ plate }}</span>
-          </div>
-          <button
-            mat-icon-button
-            color="warn"
-            (click)="removeLicensePlate(i)"
-            class="remove-button"
+      <!-- License Plate Input for Add Mode -->
+      <div *ngIf="!isEditMode">
+        <div class="license-input-row">
+          <app-input-field
+            placeholder="License Plate"
+            [control]="form.controls.licensePlate"
+            class="license-input"
           >
-            <mat-icon>close</mat-icon>
+          </app-input-field>
+
+          <button
+            mat-raised-button
+            color="accent"
+            type="button"
+            (click)="addLicensePlate()"
+            [disabled]="!form.controls.licensePlate.valid"
+            class="add-button"
+          >
+            ADD
           </button>
+        </div>
+
+        <div class="license-list" *ngIf="licensePlates.length > 0">
+          <div
+            class="license-item"
+            *ngFor="let plate of licensePlates; let i = index"
+          >
+            <div class="license-content">
+              <span class="bullet-dot">•</span>
+              <span class="license-text">{{ plate }}</span>
+            </div>
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="removeLicensePlate(i)"
+              class="remove-button"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
         </div>
       </div>
     </form>

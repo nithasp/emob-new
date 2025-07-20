@@ -16,7 +16,7 @@ export class VehicleService {
   constructor(
     private readonly apollo: Apollo,
     private readonly errorHandlingService: ErrorHandlingService
-  ) { }
+  ) {}
 
   getEnumValues(enumName: string): Observable<VehicleEnumOption[]> {
     return this.apollo
@@ -73,6 +73,58 @@ export class VehicleService {
               startDepotId {
                 depotId
                 depotName
+              }
+              endDepotId {
+                depotId
+                depotName
+              }
+              vehicleTypeId
+              vehicleType {
+                vehicleTypeId
+                name
+                width
+                height
+                length
+                access
+                capacity
+                volume
+                twEarly
+                twLate
+                maxDistance
+                maxDuration
+                fixedCost
+                unitDistanceCost
+                unitDurationCost
+                vehicleProfileType
+                createdAt
+                modifiedAt
+              }
+              isActive
+              createdAt
+              modifiedAt
+            }
+          }
+        `,
+        fetchPolicy: 'network-only',
+      })
+      .pipe(
+        map((result) => result.data.myVehicles),
+        this.errorHandlingService.handleError
+      );
+  }
+
+  getMyVehicle(vehicleIds: string): Observable<MyVehicles> {
+    return this.apollo
+      .query<Response>({
+        query: gql`
+          query myVehicle($vehicleIds: String!) {
+            myVehicle(vehicleIds: $vehicleIds) {
+              companyName
+              vehicleIds
+              licensePlate
+              startDepotId {
+                depotId
+                depotName
                 latitude
                 longitude
                 tw_early
@@ -119,38 +171,10 @@ export class VehicleService {
             }
           }
         `,
-      })
-      .pipe(
-        map((result) => result.data.myVehicles),
-        this.errorHandlingService.handleError
-      );
-  }
-
-  getMyVehicle(vehicleIds: string): Observable<MyVehicles> {
-    return this.apollo
-      .query<Response>({
-        query: gql`
-          query myVehicle($vehicleIds: String!) {
-            myVehicle(vehicleIds: $vehicleIds) {
-              companyName
-              vehicleIds
-              licensePlate
-              startDepotId
-              endDepotId
-              vehicleTypeId
-              vehicleType {
-                vehicleTypeId
-                name
-              }
-              isActive
-              createdAt
-              modifiedAt
-            }
-          }
-        `,
         variables: {
           vehicleIds: vehicleIds,
         },
+        fetchPolicy: 'network-only',
       })
       .pipe(
         map((result) => result.data.myVehicle),
@@ -218,13 +242,33 @@ export class VehicleService {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
-          mutation createVehicle($input: VehicleTypeInput!) {
+          mutation createVehicle($input: VehicleInput!) {
             createVehicle(input: $input) {
               companyName
               vehicleIds
               licensePlate
-              startDepotId
-              endDepotId
+              startDepotId {
+                depotId
+                depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                columns
+                createdAt
+                updatedAt
+              }
+              endDepotId {
+                depotId
+                depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                columns
+                createdAt
+                updatedAt
+              }
               vehicleTypeId
               vehicleType {
                 vehicleTypeId
@@ -268,14 +312,34 @@ export class VehicleService {
         mutation: gql`
           mutation updateVehicle(
             $vehicleIds: String!
-            $input: UpdateVehicleInput!
+            $input: VehicleUpdateInput!
           ) {
             updateVehicle(vehicleIds: $vehicleIds, input: $input) {
               companyName
               vehicleIds
               licensePlate
-              startDepotId
-              endDepotId
+              startDepotId {
+                depotId
+                depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                columns
+                createdAt
+                updatedAt
+              }
+              endDepotId {
+                depotId
+                depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                columns
+                createdAt
+                updatedAt
+              }
               vehicleTypeId
               vehicleType {
                 vehicleTypeId
@@ -341,8 +405,28 @@ export class VehicleService {
               companyName
               vehicleIds
               licensePlate
-              startDepotId
-              endDepotId
+              startDepotId {
+                depotId
+                depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                columns
+                createdAt
+                updatedAt
+              }
+              endDepotId {
+                depotId
+                depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                columns
+                createdAt
+                updatedAt
+              }
               vehicleTypeId
               vehicleType {
                 vehicleTypeId
