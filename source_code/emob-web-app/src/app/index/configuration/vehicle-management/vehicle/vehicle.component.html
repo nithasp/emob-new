@@ -20,7 +20,7 @@
 
         <ng-container matColumnDef="vehicleType">
           <th mat-header-cell *matHeaderCellDef>{{ t("vehicle_type") }}</th>
-          <td mat-cell *matCellDef="let v">{{ v.vehicleType }}</td>
+          <td mat-cell *matCellDef="let v">{{ v.vehicleType.name }}</td>
         </ng-container>
 
         <ng-container matColumnDef="vehicleBrand">
@@ -74,25 +74,31 @@
         </ng-container>
 
         <ng-container matColumnDef="maxPalletCount">
-          <th mat-header-cell *matHeaderCellDef>{{ t("max_pallet_count") }}</th>
+          <th mat-header-cell *matHeaderCellDef>
+            {{ t("max_pallet_count") }}
+          </th>
           <td mat-cell *matCellDef="let v">{{ v.maxPalletCount }}</td>
         </ng-container>
 
         <ng-container matColumnDef="isActive">
           <th mat-header-cell *matHeaderCellDef>{{ "status" | transloco }}</th>
           <td mat-cell *matCellDef="let v">
-            <mat-icon *ngIf="v.isActive" class="mat-success" ngbTooltip="true">check_circle</mat-icon>
-            <mat-icon *ngIf="!v.isActive" class="mat-warning" ngbTooltip="false">cancel</mat-icon>
+            <mat-icon *ngIf="v.isActive" class="mat-success" ngbTooltip="true"
+              >check_circle</mat-icon
+            >
+            <mat-icon *ngIf="!v.isActive" class="mat-warning" ngbTooltip="false"
+              >cancel</mat-icon
+            >
           </td>
         </ng-container>
 
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>{{ t("actions") }}</th>
-          <td mat-cell *matCellDef="let v; let i = index">
-            <button mat-icon-button (click)="openVehicleModal(v, i)">
+          <td mat-cell *matCellDef="let v">
+            <button mat-icon-button (click)="openVehicleModal(v)">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button color="warn" (click)="deleteVehicle(i)">
+            <button mat-icon-button color="warn" (click)="deleteVehicle(v)">
               <mat-icon>delete</mat-icon>
             </button>
           </td>
@@ -101,6 +107,10 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
       </table>
+      <mat-paginator
+        [pageSize]="10"
+        [pageSizeOptions]="[10, 20, 40, 50]"
+      ></mat-paginator>
     </div>
   </div>
 </ng-container>

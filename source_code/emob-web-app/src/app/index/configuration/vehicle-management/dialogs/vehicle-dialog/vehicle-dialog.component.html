@@ -73,10 +73,10 @@
             color="accent"
             type="button"
             (click)="addLicensePlate()"
-            [disabled]="!form.controls.licensePlate.valid"
+            [disabled]="!form.controls.licensePlate.value"
             class="add-button"
           >
-            ADD
+            Add
           </button>
         </div>
 

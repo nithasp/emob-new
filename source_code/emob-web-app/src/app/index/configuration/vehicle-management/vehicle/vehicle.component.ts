@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from '../../../components/confirmation-dialog/confirmation-dialog.component';
 import { VehicleDialogComponent } from '../dialogs/vehicle-dialog/vehicle-dialog.component';
@@ -30,7 +32,8 @@ export class VehicleComponent implements OnInit {
     'actions',
   ];
 
-  dataSource: MyVehicles[] = [];
+  dataSource = new MatTableDataSource<MyVehicles>([]);
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
     private dialog: MatDialog,
@@ -50,7 +53,8 @@ export class VehicleComponent implements OnInit {
       .pipe(finalize(() => this.spinner.hide()))
       .subscribe({
         next: (res) => {
-          this.dataSource = res;
+          this.dataSource.data = res;
+          this.dataSource.paginator = this.paginator;
         },
         error: (err) => {
           console.error(err);
@@ -58,22 +62,20 @@ export class VehicleComponent implements OnInit {
       });
   }
 
-  openVehicleModal(vehicle?: MyVehicles, index?: number) {
+  openVehicleModal(vehicle?: MyVehicles) {
     const dialogRef = this.dialog.open(VehicleDialogComponent, {
       width: '600px',
       data: { vehicle: vehicle ? { ...vehicle } : null },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {  console.log('c1');
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        console.log('c1');
         this.getMyVehicles();
       }
     });
   }
 
-  deleteVehicle(index: number) {
-    const vehicle = this.dataSource[index];
+  deleteVehicle(vehicle: MyVehicles) {
     const modalRef = this.modalSvc.open(ConfirmationDialogComponent);
     modalRef.componentInstance.title = 'Delete Vehicle';
     modalRef.componentInstance.question = `Delete "${vehicle.vehicleType.name}"?`;
