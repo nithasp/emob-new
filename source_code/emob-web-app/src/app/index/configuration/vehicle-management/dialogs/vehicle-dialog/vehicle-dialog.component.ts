@@ -11,6 +11,7 @@ import { VehicleType, Depot, MyVehicles } from 'src/app/models/vehicle.model';
 import { forkJoin } from 'rxjs';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { finalize } from 'rxjs/operators';
+import { ToastrService } from 'ngx-toastr';
 
 interface VehicleFormControls {
   vehicleType: FormControl<string | null>;
@@ -42,6 +43,7 @@ export class VehicleDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<VehicleDialogComponent>,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService,
+    private toastr: ToastrService,
     @Inject(MAT_DIALOG_DATA) public data: { 
       mode: 'create' | 'edit' | 'view';
       vehicle: MyVehicles | null;
@@ -178,6 +180,7 @@ export class VehicleDialogComponent implements OnInit {
       ).subscribe({
         next: (updatedVehicle) => {
           this.isSaving = false;
+          this.toastr.success('Vehicle updated successfully!', 'Success');
           this.dialogRef.close({ 
             success: true, 
             operation: 'update', 
@@ -187,7 +190,7 @@ export class VehicleDialogComponent implements OnInit {
         error: (error) => {
           console.error('Error updating vehicle:', error);
           this.isSaving = false;
-          // You might want to show an error message to the user here
+          this.toastr.error('Failed to update vehicle. Please try again.', 'Error');
         }
       });
     } else {
@@ -204,6 +207,7 @@ export class VehicleDialogComponent implements OnInit {
       ).subscribe({
         next: (newVehicle) => {
           this.isSaving = false;
+          this.toastr.success('Vehicle created successfully!', 'Success');
           this.dialogRef.close({ 
             success: true, 
             operation: 'create', 
@@ -213,7 +217,7 @@ export class VehicleDialogComponent implements OnInit {
         error: (error) => {
           console.error('Error creating vehicle:', error);
           this.isSaving = false;
-          // You might want to show an error message to the user here
+          this.toastr.error('Failed to create vehicle. Please try again.', 'Error');
         }
       });
     }
@@ -230,6 +234,7 @@ export class VehicleDialogComponent implements OnInit {
         next: (result) => {
           this.isSaving = false;
           if (result) {
+            this.toastr.success('Vehicle deleted successfully!', 'Success');
             this.dialogRef.close({ 
               success: true, 
               operation: 'delete', 
@@ -240,7 +245,7 @@ export class VehicleDialogComponent implements OnInit {
         error: (error) => {
           console.error('Error deleting vehicle:', error);
           this.isSaving = false;
-          // You might want to show an error message to the user here
+          this.toastr.error('Failed to delete vehicle. Please try again.', 'Error');
         }
       });
     }

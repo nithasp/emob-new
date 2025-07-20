@@ -9,6 +9,7 @@ import { VehicleService } from 'src/app/services/vehicle.service';
 import { MyVehicles } from 'src/app/models/vehicle.model';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { finalize } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-vehicle',
@@ -39,7 +40,8 @@ export class VehicleComponent implements OnInit {
     private dialog: MatDialog,
     private modalSvc: NgbModal,
     private vehicleService: VehicleService,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
@@ -93,10 +95,12 @@ export class VehicleComponent implements OnInit {
           .pipe(finalize(() => this.spinner.hide()))
           .subscribe({
             next: () => {
+              this.toastr.success('Vehicle deleted successfully!', 'Success');
               this.getMyVehicles();
             },
             error: (err) => {
               console.error(err);
+              this.toastr.error('Failed to delete vehicle. Please try again.', 'Error');
             },
           });
       }
