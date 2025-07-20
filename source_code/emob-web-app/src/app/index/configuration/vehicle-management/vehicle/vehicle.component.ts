@@ -19,16 +19,11 @@ import { ToastrService } from 'ngx-toastr';
 export class VehicleComponent implements OnInit {
   displayedColumns: string[] = [
     'licensePlate',
-    'vehicleName',
     'vehicleType',
-    'vehicleBrand',
-    'vehicleModel',
-    'vehicleWeight',
     'maxLoadWeight',
     'cargoWidth',
     'cargoLength',
     'cargoHeight',
-    'maxPalletCount',
     'isActive',
     'actions',
   ];
