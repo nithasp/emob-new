@@ -7,7 +7,7 @@
             <h2 class="modal-title">
               {{ isEdit ? t("edit_vehicle_type") : t("add_vehicle_type") }}
             </h2>
-          <app-input-field [placeholder]="t('name')" [control]="formVehicleType.controls.name" [required]="true"
+          <app-input-field [placeholder]="'name' | transloco" [control]="formVehicleType.controls.name" [required]="true"
             [disabled]="isView"></app-input-field>
         </div>
 
@@ -69,11 +69,11 @@
         <div class="form-group-emob">
           <label class="dimension-label">{{ t("dimensions") }}</label>
           <div class="dimension-grid">
-            <app-input-field [placeholder]="t('width')" type="number" [control]="formVehicleType.controls.width" [suffix]="'cm' | transloco"
+            <app-input-field [placeholder]="'width' | transloco" type="number" [control]="formVehicleType.controls.width" [suffix]="'cm' | transloco"
               [disabled]="isView" [required]="true" [decimal]="3"></app-input-field>
-            <app-input-field [placeholder]="t('height')" type="number" [control]="formVehicleType.controls.height"
+            <app-input-field [placeholder]="'height' | transloco" type="number" [control]="formVehicleType.controls.height"
               [suffix]="'cm' | transloco" [disabled]="isView" [required]="true" [decimal]="3"></app-input-field>
-            <app-input-field [placeholder]="t('length')" type="number" [control]="formVehicleType.controls.length"
+            <app-input-field [placeholder]="'length' | transloco" type="number" [control]="formVehicleType.controls.length"
               [suffix]="'cm' | transloco" [disabled]="isView" [required]="true" [decimal]="3"></app-input-field>
           </div>
         </div>
@@ -108,10 +108,10 @@
 
   <mat-dialog-actions align="end">
     <button mat-raised-button class="bg-custom-danger" (click)="cancel()">
-      {{ t("cancel") }}
+      {{ "cancel" | transloco }}
     </button>
     <button *ngIf="!isView" mat-raised-button color="primary" (click)="save()">
-      {{ t("save") }}
+      {{ "save" | transloco }}
     </button>
   </mat-dialog-actions>
   </div>

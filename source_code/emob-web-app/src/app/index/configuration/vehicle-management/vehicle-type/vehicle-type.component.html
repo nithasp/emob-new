@@ -3,7 +3,7 @@
     <div class="my-4 text-end">
       <button mat-raised-button class="bg-custom-secondary" (click)="openVehicleTypeModal('create')">
         <mat-icon>add</mat-icon>
-        <span>{{ t("new") }}</span>
+        <span>{{ "new" | transloco }}</span>
       </button>
     </div>
 
@@ -62,10 +62,10 @@
           </div>
           <div class="item-actions card-footer bg-transparent border-top-0 text-end">
             <button mat-raised-button class="bg-custom-success"
-              (click)="openVehicleTypeModal('view', vehicleType)">{{ t("details") }}</button>
+              (click)="openVehicleTypeModal('view', vehicleType)">{{ "details" | transloco }}</button>
             <button mat-raised-button class="bg-custom-primary"
-              (click)="openVehicleTypeModal('edit', vehicleType)">{{ t("edit") }}</button>
-            <button mat-raised-button class="bg-custom-danger" (click)="deleteVehicleType(vehicleType)">{{ t("delete") }}</button>
+              (click)="openVehicleTypeModal('edit', vehicleType)">{{ "edit" | transloco }}</button>
+            <button mat-raised-button class="bg-custom-danger" (click)="deleteVehicleType(vehicleType)">{{ "delete" | transloco }}</button>
           </div>
         </div>
       </div>

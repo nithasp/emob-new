@@ -8,7 +8,7 @@
         class="nav nav-tabs justify-content-center"
       >
         <div [ngbNavItem]="1">
-          <button ngbNavLink>{{ t("vehicle") }}</button>
+          <button ngbNavLink>{{ "vehicle" | transloco }}</button>
           <ng-template ngbNavContent>
             <app-vehicle></app-vehicle>
           </ng-template>

@@ -82,7 +82,7 @@ export class VehicleComponent implements OnInit {
     modalRef.componentInstance.title = this.transloco.translate('vehicleManagement.delete_vehicle_title');
     modalRef.componentInstance.question = this.transloco.translate('vehicleManagement.delete_vehicle_question');
     modalRef.componentInstance.message = this.transloco.translate('vehicleManagement.this_action_cannot_be_undone');
-    modalRef.componentInstance.acceptButton = this.transloco.translate('vehicleManagement.delete');
+    modalRef.componentInstance.acceptButton = this.transloco.translate('delete');
 
     modalRef.result.then((confirmed: boolean) => {
       if (confirmed) {
@@ -92,18 +92,18 @@ export class VehicleComponent implements OnInit {
           .pipe(finalize(() => this.spinner.hide()))
           .subscribe({
             next: () => {
-              this.toastr.success(
-                this.transloco.translate('vehicleManagement.vehicle_deleted_successfully'),
-                this.transloco.translate('vehicleManagement.success')
-              );
+                      this.toastr.success(
+          this.transloco.translate('vehicleManagement.vehicle_deleted_successfully'),
+          this.transloco.translate('success')
+        );
               this.getMyVehicles();
             },
             error: (err) => {
               console.error(err);
-              this.toastr.error(
-                this.transloco.translate('vehicleManagement.failed_to_delete_vehicle'),
-                this.transloco.translate('vehicleManagement.error')
-              );
+                      this.toastr.error(
+          this.transloco.translate('vehicleManagement.failed_to_delete_vehicle'),
+          this.transloco.translate('error')
+        );
             },
           });
       }

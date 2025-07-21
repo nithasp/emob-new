@@ -47,10 +47,10 @@ export class VehicleTypeComponent implements OnInit {
       },
       error: (error) => {
         this.spinner.hide();
-        this.toastr.error(
-          this.transloco.translate('vehicleManagement.error_fetching_vehicle_types'),
-          this.transloco.translate('vehicleManagement.error')
-        );
+              this.toastr.error(
+        this.transloco.translate('vehicleManagement.error_fetching_vehicle_types'),
+        this.transloco.translate('error')
+      );
         console.error('Error fetching vehicle types:', error);
       },
     });
@@ -78,7 +78,7 @@ export class VehicleTypeComponent implements OnInit {
             ? this.transloco.translate('vehicleManagement.vehicle_type_created_successfully')
             : '';
         if (message) {
-          this.toastr.success(message, this.transloco.translate('vehicleManagement.success'));
+          this.toastr.success(message, this.transloco.translate('success'));
         }
         this.getMyVehicleTypes();
       }
@@ -106,17 +106,17 @@ export class VehicleTypeComponent implements OnInit {
           )
           .subscribe({
             next: () => {
-              this.toastr.success(
-                this.transloco.translate('vehicleManagement.vehicle_type_deleted_successfully'),
-                this.transloco.translate('vehicleManagement.success')
-              );
+                      this.toastr.success(
+          this.transloco.translate('vehicleManagement.vehicle_type_deleted_successfully'),
+          this.transloco.translate('success')
+        );
               this.getMyVehicleTypes();
             },
             error: (err) => {
-              this.toastr.error(
-                this.transloco.translate('vehicleManagement.failed_to_delete_vehicle_type'),
-                this.transloco.translate('vehicleManagement.error')
-              );
+                      this.toastr.error(
+          this.transloco.translate('vehicleManagement.failed_to_delete_vehicle_type'),
+          this.transloco.translate('error')
+        );
               console.error(err);
             },
           });

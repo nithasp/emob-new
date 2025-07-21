@@ -82,7 +82,7 @@
             (click)="addLicensePlate()"
             [disabled]="!form.controls.licensePlate.value"
           >
-            {{ t("add") }}
+            {{ "add" | transloco }}
           </button>
         </div>
 
@@ -110,7 +110,7 @@
 
     <mat-dialog-actions align="end" class="dialog-actions">
       <button mat-raised-button class="bg-custom-danger" (click)="cancel()">
-        {{ t("cancel") }}
+        {{ "cancel" | transloco }}
       </button>
       <button
         *ngIf="!isView"
@@ -118,7 +118,7 @@
         color="primary"
         (click)="save()"
       >
-        {{ t("save") }}
+        {{ "save" | transloco }}
       </button>
     </mat-dialog-actions>
   </div>
