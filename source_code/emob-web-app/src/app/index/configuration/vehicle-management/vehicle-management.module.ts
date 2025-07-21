@@ -3,7 +3,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 
 import { NgbModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
-import { TranslocoModule } from '@jsverse/transloco';
+import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { MaterialModule } from 'src/app/material.module';
 import { VehicleManagementRoutingModule } from './vehicle-management-routing.module';
 
@@ -38,5 +38,6 @@ import { DynamicPopoverComponent } from 'src/app/shared/components/dynamic-popov
     DynamicPopoverComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'vehicleManagement' }],
 })
 export class VehicleManagementModule {}

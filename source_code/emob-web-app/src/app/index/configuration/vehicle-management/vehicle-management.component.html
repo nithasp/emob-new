@@ -1,19 +1,26 @@
-<div id="vehicle-management">
+<ng-container *transloco="let t; read: 'vehicleManagement'">
+  <div id="vehicle-management">
     <div class="wrapper bg-white py-4 px-1 mt-4">
-        <ul ngbNav #nav="ngbNav" [(activeId)]="activeNavId" class="nav nav-tabs justify-content-center">
-            <div [ngbNavItem]="1">
-                <button ngbNavLink>Vehicle</button>
-                <ng-template ngbNavContent>
-                    <app-vehicle></app-vehicle>
-                </ng-template>
-            </div>
-            <div [ngbNavItem]="2">
-                <button ngbNavLink>Vehicle Type</button>
-                <ng-template ngbNavContent>
-                    <app-vehicle-type></app-vehicle-type>
-                </ng-template>
-            </div>
-        </ul>
-        <div [ngbNavOutlet]="nav" class="mt-2"></div>
+      <ul
+        ngbNav
+        #nav="ngbNav"
+        [(activeId)]="activeNavId"
+        class="nav nav-tabs justify-content-center"
+      >
+        <div [ngbNavItem]="1">
+          <button ngbNavLink>Vehicle {{ t("vehicle_weight") }} {{ "kg" | transloco }}</button>
+          <ng-template ngbNavContent>
+            <app-vehicle></app-vehicle>
+          </ng-template>
+        </div>
+        <div [ngbNavItem]="2">
+          <button ngbNavLink>Vehicle Type</button>
+          <ng-template ngbNavContent>
+            <app-vehicle-type></app-vehicle-type>
+          </ng-template>
+        </div>
+      </ul>
+      <div [ngbNavOutlet]="nav" class="mt-2"></div>
     </div>
-</div>
+  </div>
+</ng-container> 

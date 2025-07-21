@@ -1,11 +1,12 @@
-<div id="vehicle-type-dialog" class="modal-container">
-  <form [formGroup]="formVehicleType">
-    <div class="form-grid">
-      <div class="form-section">
-        <div class="form-group-emob">
-          <h2 class="modal-title">
-            {{ isEdit ? "Edit" : "Add" }} Vehicle Type
-          </h2>
+<ng-container *transloco="let t; read: 'vehicleManagement'">
+  <div id="vehicle-type-dialog" class="modal-container">
+    <form [formGroup]="formVehicleType">
+      <div class="form-grid">
+        <div class="form-section">
+          <div class="form-group-emob">
+            <h2 class="modal-title">
+              {{ isEdit ? "Edit" : "Add" }} Vehicle Type
+            </h2>
           <app-input-field placeholder="Name" [control]="formVehicleType.controls.name" [required]="true"
             [disabled]="isView"></app-input-field>
         </div>
@@ -113,4 +114,5 @@
       Save
     </button>
   </mat-dialog-actions>
-</div>
+  </div>
+</ng-container>

@@ -1,10 +1,11 @@
-<div id="vehicle-type" class="p-3">
-  <div class="my-4 text-end">
-    <button mat-raised-button class="bg-custom-secondary" (click)="openVehicleTypeModal('create')">
-      <mat-icon>add</mat-icon>
-      <span>New</span>
-    </button>
-  </div>
+<ng-container *transloco="let t; read: 'vehicleManagement'">
+  <div id="vehicle-type" class="p-3">
+    <div class="my-4 text-end">
+      <button mat-raised-button class="bg-custom-secondary" (click)="openVehicleTypeModal('create')">
+        <mat-icon>add</mat-icon>
+        <span>New</span>
+      </button>
+    </div>
 
   <div *ngIf="allVehicleTypes.length > 0; else noVehicleTypes" class="vehicle-type-list">
     <div *ngFor="let vehicleType of paginatedVehicleTypes" class="vehicle-type-item item-card card mb-3">
@@ -82,4 +83,5 @@
       <p>No vehicle types found.</p>
     </div>
   </ng-template>
-</div>
+  </div>
+</ng-container>

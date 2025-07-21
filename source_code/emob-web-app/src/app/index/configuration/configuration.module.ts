@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ConfigurationRoutingModule } from './configuration-routing.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material.module';
-import { TRANSLOCO_SCOPE, TranslocoModule } from '@jsverse/transloco';
+import { TranslocoModule } from '@jsverse/transloco';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { IndexModule } from '../index.module';
 import { NgxSpinnerModule } from 'ngx-spinner';
@@ -35,7 +35,6 @@ import { InputSelectComponent } from 'src/app/shared/components/form/input-selec
     InputFieldComponent,
     InputSelectComponent
   ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'vehicle' }],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ConfigurationModule {}
