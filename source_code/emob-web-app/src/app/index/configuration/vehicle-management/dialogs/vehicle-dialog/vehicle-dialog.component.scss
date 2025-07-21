@@ -1,6 +1,11 @@
 #vehicle-dialog {
   padding: 1rem 1.5rem;
-  min-width: 500px;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    padding: 1.5rem 2rem;
+    max-width: 700px;
+  }
 
   .loading-container {
     display: flex;
@@ -10,10 +15,18 @@
     padding: 40px 20px;
     text-align: center;
 
+    @media (max-width: 575px) {
+      padding: 20px 10px;
+    }
+
     p {
       margin-top: 16px;
       color: #666;
       font-size: 14px;
+
+      @media (max-width: 575px) {
+        font-size: 12px;
+      }
     }
   }
 
@@ -23,15 +36,31 @@
     gap: 16px;
     margin-top: 12px;
 
+    @media (max-width: 575px) {
+      gap: 12px;
+    }
+
     .depot-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
+
+      // Stack on very small screens
+      @media (max-width: 575px) {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
     }
 
     .license-input-row {
       display: flex;
       gap: 12px;
+
+      // Stack input and button on small screens
+      @media (max-width: 575px) {
+        flex-direction: column;
+        gap: 8px;
+      }
 
       .license-input {
         flex: 1;
@@ -41,6 +70,12 @@
         height: 56px;
         min-width: 80px;
         font-weight: 500;
+
+        @media (max-width: 575px) {
+          height: 48px;
+          width: 100%;
+          min-width: auto;
+        }
       }
     }
 
@@ -48,12 +83,22 @@
       background-color: #f5f5f5;
       border-radius: 8px;
       padding: 12px;
-      min-height: 100px;
-      max-height: 200px;
       overflow-y: auto;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
+
+      // Single column on mobile
+      @media (max-width: 575px) {
+        grid-template-columns: 1fr;
+        padding: 8px;
+        max-height: 150px;
+      }
+
+      @media (max-width: 400px) {
+        padding: 6px;
+        gap: 6px;
+      }
 
       .license-item {
         display: flex;
@@ -63,33 +108,55 @@
         background-color: white;
         border-radius: 6px;
         border: 1px solid #e0e0e0;
+        max-height: 43px;
+        @media (max-width: 575px) {
+          padding: 6px 8px;
+        }
 
         .license-content {
           display: flex;
           align-items: center;
           gap: 8px;
+
+          @media (max-width: 575px) {
+            gap: 6px;
+          }
         }
 
         .bullet-dot {
           font-size: 33px;
           color: #333;
+
+  
         }
 
         .license-text {
           font-size: 14px;
           font-weight: 500;
           color: #333;
+          margin-top: 5px;
+  
+
+          // Prevent text overflow on very small screens
+          @media (max-width: 400px) {
+            word-break: break-all;
+          }
         }
 
         .remove-button {
           width: 32px;
           height: 32px;
           color: #f44336;
+          flex-shrink: 0;
+          margin-top: -12px;
+
 
           mat-icon {
             font-size: 20px;
             width: 20px;
             height: 20px;
+
+
           }
         }
       }
@@ -98,8 +165,32 @@
 
   .dialog-actions {
     margin-top: 24px;
-    padding-top: 16px;
+    padding: 12px 0 0 0;;
     border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+
+    @media (max-width: 575px) {
+      margin-top: 16px;
+      flex-direction: column-reverse;
+      gap: 8px;
+    }
+
+    button {
+      margin-left: 0;
+      @media (max-width: 575px) {
+        width: 100%;
+        order: 1;
+       
+      }
+    }
+
+    button:first-child {
+      @media (max-width: 575px) {
+        order: 2;
+      }
+    }
   }
 
   mat-dialog-content {
@@ -110,5 +201,20 @@
 
   .w-full {
     width: 100%;
+  }
+
+  // Dialog title responsive
+  h2[mat-dialog-title] {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+
+    @media (min-width: 768px) {
+      font-size: 1.5rem;
+    }
+
+    @media (max-width: 575px) {
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+    }
   }
 } 

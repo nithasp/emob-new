@@ -66,7 +66,7 @@
       </div>
 
       <div class="form-section">
-        <div class="form-group-emob">
+        <div class="form-group-emob position-relative" style="top: 21px">
           <label class="dimension-label">{{ t("dimensions") }}</label>
           <div class="dimension-grid">
             <app-input-field [placeholder]="'width' | transloco" type="number" [control]="formVehicleType.controls.width" [suffix]="'cm' | transloco"
@@ -78,20 +78,20 @@
           </div>
         </div>
 
-        <div class="select-container">
+        <div class="select-container position-relative" style="top: 31px">
           <app-input-select [placeholder]="t('vehicle_profile_type')" [options]="vehicleProfileTypeOptions"
             [control]="formVehicleType.controls.vehicleProfileType" [disabled]="isView" idAttribute="key">
           </app-input-select>
         </div>
 
-        <div class="input-grid-cols-2">
+        <div class="input-grid-cols-2 position-relative" style="top: 41px">
           <app-input-field [placeholder]="t('max_distance')" type="number" [control]="formVehicleType.controls.maxDistance"
             [suffix]="'km' | transloco" [disabled]="isView"></app-input-field>
           <app-input-field [placeholder]="t('max_duration')" type="number" [control]="formVehicleType.controls.maxDuration"
             [suffix]="'hr' | transloco" [disabled]="isView"></app-input-field>
         </div>
 
-        <div class="input-grid-cols-2">
+        <div class="input-grid-cols-2 position-relative" style="top: 21px">
           <app-input-field [placeholder]="t('cost_per_distance')" type="number"
             [control]="formVehicleType.controls.unitDistanceCost" [decimal]="2" [disabled]="isView"></app-input-field>
           <app-input-field [placeholder]="t('cost_per_time_unit')" type="number"

@@ -1,34 +1,160 @@
-.new-button {
-  background-color: #3f51b5;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  font-weight: 500;
+#vehicle-type {
+  padding: 0.75rem;
+  min-height: 100vh;
+  @media (min-width: 768px) {
+    padding: 1.5rem;
+  }
 }
+
+.my-4 {
+  @media (max-width: 575px) {
+    margin: 1rem 0 !important;
+  }
+}
+
+.vehicle-type-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 575px) {
+    gap: 1rem;
+  }
+}
+
 .item-list {
   display: flex;
   flex-direction: column;
   gap: 20px;
+
+  @media (max-width: 575px) {
+    gap: 15px;
+  }
 }
+
 .item-card {
-  padding: 20px;
-  align-items: center;
-  flex-direction: row;
+  padding: 1.25rem;
+  align-items: stretch;
+  flex-direction: column;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  @media (max-width: 575px) {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    @media (max-width: 575px) {
+      transform: none;
+    }
+  }
 }
+
 .item-details {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 1rem;
+
+  @media (max-width: 575px) {
+    gap: 0.75rem;
+  }
 }
+
+.card-title {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #333;
+
+  @media (max-width: 575px) {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+.item-details-info {
+  display: block;
+
+  .row {
+    margin-left: 0;
+    margin-right: 0;
+    
+    .col-md-6 {
+      padding-left: 0;
+      padding-right: 0;
+
+      @media (max-width: 767px) {
+        margin-bottom: 1rem;
+      }
+
+      @media (max-width: 575px) {
+        margin-bottom: 0.75rem;
+      }
+
+      p {
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+        line-height: 1.4;
+
+        @media (max-width: 575px) {
+          margin-bottom: 0.5rem;
+          font-size: 0.85rem;
+        }
+
+        strong {
+          color: #555;
+          font-weight: 600;
+        }
+
+        span {
+          color: #333;
+        }
+      }
+
+      &:last-child {
+        @media (max-width: 767px) {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+}
+
 .item-actions {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-direction: row;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+  justify-content: flex-end;
+
+  @media (max-width: 767px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 575px) {
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+  }
 }
+
 .item-actions button {
   border: none;
   padding: 10px 20px;
@@ -36,18 +162,114 @@
   font-size: 0.875rem;
   cursor: pointer;
   font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  min-width: 80px;
+
+  @media (max-width: 767px) {
+    width: 100%;
+    padding: 12px 20px;
+  }
+
+  @media (max-width: 575px) {
+    padding: 10px 16px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
+
 .btn-edit {
   background-color: #26c6da;
   color: white;
+
+  &:hover {
+    background-color: #00acc1;
+  }
 }
+
 .btn-delete {
   background-color: #ef5350;
   color: white;
+
+  &:hover {
+    background-color: #e53935;
+  }
 }
 
-.item-details-info {
-  display: grid;
-  grid-template-columns: 1fr 150px;
-  align-items: center;
+// Bootstrap responsive utilities override
+@media (max-width: 575px) {
+  .text-end {
+    text-align: center !important;
+  }
+}
+
+// Pagination responsive
+.d-flex.justify-content-center {
+  @media (max-width: 575px) {
+    margin-top: 1.5rem !important;
+    
+    ::ng-deep {
+      ngb-pagination {
+        .pagination {
+          flex-wrap: wrap;
+          justify-content: center;
+          
+          .page-item {
+            margin: 0.1rem;
+            
+            .page-link {
+              padding: 0.5rem 0.75rem;
+              font-size: 0.875rem;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// No data message responsive
+.text-center.mt-5 {
+  @media (max-width: 575px) {
+    margin-top: 2rem !important;
+    padding: 2rem 1rem;
+    
+    p {
+      font-size: 0.9rem;
+      color: #666;
+    }
+  }
+}
+
+// Enhanced responsive card layout
+@media (max-width: 575px) {
+  .vehicle-type-item {
+    .item-details-info {
+      .row {
+        .col-md-6 {
+          &:first-child {
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #f5f5f5;
+            margin-bottom: 0.75rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Additional responsive improvements
+@media (min-width: 576px) and (max-width: 767px) {
+  .item-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    
+    button {
+      flex: 1;
+      min-width: 120px;
+    }
+  }
 }
