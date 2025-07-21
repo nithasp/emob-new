@@ -6,6 +6,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -35,6 +36,7 @@ export class VehicleTypeDialogComponent implements OnInit {
   formVehicleType!: FormGroup<VehicleTypeFormControls>;
   isEdit: boolean = false;
   isView: boolean = false;
+  isLoading = true;
 
   vehicleProfileTypeOptions: VehicleEnumOption[] = [];
   accessPointOptions: VehicleEnumOption[] = [];
@@ -60,27 +62,29 @@ export class VehicleTypeDialogComponent implements OnInit {
     this.isEdit = this.data.mode === 'edit';
     this.isView = this.data.mode === 'view';
     this.initForm();
-    if ((this.isEdit || this.isView) && this.data.vehicleType) {
-      const vehicleType = {
-        ...this.data.vehicleType,
-        twEarly: this.formatTimeForDisplay(this.data.vehicleType.twEarly),
-        twLate: this.formatTimeForDisplay(this.data.vehicleType.twLate),
-      };
-      this.formVehicleType.patchValue(vehicleType);
-      if (vehicleType.twEarly) {
-        const [hour, minute] = vehicleType.twEarly.split(':').map(Number);
-        this.twEarlyObject = { hour: hour || 0, minute: minute || 0 };
+    
+    // Load enum values first, then patch form if needed
+    this.getEnumValues().then(() => {
+      if ((this.isEdit || this.isView) && this.data.vehicleType) {
+        const vehicleType = {
+          ...this.data.vehicleType,
+          twEarly: this.formatTimeForDisplay(this.data.vehicleType.twEarly),
+          twLate: this.formatTimeForDisplay(this.data.vehicleType.twLate),
+        };
+        this.formVehicleType.patchValue(vehicleType);
+        if (vehicleType.twEarly) {
+          const [hour, minute] = vehicleType.twEarly.split(':').map(Number);
+          this.twEarlyObject = { hour: hour || 0, minute: minute || 0 };
+        }
+        if (vehicleType.twLate) {
+          const [hour, minute] = vehicleType.twLate.split(':').map(Number);
+          this.twLateObject = { hour: hour || 0, minute: minute || 0 };
+        }
       }
-      if (vehicleType.twLate) {
-        const [hour, minute] = vehicleType.twLate.split(':').map(Number);
-        this.twLateObject = { hour: hour || 0, minute: minute || 0 };
+      if (this.isView) {
+        this.formVehicleType.disable({ emitEvent: false });
       }
-    }
-    if (this.isView) {
-      this.formVehicleType.disable({ emitEvent: false });
-    }
-
-    this.getEnumValues();
+    });
   }
 
   formatTimeForDisplay(timeValue: any): string {
@@ -239,16 +243,34 @@ export class VehicleTypeDialogComponent implements OnInit {
     this.formVehicleType.controls.twLate.markAsTouched();
   }
 
-  getEnumValues() {
-    VehicleEnumConfigs.forEach((config) => {
-      this.vehicleService.getEnumValues(config.type).subscribe({
-        next: (res) => {
-          console.log(`${config.type} response:`, res);
-          (this as any)[config.property] = res;
+  getEnumValues(): Promise<void> {
+    this.isLoading = true;
+    
+    // Create observables for all enum requests
+    const enumRequests = VehicleEnumConfigs.map(config => 
+      this.vehicleService.getEnumValues(config.type)
+    );
+
+    return new Promise((resolve) => {
+      forkJoin(enumRequests).pipe(
+        finalize(() => {
+          this.isLoading = false;
+          resolve();
+        })
+      ).subscribe({
+        next: (responses) => {
+          // Map responses back to their corresponding properties
+          VehicleEnumConfigs.forEach((config, index) => {
+            (this as any)[config.property] = responses[index];
+          });
         },
         error: (err) => {
-          console.error(config.errorMessage, err);
-        },
+          console.error('Error loading enum values:', err);
+          // Initialize empty arrays in case of error
+          VehicleEnumConfigs.forEach((config) => {
+            (this as any)[config.property] = [];
+          });
+        }
       });
     });
   }
