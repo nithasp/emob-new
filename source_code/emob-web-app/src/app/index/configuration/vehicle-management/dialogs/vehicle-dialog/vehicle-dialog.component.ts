@@ -12,6 +12,7 @@ import { forkJoin } from 'rxjs';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { finalize } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
+import { TranslocoService } from '@jsverse/transloco';
 
 interface VehicleFormControls {
   vehicleType: FormControl<string | null>;
@@ -44,6 +45,7 @@ export class VehicleDialogComponent implements OnInit {
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
+    private transloco: TranslocoService,
     @Inject(MAT_DIALOG_DATA) public data: { 
       mode: 'create' | 'edit' | 'view';
       vehicle: MyVehicles | null;
@@ -180,7 +182,10 @@ export class VehicleDialogComponent implements OnInit {
       ).subscribe({
         next: (updatedVehicle) => {
           this.isSaving = false;
-          this.toastr.success('Vehicle updated successfully!', 'Success');
+          this.toastr.success(
+            this.transloco.translate('vehicleManagement.vehicle_updated_successfully'),
+            this.transloco.translate('vehicleManagement.success')
+          );
           this.dialogRef.close({ 
             success: true, 
             operation: 'update', 
@@ -190,7 +195,10 @@ export class VehicleDialogComponent implements OnInit {
         error: (error) => {
           console.error('Error updating vehicle:', error);
           this.isSaving = false;
-          this.toastr.error('Failed to update vehicle. Please try again.', 'Error');
+          this.toastr.error(
+            this.transloco.translate('vehicleManagement.failed_to_update_vehicle'),
+            this.transloco.translate('vehicleManagement.error')
+          );
         }
       });
     } else {
@@ -207,7 +215,10 @@ export class VehicleDialogComponent implements OnInit {
       ).subscribe({
         next: (newVehicle) => {
           this.isSaving = false;
-          this.toastr.success('Vehicle created successfully!', 'Success');
+          this.toastr.success(
+            this.transloco.translate('vehicleManagement.vehicle_created_successfully'),
+            this.transloco.translate('vehicleManagement.success')
+          );
           this.dialogRef.close({ 
             success: true, 
             operation: 'create', 
@@ -217,7 +228,10 @@ export class VehicleDialogComponent implements OnInit {
         error: (error) => {
           console.error('Error creating vehicle:', error);
           this.isSaving = false;
-          this.toastr.error('Failed to create vehicle. Please try again.', 'Error');
+          this.toastr.error(
+            this.transloco.translate('vehicleManagement.failed_to_create_vehicle'),
+            this.transloco.translate('vehicleManagement.error')
+          );
         }
       });
     }
@@ -234,7 +248,10 @@ export class VehicleDialogComponent implements OnInit {
         next: (result) => {
           this.isSaving = false;
           if (result) {
-            this.toastr.success('Vehicle deleted successfully!', 'Success');
+            this.toastr.success(
+              this.transloco.translate('vehicleManagement.vehicle_deleted_successfully'),
+              this.transloco.translate('vehicleManagement.success')
+            );
             this.dialogRef.close({ 
               success: true, 
               operation: 'delete', 
@@ -245,7 +262,10 @@ export class VehicleDialogComponent implements OnInit {
         error: (error) => {
           console.error('Error deleting vehicle:', error);
           this.isSaving = false;
-          this.toastr.error('Failed to delete vehicle. Please try again.', 'Error');
+          this.toastr.error(
+            this.transloco.translate('vehicleManagement.failed_to_delete_vehicle'),
+            this.transloco.translate('vehicleManagement.error')
+          );
         }
       });
     }

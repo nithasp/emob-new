@@ -24,6 +24,7 @@ import {
 } from 'src/app/directives/time-string-to-minutes.pipe';
 import { VehicleTypeFormControls } from 'src/app/models/form-control.model';
 import { createTimeWindowValidator } from 'src/app/shared/validators/time-range.validator';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-vehicle-type-dialog',
@@ -51,7 +52,8 @@ export class VehicleTypeDialogComponent implements OnInit {
     },
     private ngbModal: NgbModal,
     private vehicleService: VehicleService,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    private transloco: TranslocoService
   ) {}
 
   ngOnInit() {
@@ -164,8 +166,12 @@ export class VehicleTypeDialogComponent implements OnInit {
       animation: true,
     });
     const action = this.isEdit ? 'update' : 'create';
-    dialogRef.componentInstance.title = `Confirm ${action}`;
-    dialogRef.componentInstance.message = `Are you sure you want to ${action} this vehicle type?`;
+    dialogRef.componentInstance.title = this.isEdit 
+      ? this.transloco.translate('vehicleManagement.confirm_update')
+      : this.transloco.translate('vehicleManagement.confirm_create');
+    dialogRef.componentInstance.message = this.isEdit
+      ? this.transloco.translate('vehicleManagement.are_you_sure_update_vehicle_type')
+      : this.transloco.translate('vehicleManagement.are_you_sure_create_vehicle_type');
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
         this.handleSubmit();

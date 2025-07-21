@@ -3,7 +3,7 @@
     <div class="my-4 text-end">
       <button mat-raised-button class="bg-custom-secondary" (click)="openVehicleTypeModal('create')">
         <mat-icon>add</mat-icon>
-        <span>New</span>
+        <span>{{ t("new") }}</span>
       </button>
     </div>
 
@@ -18,54 +18,54 @@
           <div class="row">
             <div class="col-md-6">
               <p>
-                <strong>Dimensions (W x H x L): </strong>
-                <span>{{ vehicleType.width }}</span><span>m</span> x
-                <span>{{ vehicleType.height }}</span><span>m</span> x
-                <span>{{ vehicleType.length }}</span><span>m</span>
+                <strong>{{ t("dimensions") }}: </strong>
+                <span>{{ vehicleType.width }}</span><span>{{ "m" | transloco }}</span> x
+                <span>{{ vehicleType.height }}</span><span>{{ "m" | transloco }}</span> x
+                <span>{{ vehicleType.length }}</span><span>{{ "m" | transloco }}</span>
               </p>
               <p>
-                <strong>Capacity: </strong>
+                <strong>{{ t("capacity") }}: </strong>
                 <span>{{ vehicleType.capacity | number }}</span>
-                <span>kg</span>
+                <span>{{ "kg" | transloco }}</span>
               </p>
               <p>
-                <strong>Volume: </strong>
+                <strong>{{ t("volume") }}: </strong>
                 <span>{{ vehicleType.volume | number }}</span>
-                <span>m³</span>
+                <span>{{ "m3" | transloco }}</span>
               </p>
               <p>
-                <strong>Access Points: </strong>
+                <strong>{{ t("access_points") }}: </strong>
                 <span>{{ vehicleType.access.join(", ") }}</span>
               </p>
             </div>
             <div class="col-md-6">
               <p>
-                <strong>Max Distance: </strong>
+                <strong>{{ t("max_distance") }}: </strong>
                 <span>{{ vehicleType.maxDistance | number }}</span>
-                <span>km</span>
+                <span>{{ "km" | transloco }}</span>
               </p>
               <p>
-                <strong>Max Duration: </strong>
+                <strong>{{ t("max_duration") }}: </strong>
                 <span>{{ vehicleType.maxDuration | number }}</span>
-                <span>min</span>
+                <span>{{ "min" | transloco }}</span>
               </p>
               <p>
-                <strong>Fixed Cost: </strong>
+                <strong>{{ t("fixed_cost") }}: </strong>
                 <span>{{ vehicleType.fixedCost | currency : "USD" : "symbol" : "1.2-2" }}</span>
               </p>
               <p>
-                <strong>Unit Distance Cost: </strong>
+                <strong>{{ t("unit_distance_cost") }}: </strong>
                 <span>{{ vehicleType.unitDistanceCost | currency : "USD" : "symbol" : "1.2-2" }}</span>
-                <span>/ km</span>
+                <span>/ {{ "km" | transloco }}</span>
               </p>
             </div>
           </div>
           <div class="item-actions card-footer bg-transparent border-top-0 text-end">
             <button mat-raised-button class="bg-custom-success"
-              (click)="openVehicleTypeModal('view', vehicleType)">Details</button>
+              (click)="openVehicleTypeModal('view', vehicleType)">{{ t("details") }}</button>
             <button mat-raised-button class="bg-custom-primary"
-              (click)="openVehicleTypeModal('edit', vehicleType)">Edit</button>
-            <button mat-raised-button class="bg-custom-danger" (click)="deleteVehicleType(vehicleType)">Delete</button>
+              (click)="openVehicleTypeModal('edit', vehicleType)">{{ t("edit") }}</button>
+            <button mat-raised-button class="bg-custom-danger" (click)="deleteVehicleType(vehicleType)">{{ t("delete") }}</button>
           </div>
         </div>
       </div>
@@ -80,7 +80,7 @@
 
   <ng-template #noVehicleTypes>
     <div class="text-center mt-5">
-      <p>No vehicle types found.</p>
+      <p>{{ t("no_vehicle_types_found") }}</p>
     </div>
   </ng-template>
   </div>

@@ -10,6 +10,7 @@ import { MyVehicles } from 'src/app/models/vehicle.model';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-vehicle',
@@ -36,7 +37,8 @@ export class VehicleComponent implements OnInit {
     private modalSvc: NgbModal,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private transloco: TranslocoService
   ) {}
 
   ngOnInit(): void {
@@ -77,10 +79,10 @@ export class VehicleComponent implements OnInit {
 
   deleteVehicle(vehicle: MyVehicles) {
     const modalRef = this.modalSvc.open(ConfirmationDialogComponent);
-    modalRef.componentInstance.title = 'Delete Vehicle';
-    modalRef.componentInstance.question = `Delete "${vehicle.vehicleType.name}"?`;
-    modalRef.componentInstance.message = 'This action cannot be undone.';
-    modalRef.componentInstance.acceptButton = 'Delete';
+    modalRef.componentInstance.title = this.transloco.translate('vehicleManagement.delete_vehicle_title');
+    modalRef.componentInstance.question = this.transloco.translate('vehicleManagement.delete_vehicle_question');
+    modalRef.componentInstance.message = this.transloco.translate('vehicleManagement.this_action_cannot_be_undone');
+    modalRef.componentInstance.acceptButton = this.transloco.translate('vehicleManagement.delete');
 
     modalRef.result.then((confirmed: boolean) => {
       if (confirmed) {
@@ -90,12 +92,18 @@ export class VehicleComponent implements OnInit {
           .pipe(finalize(() => this.spinner.hide()))
           .subscribe({
             next: () => {
-              this.toastr.success('Vehicle deleted successfully!', 'Success');
+              this.toastr.success(
+                this.transloco.translate('vehicleManagement.vehicle_deleted_successfully'),
+                this.transloco.translate('vehicleManagement.success')
+              );
               this.getMyVehicles();
             },
             error: (err) => {
               console.error(err);
-              this.toastr.error('Failed to delete vehicle. Please try again.', 'Error');
+              this.toastr.error(
+                this.transloco.translate('vehicleManagement.failed_to_delete_vehicle'),
+                this.transloco.translate('vehicleManagement.error')
+              );
             },
           });
       }

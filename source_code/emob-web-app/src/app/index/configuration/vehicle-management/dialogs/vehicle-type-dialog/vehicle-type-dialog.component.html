@@ -5,14 +5,14 @@
         <div class="form-section">
           <div class="form-group-emob">
             <h2 class="modal-title">
-              {{ isEdit ? "Edit" : "Add" }} Vehicle Type
+              {{ isEdit ? t("edit_vehicle_type") : t("add_vehicle_type") }}
             </h2>
-          <app-input-field placeholder="Name" [control]="formVehicleType.controls.name" [required]="true"
+          <app-input-field [placeholder]="t('name')" [control]="formVehicleType.controls.name" [required]="true"
             [disabled]="isView"></app-input-field>
         </div>
 
         <div class="form-group-emob">
-          <label class="checkbox-group-label">Access Points</label>
+          <label class="checkbox-group-label">{{ t("access_points") }}</label>
           <div class="checkbox-grid access-points">
             <div class="checkbox-item" *ngFor="let option of accessPointOptions">
               <mat-checkbox [checked]="isAccessPointCheckedString(option.key)"
@@ -25,23 +25,23 @@
           formVehicleType.get('access')?.hasError('minlength') &&
           formVehicleType.get('access')?.touched
             ">
-            Please select at least one access point.
+            {{ t("please_select_at_least_one_access_point") }}
           </mat-error>
         </div>
 
         <div class="form-group-emob">
-          <app-input-field placeholder="Capacity" type="number" [control]="formVehicleType.controls.capacity"
+          <app-input-field [placeholder]="t('capacity')" type="number" [control]="formVehicleType.controls.capacity"
             [disabled]="isView" [required]="true"></app-input-field>
         </div>
 
         <div class="form-group-emob">
           <app-dynamic-popover [placement]="'bottom-start'">
-            <app-input-field popover-trigger placeholder="Start Time" [control]="formVehicleType.controls.twEarly"
+            <app-input-field popover-trigger [placeholder]="t('start_time')" [control]="formVehicleType.controls.twEarly"
               [disabled]="isView" [readonly]="true" suffixIcon="access_time"></app-input-field>
 
             <div popover-content>
               <div class="card-body p-2">
-                <p class="card-title">twEarly:</p>
+                <p class="card-title">{{ t("tw_early") }}</p>
                 <ngb-timepicker [(ngModel)]="twEarlyObject" [ngModelOptions]="{ standalone: true }"
                   (ngModelChange)="onTimeValueChange('twEarly', $event)" [readonly]="isView"></ngb-timepicker>
               </div>
@@ -51,12 +51,12 @@
 
         <div class="form-group-emob mb-0">
           <app-dynamic-popover [placement]="'bottom-start'">
-            <app-input-field popover-trigger placeholder="End Time" [control]="formVehicleType.controls.twLate"
+            <app-input-field popover-trigger [placeholder]="t('end_time')" [control]="formVehicleType.controls.twLate"
               [disabled]="isView" [readonly]="true" suffixIcon="access_time"></app-input-field>
 
             <div popover-content>
               <div class="card-body p-2">
-                <p class="card-title">twLate:</p>
+                <p class="card-title">{{ t("tw_late") }}</p>
                 <ngb-timepicker [(ngModel)]="twLateObject" [ngModelOptions]="{ standalone: true }"
                   (ngModelChange)="onTimeValueChange('twLate', $event)" [readonly]="isView"></ngb-timepicker>
               </div>
@@ -67,39 +67,39 @@
 
       <div class="form-section">
         <div class="form-group-emob">
-          <label class="dimension-label">Dimensions (Width x Height x Length)</label>
+          <label class="dimension-label">{{ t("dimensions") }}</label>
           <div class="dimension-grid">
-            <app-input-field placeholder="Width" type="number" [control]="formVehicleType.controls.width" [suffix]="'cm'"
+            <app-input-field [placeholder]="t('width')" type="number" [control]="formVehicleType.controls.width" [suffix]="'cm' | transloco"
               [disabled]="isView" [required]="true" [decimal]="3"></app-input-field>
-            <app-input-field placeholder="Height" type="number" [control]="formVehicleType.controls.height"
-              [suffix]="'cm'" [disabled]="isView" [required]="true" [decimal]="3"></app-input-field>
-            <app-input-field placeholder="Length" type="number" [control]="formVehicleType.controls.length"
-              [suffix]="'cm'" [disabled]="isView" [required]="true" [decimal]="3"></app-input-field>
+            <app-input-field [placeholder]="t('height')" type="number" [control]="formVehicleType.controls.height"
+              [suffix]="'cm' | transloco" [disabled]="isView" [required]="true" [decimal]="3"></app-input-field>
+            <app-input-field [placeholder]="t('length')" type="number" [control]="formVehicleType.controls.length"
+              [suffix]="'cm' | transloco" [disabled]="isView" [required]="true" [decimal]="3"></app-input-field>
           </div>
         </div>
 
         <div class="select-container">
-          <app-input-select placeholder="Vehicle Profile Type" [options]="vehicleProfileTypeOptions"
+          <app-input-select [placeholder]="t('vehicle_profile_type')" [options]="vehicleProfileTypeOptions"
             [control]="formVehicleType.controls.vehicleProfileType" [disabled]="isView" idAttribute="key">
           </app-input-select>
         </div>
 
         <div class="input-grid-cols-2">
-          <app-input-field placeholder="Max Distance" type="number" [control]="formVehicleType.controls.maxDistance"
-            [suffix]="'km'" [disabled]="isView"></app-input-field>
-          <app-input-field placeholder="Max Duration" type="number" [control]="formVehicleType.controls.maxDuration"
-            [suffix]="'hr'" [disabled]="isView"></app-input-field>
+          <app-input-field [placeholder]="t('max_distance')" type="number" [control]="formVehicleType.controls.maxDistance"
+            [suffix]="'km' | transloco" [disabled]="isView"></app-input-field>
+          <app-input-field [placeholder]="t('max_duration')" type="number" [control]="formVehicleType.controls.maxDuration"
+            [suffix]="'hr' | transloco" [disabled]="isView"></app-input-field>
         </div>
 
         <div class="input-grid-cols-2">
-          <app-input-field placeholder="Cost Per Distance" type="number"
+          <app-input-field [placeholder]="t('cost_per_distance')" type="number"
             [control]="formVehicleType.controls.unitDistanceCost" [decimal]="2" [disabled]="isView"></app-input-field>
-          <app-input-field placeholder="Cost Per Time Unit" type="number"
+          <app-input-field [placeholder]="t('cost_per_time_unit')" type="number"
             [control]="formVehicleType.controls.unitDurationCost" [decimal]="2" [disabled]="isView"></app-input-field>
         </div>
 
         <div class="">
-          <app-input-field placeholder="Fixed Cost" type="number" [control]="formVehicleType.controls.fixedCost"
+          <app-input-field [placeholder]="t('fixed_cost')" type="number" [control]="formVehicleType.controls.fixedCost"
             [decimal]="2" [disabled]="isView"></app-input-field>
         </div>
       </div>
@@ -108,10 +108,10 @@
 
   <mat-dialog-actions align="end">
     <button mat-raised-button class="bg-custom-danger" (click)="cancel()">
-      Cancel
+      {{ t("cancel") }}
     </button>
     <button *ngIf="!isView" mat-raised-button color="primary" (click)="save()">
-      Save
+      {{ t("save") }}
     </button>
   </mat-dialog-actions>
   </div>

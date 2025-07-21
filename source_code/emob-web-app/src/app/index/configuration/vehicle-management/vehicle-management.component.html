@@ -8,13 +8,13 @@
         class="nav nav-tabs justify-content-center"
       >
         <div [ngbNavItem]="1">
-          <button ngbNavLink>Vehicle {{ t("vehicle_weight") }} {{ "kg" | transloco }}</button>
+          <button ngbNavLink>{{ t("vehicle") }}</button>
           <ng-template ngbNavContent>
             <app-vehicle></app-vehicle>
           </ng-template>
         </div>
         <div [ngbNavItem]="2">
-          <button ngbNavLink>Vehicle Type</button>
+          <button ngbNavLink>{{ t("vehicle_type") }}</button>
           <ng-template ngbNavContent>
             <app-vehicle-type></app-vehicle-type>
           </ng-template>

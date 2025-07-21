@@ -8,6 +8,7 @@ import { ToastrService } from 'ngx-toastr';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
 import { finalize } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-vehicle-type',
@@ -27,7 +28,8 @@ export class VehicleTypeComponent implements OnInit {
     private toastr: ToastrService,
     private dialog: MatDialog,
     private ngbModal: NgbModal,
-    private vehicleService: VehicleService
+    private vehicleService: VehicleService,
+    private transloco: TranslocoService
   ) {}
 
   ngOnInit(): void {
@@ -45,7 +47,10 @@ export class VehicleTypeComponent implements OnInit {
       },
       error: (error) => {
         this.spinner.hide();
-        this.toastr.error('Error fetching vehicle types', 'Error');
+        this.toastr.error(
+          this.transloco.translate('vehicleManagement.error_fetching_vehicle_types'),
+          this.transloco.translate('vehicleManagement.error')
+        );
         console.error('Error fetching vehicle types:', error);
       },
     });
@@ -68,12 +73,12 @@ export class VehicleTypeComponent implements OnInit {
       if (result?.refresh) {
         const message =
           mode === 'edit'
-            ? 'Vehicle type updated successfully'
+            ? this.transloco.translate('vehicleManagement.vehicle_type_updated_successfully')
             : mode === 'create'
-            ? 'Vehicle type created successfully'
+            ? this.transloco.translate('vehicleManagement.vehicle_type_created_successfully')
             : '';
         if (message) {
-          this.toastr.success(message, 'Success');
+          this.toastr.success(message, this.transloco.translate('vehicleManagement.success'));
         }
         this.getMyVehicleTypes();
       }
@@ -84,8 +89,10 @@ export class VehicleTypeComponent implements OnInit {
     const modalRef = this.ngbModal.open(ConfirmationDialogComponent, {
       centered: true,
     });
-    modalRef.componentInstance.title = 'Delete Vehicle Type';
-    modalRef.componentInstance.message = `Are you sure you want to delete "${vehicleType.name}"? This action cannot be undone.`;
+    modalRef.componentInstance.title = this.transloco.translate('vehicleManagement.delete_vehicle_type_title');
+    modalRef.componentInstance.question = this.transloco.translate('vehicleManagement.delete_vehicle_type_question');
+    modalRef.componentInstance.message = this.transloco.translate('vehicleManagement.this_action_cannot_be_undone');
+    modalRef.componentInstance.message = this.transloco.translate('vehicleManagement.delete_vehicle_type_question');
 
     modalRef.result.then((confirmed) => {
       if (confirmed) {
@@ -99,11 +106,17 @@ export class VehicleTypeComponent implements OnInit {
           )
           .subscribe({
             next: () => {
-              this.toastr.success('Vehicle type deleted successfully', 'Success');
+              this.toastr.success(
+                this.transloco.translate('vehicleManagement.vehicle_type_deleted_successfully'),
+                this.transloco.translate('vehicleManagement.success')
+              );
               this.getMyVehicleTypes();
             },
             error: (err) => {
-              this.toastr.error('Failed to delete vehicle type', 'Error');
+              this.toastr.error(
+                this.transloco.translate('vehicleManagement.failed_to_delete_vehicle_type'),
+                this.transloco.translate('vehicleManagement.error')
+              );
               console.error(err);
             },
           });

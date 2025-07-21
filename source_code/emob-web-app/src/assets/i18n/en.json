@@ -54,5 +54,10 @@
   "vehicle": "Vehicle",
   "ton": "Ton",
   "cm": "cm",
-  "status": "Status"
+  "status": "Status",
+  "m": "m",
+  "m3": "m³",
+  "min": "min",
+  "hr": "hr",
+  "inactive": "Inactive"
 }

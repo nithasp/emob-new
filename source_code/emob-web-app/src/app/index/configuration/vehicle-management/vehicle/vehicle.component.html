@@ -3,7 +3,7 @@
     <div class="text-right">
       <button mat-raised-button class="bg-custom-secondary" (click)="openVehicleModal()">
         <mat-icon>add</mat-icon>
-        <span>New</span>
+        <span>{{ t("new") }}</span>
       </button>
     </div>
 
@@ -54,10 +54,10 @@
         <ng-container matColumnDef="isActive">
           <th mat-header-cell *matHeaderCellDef>{{ "status" | transloco }}</th>
           <td mat-cell *matCellDef="let v">
-            <mat-icon *ngIf="v.isActive" class="mat-success" ngbTooltip="true"
+            <mat-icon *ngIf="v.isActive" class="mat-success" [ngbTooltip]="t('is_active')"
               >check_circle</mat-icon
             >
-            <mat-icon *ngIf="!v.isActive" class="mat-warning" ngbTooltip="false"
+            <mat-icon *ngIf="!v.isActive" class="mat-warning" [ngbTooltip]="'inactive' | transloco"
               >cancel</mat-icon
             >
           </td>
@@ -69,14 +69,14 @@
             <button
               mat-icon-button
               (click)="openVehicleModal(v, 'view')"
-              ngbTooltip="View Vehicle Details"
+              [ngbTooltip]="t('view_vehicle_details')"
             >
               <mat-icon>visibility</mat-icon>
             </button>
             <button
               mat-icon-button
               (click)="openVehicleModal(v, 'edit')"
-              ngbTooltip="Edit Vehicle"
+              [ngbTooltip]="t('edit_vehicle')"
             >
               <mat-icon>edit</mat-icon>
             </button>
@@ -84,7 +84,7 @@
               mat-icon-button
               color="warn"
               (click)="deleteVehicle(v)"
-              ngbTooltip="Delete Vehicle"
+              [ngbTooltip]="t('delete_vehicle')"
             >
               <mat-icon>delete</mat-icon>
             </button>
