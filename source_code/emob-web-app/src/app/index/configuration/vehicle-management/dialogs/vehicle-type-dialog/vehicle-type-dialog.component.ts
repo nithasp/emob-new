@@ -35,7 +35,7 @@ import { TranslocoService } from '@jsverse/transloco';
 export class VehicleTypeDialogComponent implements OnInit {
   formVehicleType!: FormGroup<VehicleTypeFormControls>;
   isEdit: boolean = false;
-  isView: boolean = false;
+  isViewMode: boolean = false;
   isLoading = true;
 
   vehicleProfileTypeOptions: VehicleEnumOption[] = [];
@@ -60,12 +60,12 @@ export class VehicleTypeDialogComponent implements OnInit {
 
   ngOnInit() {
     this.isEdit = this.data.mode === 'edit';
-    this.isView = this.data.mode === 'view';
+    this.isViewMode = this.data.mode === 'view';
     this.initForm();
-    
+
     // Load enum values first, then patch form if needed
     this.getEnumValues().then(() => {
-      if ((this.isEdit || this.isView) && this.data.vehicleType) {
+      if ((this.isEdit || this.isViewMode) && this.data.vehicleType) {
         const vehicleType = {
           ...this.data.vehicleType,
           twEarly: this.formatTimeForDisplay(this.data.vehicleType.twEarly),
@@ -81,7 +81,7 @@ export class VehicleTypeDialogComponent implements OnInit {
           this.twLateObject = { hour: hour || 0, minute: minute || 0 };
         }
       }
-      if (this.isView) {
+      if (this.isViewMode) {
         this.formVehicleType.disable({ emitEvent: false });
       }
     });
@@ -170,12 +170,16 @@ export class VehicleTypeDialogComponent implements OnInit {
       animation: true,
     });
     const action = this.isEdit ? 'update' : 'create';
-    dialogRef.componentInstance.title = this.isEdit 
+    dialogRef.componentInstance.title = this.isEdit
       ? this.transloco.translate('vehicleManagement.confirm_update')
       : this.transloco.translate('vehicleManagement.confirm_create');
     dialogRef.componentInstance.message = this.isEdit
-      ? this.transloco.translate('vehicleManagement.are_you_sure_update_vehicle_type')
-      : this.transloco.translate('vehicleManagement.are_you_sure_create_vehicle_type');
+      ? this.transloco.translate(
+          'vehicleManagement.are_you_sure_update_vehicle_type'
+        )
+      : this.transloco.translate(
+          'vehicleManagement.are_you_sure_create_vehicle_type'
+        );
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
         this.handleSubmit();
@@ -245,33 +249,35 @@ export class VehicleTypeDialogComponent implements OnInit {
 
   getEnumValues(): Promise<void> {
     this.isLoading = true;
-    
+
     // Create observables for all enum requests
-    const enumRequests = VehicleEnumConfigs.map(config => 
+    const enumRequests = VehicleEnumConfigs.map((config) =>
       this.vehicleService.getEnumValues(config.type)
     );
 
     return new Promise((resolve) => {
-      forkJoin(enumRequests).pipe(
-        finalize(() => {
-          this.isLoading = false;
-          resolve();
-        })
-      ).subscribe({
-        next: (responses) => {
-          // Map responses back to their corresponding properties
-          VehicleEnumConfigs.forEach((config, index) => {
-            (this as any)[config.property] = responses[index];
-          });
-        },
-        error: (err) => {
-          console.error('Error loading enum values:', err);
-          // Initialize empty arrays in case of error
-          VehicleEnumConfigs.forEach((config) => {
-            (this as any)[config.property] = [];
-          });
-        }
-      });
+      forkJoin(enumRequests)
+        .pipe(
+          finalize(() => {
+            this.isLoading = false;
+            resolve();
+          })
+        )
+        .subscribe({
+          next: (responses) => {
+            // Map responses back to their corresponding properties
+            VehicleEnumConfigs.forEach((config, index) => {
+              (this as any)[config.property] = responses[index];
+            });
+          },
+          error: (err) => {
+            console.error('Error loading enum values:', err);
+            // Initialize empty arrays in case of error
+            VehicleEnumConfigs.forEach((config) => {
+              (this as any)[config.property] = [];
+            });
+          },
+        });
     });
   }
 }

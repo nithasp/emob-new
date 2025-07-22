@@ -27,7 +27,7 @@ export class VehicleDialogComponent implements OnInit {
   isLoading = true;
   isSaving = false;
   isEditMode = false;
-  isView = false;
+  isViewMode = false;
 
   vehicleTypeOptions: any[] = [];
   startDepotOptions: any[] = [];
@@ -49,7 +49,7 @@ export class VehicleDialogComponent implements OnInit {
 
   ngOnInit() {
     this.isEditMode = this.data.mode === 'edit';
-    this.isView = this.data.mode === 'view';
+    this.isViewMode = this.data.mode === 'view';
     this.initializeForm();
     this.loadData();
   }
@@ -62,14 +62,14 @@ export class VehicleDialogComponent implements OnInit {
       licensePlate: [''],
     });
 
-    if (this.isEditMode || this.isView) {
+    if (this.isEditMode || this.isViewMode) {
       this.form.controls.licensePlate.setValidators([Validators.required]);
     }
 
     // Initialize license plate duplicate validator
     this.updateLicensePlateValidators();
 
-    if (this.isView) {
+    if (this.isViewMode) {
       this.form.disable({ emitEvent: false });
     }
   }
@@ -78,7 +78,7 @@ export class VehicleDialogComponent implements OnInit {
     const validators = [];
 
     // Add required validator if in edit or view mode
-    if (this.isEditMode || this.isView) {
+    if (this.isEditMode || this.isViewMode) {
       validators.push(Validators.required);
     }
 
@@ -112,7 +112,7 @@ export class VehicleDialogComponent implements OnInit {
 
           // If in edit or view mode, fetch fresh vehicle data and patch form
           if (
-            (this.isEditMode || this.isView) &&
+            (this.isEditMode || this.isViewMode) &&
             this.data.vehicle?.vehicleIds
           ) {
             this.fetchAndPatchVehicleData();
