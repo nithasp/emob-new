@@ -60,8 +60,14 @@
 
       // Stack on very small screens
       @media (max-width: 576px) {
-        grid-template-columns: 1fr;
-        gap: 8px;
+        display: block !important;
+        ::ng-deep {
+          .start-depot {
+            mat-form-field:first-child {
+              margin-bottom: 8px !important;
+            }
+          }
+        }
       }
     }
 

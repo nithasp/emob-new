@@ -37,12 +37,12 @@
           </app-input-select>
 
           <div class="depot-row">
-            <app-input-select idAttribute="depotId" valueAttribute="depotName" [placeholder]="t('start_depot')"
+            <app-input-select class="start-depot" idAttribute="depotId" valueAttribute="depotName" [placeholder]="t('start_depot')"
               [options]="startDepotOptions" [control]="form.controls.startDepot" [required]="true"
               [disabled]="isViewMode">
             </app-input-select>
 
-            <app-input-select idAttribute="depotId" valueAttribute="depotName" [placeholder]="t('end_depot')"
+            <app-input-select class="end-depot" idAttribute="depotId" valueAttribute="depotName" [placeholder]="t('end_depot')"
               [options]="endDepotOptions" [control]="form.controls.endDepot" [required]="true" [disabled]="isViewMode">
             </app-input-select>
           </div>
@@ -80,17 +80,19 @@
             </div>
           </div>
         </form>
+
+        <mat-dialog-actions align="end" class="dialog-actions card-footer bg-transparent p-0">
+          <button mat-raised-button class="bg-custom-danger" (click)="cancel()">
+            {{ "cancel" | transloco }}
+          </button>
+          <button *ngIf="!isViewMode" mat-raised-button color="primary" (click)="save()">
+            {{ "save" | transloco }}
+          </button>
+        </mat-dialog-actions>
       </mat-card-content>
 
 
-      <mat-dialog-actions align="end" class="dialog-actions card-footer bg-transparent">
-        <button mat-raised-button class="bg-custom-danger" (click)="cancel()">
-          {{ "cancel" | transloco }}
-        </button>
-        <button *ngIf="!isViewMode" mat-raised-button color="primary" (click)="save()">
-          {{ "save" | transloco }}
-        </button>
-      </mat-dialog-actions>
+   
     </div>
   </mat-card>
 </ng-container>
