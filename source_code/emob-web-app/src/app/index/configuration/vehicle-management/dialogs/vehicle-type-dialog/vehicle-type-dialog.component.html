@@ -1,6 +1,5 @@
 <ng-container *transloco="let t; read: 'vehicleManagement'">
-  <div id="vehicle-type-dialog" class="modal-container">
-
+  <mat-card id="vehicle-type-dialog" class="modal-container px-3 py-4">
     <!-- Loading indicator - centered and only visible when loading -->
     <div *ngIf="isLoading" class="loading-container">
       <mat-spinner diameter="40"></mat-spinner>
@@ -9,137 +8,149 @@
 
     <!-- All content hidden when loading -->
     <div *ngIf="!isLoading" class="content-container">
-      <h2 class="modal-title">
-        {{
-        isViewMode
-        ? t("view_vehicle_type")
-        : isEdit
-        ? t("edit_vehicle_type")
-        : t("add_vehicle_type")
-        }}
-      </h2>
+      <mat-card-header class="mb-4">
+        <h1 class="font-weight-bold">
+          {{
+          isViewMode
+          ? t("view_vehicle_type")
+          : isEdit
+          ? t("edit_vehicle_type")
+          : t("add_vehicle_type")
+          }}
+        </h1>
+      </mat-card-header>
 
-      <!-- Form content -->
-      <form [formGroup]="formVehicleType">
-        <div class="form-grid">
-          <div class="form-section">
-            <div class="form-group-emob">
-              <app-input-field [placeholder]="'name' | transloco" [control]="formVehicleType.controls.name"
-                [required]="true" [disabled]="isViewMode"></app-input-field>
-            </div>
-
-            <div class="form-group-emob">
-              <label class="checkbox-group-label">{{ t("access_points") }}</label>
-              <div class="checkbox-grid access-points">
-                <div class="checkbox-item" *ngFor="let option of accessPointOptions">
-                  <mat-checkbox [checked]="isAccessPointCheckedString(option.key)"
-                    (change)="onAccessPointChangeString($event, option.key)" [disabled]="isViewMode">
-                    {{ option.value | titlecase }}
-                  </mat-checkbox>
-                </div>
+      <mat-card-content><!-- Form content -->
+        <form [formGroup]="formVehicleType">
+          <div class="form-grid">
+            <div class="form-section">
+              <div class="form-group-emob">
+                <app-input-field [placeholder]="'name' | transloco" [control]="formVehicleType.controls.name"
+                  [required]="true" [disabled]="isViewMode"></app-input-field>
               </div>
-              <mat-error *ngIf="
-              formVehicleType.get('access')?.hasError('minlength') &&
-              formVehicleType.get('access')?.touched
-                ">
-                {{ t("please_select_at_least_one_access_point") }}
-              </mat-error>
-            </div>
 
-            <div class="form-group-emob">
-              <app-input-field [placeholder]="t('capacity')" type="number" [control]="formVehicleType.controls.capacity"
-                [disabled]="isViewMode" [required]="true"></app-input-field>
-            </div>
-
-            <div class="form-group-emob">
-              <app-dynamic-popover [placement]="'bottom-start'">
-                <app-input-field popover-trigger [placeholder]="t('start_time')"
-                  [control]="formVehicleType.controls.twEarly" [disabled]="isViewMode" [readonly]="true"
-                  suffixIcon="access_time"></app-input-field>
-
-                <div popover-content>
-                  <div class="card-body p-2">
-                    <p class="card-title">{{ t("tw_early") }}</p>
-                    <ngb-timepicker [(ngModel)]="twEarlyObject" [ngModelOptions]="{ standalone: true }"
-                      (ngModelChange)="onTimeValueChange('twEarly', $event)" [readonly]="isViewMode"></ngb-timepicker>
+              <div class="form-group-emob access-points">
+                <label class="checkbox-group-label">{{
+                  t("access_points")
+                  }}</label>
+                <div class="checkbox-grid">
+                  <div class="checkbox-item" *ngFor="let option of accessPointOptions">
+                    <mat-checkbox [checked]="isAccessPointCheckedString(option.key)"
+                      (change)="onAccessPointChangeString($event, option.key)" [disabled]="isViewMode">
+                      {{ option.value | titlecase }}
+                    </mat-checkbox>
                   </div>
                 </div>
-              </app-dynamic-popover>
-            </div>
+                <mat-error *ngIf="
+                    formVehicleType.get('access')?.hasError('minlength') &&
+                    formVehicleType.get('access')?.touched
+                  ">
+                  {{ t("please_select_at_least_one_access_point") }}
+                </mat-error>
+              </div>
 
-            <div class="form-group-emob mb-0">
-              <app-dynamic-popover [placement]="'bottom-start'">
-                <app-input-field popover-trigger [placeholder]="t('end_time')"
-                  [control]="formVehicleType.controls.twLate" [disabled]="isViewMode" [readonly]="true"
-                  suffixIcon="access_time"></app-input-field>
+              <div class="form-group-emob">
+                <app-input-field [placeholder]="t('capacity')" type="number"
+                  [control]="formVehicleType.controls.capacity" [disabled]="isViewMode"
+                  [required]="true"></app-input-field>
+              </div>
 
-                <div popover-content>
-                  <div class="card-body p-2">
-                    <p class="card-title">{{ t("tw_late") }}</p>
-                    <ngb-timepicker [(ngModel)]="twLateObject" [ngModelOptions]="{ standalone: true }"
-                      (ngModelChange)="onTimeValueChange('twLate', $event)" [readonly]="isViewMode"></ngb-timepicker>
+              <div class="form-group-emob">
+                <app-dynamic-popover [placement]="'bottom-start'">
+                  <app-input-field popover-trigger [placeholder]="t('start_time')"
+                    [control]="formVehicleType.controls.twEarly" [disabled]="isViewMode" [readonly]="true"
+                    suffixIcon="access_time"></app-input-field>
+
+                  <div popover-content>
+                    <div class="card-body p-2">
+                      <p class="card-title">{{ t("tw_early") }}</p>
+                      <ngb-timepicker [(ngModel)]="twEarlyObject" [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="onTimeValueChange('twEarly', $event)" [readonly]="isViewMode"></ngb-timepicker>
+                    </div>
                   </div>
-                </div>
-              </app-dynamic-popover>
-            </div>
-          </div>
+                </app-dynamic-popover>
+              </div>
 
-          <div class="form-section">
-            <div class="form-group-emob position-relative" style="top: -27px">
-              <label class="dimension-label">{{ t("dimensions") }}</label>
-              <div class="dimension-grid">
-                <app-input-field [placeholder]="'width' | transloco" type="number"
-                  [control]="formVehicleType.controls.width" [suffix]="'cm' | transloco" [disabled]="isViewMode"
-                  [required]="true" [decimal]="3"></app-input-field>
-                <app-input-field [placeholder]="'height' | transloco" type="number"
-                  [control]="formVehicleType.controls.height" [suffix]="'cm' | transloco" [disabled]="isViewMode"
-                  [required]="true" [decimal]="3"></app-input-field>
-                <app-input-field [placeholder]="'length' | transloco" type="number"
-                  [control]="formVehicleType.controls.length" [suffix]="'cm' | transloco" [disabled]="isViewMode"
-                  [required]="true" [decimal]="3"></app-input-field>
+              <div class="form-group-emob mb-0">
+                <app-dynamic-popover [placement]="'bottom-start'">
+                  <app-input-field popover-trigger [placeholder]="t('end_time')"
+                    [control]="formVehicleType.controls.twLate" [disabled]="isViewMode" [readonly]="true"
+                    suffixIcon="access_time"></app-input-field>
+
+                  <div popover-content>
+                    <div class="card-body p-2">
+                      <p class="card-title">{{ t("tw_late") }}</p>
+                      <ngb-timepicker [(ngModel)]="twLateObject" [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="onTimeValueChange('twLate', $event)" [readonly]="isViewMode"></ngb-timepicker>
+                    </div>
+                  </div>
+                </app-dynamic-popover>
               </div>
             </div>
 
-            <div class="select-container position-relative" style="top: 0px">
-              <app-input-select [placeholder]="t('vehicle_profile_type')" [options]="vehicleProfileTypeOptions"
-                [control]="formVehicleType.controls.vehicleProfileType" [disabled]="isViewMode" idAttribute="key">
-              </app-input-select>
-            </div>
+            <div class="form-section">
+              <div class="form-group-emob position-relative">
+                <label class="dimension-label">{{ t("dimensions") }}</label>
+                <div class="dimension-grid">
+                  <app-input-field [placeholder]="'width' | transloco" type="number"
+                    [control]="formVehicleType.controls.width" [suffix]="'cm' | transloco" [disabled]="isViewMode"
+                    [required]="true" [decimal]="3"></app-input-field>
+                  <app-input-field [placeholder]="'height' | transloco" type="number"
+                    [control]="formVehicleType.controls.height" [suffix]="'cm' | transloco" [disabled]="isViewMode"
+                    [required]="true" [decimal]="3"></app-input-field>
+                  <app-input-field [placeholder]="'length' | transloco" type="number"
+                    [control]="formVehicleType.controls.length" [suffix]="'cm' | transloco" [disabled]="isViewMode"
+                    [required]="true" [decimal]="3"></app-input-field>
+                </div>
+              </div>
 
-            <div class="input-grid-cols-2 position-relative" style="top: 18px">
-              <app-input-field [placeholder]="t('max_distance')" type="number"
-                [control]="formVehicleType.controls.maxDistance" [suffix]="'km' | transloco"
-                [disabled]="isViewMode"></app-input-field>
-              <app-input-field [placeholder]="t('max_duration')" type="number"
-                [control]="formVehicleType.controls.maxDuration" [suffix]="'hr' | transloco"
-                [disabled]="isViewMode"></app-input-field>
-            </div>
+              <div class="select-container">
+                <app-input-select [placeholder]="t('vehicle_profile_type')" [options]="vehicleProfileTypeOptions"
+                  [control]="formVehicleType.controls.vehicleProfileType" [disabled]="isViewMode" idAttribute="key">
+                </app-input-select>
+              </div>
 
-            <div class="input-grid-cols-2 position-relative" style="top: 9px">
-              <app-input-field [placeholder]="t('cost_per_distance')" type="number"
-                [control]="formVehicleType.controls.unitDistanceCost" [decimal]="2"
-                [disabled]="isViewMode"></app-input-field>
-              <app-input-field [placeholder]="t('cost_per_time_unit')" type="number"
-                [control]="formVehicleType.controls.unitDurationCost" [decimal]="2"
-                [disabled]="isViewMode"></app-input-field>
-            </div>
+              <div class="input-grid-cols-2">
+                <app-input-field [placeholder]="t('max_distance')" type="number"
+                  [control]="formVehicleType.controls.maxDistance" [suffix]="'km' | transloco"
+                  [disabled]="isViewMode"></app-input-field>
+                <app-input-field [placeholder]="t('max_duration')" type="number"
+                  [control]="formVehicleType.controls.maxDuration" [suffix]="'hr' | transloco"
+                  [disabled]="isViewMode"></app-input-field>
+              </div>
 
-            <div class="">
-              <app-input-field [placeholder]="t('fixed_cost')" type="number"
-                [control]="formVehicleType.controls.fixedCost" [decimal]="2" [disabled]="isViewMode"></app-input-field>
+              <div class="input-grid-cols-2">
+                <app-input-field [placeholder]="t('cost_per_distance')" type="number"
+                  [control]="formVehicleType.controls.unitDistanceCost" [decimal]="2"
+                  [disabled]="isViewMode"></app-input-field>
+                <app-input-field [placeholder]="t('cost_per_time_unit')" type="number"
+                  [control]="formVehicleType.controls.unitDurationCost" [decimal]="2"
+                  [disabled]="isViewMode"></app-input-field>
+              </div>
+
+              <div>
+                <app-input-field [placeholder]="t('fixed_cost')" type="number"
+                  [control]="formVehicleType.controls.fixedCost" [decimal]="2"
+                  [disabled]="isViewMode"></app-input-field>
+              </div>
+
+              <div>
+                <mat-dialog-actions align="end">
+                  <button mat-raised-button class="bg-custom-danger" (click)="cancel()">
+                    {{ "cancel" | transloco }}
+                  </button>
+                  <button *ngIf="!isViewMode" mat-raised-button color="primary" (click)="save()">
+                    {{ "save" | transloco }}
+                  </button>
+                </mat-dialog-actions>
+              </div>
+
             </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </mat-card-content>
 
-      <mat-dialog-actions align="end">
-        <button mat-raised-button class="bg-custom-danger" (click)="cancel()">
-          {{ "cancel" | transloco }}
-        </button>
-        <button *ngIf="!isViewMode" mat-raised-button color="primary" (click)="save()">
-          {{ "save" | transloco }}
-        </button>
-      </mat-dialog-actions>
+
     </div>
-  </div>
+  </mat-card>
 </ng-container>

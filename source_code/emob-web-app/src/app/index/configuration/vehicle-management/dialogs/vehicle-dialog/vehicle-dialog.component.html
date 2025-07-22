@@ -1,6 +1,5 @@
 <ng-container *transloco="let t; read: 'vehicleManagement'">
-  <div id="vehicle-dialog">
-
+  <mat-card id="vehicle-dialog" class="px-3 py-4" [class.is-loading]="isLoading">
     <!-- Loading indicator - centered and only visible when loading -->
     <div *ngIf="isLoading" class="loading-container">
       <mat-spinner diameter="40"></mat-spinner>
@@ -9,7 +8,7 @@
 
     <!-- All content hidden when loading -->
     <div *ngIf="!isLoading" class="content-container">
-      <h2 mat-dialog-title class="p-0">
+      <!-- <h2 mat-dialog-title class="p-0">
         {{
         isViewMode
         ? t("view_vehicle")
@@ -17,61 +16,74 @@
         ? t("edit_vehicle")
         : t("add_vehicle")
         }}
-      </h2>
+      </h2> -->
 
-      <!-- Form content -->
-      <form [formGroup]="form" class="vehicle-form">
-        <app-input-select idAttribute="vehicleTypeId" valueAttribute="name" [placeholder]="t('vehicle_type')"
-          [options]="vehicleTypeOptions" [control]="form.controls.vehicleType" [required]="true"
-          [disabled]="isViewMode">
-        </app-input-select>
+      <mat-card-header class="mb-4">
+        <h1 class="font-weight-bold"> {{
+          isViewMode
+          ? t("view_vehicle")
+          : isEditMode
+          ? t("edit_vehicle")
+          : t("add_vehicle")
+          }}</h1>
+      </mat-card-header>
 
-        <div class="depot-row">
-          <app-input-select idAttribute="depotId" valueAttribute="depotName" [placeholder]="t('start_depot')"
-            [options]="startDepotOptions" [control]="form.controls.startDepot" [required]="true"
+      <mat-card-content>
+        <!-- Form content -->
+        <form [formGroup]="form" class="vehicle-form">
+          <app-input-select idAttribute="vehicleTypeId" valueAttribute="name" [placeholder]="t('vehicle_type')"
+            [options]="vehicleTypeOptions" [control]="form.controls.vehicleType" [required]="true"
             [disabled]="isViewMode">
           </app-input-select>
 
-          <app-input-select idAttribute="depotId" valueAttribute="depotName" [placeholder]="t('end_depot')"
-            [options]="endDepotOptions" [control]="form.controls.endDepot" [required]="true" [disabled]="isViewMode">
-          </app-input-select>
-        </div>
+          <div class="depot-row">
+            <app-input-select idAttribute="depotId" valueAttribute="depotName" [placeholder]="t('start_depot')"
+              [options]="startDepotOptions" [control]="form.controls.startDepot" [required]="true"
+              [disabled]="isViewMode">
+            </app-input-select>
 
-        <!-- License Plate Input for Edit Mode -->
-        <div *ngIf="isEditMode || isViewMode" class="license-input-row">
-          <app-input-field class="w-full" [placeholder]="t('license_plate')" [control]="form.controls.licensePlate"
-            [required]="true" [disabled]="isViewMode || isEditMode">
-          </app-input-field>
-        </div>
-
-        <!-- License Plate Input for Add Mode -->
-        <div *ngIf="!isEditMode && !isViewMode">
-          <div class="license-input-row">
-            <app-input-field [placeholder]="t('license_plate')" [control]="form.controls.licensePlate"
-              class="license-input">
-            </app-input-field>
-
-            <button mat-raised-button class="bg-custom-secondary add-button" type="button" (click)="addLicensePlate()"
-              [disabled]="!form.controls.licensePlate.value">
-              {{ "add" | transloco }}
-            </button>
+            <app-input-select idAttribute="depotId" valueAttribute="depotName" [placeholder]="t('end_depot')"
+              [options]="endDepotOptions" [control]="form.controls.endDepot" [required]="true" [disabled]="isViewMode">
+            </app-input-select>
           </div>
 
-          <div class="license-list" *ngIf="licensePlates.length > 0">
-            <div class="license-item" *ngFor="let plate of licensePlates; let i = index">
-              <div class="license-content">
-                <span class="bullet-dot">•</span>
-                <span class="license-text">{{ plate }}</span>
-              </div>
-              <button mat-icon-button color="warn" (click)="removeLicensePlate(i)" class="remove-button">
-                <mat-icon>close</mat-icon>
+          <!-- License Plate Input for Edit Mode -->
+          <div *ngIf="isEditMode || isViewMode" class="license-input-row">
+            <app-input-field class="w-full" [placeholder]="t('license_plate')" [control]="form.controls.licensePlate"
+              [required]="true" [disabled]="isViewMode || isEditMode">
+            </app-input-field>
+          </div>
+
+          <!-- License Plate Input for Add Mode -->
+          <div *ngIf="!isEditMode && !isViewMode">
+            <div class="license-input-row">
+              <app-input-field [placeholder]="t('license_plate')" [control]="form.controls.licensePlate"
+                class="license-input">
+              </app-input-field>
+
+              <button mat-raised-button class="bg-custom-secondary add-button" type="button" (click)="addLicensePlate()"
+                [disabled]="!form.controls.licensePlate.value">
+                {{ "add" | transloco }}
               </button>
             </div>
-          </div>
-        </div>
-      </form>
 
-      <mat-dialog-actions align="end" class="dialog-actions">
+            <div class="license-list" *ngIf="licensePlates.length > 0">
+              <div class="license-item" *ngFor="let plate of licensePlates; let i = index">
+                <div class="license-content">
+                  <span class="bullet-dot">•</span>
+                  <span class="license-text">{{ plate }}</span>
+                </div>
+                <button mat-icon-button color="warn" (click)="removeLicensePlate(i)" class="remove-button">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </mat-card-content>
+
+
+      <mat-dialog-actions align="end" class="dialog-actions card-footer bg-transparent">
         <button mat-raised-button class="bg-custom-danger" (click)="cancel()">
           {{ "cancel" | transloco }}
         </button>
@@ -80,5 +92,5 @@
         </button>
       </mat-dialog-actions>
     </div>
-  </div>
+  </mat-card>
 </ng-container>

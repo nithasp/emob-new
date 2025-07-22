@@ -1,88 +1,95 @@
 <ng-container *transloco="let t; read: 'vehicleManagement'">
-  <div id="vehicle-type" class="p-3">
-    <div class="my-4 text-end">
-      <button mat-raised-button class="bg-custom-secondary new-button" (click)="openVehicleTypeModal('create')">
-        <mat-icon>add</mat-icon>
-        <span>{{ "new" | transloco }}</span>
-      </button>
-    </div>
-
-  <div *ngIf="allVehicleTypes.length > 0; else noVehicleTypes" class="vehicle-type-list">
-    <div *ngFor="let vehicleType of paginatedVehicleTypes" class="vehicle-type-item item-card card mb-3">
-      <div class="item-details p-3">
-        <h2 class="card-title">
-          <strong>{{ vehicleType.name }}</strong>
-        </h2>
-        <hr />
-        <div class="item-details-info">
-          <div class="row">
-            <div class="col-12 col-md-6">
-              <p>
-                <strong>{{ t("dimensions") }}: </strong>
-                <span>{{ vehicleType.width }}</span><span>{{ "m" | transloco }}</span> x
-                <span>{{ vehicleType.height }}</span><span>{{ "m" | transloco }}</span> x
-                <span>{{ vehicleType.length }}</span><span>{{ "m" | transloco }}</span>
-              </p>
-              <p>
-                <strong>{{ t("capacity") }}: </strong>
-                <span>{{ vehicleType.capacity | number }}</span>
-                <span>{{ "kg" | transloco }}</span>
-              </p>
-              <p>
-                <strong>{{ t("volume") }}: </strong>
-                <span>{{ vehicleType.volume | number }}</span>
-                <span>{{ "m3" | transloco }}</span>
-              </p>
-              <p>
-                <strong>{{ t("access_points") }}: </strong>
-                <span>{{ vehicleType.access.join(", ") }}</span>
-              </p>
-            </div>
-            <div class="col-12 col-md-6">
-              <p>
-                <strong>{{ t("max_distance") }}: </strong>
-                <span>{{ vehicleType.maxDistance | number }}</span>
-                <span>{{ "km" | transloco }}</span>
-              </p>
-              <p>
-                <strong>{{ t("max_duration") }}: </strong>
-                <span>{{ vehicleType.maxDuration | number }}</span>
-                <span>{{ "min" | transloco }}</span>
-              </p>
-              <p>
-                <strong>{{ t("fixed_cost") }}: </strong>
-                <span>{{ vehicleType.fixedCost | currency : "USD" : "symbol" : "1.2-2" }}</span>
-              </p>
-              <p>
-                <strong>{{ t("unit_distance_cost") }}: </strong>
-                <span>{{ vehicleType.unitDistanceCost | currency : "USD" : "symbol" : "1.2-2" }}</span>
-                <span>/ {{ "km" | transloco }}</span>
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="item-actions card-footer bg-transparent border-top-0">
-          <button mat-raised-button class="bg-custom-success"
-            (click)="openVehicleTypeModal('view', vehicleType)">{{ "details" | transloco }}</button>
-          <button mat-raised-button class="bg-custom-primary"
-            (click)="openVehicleTypeModal('edit', vehicleType)">{{ "edit" | transloco }}</button>
-          <button mat-raised-button class="bg-custom-danger" 
-            (click)="deleteVehicleType(vehicleType)">{{ "delete" | transloco }}</button>
+  <div id="vehicle-type" class="p-3 mx-auto col-12 col-md-10">
+    <div class="d-flex justify-content-end">
+      <div class="d-flex align-items-center">
+        <div class="my-4 text-end">
+          <button mat-raised-button class="bg-custom-secondary new-button" (click)="openVehicleTypeModal('create')">
+            <mat-icon>add</mat-icon>
+            <span>{{ "new" | transloco }}</span>
+          </button>
         </div>
       </div>
     </div>
-  </div>
 
-  <ng-template #noVehicleTypes>
-    <div class="text-center mt-5">
-      <p>{{ t("no_vehicle_types_found") }}</p>
+    <div *ngIf="allVehicleTypes.length > 0; else noVehicleTypes" class="vehicle-type-list">
+      <div *ngFor="let vehicleType of paginatedVehicleTypes" class="vehicle-type-item item-card card mb-3">
+        <div class="item-details p-3">
+          <h2 class="card-title">
+            <strong>{{ vehicleType.name }}</strong>
+          </h2>
+          <hr />
+          <div class="item-details-info">
+            <div class="row">
+
+              <div class="col-12 col-md-6">
+                <p>
+                  <strong>{{ t("dimensions") }}: </strong>
+                  <span>{{ vehicleType.width }}</span><span>{{ "m" | transloco }}</span> x
+                  <span>{{ vehicleType.height }}</span><span>{{ "m" | transloco }}</span> x
+                  <span>{{ vehicleType.length }}</span><span>{{ "m" | transloco }}</span>
+                </p>
+                <p>
+                  <strong>{{ t("capacity") }}: </strong>
+                  <span>{{ vehicleType.capacity | number }}</span>
+                  <span>{{ "kg" | transloco }}</span>
+                </p>
+                <p>
+                  <strong>{{ t("volume") }}: </strong>
+                  <span>{{ vehicleType.volume | number }}</span>
+                  <span>{{ "m3" | transloco }}</span>
+                </p>
+                <p>
+                  <strong>{{ t("access_points") }}: </strong>
+                  <span>{{ vehicleType.access.join(", ") }}</span>
+                </p>
+              </div>
+              <div class="col-12 col-md-6">
+                <p>
+                  <strong>{{ t("max_distance") }}: </strong>
+                  <span>{{ vehicleType.maxDistance | number }}</span>
+                  <span>{{ "km" | transloco }}</span>
+                </p>
+                <p>
+                  <strong>{{ t("max_duration") }}: </strong>
+                  <span>{{ vehicleType.maxDuration | number }}</span>
+                  <span>{{ "min" | transloco }}</span>
+                </p>
+                <p>
+                  <strong>{{ t("fixed_cost") }}: </strong>
+                  <span>{{ vehicleType.fixedCost | currency : "USD" : "symbol" : "1.2-2" }}</span>
+                </p>
+                <p>
+                  <strong>{{ t("unit_distance_cost") }}: </strong>
+                  <span>{{ vehicleType.unitDistanceCost | currency : "USD" : "symbol" : "1.2-2" }}</span>
+                  <span>/ {{ "km" | transloco }}</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="item-actions card-footer bg-transparent border-top-0">
+              <button mat-raised-button class="bg-custom-success" (click)="openVehicleTypeModal('view', vehicleType)">{{
+                "details" | transloco }}</button>
+              <button mat-raised-button class="bg-custom-primary" (click)="openVehicleTypeModal('edit', vehicleType)">{{
+                "edit" | transloco }}</button>
+              <button mat-raised-button class="bg-custom-danger" (click)="deleteVehicleType(vehicleType)">{{ "delete" |
+                transloco }}</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
-  </ng-template>
 
-  <div class="d-flex justify-content-center mt-4">
-    <ngb-pagination [(page)]="page" [pageSize]="pageSize" [collectionSize]="collectionSize"
-      (pageChange)="refreshVehicleTypes()" [maxSize]="5" [rotate]="true" [boundaryLinks]="true">
-    </ngb-pagination>
-  </div>
+    <ng-template #noVehicleTypes>
+      <div class="text-center mt-5">
+        <p>{{ t("no_vehicle_types_found") }}</p>
+      </div>
+    </ng-template>
+
+    <div class="d-flex justify-content-center mt-4">
+      <ngb-pagination [(page)]="page" [pageSize]="pageSize" [collectionSize]="collectionSize"
+        (pageChange)="refreshVehicleTypes()" [maxSize]="5" [rotate]="true" [boundaryLinks]="true">
+      </ngb-pagination>
+    </div>
   </div>
 </ng-container>

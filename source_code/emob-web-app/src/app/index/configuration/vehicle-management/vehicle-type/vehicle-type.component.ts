@@ -17,7 +17,7 @@ import { TranslocoService } from '@jsverse/transloco';
 })
 export class VehicleTypeComponent implements OnInit {
   page = 1;
-  pageSize = 9;
+  pageSize = 5;
   collectionSize = 0;
 
   allVehicleTypes: VehicleType[] = [];
