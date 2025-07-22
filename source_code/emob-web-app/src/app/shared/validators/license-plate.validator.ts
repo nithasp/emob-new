@@ -8,4 +8,16 @@ export function licensePlatesValidator(): ValidatorFn {
     }
     return null;
   };
-} 
+}
+
+export function licensePlateDuplicateValidator(
+  existingLicensePlates: string[]
+): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value?.trim();
+    if (value && existingLicensePlates.includes(value)) {
+      return { licensePlateDuplicate: true };
+    }
+    return null;
+  };
+}

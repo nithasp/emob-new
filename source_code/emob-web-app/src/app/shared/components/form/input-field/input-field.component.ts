@@ -257,7 +257,10 @@ export class InputFieldComponent
     if (this.control.hasError('licensePlatesEmpty')) {
       return 'License plates need to be added';
     }
-    
+    if (this.control.hasError('licensePlateDuplicate')) {
+      return 'This license plate has already been added';
+    }
+
     return 'Invalid input';
   }
 

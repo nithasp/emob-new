@@ -13,14 +13,8 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { finalize } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
-
-interface VehicleFormControls {
-  vehicleType: FormControl<string | null>;
-  startDepot: FormControl<string | null>;
-  endDepot: FormControl<string | null>;
-  licensePlate: FormControl<string | null>;
-}
-
+import { licensePlateDuplicateValidator } from 'src/app/shared/validators/license-plate.validator';
+import { VehicleFormControls } from 'src/app/models/form-control.model';
 
 @Component({
   selector: 'app-vehicle-dialog',
@@ -46,11 +40,12 @@ export class VehicleDialogComponent implements OnInit {
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
     private transloco: TranslocoService,
-    @Inject(MAT_DIALOG_DATA) public data: { 
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
       mode: 'create' | 'edit' | 'view';
       vehicle: MyVehicles | null;
     }
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.isEditMode = this.data.mode === 'edit';
@@ -64,16 +59,34 @@ export class VehicleDialogComponent implements OnInit {
       vehicleType: ['', [Validators.required]],
       startDepot: ['', [Validators.required]],
       endDepot: ['', [Validators.required]],
-      licensePlate: ['']
+      licensePlate: [''],
     });
 
     if (this.isEditMode || this.isView) {
       this.form.controls.licensePlate.setValidators([Validators.required]);
     }
 
+    // Initialize license plate duplicate validator
+    this.updateLicensePlateValidators();
+
     if (this.isView) {
       this.form.disable({ emitEvent: false });
     }
+  }
+
+  private updateLicensePlateValidators() {
+    const validators = [];
+
+    // Add required validator if in edit or view mode
+    if (this.isEditMode || this.isView) {
+      validators.push(Validators.required);
+    }
+
+    // Add duplicate validator
+    validators.push(licensePlateDuplicateValidator(this.licensePlates));
+
+    this.form.controls.licensePlate.setValidators(validators);
+    this.form.controls.licensePlate.updateValueAndValidity();
   }
 
   private loadData() {
@@ -85,28 +98,33 @@ export class VehicleDialogComponent implements OnInit {
       depots: this.vehicleService.getMyDepots(),
     };
 
-    forkJoin(baseObservables).pipe(
-      finalize(() => {
-        this.isLoading = false;
-      })
-    ).subscribe({
-      next: (data: any) => {
-        this.vehicleTypeOptions = data.vehicleTypes;
-        this.startDepotOptions = data.depots;
-        this.endDepotOptions = data.depots;
+    forkJoin(baseObservables)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe({
+        next: (data: any) => {
+          this.vehicleTypeOptions = data.vehicleTypes;
+          this.startDepotOptions = data.depots;
+          this.endDepotOptions = data.depots;
 
-        // If in edit or view mode, fetch fresh vehicle data and patch form
-        if ((this.isEditMode || this.isView) && this.data.vehicle?.vehicleIds) {
-          this.fetchAndPatchVehicleData();
-        }
-      },
-      error: (error) => {
-        console.error('Error loading vehicle types and depots:', error);
-        this.vehicleTypeOptions = [];
-        this.startDepotOptions = [];
-        this.endDepotOptions = [];
-      }
-    });
+          // If in edit or view mode, fetch fresh vehicle data and patch form
+          if (
+            (this.isEditMode || this.isView) &&
+            this.data.vehicle?.vehicleIds
+          ) {
+            this.fetchAndPatchVehicleData();
+          }
+        },
+        error: (error) => {
+          console.error('Error loading vehicle types and depots:', error);
+          this.vehicleTypeOptions = [];
+          this.startDepotOptions = [];
+          this.endDepotOptions = [];
+        },
+      });
   }
 
   private fetchAndPatchVehicleData() {
@@ -128,7 +146,7 @@ export class VehicleDialogComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error fetching vehicle data:', error);
-      }
+      },
     });
   }
 
@@ -139,19 +157,21 @@ export class VehicleDialogComponent implements OnInit {
       if (!this.licensePlates.includes(licensePlateValue)) {
         this.licensePlates.push(licensePlateValue);
         this.form.controls.licensePlate.reset();
+        this.updateLicensePlateValidators();
       }
     }
   }
 
   removeLicensePlate(index: number) {
     this.licensePlates.splice(index, 1);
+    this.updateLicensePlateValidators();
   }
 
   save() {
     if (!this.isEditMode && this.licensePlates.length === 0) {
       this.form.controls.licensePlate.setErrors({ licensePlatesEmpty: true });
     }
- 
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -159,14 +179,17 @@ export class VehicleDialogComponent implements OnInit {
 
     this.isSaving = true;
     const formValues = this.form.value;
-    
-    const startDepotId = typeof formValues.startDepot === 'object' && formValues.startDepot !== null
-      ? (formValues.startDepot as any).depotId
-      : formValues.startDepot;
 
-    const endDepotId = typeof formValues.endDepot === 'object' && formValues.endDepot !== null
-      ? (formValues.endDepot as any).depotId
-      : formValues.endDepot;
+    const startDepotId =
+      typeof formValues.startDepot === 'object' &&
+      formValues.startDepot !== null
+        ? (formValues.startDepot as any).depotId
+        : formValues.startDepot;
+
+    const endDepotId =
+      typeof formValues.endDepot === 'object' && formValues.endDepot !== null
+        ? (formValues.endDepot as any).depotId
+        : formValues.endDepot;
 
     if (this.isEditMode) {
       const payload = {
@@ -177,97 +200,112 @@ export class VehicleDialogComponent implements OnInit {
       };
 
       this.spinner.show();
-      this.vehicleService.updateVehicle(this.data.vehicle!.vehicleIds, payload).pipe(
-        finalize(() => this.spinner.hide())
-      ).subscribe({
-        next: (updatedVehicle) => {
-          this.isSaving = false;
-                this.toastr.success(
-        this.transloco.translate('vehicleManagement.vehicle_updated_successfully'),
-        this.transloco.translate('success')
-      );
-          this.dialogRef.close({ 
-            success: true, 
-            operation: 'update', 
-            vehicle: updatedVehicle 
-          });
-        },
-        error: (error) => {
-          console.error('Error updating vehicle:', error);
-          this.isSaving = false;
-                this.toastr.error(
-        this.transloco.translate('vehicleManagement.failed_to_update_vehicle'),
-        this.transloco.translate('error')
-      );
-        }
-      });
+      this.vehicleService
+        .updateVehicle(this.data.vehicle!.vehicleIds, payload)
+        .pipe(finalize(() => this.spinner.hide()))
+        .subscribe({
+          next: (updatedVehicle) => {
+            this.isSaving = false;
+            this.toastr.success(
+              this.transloco.translate(
+                'vehicleManagement.vehicle_updated_successfully'
+              ),
+              this.transloco.translate('success')
+            );
+            this.dialogRef.close({
+              success: true,
+              operation: 'update',
+              vehicle: updatedVehicle,
+            });
+          },
+          error: (error) => {
+            console.error('Error updating vehicle:', error);
+            this.isSaving = false;
+            this.toastr.error(
+              this.transloco.translate(
+                'vehicleManagement.failed_to_update_vehicle'
+              ),
+              this.transloco.translate('error')
+            );
+          },
+        });
     } else {
       const payload = {
         vehicleTypeId: formValues.vehicleType,
         startDepotId: startDepotId,
         endDepotId: endDepotId,
-        licensePlates: this.licensePlates || []
+        licensePlates: this.licensePlates || [],
       };
 
       this.spinner.show();
-      this.vehicleService.createVehicle(payload).pipe(
-        finalize(() => this.spinner.hide())
-      ).subscribe({
-        next: (newVehicle) => {
-          this.isSaving = false;
-                  this.toastr.success(
-          this.transloco.translate('vehicleManagement.vehicle_created_successfully'),
-          this.transloco.translate('success')
-        );
-          this.dialogRef.close({ 
-            success: true, 
-            operation: 'create', 
-            vehicle: newVehicle 
-          });
-        },
-        error: (error) => {
-          console.error('Error creating vehicle:', error);
-          this.isSaving = false;
-                  this.toastr.error(
-          this.transloco.translate('vehicleManagement.failed_to_create_vehicle'),
-          this.transloco.translate('error')
-        );
-        }
-      });
+      this.vehicleService
+        .createVehicle(payload)
+        .pipe(finalize(() => this.spinner.hide()))
+        .subscribe({
+          next: (newVehicle) => {
+            this.isSaving = false;
+            this.toastr.success(
+              this.transloco.translate(
+                'vehicleManagement.vehicle_created_successfully'
+              ),
+              this.transloco.translate('success')
+            );
+            this.dialogRef.close({
+              success: true,
+              operation: 'create',
+              vehicle: newVehicle,
+            });
+          },
+          error: (error) => {
+            console.error('Error creating vehicle:', error);
+            this.isSaving = false;
+            this.toastr.error(
+              this.transloco.translate(
+                'vehicleManagement.failed_to_create_vehicle'
+              ),
+              this.transloco.translate('error')
+            );
+          },
+        });
     }
   }
 
   delete() {
     if (this.data.vehicle && this.data.vehicle.vehicleIds) {
       this.isSaving = true;
-      
+
       this.spinner.show();
-      this.vehicleService.deleteVehicle(this.data.vehicle.vehicleIds).pipe(
-        finalize(() => this.spinner.hide())
-      ).subscribe({
-        next: (result) => {
-          this.isSaving = false;
-          if (result) {
-                    this.toastr.success(
-          this.transloco.translate('vehicleManagement.vehicle_deleted_successfully'),
-          this.transloco.translate('success')
-        );
-            this.dialogRef.close({ 
-              success: true, 
-              operation: 'delete', 
-              vehicleIds: this.data.vehicle!.vehicleIds 
-            });
-          }
-        },
-        error: (error) => {
-          console.error('Error deleting vehicle:', error);
-          this.isSaving = false;
-                  this.toastr.error(
-          this.transloco.translate('vehicleManagement.failed_to_delete_vehicle'),
-          this.transloco.translate('error')
-        );
-        }
-      });
+      this.vehicleService
+        .deleteVehicle(this.data.vehicle.vehicleIds)
+        .pipe(finalize(() => this.spinner.hide()))
+        .subscribe({
+          next: (result) => {
+            this.isSaving = false;
+            if (result) {
+              this.toastr.success(
+                this.transloco.translate(
+                  'vehicleManagement.vehicle_deleted_successfully'
+                ),
+                this.transloco.translate('success')
+              );
+              this.dialogRef.close({
+                success: true,
+                operation: 'delete',
+                vehicleIds: this.data.vehicle!.vehicleIds,
+              });
+            }
+          },
+          error: (error) => {
+            console.error('Error deleting vehicle:', error);
+            this.isSaving = false;
+            this.toastr.error(
+              this.transloco.translate(
+                'vehicleManagement.failed_to_delete_vehicle'
+              ),
+              this.transloco.translate('error')
+            );
+          },
+        });
     }
   }
 
@@ -279,4 +317,4 @@ export class VehicleDialogComponent implements OnInit {
     console.log(this.form);
     console.log('this.licensePlates', this.licensePlates);
   }
-} 
+}
