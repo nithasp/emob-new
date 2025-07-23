@@ -63,7 +63,6 @@ export class VehicleTypeDialogComponent implements OnInit {
     this.isViewMode = this.data.mode === 'view';
     this.initForm();
 
-    // Load enum values first, then patch form if needed
     this.getEnumValues().then(() => {
       if ((this.isEdit || this.isViewMode) && this.data.vehicleType) {
         const vehicleType = {
@@ -250,7 +249,6 @@ export class VehicleTypeDialogComponent implements OnInit {
   getEnumValues(): Promise<void> {
     this.isLoading = true;
 
-    // Create observables for all enum requests
     const enumRequests = VehicleEnumConfigs.map((config) =>
       this.vehicleService.getEnumValues(config.type)
     );
@@ -265,14 +263,13 @@ export class VehicleTypeDialogComponent implements OnInit {
         )
         .subscribe({
           next: (responses) => {
-            // Map responses back to their corresponding properties
             VehicleEnumConfigs.forEach((config, index) => {
               (this as any)[config.property] = responses[index];
             });
           },
           error: (err) => {
             console.error('Error loading enum values:', err);
-            // Initialize empty arrays in case of error
+
             VehicleEnumConfigs.forEach((config) => {
               (this as any)[config.property] = [];
             });
