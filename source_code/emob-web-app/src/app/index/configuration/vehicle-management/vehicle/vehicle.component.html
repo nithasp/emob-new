@@ -10,58 +10,58 @@
     <div class="table-container overflow-auto mt-4 mat-elevation-z8">
       <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
         <ng-container matColumnDef="licensePlate">
-          <th mat-header-cell *matHeaderCellDef>{{ t("license_plate") }}</th>
-          <td mat-cell *matCellDef="let v">{{ v.licensePlate }}</td>
+          <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("license_plate") }}</th>
+          <td mat-cell *matCellDef="let v" class="text-nowrap text-center">{{ v.licensePlate }}</td>
         </ng-container>
 
         <ng-container matColumnDef="vehicleType">
-          <th mat-header-cell *matHeaderCellDef>{{ t("vehicle_type") }}</th>
-          <td mat-cell *matCellDef="let v">{{ v.vehicleType.name }}</td>
+          <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("vehicle_type") }}</th>
+          <td mat-cell *matCellDef="let v" class="text-nowrap text-center">{{ v.vehicleType.name }}</td>
         </ng-container>
 
         <ng-container matColumnDef="maxLoadWeight">
-          <th mat-header-cell *matHeaderCellDef>{{ t("max_load_weight") }}</th>
-          <td mat-cell *matCellDef="let v">
+          <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("max_load_weight") }}</th>
+          <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
             <span>{{ v.vehicleType.capacity }} </span>
             <span *ngIf="v.vehicleType.capacity">{{ "kg" | transloco }}</span>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="cargoWidth">
-          <th mat-header-cell *matHeaderCellDef>{{ t("cargo_width") }}</th>
-          <td mat-cell *matCellDef="let v">
+          <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("cargo_width") }}</th>
+          <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
             <span>{{ v.vehicleType.width }} </span>
             <span *ngIf="v.vehicleType.width">{{ "m" | transloco }}</span>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="cargoLength">
-          <th mat-header-cell *matHeaderCellDef>{{ t("cargo_length") }}</th>
-          <td mat-cell *matCellDef="let v">
+          <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("cargo_length") }}</th>
+          <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
             <span>{{ v.vehicleType.length }} </span>
             <span *ngIf="v.vehicleType.length">{{ "m" | transloco }}</span>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="cargoHeight">
-          <th mat-header-cell *matHeaderCellDef>{{ t("cargo_height") }}</th>
-          <td mat-cell *matCellDef="let v">
+          <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("cargo_height") }}</th>
+          <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
             <span>{{ v.vehicleType.height }} </span>
             <span *ngIf="v.vehicleType.height">{{ "m" | transloco }}</span>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="isActive">
-          <th mat-header-cell *matHeaderCellDef>{{ "status" | transloco }}</th>
-          <td mat-cell *matCellDef="let v">
+          <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ "status" | transloco }}</th>
+          <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
             <mat-icon *ngIf="v.isActive" class="mat-success" [ngbTooltip]="t('is_active')">check_circle</mat-icon>
             <mat-icon *ngIf="!v.isActive" class="mat-warning" [ngbTooltip]="'inactive' | transloco">cancel</mat-icon>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef>{{ "actions" | transloco }}</th>
-          <td mat-cell *matCellDef="let v" (click)="$event.stopPropagation()">
+          <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ "actions" | transloco }}</th>
+          <td mat-cell *matCellDef="let v" class="text-nowrap text-center" (click)="$event.stopPropagation()">
             <button mat-icon-button (click)="openVehicleModal(v, 'edit')" [ngbTooltip]="t('edit_vehicle')">
               <mat-icon>edit</mat-icon>
             </button>
@@ -73,7 +73,7 @@
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns" (click)="openVehicleModal(row, 'view')"
-          class="hover-row"></tr>
+          class="hover-row" style="cursor: pointer;"></tr>
       </table>
     </div>
     <mat-paginator class="mt-4" [pageSize]="10" [pageSizeOptions]="[10, 20, 40, 50]"></mat-paginator>
