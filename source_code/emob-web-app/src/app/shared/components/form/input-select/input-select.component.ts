@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { Subscription } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-input-select',
@@ -39,6 +40,8 @@ export class InputSelectComponent implements OnInit, OnDestroy, OnChanges {
   @Output() valueChange: EventEmitter<any> = new EventEmitter<any>();
 
   private controlSubscription?: Subscription;
+
+  constructor(private transloco: TranslocoService) {}
 
   ngOnInit(): void {
     if (this.control) {
@@ -75,8 +78,8 @@ export class InputSelectComponent implements OnInit, OnDestroy, OnChanges {
       return this.validatorMessage;
     }
     if (this.control.hasError('required')) {
-      return 'This field is required';
+      return this.transloco.translate('form.error.required');
     }
-    return 'Invalid selection';
+    return this.transloco.translate('form.error.invalid_selection');
   }
 }

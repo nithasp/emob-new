@@ -19,6 +19,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Subscription } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-input-field',
@@ -61,7 +62,11 @@ export class InputFieldComponent
   passwordVisible: boolean = false;
   internalControl: FormControl = new FormControl('');
 
-  constructor(private renderer: Renderer2, private elementRef: ElementRef) {}
+  constructor(
+    private renderer: Renderer2,
+    private elementRef: ElementRef,
+    private transloco: TranslocoService
+  ) {}
 
   ngOnInit(): void {
     if (!this.control) {
@@ -240,28 +245,28 @@ export class InputFieldComponent
     if (!this.control?.errors) return '';
 
     if (this.control.hasError('required')) {
-      return 'This field is required';
+      return this.transloco.translate('form.error.required');
     }
     if (this.control.hasError('email')) {
-      return 'Email is not valid';
+      return this.transloco.translate('form.error.email');
     }
     if (this.control.hasError('invalidCharacters')) {
-      return 'Thai citizen ID must contain only digits (0-9)';
+      return this.transloco.translate('form.error.thai_citizen_id_digits');
     }
     if (this.control.hasError('invalidLength')) {
-      return 'Thai citizen ID must be exactly 13 digits long';
+      return this.transloco.translate('form.error.thai_citizen_id_length');
     }
     if (this.control.hasError('timeRangeInvalid')) {
       return this.control.getError('timeRangeInvalid');
     }
     if (this.control.hasError('licensePlatesEmpty')) {
-      return 'License plates need to be added';
+      return this.transloco.translate('form.error.license_plates_empty');
     }
     if (this.control.hasError('licensePlateDuplicate')) {
-      return 'This license plate has already been added';
+      return this.transloco.translate('form.error.license_plate_duplicate');
     }
 
-    return 'Invalid input';
+    return this.transloco.translate('form.error.invalid_input');
   }
 
   togglePasswordVisibility(): void {

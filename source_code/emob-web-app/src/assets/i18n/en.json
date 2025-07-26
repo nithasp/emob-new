@@ -73,5 +73,17 @@
   "wait_a_moment": "Wait a moment",
   "warning": "Warning",
   "width": "Width",
-  "zipcode": "ZIPCODE"
+  "zipcode": "ZIPCODE",
+  "form": {
+    "error": {
+      "required": "This field is required",
+      "email": "Email is not valid",
+      "thai_citizen_id_digits": "Thai citizen ID must contain only digits (0-9)",
+      "thai_citizen_id_length": "Thai citizen ID must be exactly 13 digits long",
+      "license_plates_empty": "License plates need to be added",
+      "license_plate_duplicate": "This license plate has already been added",
+      "invalid_input": "Invalid input",
+      "invalid_selection": "Invalid selection"
+    }
+  }
 }
