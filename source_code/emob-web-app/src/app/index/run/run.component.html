@@ -56,10 +56,12 @@
                   >
                 </ngb-alert>
                 }
+
+
                 <div class="card p-3 mb-4">
                   <h4><mat-icon>location_on</mat-icon> Manage Depots</h4>
 
-                  <h1 (click)="log()">log</h1>
+                 
 
                   <mat-form-field
                     *ngIf="companyDepotType === 'Single'"
@@ -117,11 +119,13 @@
                     />
                   </div>
                 </div>
+
+
                 <div
                   class="col-md-12 rounded-3 dropzone"
                   DropZone
                   (onFileDropped)="onFileSelected($event)"
-                  [hidden]="preOrderFiles.length > 0"
+                  *ngIf="isUploadDisplay"
                 >
                   <div class="row">
                     <div class="col-md-12 text-center">

@@ -114,6 +114,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   // Condition
   public activeNavId = 1;
   public isUpload!: boolean;
+  public isUploadDisplay: boolean = true;
   public requiredFileType: string = '.xlsx, .xls';
   readonly validTypes = [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -298,6 +299,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                       this.initializeDataFromExperiment(
                         this.experiment
                       ).finally(() => {
+                      this.isUploadDisplay = false;
                         setTimeout(() => {
                           this.toastr.success(
                             this.transloco.translate(
@@ -741,155 +743,44 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   private loadLocationDepot(incoming: any[]) {
-    // ─── 1) Ensure this.depots is at least an array ─────────────────────────────────
-    if (!this.depots) {
-      this.depots = [];
-    }
-
-    // ─── 2) Normalize existing this.depots into simple objects ───────────────────────
-    //    (They should already be in the form { depotName, latitude, longitude } if coming
-    //     from getMyDepots, but we rebuild to be safe.)
-    const normalizedExisting: Array<{
-      depotName: string;
-      latitude: number;
-      longitude: number;
-    }> = this.depots.map((d) => ({
-      depotName: d.depotName,
-      latitude: Number(d.latitude),
-      longitude: Number(d.longitude),
-    }));
-
-    console.log('normalizedExisting', normalizedExisting);
-
-    // ─── 3) Normalize the incoming array → always produce objects of the form:
-    //        { depotName: string, latitude: number, longitude: number }
+    // Always use the incoming depots array for default selection and display
     const normalizedIncoming: Array<{
       depotName: string;
       latitude: number;
       longitude: number;
+      columns?: string[];
+      [key: string]: any;
     }> = incoming.map((item) => {
-      // If item already has depotName, use it; otherwise, fall back to item.name
       const nameKey =
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
           ? item.name
           : '';
-
       return {
         depotName: nameKey,
         latitude: Number(item.latitude),
         longitude: Number(item.longitude),
+        columns: item.columns || [],
+        ...item,
       };
     });
 
-    console.log('normalizedIncoming', normalizedIncoming);
+    this.depots = normalizedIncoming;
 
-    // ─── 4) Merge normalizedExisting + normalizedIncoming into allDepots ──────────────
-    //    If you want to avoid duplicates by depotName, filter them out here.
-    let allDepots = [...normalizedIncoming, ...normalizedExisting];
-
-    console.log('allDepots', allDepots);
-
-    // ─── Optional deduplication by depotName ───────────────────────────────────────────
-    // (Uncomment if you do not want the same depotName repeated):
-    //
-    // const seen = new Set<string>();
-    // allDepots = allDepots.filter(d => {
-    //   if (seen.has(d.depotName)) return false;
-    //   seen.add(d.depotName);
-    //   return true;
-    // });
-
-    // ─── 5) Rebuild this.depots so that it contains unique “full” Depot‐objects
-    //         (for later reference, e.g. storing other fields if needed).
-    //
-    // We’ll pick the first occurrence of each depotName from:
-    //    1) this.depots (the original server‐fetched objects)
-    //    2) incoming (the BRS‐like objects)
-    //
-    // This ensures this.depots always has one object per depotName.
-
-    // const mergedByName: { [name: string]: any } = {};
-    // [...this.depots, ...incoming].forEach(obj => {
-    //   const key = (typeof obj.depotName === 'string')
-    //     ? obj.depotName
-    //     : (typeof obj.name === 'string' ? obj.name : '');
-
-    //   if (key && !mergedByName[key]) {
-    //     mergedByName[key] = obj;
-    //   }
-    // });
-    // this.depots = Object.values(mergedByName);
-
-    this.depots = allDepots;
-
-    console.log(' this.depots after merge', this.depots);
-
-    // ─── 6) Clear any existing depot‐features on the map ──────────────────────────────
-    this.vectorSourceDepot.clear();
-
-    // ─── 7) Read stored selection (if any) from localStorage ─────────────────────────
-    const singleId = localStorage.getItem('selectedDepotId');
-    let multiIds: string[] = [];
-    const rawMulti = localStorage.getItem('selectedDepotIds');
-    if (rawMulti) {
-      try {
-        const parsed = JSON.parse(rawMulti);
-        if (Array.isArray(parsed)) {
-          multiIds = parsed;
-        }
-      } catch {
-        multiIds = [];
-      }
-    }
-
-    // ─── 8) Decide which depot(s) to display ────────────────────────────────────────
-    let toShow: Array<{
-      depotName: string;
-      latitude: number;
-      longitude: number;
-    }> = [];
-
-    // 8a) If a valid single‐depot ID is stored, show only that one
-    if (singleId) {
-      const found = allDepots.find((d) => d.depotName === singleId);
-      if (found) {
-        this.selectedDepotId = singleId;
-        this.selectedDepotIds = [];
-        toShow = [found];
-      } else {
-        console.log('c1');
-        // invalid singleId → remove it
-        localStorage.removeItem('selectedDepotId');
-      }
-    }
-
-    // 8b) Otherwise, if there’s a valid array of multiIds, show those
-    if (!toShow.length && multiIds.length) {
-      const validMulti = multiIds.filter((id) =>
-        allDepots.some((d) => d.depotName === id)
-      );
-      if (validMulti.length) {
-        this.selectedDepotIds = validMulti;
-        this.selectedDepotId = null;
-        toShow = allDepots.filter((d) => validMulti.includes(d.depotName));
-      } else {
-        // invalid saved multiIds → clear them
-        localStorage.removeItem('selectedDepotIds');
-        console.log('c1');
-        multiIds = [];
-      }
-    }
-
-    // 8c) If neither single nor multi selection is valid → default to all depots
-    if (!toShow.length) {
+    // Set default selection to the first depot in the incoming list
+    if (this.depots && this.depots.length > 0) {
+      this.selectedDepotId = this.depots[0].depotName;
+      this.selectedDepotIds = [];
+      this.requiredColumns = this.depots[0].columns || [];
+    } else {
       this.selectedDepotId = null;
       this.selectedDepotIds = [];
-      toShow = allDepots.slice();
+      this.requiredColumns = [];
     }
 
-    // ─── 9) Plot each “toShow” depot as a Feature on vectorSourceDepot ──────────────
+    // Plot all depots on the map
+    this.vectorSourceDepot.clear();
     const iconWithLabel = (label: string) =>
       new Style({
         image: new Icon({
@@ -910,17 +801,14 @@ export class RunComponent implements OnInit, AfterViewInit {
           stroke: new Stroke({ color: '#ffffff', width: 2 }),
         }),
       });
-
-    toShow.forEach((depot) => {
+    this.depots.forEach((depot) => {
       const lon = Number(depot.longitude);
       const lat = Number(depot.latitude);
       const coord = OlProj.fromLonLat([lon, lat]);
-
       const feature = new Feature({
         geometry: new Point(coord),
         data: { data: depot, isDepot: true },
       });
-
       feature.setStyle(iconWithLabel(depot.depotName));
       this.vectorSourceDepot.addFeature(feature);
     });
@@ -1689,6 +1577,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.loadLocationDepot(depots);
     console.log(this.uploadDataGroupCustomers);
     this.isUpload = true;
+    this.isUploadDisplay = false;
   }
   isOriginalExperiment(): boolean {
     return this.experiment.run === 'Original';
@@ -1869,7 +1758,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     }>
   ) {
     console.log('updateDepotLocationOnMap depots', depots);
-
+    this.preOrderFiles = [];
     this.vectorSourceDepot.clear();
 
     const iconWithLabel = (label: string) =>
@@ -1915,7 +1804,18 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.experimentService.getMyDepots().subscribe({
       next: (response: any) => {
         this.companyDepotType = response.myCompany.depotType;
+        // Do not set this.depots or default selection here anymore
+        // Instead, rely on depots passed to groupingCustomer
         this.depots = response.myDepots;
+        if (this.depots && this.depots.length > 0) {
+          this.selectedDepotId = this.depots[0].depotName;
+          this.selectedDepotIds = [];
+          this.updateDepotLocationOnMap([this.depots[0]]);
+          this.requiredColumns = this.depots[0].columns || [];
+          if (this.selectedDepotId) {
+            localStorage.setItem('selectedDepotId', this.selectedDepotId);
+          }
+        }
       },
       error: (error) => {
         console.error('Error fetching getMyDepots data:', error);
