@@ -62,5 +62,9 @@
   "confirm_update": "ยืนยันการอัปเดต",
   "are_you_sure_create_vehicle_type": "คุณแน่ใจหรือไม่ว่าต้องการสร้างประเภทยานพาหนะนี้?",
   "are_you_sure_update_vehicle_type": "คุณแน่ใจหรือไม่ว่าต้องการอัปเดตประเภทยานพาหนะนี้?",
-  "license_plate_duplicate_error": "ป้ายทะเบียนนี้ถูกเพิ่มไปแล้ว"
+  "license_plate_duplicate_error": "ป้ายทะเบียนนี้ถูกเพิ่มไปแล้ว",
+  "confirm_delete": "ยืนยันการลบ",
+  "are_you_sure_create_vehicle": "คุณแน่ใจหรือไม่ว่าต้องการสร้างยานพาหนะนี้?",
+  "are_you_sure_update_vehicle": "คุณแน่ใจหรือไม่ว่าต้องการอัปเดตยานพาหนะนี้?",
+  "are_you_sure_delete_vehicle": "คุณแน่ใจหรือไม่ว่าต้องการลบยานพาหนะนี้?"
 }

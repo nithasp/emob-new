@@ -20,6 +20,8 @@ import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 import { licensePlateDuplicateValidator } from 'src/app/shared/validators/license-plate.validator';
 import { VehicleFormControls } from 'src/app/models/form-control.model';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-vehicle-dialog',
@@ -45,6 +47,7 @@ export class VehicleDialogComponent implements OnInit {
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
     private transloco: TranslocoService,
+    private ngbModal: NgbModal,
     @Inject(MAT_DIALOG_DATA)
     public data: {
       mode: 'create' | 'edit' | 'view';
@@ -176,116 +179,169 @@ export class VehicleDialogComponent implements OnInit {
     if (!this.isEditMode && this.licensePlates.length === 0) {
       this.form.controls.licensePlate.setErrors({ licensePlatesEmpty: true });
     }
-
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+    const action = this.isEditMode ? 'update' : 'create';
+    this.openDialogConfirm(action);
+  }
 
+  delete(): void {
+    this.openDialogConfirm('delete');
+  }
+
+  openDialogConfirm(action: 'create' | 'update' | 'delete'): void {
+    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      centered: true,
+      animation: true,
+    });
+    if (action === 'create') {
+      dialogRef.componentInstance.title = this.transloco.translate(
+        'vehicleManagement.confirm_create'
+      );
+      dialogRef.componentInstance.message = this.transloco.translate(
+        'vehicleManagement.are_you_sure_create_vehicle'
+      );
+    } else if (action === 'update') {
+      dialogRef.componentInstance.title = this.transloco.translate(
+        'vehicleManagement.confirm_update'
+      );
+      dialogRef.componentInstance.message = this.transloco.translate(
+        'vehicleManagement.are_you_sure_update_vehicle'
+      );
+    } else if (action === 'delete') {
+      dialogRef.componentInstance.title = this.transloco.translate(
+        'vehicleManagement.confirm_delete'
+      );
+      dialogRef.componentInstance.message = this.transloco.translate(
+        'vehicleManagement.are_you_sure_delete_vehicle'
+      );
+    }
+    dialogRef.result
+      .then((confirmed: boolean) => {
+        if (confirmed) {
+          if (action === 'create') {
+            this.handleCreate();
+          } else if (action === 'update') {
+            this.handleUpdate();
+          } else if (action === 'delete') {
+            this.handleDelete();
+          }
+        }
+      })
+      .catch(() => {});
+  }
+
+  private handleCreate(): void {
     this.isSaving = true;
     const formValues = this.form.value;
-
     const startDepotId =
       typeof formValues.startDepot === 'object' &&
       formValues.startDepot !== null
         ? (formValues.startDepot as Depot).depotId
         : formValues.startDepot;
-
     const endDepotId =
       typeof formValues.endDepot === 'object' && formValues.endDepot !== null
         ? (formValues.endDepot as Depot).depotId
         : formValues.endDepot;
-
-    if (this.isEditMode) {
-      const payload: UpdateVehicleInput = {
-        vehicleTypeId: formValues.vehicleType!,
-        startDepotId: startDepotId!,
-        endDepotId: endDepotId!,
-        licensePlate: formValues.licensePlate!,
-      };
-
-      this.spinner.show();
-      this.vehicleService
-        .updateVehicle(this.data.vehicle!.vehicleIds, payload)
-        .pipe(finalize(() => this.spinner.hide()))
-        .subscribe({
-          next: (updatedVehicle: MyVehicles) => {
-            this.isSaving = false;
-            this.toastr.success(
-              this.transloco.translate(
-                'vehicleManagement.vehicle_updated_successfully'
-              ),
-              this.transloco.translate('success')
-            );
-            this.dialogRef.close({
-              success: true,
-              operation: 'update',
-              vehicle: updatedVehicle,
-            });
-          },
-          error: (error: unknown) => {
-            console.error('Error updating vehicle:', error);
-            this.isSaving = false;
-            this.toastr.error(
-              this.transloco.translate(
-                'vehicleManagement.failed_to_update_vehicle'
-              ),
-              this.transloco.translate('error')
-            );
-          },
-        });
-    } else {
-      // Define a local type for create payload
-      type CreateVehicleInput = {
-        vehicleTypeId: string;
-        startDepotId: string;
-        endDepotId: string;
-        licensePlates: string[];
-      };
-      const payload: CreateVehicleInput = {
-        vehicleTypeId: formValues.vehicleType!,
-        startDepotId: startDepotId!,
-        endDepotId: endDepotId!,
-        licensePlates: this.licensePlates || [],
-      };
-
-      this.spinner.show();
-      this.vehicleService
-        .createVehicle(payload)
-        .pipe(finalize(() => this.spinner.hide()))
-        .subscribe({
-          next: (newVehicle: MyVehicles) => {
-            this.isSaving = false;
-            this.toastr.success(
-              this.transloco.translate(
-                'vehicleManagement.vehicle_created_successfully'
-              ),
-              this.transloco.translate('success')
-            );
-            this.dialogRef.close({
-              success: true,
-              operation: 'create',
-              vehicle: newVehicle,
-            });
-          },
-          error: (error: unknown) => {
-            console.error('Error creating vehicle:', error);
-            this.isSaving = false;
-            this.toastr.error(
-              this.transloco.translate(
-                'vehicleManagement.failed_to_create_vehicle'
-              ),
-              this.transloco.translate('error')
-            );
-          },
-        });
-    }
+    type CreateVehicleInput = {
+      vehicleTypeId: string;
+      startDepotId: string;
+      endDepotId: string;
+      licensePlates: string[];
+    };
+    const payload: CreateVehicleInput = {
+      vehicleTypeId: formValues.vehicleType!,
+      startDepotId: startDepotId!,
+      endDepotId: endDepotId!,
+      licensePlates: this.licensePlates || [],
+    };
+    this.spinner.show();
+    this.vehicleService
+      .createVehicle(payload)
+      .pipe(finalize(() => this.spinner.hide()))
+      .subscribe({
+        next: (newVehicle: MyVehicles) => {
+          this.isSaving = false;
+          this.toastr.success(
+            this.transloco.translate(
+              'vehicleManagement.vehicle_created_successfully'
+            ),
+            this.transloco.translate('success')
+          );
+          this.dialogRef.close({
+            success: true,
+            operation: 'create',
+            vehicle: newVehicle,
+          });
+        },
+        error: (error: unknown) => {
+          console.error('Error creating vehicle:', error);
+          this.isSaving = false;
+          this.toastr.error(
+            this.transloco.translate(
+              'vehicleManagement.failed_to_create_vehicle'
+            ),
+            this.transloco.translate('error')
+          );
+        },
+      });
   }
 
-  delete(): void {
+  private handleUpdate(): void {
+    this.isSaving = true;
+    const formValues = this.form.value;
+    const startDepotId =
+      typeof formValues.startDepot === 'object' &&
+      formValues.startDepot !== null
+        ? (formValues.startDepot as Depot).depotId
+        : formValues.startDepot;
+    const endDepotId =
+      typeof formValues.endDepot === 'object' && formValues.endDepot !== null
+        ? (formValues.endDepot as Depot).depotId
+        : formValues.endDepot;
+    const payload: UpdateVehicleInput = {
+      vehicleTypeId: formValues.vehicleType!,
+      startDepotId: startDepotId!,
+      endDepotId: endDepotId!,
+      licensePlate: formValues.licensePlate!,
+    };
+    this.spinner.show();
+    this.vehicleService
+      .updateVehicle(this.data.vehicle!.vehicleIds, payload)
+      .pipe(finalize(() => this.spinner.hide()))
+      .subscribe({
+        next: (updatedVehicle: MyVehicles) => {
+          this.isSaving = false;
+          this.toastr.success(
+            this.transloco.translate(
+              'vehicleManagement.vehicle_updated_successfully'
+            ),
+            this.transloco.translate('success')
+          );
+          this.dialogRef.close({
+            success: true,
+            operation: 'update',
+            vehicle: updatedVehicle,
+          });
+        },
+        error: (error: unknown) => {
+          console.error('Error updating vehicle:', error);
+          this.isSaving = false;
+          this.toastr.error(
+            this.transloco.translate(
+              'vehicleManagement.failed_to_update_vehicle'
+            ),
+            this.transloco.translate('error')
+          );
+        },
+      });
+  }
+
+  private handleDelete(): void {
     if (this.data.vehicle && this.data.vehicle.vehicleIds) {
       this.isSaving = true;
-
       this.spinner.show();
       this.vehicleService
         .deleteVehicle(this.data.vehicle.vehicleIds)

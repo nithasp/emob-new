@@ -62,5 +62,9 @@
   "confirm_update": "Confirm update",
   "are_you_sure_create_vehicle_type": "Are you sure you want to create this vehicle type?",
   "are_you_sure_update_vehicle_type": "Are you sure you want to update this vehicle type?",
-  "license_plate_duplicate_error": "This license plate has already been added"
+  "license_plate_duplicate_error": "This license plate has already been added",
+  "confirm_delete": "Confirm delete",
+  "are_you_sure_create_vehicle": "Are you sure you want to create this vehicle?",
+  "are_you_sure_update_vehicle": "Are you sure you want to update this vehicle?",
+  "are_you_sure_delete_vehicle": "Are you sure you want to delete this vehicle?"
 }
