@@ -251,3 +251,8 @@ strong {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+// display scrollbar when ngbModal is open
+.modal-open {
+  overflow: unset !important;
+}
