@@ -8,4 +8,9 @@
       height: 36px;
     }
   }
+  @media (max-width: 576px) {
+    .btn-action {
+      padding: 0;
+    }
+  }
 }

@@ -45,7 +45,7 @@ export class VehicleComponent implements OnInit {
     this.getMyVehicles();
   }
 
-  getMyVehicles() {
+  getMyVehicles(): void {
     this.spinner.show();
     this.vehicleService
       .getMyVehicles()
@@ -61,12 +61,15 @@ export class VehicleComponent implements OnInit {
       });
   }
 
-  openVehicleModal(vehicle?: MyVehicles, mode: 'create' | 'edit' | 'view' = 'create') {
+  openVehicleModal(
+    vehicle?: MyVehicles,
+    mode: 'create' | 'edit' | 'view' = 'create'
+  ): void {
     const dialogRef = this.dialog.open(VehicleDialogComponent, {
       width: '600px',
-      data: { 
+      data: {
         mode: mode,
-        vehicle: vehicle ? { ...vehicle } : null 
+        vehicle: vehicle ? { ...vehicle } : null,
       },
     });
 
@@ -77,12 +80,19 @@ export class VehicleComponent implements OnInit {
     });
   }
 
-  deleteVehicle(vehicle: MyVehicles) {
+  deleteVehicle(vehicle: MyVehicles): void {
     const modalRef = this.modalSvc.open(ConfirmationDialogComponent);
-    modalRef.componentInstance.title = this.transloco.translate('vehicleManagement.delete_vehicle_title');
-    modalRef.componentInstance.question = this.transloco.translate('vehicleManagement.delete_vehicle_question');
-    modalRef.componentInstance.message = this.transloco.translate('vehicleManagement.this_action_cannot_be_undone');
-    modalRef.componentInstance.acceptButton = this.transloco.translate('delete');
+    modalRef.componentInstance.title = this.transloco.translate(
+      'vehicleManagement.delete_vehicle_title'
+    );
+    modalRef.componentInstance.question = this.transloco.translate(
+      'vehicleManagement.delete_vehicle_question'
+    );
+    modalRef.componentInstance.message = this.transloco.translate(
+      'vehicleManagement.this_action_cannot_be_undone'
+    );
+    modalRef.componentInstance.acceptButton =
+      this.transloco.translate('delete');
 
     modalRef.result.then((confirmed: boolean) => {
       if (confirmed) {
@@ -92,18 +102,22 @@ export class VehicleComponent implements OnInit {
           .pipe(finalize(() => this.spinner.hide()))
           .subscribe({
             next: () => {
-                      this.toastr.success(
-          this.transloco.translate('vehicleManagement.vehicle_deleted_successfully'),
-          this.transloco.translate('success')
-        );
+              this.toastr.success(
+                this.transloco.translate(
+                  'vehicleManagement.vehicle_deleted_successfully'
+                ),
+                this.transloco.translate('success')
+              );
               this.getMyVehicles();
             },
             error: (err) => {
               console.error(err);
-                      this.toastr.error(
-          this.transloco.translate('vehicleManagement.failed_to_delete_vehicle'),
-          this.transloco.translate('error')
-        );
+              this.toastr.error(
+                this.transloco.translate(
+                  'vehicleManagement.failed_to_delete_vehicle'
+                ),
+                this.transloco.translate('error')
+              );
             },
           });
       }

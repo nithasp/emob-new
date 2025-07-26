@@ -17,6 +17,7 @@ import {
   AccessType,
   VehicleEnumOption,
   VehicleEnumConfigs,
+  TimeObject,
 } from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import {
@@ -36,13 +37,13 @@ export class VehicleTypeDialogComponent implements OnInit {
   formVehicleType!: FormGroup<VehicleTypeFormControls>;
   isEdit: boolean = false;
   isViewMode: boolean = false;
-  isLoading = true;
+  isLoading: boolean = true;
 
   vehicleProfileTypeOptions: VehicleEnumOption[] = [];
   accessPointOptions: VehicleEnumOption[] = [];
 
-  twEarlyObject: any = { hour: 0, minute: 0 };
-  twLateObject: any = { hour: 0, minute: 0 };
+  twEarlyObject: TimeObject = { hour: 0, minute: 0 };
+  twLateObject: TimeObject = { hour: 0, minute: 0 };
 
   constructor(
     private fb: FormBuilder,
@@ -58,7 +59,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     private transloco: TranslocoService
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.isEdit = this.data.mode === 'edit';
     this.isViewMode = this.data.mode === 'view';
     this.initForm();
@@ -86,7 +87,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     });
   }
 
-  formatTimeForDisplay(timeValue: any): string {
+  formatTimeForDisplay(timeValue: string | number | null | undefined): string {
     if (typeof timeValue === 'string' && timeValue.includes(':')) {
       return timeValue;
     }
@@ -96,7 +97,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     return '';
   }
 
-  initForm() {
+  initForm(): void {
     this.formVehicleType = this.fb.group(
       {
         name: ['', Validators.required],
@@ -118,7 +119,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     ) as FormGroup<VehicleTypeFormControls>;
   }
 
-  save() {
+  save(): void {
     if (this.formVehicleType.invalid) {
       this.formVehicleType.markAllAsTouched();
       return;
@@ -126,7 +127,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     this.openDialogConfirm();
   }
 
-  cancel() {
+  cancel(): void {
     this.dialogRef.close();
   }
 
@@ -163,7 +164,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     this.onAccessPointChange(event, accessPointKey as AccessType);
   }
 
-  openDialogConfirm() {
+  openDialogConfirm(): void {
     const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
       centered: true,
       animation: true,
@@ -186,7 +187,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     });
   }
 
-  handleSubmit() {
+  handleSubmit(): void {
     this.spinner.show();
     const formValue = this.formVehicleType.getRawValue();
     const twEarlyMinutes = timeStringToMinutes(formValue.twEarly);
@@ -195,9 +196,9 @@ export class VehicleTypeDialogComponent implements OnInit {
       ...formValue,
       twEarly: twEarlyMinutes,
       twLate: twLateMinutes,
-    }).reduce((acc, [key, value]) => {
+    }).reduce((acc: Record<string, unknown>, [key, value]) => {
       if (value !== null && value !== '') {
-        (acc as any)[key] =
+        acc[key] =
           typeof value === 'string' &&
           !isNaN(Number(value)) &&
           key !== 'name' &&
@@ -227,7 +228,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     });
   }
 
-  onTimeValueChange(key: 'twEarly' | 'twLate', event: any) {
+  onTimeValueChange(key: 'twEarly' | 'twLate', event: TimeObject): void {
     if (key === 'twEarly') {
       this.twEarlyObject = event;
     } else {
@@ -264,14 +265,15 @@ export class VehicleTypeDialogComponent implements OnInit {
         .subscribe({
           next: (responses) => {
             VehicleEnumConfigs.forEach((config, index) => {
-              (this as any)[config.property] = responses[index];
+              (this as Record<string, unknown>)[config.property] =
+                responses[index];
             });
           },
           error: (err) => {
             console.error('Error loading enum values:', err);
 
             VehicleEnumConfigs.forEach((config) => {
-              (this as any)[config.property] = [];
+              (this as Record<string, unknown>)[config.property] = [];
             });
           },
         });

@@ -87,3 +87,8 @@ export interface VehicleEnumOption {
   key: string;
   value: string;
 }
+
+export interface TimeObject {
+  hour: number;
+  minute: number;
+}
