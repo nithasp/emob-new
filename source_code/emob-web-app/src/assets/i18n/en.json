@@ -83,7 +83,9 @@
       "license_plates_empty": "License plates need to be added",
       "license_plate_duplicate": "This license plate has already been added",
       "invalid_input": "Invalid input",
-      "invalid_selection": "Invalid selection"
+      "invalid_selection": "Invalid selection",
+      "start_time_invalid": "Start time must be earlier than end time",
+      "end_time_invalid": "End time must be later than start time"
     }
   }
 }

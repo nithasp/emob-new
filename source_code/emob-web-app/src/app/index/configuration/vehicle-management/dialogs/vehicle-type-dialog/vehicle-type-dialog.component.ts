@@ -25,7 +25,7 @@ import {
   minutesToTimeString,
 } from 'src/app/directives/time-string-to-minutes.pipe';
 import { VehicleTypeFormControls } from 'src/app/models/form-control.model';
-import { createTimeWindowValidator } from 'src/app/shared/validators/time-range.validator';
+import { compareTimeValidator } from 'src/app/shared/validators/time-range.validator';
 import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
@@ -115,7 +115,12 @@ export class VehicleTypeDialogComponent implements OnInit {
         unitDurationCost: [null, Validators.min(0)],
         fixedCost: [null, Validators.min(0)],
       },
-      { validators: createTimeWindowValidator() }
+      {
+        validators: compareTimeValidator(
+          this.transloco.translate('form.error.start_time_invalid'),
+          this.transloco.translate('form.error.end_time_invalid')
+        ),
+      }
     ) as FormGroup<VehicleTypeFormControls>;
   }
 

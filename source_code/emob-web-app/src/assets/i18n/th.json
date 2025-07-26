@@ -83,7 +83,9 @@
       "license_plates_empty": "กรุณาเพิ่มทะเบียนรถ",
       "license_plate_duplicate": "ทะเบียนรถนี้ถูกเพิ่มแล้ว",
       "invalid_input": "ข้อมูลไม่ถูกต้อง",
-      "invalid_selection": "การเลือกไม่ถูกต้อง"
+      "invalid_selection": "การเลือกไม่ถูกต้อง",
+      "start_time_invalid": "เวลาที่เริ่มต้องน้อยกว่าเวลาสิ้นสุด",
+      "end_time_invalid": "เวลาสิ้นสุดต้องมากกว่าเวลาเริ่ม"
     }
   }
 }

@@ -82,7 +82,7 @@ export function createTimeRangeValidator(
   };
 }
 
-export function createTimeWindowValidator(
+export function compareTimeValidator(
   startTimeErrorMessage?: string,
   endTimeErrorMessage?: string
 ): ValidatorFn {
