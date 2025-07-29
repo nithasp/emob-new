@@ -535,13 +535,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
       target: 'mapResult',
       layers: [
         new TileLayer({
-          source: new XYZ({
-            url: 'https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+          source: new OSM({
             attributions:
-              '&copy;<a href="https://carto.com" target="_blank"> CARTO</a>' +
-              '&copy;<a href="http://openmaptiles.org/" target="_blank"> OpenMapTiles</a>' +
-              '&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank"> OpenStreetMap contributors</a>' +
-              '&copy;<a href="http://map.project-osrm.org" target="_blank"> Project OSRM contributors</a>',
+              '&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank"> OpenStreetMap contributors</a>',
             crossOrigin: 'anonymous',
             cacheSize: 500000,
             tileLoadFunction,

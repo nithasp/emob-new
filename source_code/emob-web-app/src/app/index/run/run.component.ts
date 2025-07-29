@@ -898,10 +898,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       layers: [
         new TileLayer({
           source: new OSM({
-            url: 'https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
             attributions:
-              '&copy;<a href="https://carto.com" "> CARTO</a>' +
-              '&copy;<a href="http://openmaptiles.org/" > OpenMapTiles</a>' +
               '&copy;<a href="https://www.openstreetmap.org/copyright"> OpenStreetMap contributors</a>',
             crossOrigin: 'anonymous',
             cacheSize: 10000,
