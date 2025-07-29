@@ -7,7 +7,7 @@ import { Response } from '../models/graphql.model';
 import {
   DownloadResultFile,
   Experiment,
-  ExperimentState
+  ExperimentState,
 } from '../models/experiment.model';
 import { Constraint } from '../models/constraint.model';
 import { Location } from '../models/location.model';
@@ -312,31 +312,50 @@ export class ExperimentService {
   }
 
   getMyDepots(): Observable<{ myCompany: any; myDepots: any[] }> {
-  return this.apollo
-    .query<{ myCompany: any[]; myDepots: any[] }>({
-      query: gql`
-        query myDepots {
-          myCompany {
-            companyName
-            depotType
+    return this.apollo
+      .query<{ myCompany: any; myDepots: any[] }>({
+        query: gql`
+          query myDepots {
+            myCompany {
+              companyName
+              depotType
+            }
+            myDepots {
+              depotId
+              depotName
+              latitude
+              longitude
+              tw_early
+              tw_late
+              createdAt
+              updatedAt
+              inputdata {
+                companyName
+                depotId
+                keyName
+                displayName
+                columnRequired
+                fileFormatType
+                createdAt
+                modifiedAt
+              }
+            }
           }
-          myDepots {
-            depotName
-            latitude
-            longitude
-            columns
-          }
-        }
-      `,
-      fetchPolicy: 'network-only',
-    })
-    .pipe(
-      map((result) => ({
-        myCompany: result.data.myCompany,
-        myDepots: result.data.myDepots,
-      })),
-      this.errorHandlingService.handleError
-    );
-}
-
+        `,
+        fetchPolicy: 'network-only',
+      })
+      .pipe(
+        map((result) => ({
+          myCompany: result.data.myCompany,
+          myDepots: result.data.myDepots.map((depot: any) => ({
+            depotName: depot.depotName,
+            latitude: Number(depot.latitude),
+            longitude: Number(depot.longitude),
+            columns: depot.columns || [],
+            ...depot,
+          })),
+        })),
+        this.errorHandlingService.handleError
+      );
+  }
 }

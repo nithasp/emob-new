@@ -299,7 +299,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                       this.initializeDataFromExperiment(
                         this.experiment
                       ).finally(() => {
-                      this.isUploadDisplay = false;
+                        this.isUploadDisplay = false;
                         setTimeout(() => {
                           this.toastr.success(
                             this.transloco.translate(
@@ -577,7 +577,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       .then((confirmed: boolean) => {
         if (confirmed) {
           this.spinner.show();
-
           this.preOrderService
             .uploadPreOrder(this.experiment.runId, this.preOrderFiles[0])
             .subscribe((response: Experiment) => {
@@ -1801,9 +1800,22 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.experimentService.getMyDepots().subscribe({
       next: (response: any) => {
         this.companyDepotType = response.myCompany.depotType;
-        // Do not set this.depots or default selection here anymore
-        // Instead, rely on depots passed to groupingCustomer
-        this.depots = response.myDepots;
+        // Normalize depot structure for compatibility
+        this.depots = (response.myDepots || []).map((item: any) => {
+          const nameKey =
+            typeof item.depotName === 'string'
+              ? item.depotName
+              : typeof item.name === 'string'
+              ? item.name
+              : '';
+          return {
+            depotName: nameKey,
+            latitude: Number(item.latitude),
+            longitude: Number(item.longitude),
+            columns: item.columns || [],
+            ...item,
+          };
+        });
         if (this.depots && this.depots.length > 0) {
           this.selectedDepotId = this.depots[0].depotName;
           this.selectedDepotIds = [];
