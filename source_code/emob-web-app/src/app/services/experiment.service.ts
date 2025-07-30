@@ -310,16 +310,31 @@ export class ExperimentService {
         this.errorHandlingService.handleError
       );
   }
-
-  getMyDepots(): Observable<{ myCompany: any; myDepots: any[] }> {
+ 
+  getMyCompany(): Observable<any> {
     return this.apollo
-      .query<{ myCompany: any; myDepots: any[] }>({
+      .query<{ myCompany: any }>({
         query: gql`
-          query myDepots {
+          query myCompany {
             myCompany {
               companyName
               depotType
             }
+          }
+        `,
+        fetchPolicy: 'network-only',
+      })
+      .pipe(
+        map((result) => result.data.myCompany),
+        this.errorHandlingService.handleError
+      );
+  }
+
+  getMyDepots(): Observable<any[]> {
+    return this.apollo
+      .query<{ myDepots: any[] }>({
+        query: gql`
+          query myDepots {
             myDepots {
               depotId
               depotName
@@ -345,16 +360,7 @@ export class ExperimentService {
         fetchPolicy: 'network-only',
       })
       .pipe(
-        map((result) => ({
-          myCompany: result.data.myCompany,
-          myDepots: result.data.myDepots.map((depot: any) => ({
-            depotName: depot.depotName,
-            latitude: Number(depot.latitude),
-            longitude: Number(depot.longitude),
-            columns: depot.columns || [],
-            ...depot,
-          })),
-        })),
+        map((result) => result.data.myDepots),
         this.errorHandlingService.handleError
       );
   }

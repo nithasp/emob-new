@@ -1807,28 +1807,30 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   getMyDepots() {
-    this.experimentService.getMyDepots().subscribe({
-      next: (response: any) => {
-        this.companyDepotType = response.myCompany.depotType;
-        // Normalize depot structure for compatibility
-        this.depots = (response.myDepots || []).map((item: any) => {
-          const nameKey =
-            typeof item.depotName === 'string'
-              ? item.depotName
-              : typeof item.name === 'string'
-              ? item.name
-              : '';
-          return {
-            depotName: nameKey,
-            latitude: Number(item.latitude),
-            longitude: Number(item.longitude),
-            columns: item.columns || [],
-            inputdata: item.inputdata || [],
-            ...item,
-          };
-        });
-        if (this.depots && this.depots.length > 0) {
+    // Fetch company info
+    this.experimentService.getMyCompany().subscribe({
+      next: (company: any) => {
+        this.companyDepotType = company.depotType;
+      },
+      error: (error) => {
+        console.error('Error fetching myCompany data:', error);
+        this.toastr.error(error);
+      },
+    });
 
+    // Fetch depots
+    this.experimentService.getMyDepots().subscribe({
+      next: (depots: any[]) => {
+        // Normalize depot structure for compatibility (moved from service)
+        this.depots = (depots || []).map((depot: any) => ({
+          depotName: depot.depotName,
+          latitude: Number(depot.latitude),
+          longitude: Number(depot.longitude),
+          columns: depot.columns || [],
+          inputdata: depot.inputdata || [],
+          ...depot,
+        }));
+        if (this.depots && this.depots.length > 0) {
           this.selectedDepotId = this.depots[0].depotName;
           this.selectedDepotIds = [];
           this.updateDepotLocationOnMap([this.depots[0]]);
@@ -1844,7 +1846,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
       },
       error: (error) => {
-        console.error('Error fetching getMyDepots data:', error);
+        console.error('Error fetching myDepots data:', error);
         this.toastr.error(error);
       },
     });
