@@ -165,6 +165,7 @@
                         <tr>
                           <th scope="col">{{ t("no") }}</th>
                           <th scope="col">{{ t("file_name") }}</th>
+                          <th scope="col">Category</th>
                           <th scope="col">{{ t("size") }}</th>
                           <th scope="col">{{ t("type") }}</th>
                           <th scope="col"></th>
@@ -181,6 +182,13 @@
                             "
                           >
                             {{ file.name }}
+                          </td>
+                          <td>
+                            <mat-select [(value)]="selectedInputDataKey" (selectionChange)="handleInputDataKeyChange($event)">
+                              <mat-option *ngFor="let inputDataKey of inputDataKeys" [value]="inputDataKey">
+                                {{ inputDataKey}}
+                              </mat-option>
+                            </mat-select>
                           </td>
                           <td>
                             {{ file.size / 1000000 | number : "1.2-2" }} MB

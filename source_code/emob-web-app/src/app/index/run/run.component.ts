@@ -217,6 +217,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   public selectedDepotId: string | null = null;
   public selectedDepotIds: string[] = [];
 
+  public inputDataKeys: any[] = ['PreOrder Data', 'Location Data'];
+  public selectedInputDataKey: string | null = 'Location Data';
+
   constructor(
     private readonly spinner: NgxSpinnerService,
     private readonly constraintService: ConstraintService,
@@ -1858,5 +1861,10 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     console.log('this.preOrderFiles', this.preOrderFiles);
     console.log('this.requiredColumns', this.requiredColumns);
+  }
+
+  handleInputDataKeyChange(event: any) {
+    console.log('event', event);
+    this.selectedInputDataKey = event.value;
   }
 }
