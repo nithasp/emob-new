@@ -748,6 +748,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       latitude: number;
       longitude: number;
       columns?: string[];
+      inputdata?: any[];
       [key: string]: any;
     }> = incoming.map((item) => {
       const nameKey =
@@ -761,6 +762,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         latitude: Number(item.latitude),
         longitude: Number(item.longitude),
         columns: item.columns || [],
+        inputdata: item.inputdata || [],
         ...item,
       };
     });
@@ -771,7 +773,11 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (this.depots && this.depots.length > 0) {
       this.selectedDepotId = this.depots[0].depotName;
       this.selectedDepotIds = [];
-      this.requiredColumns = this.depots[0].columns || [];
+      // Set requiredColumns from inputdata for PreOrder
+      const preOrderInput = this.depots[0].inputdata?.find(
+        (input: any) => input.keyName === 'PreOrder'
+      );
+      this.requiredColumns = preOrderInput?.columnRequired || [];
     } else {
       this.selectedDepotId = null;
       this.selectedDepotIds = [];
@@ -1718,7 +1724,11 @@ export class RunComponent implements OnInit, AfterViewInit {
     const depot = this.depots.find((d) => d.depotName === this.selectedDepotId);
     if (depot) {
       this.updateDepotLocationOnMap([depot]);
-      this.requiredColumns = depot.columns || [];
+      // Set requiredColumns from inputdata for PreOrder
+      const preOrderInput = depot.inputdata?.find(
+        (input: any) => input.keyName === 'PreOrder'
+      );
+      this.requiredColumns = preOrderInput?.columnRequired || [];
     }
   }
 
@@ -1813,14 +1823,21 @@ export class RunComponent implements OnInit, AfterViewInit {
             latitude: Number(item.latitude),
             longitude: Number(item.longitude),
             columns: item.columns || [],
+            inputdata: item.inputdata || [],
             ...item,
           };
         });
         if (this.depots && this.depots.length > 0) {
+
           this.selectedDepotId = this.depots[0].depotName;
           this.selectedDepotIds = [];
           this.updateDepotLocationOnMap([this.depots[0]]);
-          this.requiredColumns = this.depots[0].columns || [];
+
+          // Set requiredColumns from inputdata for PreOrder
+          const preOrderInput = this.depots[0].inputdata?.find(
+            (input: any) => input.keyName === 'PreOrder'
+          );
+          this.requiredColumns = preOrderInput?.columnRequired || [];
           if (this.selectedDepotId) {
             localStorage.setItem('selectedDepotId', this.selectedDepotId);
           }
