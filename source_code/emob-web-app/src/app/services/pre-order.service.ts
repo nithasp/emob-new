@@ -15,13 +15,11 @@ export class PreOrderService {
     private readonly errorHandlingService: ErrorHandlingService
     ) { }
 
-  uploadPreOrder(runId: string, file: File): Observable<Experiment> {
-    console.log("file", file);
-
+  uploadPreOrder(runId: string, depotIds: string[], preOrderFiles: { file: File, keyName: string }[]): Observable<Experiment> {
     return this.apollo.mutate<Response>({
       mutation: gql`
-        mutation uploadPreOrder($preorder: PreOrderInput!) {
-          uploadPreOrder(input: $preorder) {
+        mutation uploadPreOrder($input: PreOrderInput!) {
+          uploadPreOrder(input: $input) {
             name
             timestamp
             groupId
@@ -31,15 +29,19 @@ export class PreOrderService {
         }
       `,
       variables: {
-        preorder: {
-          preOrderFile: file,
-          runId: runId
+        input: {
+          runId: runId,
+          deplotId: depotIds,
+          preOrderFiles: preOrderFiles
         }
       },
       context: {
-        useMultipart: true // Ensure multipart upload is enabled
+        useMultipart: true
       }
-    }).pipe(retry(2),map(result => result.data!.uploadPreOrder),
-    this.errorHandlingService.handleError);
+    }).pipe(
+      retry(2),
+      map(result => result.data!.uploadPreOrder),
+      this.errorHandlingService.handleError
+    );
   }
 }

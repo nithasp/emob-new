@@ -85,6 +85,13 @@ import { TranslocoService } from '@jsverse/transloco';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
+export interface FileWithCategory extends File {
+  keyName?: string;
+  displayName?: string;
+  isFirstOfType?: boolean;
+  lastModifiedDate?: Date;
+}
+
 @Injectable()
 export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
   fromModel(value: string | null): NgbTimeStruct | null {
@@ -122,6 +129,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   ];
 
   private requiredColumns: Array<string> = [];
+  private depotInputDataItems: Array<{keyName: string, displayName: string, columnRequired: string[]}> = [];
 
   public haveUpdateAfterValidated: boolean = false;
   haveValidated = false;
@@ -153,7 +161,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   // store data
   public experiment = <Experiment>{};
-  public preOrderFiles: File[] = [];
+  public preOrderFiles: { id: string, file: FileWithCategory }[] = [];
   public popupContent?: { data: Customer; isDepot: boolean } | null;
   private dataPreOrder: Array<PreOrder> = [];
   public groupedDataPreOrder: Partial<GroupedDataPreOrder> = {};
@@ -216,9 +224,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   public depots: any[] = [];
   public selectedDepotId: string | null = null;
   public selectedDepotIds: string[] = [];
+  public inputDataKeys: any[] = [];
 
-  public inputDataKeys: any[] = ['PreOrder Data', 'Location Data'];
-  public selectedInputDataKey: string | null = 'Location Data';
+  // No longer needed: all per-file state is on fileObj.file
 
   constructor(
     private readonly spinner: NgxSpinnerService,
@@ -236,6 +244,17 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService
   ) {}
+
+  public generateUniqueId(): string {
+    return 'f-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+  }
+
+  /**
+   * Get the required file types (keyNames) for the currently selected depot
+   */
+  get requiredFileTypes(): string[] {
+    return this.depotInputDataItems.map(item => item.keyName);
+  }
 
   ngOnInit(): void {
     this.spinner.show();
@@ -534,24 +553,100 @@ export class RunComponent implements OnInit, AfterViewInit {
     }, {} as GroupedDataPreOrder);
   }
 
-  async uploadFile(file: File) {
-    console.log('file', file);
-    console.log('this.preOrderFiles', this.preOrderFiles);
-
-    const isValid = await this.processExcelFile(file);
+  async uploadFile(file: FileWithCategory) {
+    const id = this.generateUniqueId();
+    // Validate the file before adding
+    const { isValid, keyName, displayName, isFirstOfType } = await this.validateSingleFileAgainstDepot(file);
     if (isValid) {
-      console.log('Data is valid');
-
-      this.preOrderFiles.push(file);
+      if (keyName && displayName && isFirstOfType) {
+        (file as FileWithCategory).keyName = keyName;
+        (file as FileWithCategory).displayName = displayName;
+        (file as FileWithCategory).isFirstOfType = true;
+      } else {
+        (file as FileWithCategory).keyName = '';
+        (file as FileWithCategory).displayName = '';
+        (file as FileWithCategory).isFirstOfType = false;
+      }
+      this.preOrderFiles.push({ id, file });
       this.isFilePreview = true;
-
       return;
-    } else {
-      console.log('Data is invalid');
     }
   }
 
+  async validateSingleFileAgainstDepot(file: FileWithCategory): Promise<{ isValid: boolean, keyName?: string, displayName?: string, isFirstOfType?: boolean }> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = async (e: any) => {
+        try {
+          const arrayBuffer = e.target.result;
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.load(arrayBuffer);
+          const worksheet = workbook.getWorksheet(1);
+          if (!worksheet) {
+            resolve({ isValid: false });
+            return;
+          }
+          const columnNames = (worksheet.getRow(1).values as (string | undefined)[])
+            .filter((value) => typeof value === 'string');
+          const matchingInputDataItem = this.findMatchingInputDataItem(columnNames);
+          if (matchingInputDataItem) {
+            // Count how many files of this type already exist
+            const alreadyAssignedCount = this.preOrderFiles.filter(
+              f => f.file.displayName === matchingInputDataItem.displayName
+            ).length;
+            if (alreadyAssignedCount === 0) {
+              // First file for this data type: auto-assign and disable
+              resolve({ isValid: true, keyName: matchingInputDataItem.keyName, displayName: matchingInputDataItem.displayName, isFirstOfType: true });
+            } else {
+              // Second or later file for this data type: require user selection
+              resolve({ isValid: true, keyName: '', displayName: '', isFirstOfType: false });
+            }
+          } else {
+            // Show missing columns for each required input data type
+            const validationErrors = [];
+            for (const item of this.depotInputDataItems) {
+              const missingColumns = item.columnRequired.filter(
+                (col) => !columnNames.includes(col)
+              );
+              if (missingColumns.length > 0) {
+                validationErrors.push(`${item.displayName}: ${missingColumns.join(', ')}`);
+              }
+            }
+            this.showInvalidModal(
+              `${this.transloco.translate('missing_required_columns', {}, 'index')}:`,
+              validationErrors
+            );
+            this.toastr.error(
+              `${this.transloco.translate('missing_required_columns', {}, 'index')}:`,
+              validationErrors.join(' | ')
+            );
+            resolve({ isValid: false });
+          }
+        } catch (error) {
+          console.error('Error validating file:', error);
+          resolve({ isValid: false });
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
   handleUploadSubmit() {
+    // Check if all required depot input data types are covered
+    if (!this.canExecuteHandleUploadSubmit()) {
+      this.toastr.error(
+        'Please upload files that match all required data types for the selected depot.'
+      );
+      return;
+    }
+
+    // Transform preOrderFiles to newPayload format (send actual File object)
+    const newPayload = this.preOrderFiles.map(({ file }) => ({
+      file, // send the actual File object
+      keyName: file.keyName || ''
+    }));
+    console.log('newPayload', newPayload);
+
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -580,8 +675,31 @@ export class RunComponent implements OnInit, AfterViewInit {
       .then((confirmed: boolean) => {
         if (confirmed) {
           this.spinner.show();
+          // Prepare depotIds (single or multiple selection) using depotId, not depotName
+          let depotIds: string[] = [];
+          if (this.selectedDepotIds && this.selectedDepotIds.length > 0) {
+            depotIds = this.selectedDepotIds
+              .map(name => {
+                const found = this.depots.find(d => d.depotName === name);
+                return found ? found.depotId : null;
+              })
+              .filter((id): id is string => !!id);
+          } else if (this.selectedDepotId) {
+            const found = this.depots.find(d => d.depotName === this.selectedDepotId);
+            if (found && found.depotId) depotIds = [found.depotId];
+          }
+          // Prepare preOrderFiles payload
+          const filesPayload = this.preOrderFiles.map(({ file }) => ({
+            file,
+            keyName: file.keyName || ''
+          }));
+
+          console.log('this.experiment.runId', this.experiment.runId);
+          console.log('depotIds', depotIds);
+          console.log('newPayload', newPayload);
+         
           this.preOrderService
-            .uploadPreOrder(this.experiment.runId, this.preOrderFiles[0])
+            .uploadPreOrder(this.experiment.runId, depotIds, newPayload)
             .subscribe((response: Experiment) => {
               this.groupingCustomer(
                 response.result.customers,
@@ -744,7 +862,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private loadLocationDepot(incoming: any[]) {
+    private loadLocationDepot(incoming: any[]) {
     // Always use the incoming depots array for default selection and display
     const normalizedIncoming: Array<{
       depotName: string;
@@ -776,15 +894,13 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (this.depots && this.depots.length > 0) {
       this.selectedDepotId = this.depots[0].depotName;
       this.selectedDepotIds = [];
-      // Set requiredColumns from inputdata for PreOrder
-      const preOrderInput = this.depots[0].inputdata?.find(
-        (input: any) => input.keyName === 'PreOrder'
-      );
-      this.requiredColumns = preOrderInput?.columnRequired || [];
+      // Update input data keys from the first depot
+      this.updateInputDataKeysFromDepot(this.depots[0]);
     } else {
       this.selectedDepotId = null;
       this.selectedDepotIds = [];
-      this.requiredColumns = [];
+      this.inputDataKeys = [];
+      this.depotInputDataItems = [];
     }
 
     // Plot all depots on the map
@@ -1389,12 +1505,16 @@ export class RunComponent implements OnInit, AfterViewInit {
       const mimeType =
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-      const file: File = this.arrayBufferToFile(
+      const file: FileWithCategory = this.arrayBufferToFile(
         arrayBuffer,
         fileName,
         mimeType
-      );
-      this.preOrderFiles.push(file);
+      ) as FileWithCategory;
+      // Set default values for imported files (keep them editable)
+      file.keyName = '';
+      file.displayName = '';
+      file.isFirstOfType = false;
+      this.preOrderFiles.push({ id: this.generateUniqueId(), file });
       return isReadExcel;
     } catch (error) {
       this.toastr.error(
@@ -1414,6 +1534,97 @@ export class RunComponent implements OnInit, AfterViewInit {
           const arrayBuffer = e.target.result;
           const isReadExcel = await this.readExcel(arrayBuffer);
           resolve(isReadExcel);
+        } catch (error) {
+          console.error('Error processing Excel file:', error);
+          this.toastr.error(
+            this.transloco.translate('excel_process_failed', {}, 'index')
+          );
+          resolve(false);
+        }
+      };
+
+      reader.onerror = (error) => {
+        console.error('File reading error:', error);
+        this.toastr.error(
+          this.transloco.translate('cannot_read_file', {}, 'index')
+        );
+        reject(false);
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  private async processExcelFileWithDepotValidation(file: File): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = async (e: any) => {
+        try {
+          const arrayBuffer = e.target.result;
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.load(arrayBuffer);
+          
+          const worksheet = workbook.getWorksheet(1);
+          if (!worksheet) {
+            this.toastr.error('No worksheet found in the Excel file.');
+            resolve(false);
+            return;
+          }
+          
+          const columnNames = (worksheet.getRow(1).values as (string | undefined)[])
+            .filter((value) => typeof value === 'string');
+          
+          // Find matching input data item for this file
+          const matchingInputDataItem = this.findMatchingInputDataItem(columnNames);
+          
+          if (!matchingInputDataItem) {
+            // Show missing columns for each required input data type
+            const validationErrors = [];
+            for (const item of this.depotInputDataItems) {
+              const missingColumns = item.columnRequired.filter(
+                (col) => !columnNames.includes(col)
+              );
+              if (missingColumns.length > 0) {
+                validationErrors.push(`${item.displayName}: ${missingColumns.join(', ')}`);
+              }
+            }
+            
+            this.showInvalidModal(
+              `${this.transloco.translate('missing_required_columns', {}, 'index')}:`,
+              validationErrors
+            );
+            this.toastr.error(
+              `${this.transloco.translate('missing_required_columns', {}, 'index')}:`,
+              validationErrors.join(' | ')
+            );
+            resolve(false);
+            return;
+          }
+          
+          // Count how many files already have this data type
+          const currentType = matchingInputDataItem.displayName;
+          const alreadyAssignedCount = this.preOrderFiles.filter(
+            f => f.file.displayName === currentType
+          ).length;
+          
+          if (alreadyAssignedCount === 0) {
+            // First file for this data type: auto-assign and disable
+            (file as FileWithCategory).keyName = matchingInputDataItem.keyName;
+            (file as FileWithCategory).displayName = matchingInputDataItem.displayName;
+            (file as FileWithCategory).isFirstOfType = true;
+          } else {
+            // Second or later file for this data type: require user selection
+            (file as FileWithCategory).keyName = '';
+            (file as FileWithCategory).displayName = '';
+            (file as FileWithCategory).isFirstOfType = false;
+          }
+          
+          // Use the original validation logic with the matching columns
+          this.requiredColumns = matchingInputDataItem.columnRequired;
+          const isValid = await this.readExcel(arrayBuffer);
+          resolve(isValid);
+          
         } catch (error) {
           console.error('Error processing Excel file:', error);
           this.toastr.error(
@@ -1709,7 +1920,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       });
   }
 
-  onDepotSelectionChange() {
+  async onDepotSelectionChange() {
     // Remove any multiple-depot storage
     localStorage.removeItem('selectedDepotIds');
 
@@ -1727,12 +1938,14 @@ export class RunComponent implements OnInit, AfterViewInit {
     const depot = this.depots.find((d) => d.depotName === this.selectedDepotId);
     if (depot) {
       this.updateDepotLocationOnMap([depot]);
-      // Set requiredColumns from inputdata for PreOrder
-      const preOrderInput = depot.inputdata?.find(
-        (input: any) => input.keyName === 'PreOrder'
-      );
-      this.requiredColumns = preOrderInput?.columnRequired || [];
+      this.updateInputDataKeysFromDepot(depot);
+    } else {
+      this.inputDataKeys = [];
+      this.depotInputDataItems = [];
     }
+    
+    // Re-validate existing uploaded files against new depot requirements
+    await this.validateUploadedFilesAgainstDepot();
   }
 
   // ─── 4) Persist on multiple-depot change ───────────────────────────────────────────────
@@ -1756,6 +1969,11 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.selectedDepotIds.includes(d.depotName)
     );
     this.updateDepotLocationOnMap(selected);
+    
+    // For multiple depot selection, we need to handle input data differently
+    // For now, clear the input data keys as multiple depot logic needs more definition
+    this.inputDataKeys = [];
+    this.depotInputDataItems = [];
   }
 
   updateDepotLocationOnMap(
@@ -1831,6 +2049,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           longitude: Number(depot.longitude),
           columns: depot.columns || [],
           inputdata: depot.inputdata || [],
+          depotId: depot.depotId, // Add depotId to the normalized depots
           ...depot,
         }));
         if (this.depots && this.depots.length > 0) {
@@ -1838,11 +2057,8 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.selectedDepotIds = [];
           this.updateDepotLocationOnMap([this.depots[0]]);
 
-          // Set requiredColumns from inputdata for PreOrder
-          const preOrderInput = this.depots[0].inputdata?.find(
-            (input: any) => input.keyName === 'PreOrder'
-          );
-          this.requiredColumns = preOrderInput?.columnRequired || [];
+          // Update input data keys from the first depot
+          this.updateInputDataKeysFromDepot(this.depots[0]);
           if (this.selectedDepotId) {
             localStorage.setItem('selectedDepotId', this.selectedDepotId);
           }
@@ -1861,10 +2077,124 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     console.log('this.preOrderFiles', this.preOrderFiles);
     console.log('this.requiredColumns', this.requiredColumns);
+
+    console.log('this.inputDataKeys', this.inputDataKeys);
+
+    console.log('this.depotInputDataItems', this.depotInputDataItems);
+    
+    
   }
 
-  handleInputDataKeyChange(event: any) {
-    console.log('event', event);
-    this.selectedInputDataKey = event.value;
+  handleInputDataKeyChange(fileObj: { id: string, file: FileWithCategory }, event: any) {
+    const selectedDisplayName = event.value;
+    const found = this.depotInputDataItems.find(item => item.displayName === selectedDisplayName);
+    if (found) {
+      fileObj.file.keyName = found.keyName;
+      fileObj.file.displayName = found.displayName;
+    } else {
+      fileObj.file.keyName = '';
+      fileObj.file.displayName = '';
+    }
   }
+
+  updateInputDataKeysFromDepot(depot: any) {
+    // Extract input data items from depot
+    this.depotInputDataItems = depot.inputdata?.map((item: any) => ({
+      keyName: item.keyName,
+      displayName: item.displayName,
+      columnRequired: item.columnRequired || []
+    })) || [];
+
+    // Remove duplicates based on keyName and create inputDataKeys array
+    const uniqueItems = this.depotInputDataItems.filter((item, index, self) => 
+      index === self.findIndex(t => t.keyName === item.keyName)
+    );
+    
+    this.inputDataKeys = uniqueItems.map(item => item.displayName);
+    console.log('Updated inputDataKeys:', this.inputDataKeys);
+    console.log('Depot input data items:', this.depotInputDataItems);
+  }
+
+  async validateUploadedFilesAgainstDepot() {
+    // Validate each uploaded file against depot requirements
+    const validFiles = [];
+    for (const file of this.preOrderFiles) {
+      const isValid = await this.validateFileAgainstDepotRequirements(file);
+      if (isValid) {
+        validFiles.push(file);
+      } else {
+        this.toastr.warning(
+          `File ${file.file.name} does not match current depot requirements and has been removed.`
+        );
+      }
+    }
+    this.preOrderFiles = validFiles;
+  }
+
+  validateFileAgainstDepotRequirements(file: { id: string, file: FileWithCategory }): Promise<boolean> {
+    // Read the file to get column names
+    return new Promise<boolean>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = async (e: any) => {
+        try {
+          const arrayBuffer = e.target.result;
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.load(arrayBuffer);
+          
+          const worksheet = workbook.getWorksheet(1);
+          if (!worksheet) {
+            resolve(false);
+            return;
+          }
+          
+          const columnNames = (worksheet.getRow(1).values as (string | undefined)[])
+            .filter((value) => typeof value === 'string');
+          
+          // Check if file matches any of the depot's input data requirements
+          const matchingInputDataItem = this.findMatchingInputDataItem(columnNames);
+          if (matchingInputDataItem) {
+            (file.file as FileWithCategory).keyName = matchingInputDataItem.keyName;
+            (file.file as FileWithCategory).displayName = matchingInputDataItem.displayName;
+            // Keep existing files editable when re-validating against depot
+            (file.file as FileWithCategory).isFirstOfType = false;
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        } catch (error) {
+          console.error('Error validating file:', error);
+          resolve(false);
+        }
+      };
+      reader.readAsArrayBuffer(file.file);
+    });
+  }
+
+  findMatchingInputDataItem(columnNames: string[]): {keyName: string, displayName: string, columnRequired: string[]} | null {
+    return this.depotInputDataItems.find(item => {
+      // Check if all required columns are present in the file
+      return item.columnRequired.every(requiredCol => 
+        columnNames.includes(requiredCol)
+      );
+    }) || null;
+  }
+
+  canExecuteHandleUploadSubmit(): boolean {
+    if (this.preOrderFiles.length === 0) return false;
+    // Check if all depot input data types are covered by uploaded files
+    const requiredDisplayNames = this.depotInputDataItems.map(item => item.displayName);
+    const uploadedDisplayNames = this.preOrderFiles.map(f => (f.file as FileWithCategory).displayName).filter(cat => !!cat);
+    // All required types must be covered
+    return requiredDisplayNames.every(required => 
+      uploadedDisplayNames.includes(required)
+    );
+  }
+
+  isFileCategoryDisabled(fileObj: { id: string, file: FileWithCategory }): boolean {
+    // Only disable if this is the first file of its type
+    return fileObj.file.isFirstOfType === true;
+  }
+
+  // Removed getFileCategoryForFile, onFileCategoryChange, and all other old map-based methods.
+  // Removed all remaining code that referenced the old maps.
 }

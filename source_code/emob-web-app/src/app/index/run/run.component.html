@@ -1,5 +1,5 @@
 <ng-container *transloco="let t; read: 'index'">
-  <!-- <h1 (click)="log()">log</h1> -->
+  <h1 (click)="log()">log</h1>
   <div
     class="card mt-2 container-fluid main_container"
     style="min-height: 100vh"
@@ -60,13 +60,10 @@
 
                 <div class="card p-3 mb-4">
                   <h4><mat-icon>location_on</mat-icon> Manage Depots</h4>
-
-                 
-
                   <mat-form-field
                     *ngIf="companyDepotType === 'Single'"
                     appearance="fill"
-                    class="w-100 mb-3"
+                    class="w-100"
                   >
                     <mat-label>Single Depot Selection</mat-label>
                     <mat-select
@@ -86,7 +83,7 @@
                   <mat-form-field
                     *ngIf="companyDepotType === 'Multiple'"
                     appearance="fill"
-                    class="w-100 mb-3"
+                    class="w-100"
                   >
                     <mat-label>Multiple Depot Selection</mat-label>
                     <mat-select
@@ -102,6 +99,16 @@
                       </mat-option>
                     </mat-select>
                   </mat-form-field>
+
+                  <h4 class="file-type-required">
+                    ประเภทของ File ที่ต้องอัพโหลด: 
+                    <span *ngIf="requiredFileTypes.length > 0">
+                      {{ requiredFileTypes.join(', ') }}
+                    </span>
+                    <span *ngIf="requiredFileTypes.length === 0" class="text-muted">
+                      กรุณาเลือก Depot ก่อน
+                    </span>
+                  </h4>
                 </div>
 
                 <div class="col-md-12" *ngIf="isUpload">
@@ -148,7 +155,7 @@
                         mat-stroked-button
                         class="bg-custom-primary"
                         (click)="fileUpload.click()"
-                        [disabled]="!this.selectedDepotId"
+                        [disabled]="!this.selectedDepotId || this.inputDataKeys.length === 0"
                       >
                         <mat-icon class="icon-browser">attach_file</mat-icon>
                         <span>{{ t("browse_file") }}</span>
@@ -172,7 +179,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr *ngFor="let file of preOrderFiles; let i = index">
+                        <tr *ngFor="let fileObj of preOrderFiles; let i = index">
                           <td scope="row" class="ps-3">{{ i + 1 }}</td>
                           <td
                             style="
@@ -181,23 +188,27 @@
                               max-width: 400px;
                             "
                           >
-                            {{ file.name }}
+                            {{ fileObj.file.name }}
                           </td>
                           <td>
-                            <mat-select [(value)]="selectedInputDataKey" (selectionChange)="handleInputDataKeyChange($event)">
+                            <mat-select 
+                              [(value)]="fileObj.file.displayName"
+                              (selectionChange)="handleInputDataKeyChange(fileObj, $event)"
+                              [disabled]="isFileCategoryDisabled(fileObj)"
+                            >
                               <mat-option *ngFor="let inputDataKey of inputDataKeys" [value]="inputDataKey">
                                 {{ inputDataKey}}
                               </mat-option>
                             </mat-select>
                           </td>
                           <td>
-                            {{ file.size / 1000000 | number : "1.2-2" }} MB
+                            {{ fileObj.file.size / 1000000 | number : "1.2-2" }} MB
                           </td>
                           <td>
                             {{
-                              (validTypes.includes(file.type)
+                              (validTypes.includes(fileObj.file.type)
                                 ? "xlsx"
-                                : file.type
+                                : fileObj.file.type
                               ) | slice : 0 : 10
                             }}
                           </td>
@@ -230,7 +241,7 @@
                     *ngIf="isFilePreview"
                     mat-raised-button
                     class="upload-submit-button bg-custom-primary mt-3 mr-0"
-                    [disabled]="!preOrderFiles.length"
+                    [disabled]="!canExecuteHandleUploadSubmit()"
                     (click)="handleUploadSubmit()"
                   >
                     {{ "confirm" | transloco }}
