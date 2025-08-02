@@ -247,7 +247,7 @@
                 <td>{{ order.QUANTITYMINOR }}</td>
                 <td>{{ order.UserConfirm }}</td>
                 <td>
-                  {{ order.DateConfirm | date : "dd MMM yy h:mm:ss a" }}
+                  {{ formatDate(order.DateConfirm) }}
                 </td>
               </tr>
             </tbody>
