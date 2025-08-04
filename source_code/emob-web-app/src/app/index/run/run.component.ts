@@ -34,9 +34,12 @@ import {
   Address,
   Customer,
   CustomerUpdated,
+  DataCustomer,
+  DataPreOrder,
   Depot,
   GroupedDataPreOrder,
   PreOrder,
+  ProductInfo,
   ReplaceType,
   ValidationType,
 } from 'src/app/models/pre-order.model';
@@ -173,7 +176,20 @@ export class RunComponent implements OnInit, AfterViewInit {
   public uploadDataGroupCustomers?: DataGroup | null;
   public customersLocationUpdated: Array<CustomerUpdated> = [];
   public countUploadedCustomers: number = 0;
-  public constraintsData!: Constraint;
+  public constraintsData: Constraint = {
+    MaxWorkDuration: 0,
+    maxTravelDistance: 0,
+    deliveryTime: '',
+    limitVehicleCapacity: 0,
+    availableCar: 0,
+    earlyDeliveryTime: '',
+    backToDepotTime: '',
+    maximumWorkDuration: '',
+    numberOfVehicleAvailable: 0,
+    vehicleOrderSizeCapacity: 0,
+    maximumTravelDistance: 0,
+    serviceDurationTime: '',
+  };
   public validateExperiment: Validate | null = null;
   public companyDepotType: string = '';
 
@@ -1100,6 +1116,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     // display popup on click
     this.map.on('singleclick', (event) => this.popupShow(event, element));
     this.map.on('pointermove', (event) => this.pointMove(event));
+
+    console.log(this.haveUpdateAfterValidated, this.haveValidated);
   }
 
   private pointMove(evt: any): void {
@@ -1231,9 +1249,52 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (existingIndex !== -1) {
       modalRef.componentInstance.locationType = LocationType.Edit;
     }
-    modalRef.componentInstance.dataPreOder =
-      this.groupedDataPreOrder[customer.name];
-    modalRef.componentInstance.dataCustomer = customer;
+
+    let dataPreOder: DataPreOrder = {
+      ZIPCODE: customer.original_address.postal_code,
+      CUSTOMER_NAME: customer.extra.customer_name,
+      ORDERID_ORG: customer.name,
+      ADDRESS: customer.original_address.address,
+      AUMPHER: customer.original_address.district,
+      PROVINCE: customer.original_address.province,
+
+      details: customer.extra.products_info.map((product: ProductInfo) => ({
+        PRODUCTID: product.product_id,
+        ORDER_ID: product.order_id,
+        PRODUCTNAME: product.product_name,
+        QUANTITYMAIN: product.quantity_major,
+        QUANTITYMINOR: product.quantity_minor,
+        UserConfirm: product.user_confirm,
+        DateConfirm: product.date_confirm,
+      })),
+    };
+
+    let dataCustomer: DataCustomer = {
+      ORDERID_ORG: customer.name,
+      CHANNEL: customer.extra.channel,
+      CUSTOMER_NAME: customer.extra.customer_name,
+      TEL: customer.extra.tel,
+      AUMPHER: customer.original_address.district,
+      PROVINCE: customer.original_address.province,
+      ZIPCODE: customer.original_address.postal_code,
+      ADDRESS: customer.original_address.address,
+      latitude: customer.latitude,
+      longitude: customer.longitude,
+      validation_type: customer.validation_type,
+      replace_type: customer.replace_type,
+      details: customer.extra.products_info.map((product: ProductInfo) => ({
+        PRODUCTID: product.product_id,
+        ORDER_ID: product.order_id,
+        PRODUCTNAME: product.product_name,
+        QUANTITYMAIN: product.quantity_major,
+        QUANTITYMINOR: product.quantity_minor,
+        UserConfirm: product.user_confirm,
+        DateConfirm: product.date_confirm,
+      })),
+    };
+
+    modalRef.componentInstance.dataPreOder = dataPreOder;
+    modalRef.componentInstance.dataCustomer = dataCustomer;
 
     console.log('customer details previous', customer);
     modalRef.result.then((locationUpdated: Location) => {
@@ -1724,8 +1785,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       const data: PreOrder[] = [];
       console.log('Worksheet length:', workbook.worksheets.length);
 
-      const worksheet =
-        workbook.getWorksheet(1) || workbook.getWorksheet('PreOrder');
+      let worksheet =
+        workbook.getWorksheet('PreOrder') || workbook.worksheets[0];
+
       if (!worksheet) {
         this.toastr.warning(
           this.transloco.translate('worksheet_not_found', {}, 'index')
@@ -1848,8 +1910,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     return this.experiment.run === 'Original';
   }
 
-  onValueChange(newValue: number, property: keyof Constraint): void {
-    this.updateConstraint(this.constraintsData, property, newValue);
+  onValueChange(newValue: number | string, property: keyof Constraint): void {
+    this.updateConstraint(this.constraintsData, property, newValue as any);
     console.log(`${property} changed to:`, newValue);
     this.haveUpdateAfterValidated = true;
   }

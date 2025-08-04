@@ -252,11 +252,6 @@ mat-icon {
       display: contents;
     }
   }
-  // #popup-content {
-  //   p:last-child {
-  //     margin-bottom: 0px;
-  //   }
-  // }
 }
 
 .filter-item {
@@ -327,3 +322,19 @@ mat-card.mb-4 {
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
  
+.route-box {cursor: pointer;
+  &:not(:first-child):not(:last-child) {
+    transition: 0.1s;
+    cursor: pointer;
+
+    &:hover {
+      color: white;
+      background: #0606f4f0;
+
+      .text {
+        transition: 0.1s;
+        color: white;
+      }
+    }
+  }
+}

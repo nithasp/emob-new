@@ -9,14 +9,17 @@
   background-color: #242484 !important;
   color: #ffffff !important;
   &:disabled {
-  
-    background-color: #dedde2 !important;
-    color: #939398 !important;
+    color: rgba(0, 0, 0, 0.38) !important;
+    background: rgb(0 0 0 / 12%) !important;
   }
 }
 .bg-custom-secondary {
   background-color: #04948c !important;
   color: #ffffff !important;
+  &:disabled {
+    color: rgba(0, 0, 0, 0.38) !important;
+    background: rgb(0 0 0 / 12%) !important;
+  }
 }
 
 .icon-custom-primary {

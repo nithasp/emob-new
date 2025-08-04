@@ -139,6 +139,8 @@ export class ExperimentService {
                 parameterUrl
                 outputGeoJsonUrl
                 outputReportUrl
+                outputPlanDetailUrl
+                preOrderUrl
               }
             }
           }

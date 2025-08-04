@@ -521,7 +521,6 @@
               </div>
             </ng-template>
           </li>
-          <!-- !isUpload -->
           <li [ngbNavItem]="2" [disabled]="!isUpload">
             <button ngbNavLink>
               <h3>{{ t("parameters") }}</h3>
@@ -587,77 +586,75 @@
                           <li>
                             <p>
                               {{ t("early_delivery_time_is") }}
-                              <ngx-popover [placement]="'bottom-start'">
-                                <button class="link link-primary">
+                              <app-dynamic-popover [placement]="'bottom-start'">
+                                <button
+                                  popover-trigger
+                                  class="link link-primary"
+                                >
                                   {{ constraintsData.earlyDeliveryTime }}
                                 </button>
-
-                                <ng-template ngx-popover-template>
+                                <div popover-content>
                                   <div class="card p-3">
                                     <div class="card-body p-2">
                                       <p class="card-title">
                                         {{ t("time_is") }}:
                                       </p>
-
                                       <ngb-timepicker
-                                        [(ngModel)]="
+                                        [ngModel]="
                                           constraintsData.earlyDeliveryTime
                                         "
-                                        key
+                                        (ngModelChange)="
+                                          onValueChange(
+                                            $event,
+                                            'earlyDeliveryTime'
+                                          )
+                                        "
                                       />
                                     </div>
-                                    <div
-                                      class="popover__controls d-flex justify-content-end mt-2"
-                                    >
-                                      <button ngx-popover-close class="btn">
-                                        {{ "close" | transloco }}
-                                      </button>
-                                    </div>
                                   </div>
-                                </ng-template>
-                                <ngx-arrow padding="8" />
-                              </ngx-popover>
+                                </div>
+                              </app-dynamic-popover>
                             </p>
                           </li>
                           <li>
                             <p>
                               {{ t("back_to_depot_time_is") }}
-                              <ngx-popover [placement]="'bottom-start'">
-                                <button class="link link-primary">
+                              <app-dynamic-popover [placement]="'bottom-start'">
+                                <button
+                                  popover-trigger
+                                  class="link link-primary"
+                                >
                                   {{ constraintsData.backToDepotTime }}
                                 </button>
-                                <ng-template ngx-popover-template>
+                                <div popover-content>
                                   <div class="card p-3">
                                     <div class="card-body p-2">
                                       <p class="card-title">
                                         {{ t("time_is") }}:
                                       </p>
-
                                       <ngb-timepicker
-                                        [(ngModel)]="
+                                        [ngModel]="
                                           constraintsData.backToDepotTime
                                         "
-                                        key
+                                        (ngModelChange)="
+                                          onValueChange(
+                                            $event,
+                                            'backToDepotTime'
+                                          )
+                                        "
                                       />
                                     </div>
-                                    <div
-                                      class="popover__controls d-flex justify-content-end mt-2"
-                                    >
-                                      <button ngx-popover-close class="btn">
-                                        {{ "close" | transloco }}
-                                      </button>
-                                    </div>
                                   </div>
-                                </ng-template>
-                                <ngx-arrow padding="8" />
-                              </ngx-popover>
+                                </div>
+                              </app-dynamic-popover>
                             </p>
                           </li>
                           <li>
                             <p>
                               {{ t("maximum_work_duration_is") }}
-                              <ngx-popover [placement]="'bottom-start'">
+                              <app-dynamic-popover [placement]="'bottom-start'">
                                 <button
+                                  popover-trigger
                                   class="link link-primary link-opacity-75-hover"
                                 >
                                   {{
@@ -665,32 +662,26 @@
                                       | timeFormat
                                   }}
                                 </button>
-                                <ng-template ngx-popover-template>
-                                  <div class="card p-3">
-                                    <div class="card-body p-2">
-                                      <p class="card-title">
-                                        {{ t("maximum_work_duration") }} (0 - 23
-                                        {{ "hours" | transloco }}):
-                                      </p>
 
-                                      <ngb-timepicker
-                                        [(ngModel)]="
-                                          constraintsData.maximumWorkDuration
-                                        "
-                                        key
-                                      />
-                                    </div>
-                                    <div
-                                      class="popover__controls d-flex justify-content-end mt-2"
-                                    >
-                                      <button ngx-popover-close class="btn">
-                                        {{ "close" | transloco }}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </ng-template>
-                                <ngx-arrow padding="8" />
-                              </ngx-popover>
+                                <div popover-content>
+                                  <p class="card-title">
+                                    {{ t("maximum_work_duration") }} (0 - 23
+                                    {{ "hours" | transloco }}):
+                                  </p>
+
+                                  <ngb-timepicker
+                                    [ngModel]="
+                                      constraintsData.maximumWorkDuration
+                                    "
+                                    (ngModelChange)="
+                                      onValueChange(
+                                        $event,
+                                        'maximumWorkDuration'
+                                      )
+                                    "
+                                  />
+                                </div>
+                              </app-dynamic-popover>
                             </p>
                           </li>
                         </ul>
@@ -707,8 +698,9 @@
                           <li>
                             <p>
                               {{ t("number_of_vehicle_available_is_set_to") }}
-                              <ngx-popover [placement]="'bottom-start'">
+                              <app-dynamic-popover [placement]="'bottom-start'">
                                 <button
+                                  popover-trigger
                                   class="link link-primary link-opacity-75-hover"
                                 >
                                   {{
@@ -716,43 +708,26 @@
                                       | number : "1.0-0"
                                   }}
                                 </button>
-                                <ng-template ngx-popover-template>
-                                  <div class="card p-3">
-                                    <div class="card-body p-2">
-                                      <p class="card-title">
-                                        {{ t("number_of_vehicle_available") }}:
-                                      </p>
-
-                                      <app-number-counter-input
-                                        [(value)]="
-                                          constraintsData.numberOfVehicleAvailable
-                                        "
-                                        [maxValue]="250"
-                                        [minValue]="0"
-                                        (valueChange)="
-                                          constraintsData.numberOfVehicleAvailable =
-                                            $event
-                                        "
-                                        (valueChange)="
-                                          onValueChange(
-                                            $event,
-                                            'numberOfVehicleAvailable'
-                                          )
-                                        "
-                                      >
-                                      </app-number-counter-input>
-                                    </div>
-                                    <div
-                                      class="popover__controls d-flex justify-content-end mt-2"
-                                    >
-                                      <button ngx-popover-close class="btn">
-                                        {{ "close" | transloco }}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </ng-template>
-                                <ngx-arrow padding="8" />
-                              </ngx-popover>
+                                <div popover-content>
+                                  <p class="card-title">
+                                    {{ t("number_of_vehicle_available") }}:
+                                  </p>
+                                  <app-number-counter-input
+                                    [value]="
+                                      constraintsData.numberOfVehicleAvailable
+                                    "
+                                    (valueChange)="
+                                      onValueChange(
+                                        $event,
+                                        'numberOfVehicleAvailable'
+                                      )
+                                    "
+                                    [maxValue]="250"
+                                    [minValue]="0"
+                                  >
+                                  </app-number-counter-input>
+                                </div>
+                              </app-dynamic-popover>
                             </p>
                           </li>
                           <li
@@ -765,8 +740,9 @@
                           >
                             <p>
                               {{ t("vehicle_order_size_capacity_is") }}
-                              <ngx-popover [placement]="'bottom-start'"
-                                ><button
+                              <app-dynamic-popover [placement]="'bottom-start'">
+                                <button
+                                  popover-trigger
                                   class="link link-primary link-opacity-75-hover"
                                 >
                                   {{
@@ -775,39 +751,28 @@
                                   }}
                                   {{ "kilogram" | transloco }}
                                 </button>
-                                <ng-template ngx-popover-template>
-                                  <div class="card p-3">
-                                    <div class="card-body p-2">
-                                      <p class="card-title">
-                                        {{ t("order_size_capacity") }} :
-                                      </p>
+                                <div popover-content>
+                                  <p class="card-title">
+                                    {{ t("order_size_capacity") }} :
+                                  </p>
 
-                                      <app-number-counter-input
-                                        [(ngModel)]="
-                                          constraintsData.vehicleOrderSizeCapacity
-                                        "
-                                        [maxValue]="10000"
-                                        [minValue]="0"
-                                        [count]="100"
-                                        (valueChange)="
-                                          onValueChange(
-                                            $event,
-                                            'vehicleOrderSizeCapacity'
-                                          )
-                                        "
-                                      ></app-number-counter-input>
-                                    </div>
-                                    <div
-                                      class="popover__controls d-flex justify-content-end mt-2"
-                                    >
-                                      <button ngx-popover-close class="btn">
-                                        {{ "close" | transloco }}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </ng-template>
-                                <ngx-arrow padding="8" />
-                              </ngx-popover>
+                                  <app-number-counter-input
+                                    [ngModel]="
+                                      constraintsData.vehicleOrderSizeCapacity
+                                    "
+                                    (ngModelChange)="
+                                      onValueChange(
+                                        $event,
+                                        'vehicleOrderSizeCapacity'
+                                      )
+                                    "
+                                    [maxValue]="10000"
+                                    [minValue]="0"
+                                    [count]="100"
+                                  >
+                                  </app-number-counter-input>
+                                </div>
+                              </app-dynamic-popover>
                             </p>
                           </li>
                           <li
@@ -820,8 +785,9 @@
                           >
                             <p>
                               {{ t("maximum_travel_distance_is") }}
-                              <ngx-popover [placement]="'bottom-start'"
-                                ><button
+                              <app-dynamic-popover [placement]="'bottom-start'">
+                                <button
+                                  popover-trigger
                                   class="link link-primary link-opacity-75-hover"
                                 >
                                   {{
@@ -830,39 +796,26 @@
                                   }}
                                   {{ "kilometer" | transloco }}
                                 </button>
-                                <ng-template ngx-popover-template>
-                                  <div class="card p-3">
-                                    <div class="card-body p-2">
-                                      <p class="card-title">
-                                        {{ t("maximum_travel_distance") }} :
-                                      </p>
-
-                                      <app-number-counter-input
-                                        [(ngModel)]="
-                                          constraintsData.maximumTravelDistance
-                                        "
-                                        [maxValue]="1200"
-                                        [minValue]="0"
-                                        (valueChange)="
-                                          onValueChange(
-                                            $event,
-                                            'maximumTravelDistance'
-                                          )
-                                        "
-                                      >
-                                      </app-number-counter-input>
-                                    </div>
-                                    <div
-                                      class="popover__controls d-flex justify-content-end mt-2"
-                                    >
-                                      <button ngx-popover-close class="btn">
-                                        {{ "close" | transloco }}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </ng-template>
-                                <ngx-arrow padding="8" />
-                              </ngx-popover>
+                                <div popover-content>
+                                  <p class="card-title">
+                                    {{ t("maximum_travel_distance") }} :
+                                  </p>
+                                  <app-number-counter-input
+                                    [ngModel]="
+                                      constraintsData.maximumTravelDistance
+                                    "
+                                    (ngModelChange)="
+                                      onValueChange(
+                                        $event,
+                                        'maximumTravelDistance'
+                                      )
+                                    "
+                                    [maxValue]="1200"
+                                    [minValue]="0"
+                                  >
+                                  </app-number-counter-input>
+                                </div>
+                              </app-dynamic-popover>
                             </p>
                           </li>
                         </ul>
@@ -879,8 +832,9 @@
                           <li>
                             <p>
                               {{ t("service_time_is") }}
-                              <ngx-popover [placement]="'bottom-start'"
-                                ><button
+                              <app-dynamic-popover [placement]="'bottom-start'">
+                                <button
+                                  popover-trigger
                                   class="link link-primary link-opacity-75-hover"
                                 >
                                   {{
@@ -888,31 +842,23 @@
                                       | timeFormat
                                   }}
                                 </button>
-                                <ng-template ngx-popover-template>
-                                  <div class="card p-3">
-                                    <div class="card-body p-2">
-                                      <p class="card-title">
-                                        {{ t("service_duration_time") }} :
-                                      </p>
-
-                                      <ngb-timepicker
-                                        [(ngModel)]="
-                                          constraintsData.serviceDurationTime
-                                        "
-                                        key
-                                      />
-                                    </div>
-                                    <div
-                                      class="popover__controls d-flex justify-content-end mt-2"
-                                    >
-                                      <button ngx-popover-close class="btn">
-                                        {{ "close" | transloco }}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </ng-template>
-                                <ngx-arrow padding="8" />
-                              </ngx-popover>
+                                <div popover-content>
+                                  <p class="card-title">
+                                    {{ t("service_duration_time") }} :
+                                  </p>
+                                  <ngb-timepicker
+                                    [ngModel]="
+                                      constraintsData.serviceDurationTime
+                                    "
+                                    (ngModelChange)="
+                                      onValueChange(
+                                        $event,
+                                        'serviceDurationTime'
+                                      )
+                                    "
+                                  />
+                                </div>
+                              </app-dynamic-popover>
                             </p>
                           </li>
                         </ul>
@@ -999,8 +945,9 @@
                             "before_the_ai_service_can_continue_with_route_planning"
                           )
                         }}
-                      </span> </ngb-alert
-                    >}@else {
+                      </span>
+                    </ngb-alert>
+                    }@else {
                     <ngb-alert
                       type="success"
                       [dismissible]="false"
@@ -1015,10 +962,9 @@
                             "pre_order_verification_is_correct_you_can_continue_to_route_your_plan"
                           )
                         }}
-                      </span> </ngb-alert
-                    >}
-                    <!-- validate -->
-                    @if(validateExperiment && (
+                      </span>
+                    </ngb-alert>
+                    } @if(validateExperiment && (
                     validateExperiment.filters.constraints.over_distance.length
                     >0 ||
                     validateExperiment.filters.constraints.over_weight.length >

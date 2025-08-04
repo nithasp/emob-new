@@ -98,3 +98,38 @@ export interface myDepots {
 }
 
 export interface ExperimentCounts extends Pick<Experiment, 'countGeocoding' | 'countReroute'> {}
+
+export interface PlanDetail {
+  TripNo: number;
+  order_no: number;
+  ORDERID_ORG: string;
+  DELIVERYDATE: number;
+  CUSTOMER_NAME: string;
+  LatLng: string;
+  ADDRESS: string;
+  TUMBOL: string;
+  AUMPHER: string;
+  PROVICE: string;
+  ZIPCODE: number;
+  PRODUCTID: string;
+  PRODUCTNAME: string;
+  QUANTITYMAIN: number;
+  QUANTITYMINOR: number;
+  COMPANY_ID: number;
+  EstimatedTime: string;
+  Distance: number;
+  TotalItemWeight: number;
+  TotalVehicleWeight: number;
+  created_date: string;
+}
+
+export interface NodeSheet {
+  node_label: number;
+  node_index: number;
+  node_name: string;
+  latitude: number;
+  longitude: number;
+  validation_type: string;
+  replace_type: string;
+  address: string;
+}
