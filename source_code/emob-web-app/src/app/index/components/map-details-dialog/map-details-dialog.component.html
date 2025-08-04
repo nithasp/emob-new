@@ -63,15 +63,15 @@
         <mat-card appearance="outlined" class="depot-detail mb-2">
           <mat-card-header class="p-2">
             <mat-card-subtitle>
-              <span>{{ t("route_order") }}: </span>
+              <strong>{{ t("route_order") }}: </strong>
               <span>{{ d.route_order }}</span>
             </mat-card-subtitle>
             <mat-card-subtitle>
-              <span>{{ t("order_id") }}: </span>
+              <strong>{{ t("order_id") }}: </strong>
               <span class="text-nowrap">{{ d.name }}</span>
             </mat-card-subtitle>
             <mat-card-subtitle>
-              <span>{{ t("weight") }}: </span>
+              <strong>{{ t("weight") }}: </strong>
               <span>
                 {{ d.weight | number : "1.2-2" }}
               </span>
