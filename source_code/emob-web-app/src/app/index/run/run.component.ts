@@ -1242,6 +1242,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         return false;
       },
     });
+    
     const existingIndex = this.customersLocationUpdated.findIndex(
       (item) => item.index === customer.index && item.name === customer.name
     );
@@ -1250,38 +1251,16 @@ export class RunComponent implements OnInit, AfterViewInit {
       modalRef.componentInstance.locationType = LocationType.Edit;
     }
 
-    let dataPreOder: DataPreOrder = {
-      ZIPCODE: customer.original_address.postal_code,
-      CUSTOMER_NAME: customer.extra.customer_name,
-      ORDERID_ORG: customer.name,
-      ADDRESS: customer.original_address.address,
-      AUMPHER: customer.original_address.district,
-      PROVINCE: customer.original_address.province,
-
-      details: customer.extra.products_info.map((product: ProductInfo) => ({
-        PRODUCTID: product.product_id,
-        ORDER_ID: product.order_id,
-        PRODUCTNAME: product.product_name,
-        QUANTITYMAIN: product.quantity_major,
-        QUANTITYMINOR: product.quantity_minor,
-        UserConfirm: product.user_confirm,
-        DateConfirm: product.date_confirm,
-      })),
-    };
-
-    let dataCustomer: DataCustomer = {
+    // Create dataPreOder using primarily customer.extra data
+    const dataPreOder: DataPreOrder = {
       ORDERID_ORG: customer.name,
       CHANNEL: customer.extra.channel,
       CUSTOMER_NAME: customer.extra.customer_name,
       TEL: customer.extra.tel,
+      ADDRESS: customer.original_address.address,
       AUMPHER: customer.original_address.district,
       PROVINCE: customer.original_address.province,
       ZIPCODE: customer.original_address.postal_code,
-      ADDRESS: customer.original_address.address,
-      latitude: customer.latitude,
-      longitude: customer.longitude,
-      validation_type: customer.validation_type,
-      replace_type: customer.replace_type,
       details: customer.extra.products_info.map((product: ProductInfo) => ({
         PRODUCTID: product.product_id,
         ORDER_ID: product.order_id,
@@ -1293,35 +1272,29 @@ export class RunComponent implements OnInit, AfterViewInit {
       })),
     };
 
+    // Pass customer directly as dataCustomer (the component expects Customer type)
     modalRef.componentInstance.dataPreOder = dataPreOder;
-    modalRef.componentInstance.dataCustomer = dataCustomer;
+    modalRef.componentInstance.dataCustomer = customer;
 
-    console.log('customer details previous', customer);
     modalRef.result.then((locationUpdated: Location) => {
-      console.log('new value customer details', locationUpdated);
       if (
-        Number(customer.longitude) != Number(locationUpdated.longitude) &&
-        Number(customer.latitude) != Number(locationUpdated.latitude)
+        Number(customer.longitude) !== Number(locationUpdated.longitude) ||
+        Number(customer.latitude) !== Number(locationUpdated.latitude)
       ) {
+        const updatedCustomer = {
+          node_id: customer.node_id,
+          index: customer.index,
+          name: customer.name,
+          latitude: locationUpdated.latitude,
+          longitude: locationUpdated.longitude,
+        };
+
         if (existingIndex !== -1) {
-          // Replace the existing entry
-          this.customersLocationUpdated[existingIndex] = {
-            node_id: customer.node_id,
-            index: customer.index,
-            name: customer.name,
-            latitude: locationUpdated.latitude,
-            longitude: locationUpdated.longitude,
-          };
+          this.customersLocationUpdated[existingIndex] = updatedCustomer;
         } else {
-          // Add a new entry
-          this.customersLocationUpdated.push({
-            node_id: customer.node_id,
-            index: customer.index,
-            name: customer.name,
-            latitude: locationUpdated.latitude,
-            longitude: locationUpdated.longitude,
-          });
+          this.customersLocationUpdated.push(updatedCustomer);
         }
+        
         this.moveCustomerToEdit(customer, locationUpdated);
         this.haveUpdateAfterValidated = true;
         this.dataService.saveData(

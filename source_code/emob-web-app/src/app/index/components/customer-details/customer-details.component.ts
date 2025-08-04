@@ -259,6 +259,39 @@ export class CustomerDetailsComponent
     return new Date(+parts[2], +parts[1] - 1, +parts[0], +parts[3], +parts[4]);
   }
 
+  formatDate(dateValue: Date | string): string {
+    if (!dateValue) return '';
+
+    let date: Date;
+
+    if (typeof dateValue === 'string') {
+      const parts = dateValue.match(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/);
+      if (parts) {
+        // new Date(year, monthIndex, day, hours, minutes)
+        date = new Date(+parts[3], +parts[2] - 1, +parts[1], +parts[4], +parts[5]);
+      } else {
+        date = new Date(dateValue);
+      }
+    } else {
+      date = dateValue;
+    }
+
+    if (isNaN(date.getTime())) {
+      return 'Invalid Date';
+    }
+
+    const options: Intl.DateTimeFormatOptions = {
+      day: '2-digit',
+      month: 'short',
+      year: '2-digit',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    };
+    return new Intl.DateTimeFormat('en-US', options).format(date);
+  }
+
   close() {
     this.ngbModalActive.close(this.location);
   }
