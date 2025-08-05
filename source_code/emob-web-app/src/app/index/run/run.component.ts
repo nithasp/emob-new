@@ -269,11 +269,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     return 'f-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
   }
 
-  /**
-   * Get the required file types (keyNames) for the currently selected depot
-   */
   get requiredFileTypes(): string[] {
-    return this.depotInputDataItems.map((item) => item.keyName);
+    return this.depotInputDataItems.map((item) => item.displayName);
   }
 
   ngOnInit(): void {
