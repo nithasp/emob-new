@@ -155,7 +155,7 @@
                         mat-stroked-button
                         class="bg-custom-primary"
                         (click)="fileUpload.click()"
-                        [disabled]="!this.selectedDepotId || this.inputDataKeys.length === 0"
+                        [disabled]="preOrderFiles.length === this.inputDataKeys.length"
                       >
                         <mat-icon class="icon-browser">attach_file</mat-icon>
                         <span>{{ t("browse_file") }}</span>
@@ -194,7 +194,6 @@
                             <mat-select 
                               [(value)]="fileObj.file.displayName"
                               (selectionChange)="handleInputDataKeyChange(fileObj, $event)"
-                              [disabled]="isFileCategoryDisabled(fileObj)"
                             >
                               <mat-option *ngFor="let inputDataKey of inputDataKeys" [value]="inputDataKey">
                                 {{ inputDataKey}}

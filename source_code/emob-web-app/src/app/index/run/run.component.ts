@@ -573,27 +573,46 @@ export class RunComponent implements OnInit, AfterViewInit {
   async uploadFile(file: FileWithCategory) {
     const id = this.generateUniqueId();
     // Validate the file before adding
-    const { isValid, keyName, displayName, isFirstOfType } =
+    const { isValid, keyName, displayName } =
       await this.validateSingleFileAgainstDepot(file);
-    if (isValid) {
-      if (keyName && displayName && isFirstOfType) {
-        (file as FileWithCategory).keyName = keyName;
-        (file as FileWithCategory).displayName = displayName;
-        (file as FileWithCategory).isFirstOfType = true;
-      } else {
-        (file as FileWithCategory).keyName = '';
-        (file as FileWithCategory).displayName = '';
-        (file as FileWithCategory).isFirstOfType = false;
-      }
+
+    if (!isValid || !keyName || !displayName) return;
+
+    // Find if a file of this type already exists
+    const index = this.preOrderFiles.findIndex(
+      (f) => f.file.keyName === keyName
+    );
+
+    if (index !== -1) {
+      // Show confirmation dialog before replacing
+      const currentDisplayName = this.preOrderFiles[index].file.displayName;
+      const confirmDialog = this.openConfirmDialog(
+        this.transloco.translate('replace_data_confirmation', {}, 'index'),
+        '',
+        `Are you sure you want to replace the data type ${currentDisplayName} with the new data?`,
+        this.transloco.translate('confirm', {}, 'index'),
+        false
+      );
+      confirmDialog.result.then((confirmed: boolean) => {
+        if (confirmed) {
+          file.keyName = keyName;
+          file.displayName = displayName;
+          file.isFirstOfType = true;
+          this.preOrderFiles[index] = { id, file };
+          this.isFilePreview = true;
+        }
+        // If not confirmed, do nothing
+      });
+    } else {
+      file.keyName = keyName;
+      file.displayName = displayName;
+      file.isFirstOfType = true;
       this.preOrderFiles.push({ id, file });
       this.isFilePreview = true;
-      return;
     }
   }
 
-  async validateSingleFileAgainstDepot(
-    file: FileWithCategory
-  ): Promise<{
+  async validateSingleFileAgainstDepot(file: FileWithCategory): Promise<{
     isValid: boolean;
     keyName?: string;
     displayName?: string;
@@ -617,27 +636,12 @@ export class RunComponent implements OnInit, AfterViewInit {
           const matchingInputDataItem =
             this.findMatchingInputDataItem(columnNames);
           if (matchingInputDataItem) {
-            // Count how many files of this type already exist
-            const alreadyAssignedCount = this.preOrderFiles.filter(
-              (f) => f.file.displayName === matchingInputDataItem.displayName
-            ).length;
-            if (alreadyAssignedCount === 0) {
-              // First file for this data type: auto-assign and disable
-              resolve({
-                isValid: true,
-                keyName: matchingInputDataItem.keyName,
-                displayName: matchingInputDataItem.displayName,
-                isFirstOfType: true,
-              });
-            } else {
-              // Second or later file for this data type: require user selection
-              resolve({
-                isValid: true,
-                keyName: '',
-                displayName: '',
-                isFirstOfType: false,
-              });
-            }
+            resolve({
+              isValid: true,
+              keyName: matchingInputDataItem.keyName,
+              displayName: matchingInputDataItem.displayName,
+              isFirstOfType: true,
+            });
           } else {
             // Show missing columns for each required input data type
             const validationErrors = [];
@@ -1239,7 +1243,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         return false;
       },
     });
-    
+
     const existingIndex = this.customersLocationUpdated.findIndex(
       (item) => item.index === customer.index && item.name === customer.name
     );
@@ -1291,7 +1295,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         } else {
           this.customersLocationUpdated.push(updatedCustomer);
         }
-        
+
         this.moveCustomerToEdit(customer, locationUpdated);
         this.haveUpdateAfterValidated = true;
         this.dataService.saveData(
@@ -2162,6 +2166,13 @@ export class RunComponent implements OnInit, AfterViewInit {
     console.log('this.inputDataKeys', this.inputDataKeys);
 
     console.log('this.depotInputDataItems', this.depotInputDataItems);
+
+    console.log('this.inputDataKeys', this.inputDataKeys);
+
+    console.log(
+      'preOrderFiles.length === inputDataKeys.length',
+      this.preOrderFiles.length === this.inputDataKeys.length
+    );
   }
 
   handleInputDataKeyChange(
@@ -2290,15 +2301,4 @@ export class RunComponent implements OnInit, AfterViewInit {
       uploadedDisplayNames.includes(required)
     );
   }
-
-  isFileCategoryDisabled(fileObj: {
-    id: string;
-    file: FileWithCategory;
-  }): boolean {
-    // Only disable if this is the first file of its type
-    return fileObj.file.isFirstOfType === true;
-  }
-
-  // Removed getFileCategoryForFile, onFileCategoryChange, and all other old map-based methods.
-  // Removed all remaining code that referenced the old maps.
 }
