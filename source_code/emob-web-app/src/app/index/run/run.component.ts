@@ -589,7 +589,15 @@ export class RunComponent implements OnInit, AfterViewInit {
       const confirmDialog = this.openConfirmDialog(
         this.transloco.translate('replace_data_confirmation', {}, 'index'),
         '',
-        `Are you sure you want to replace the data type ${currentDisplayName} with the new data?`,
+        `${this.transloco.translate(
+          'want_to_replace_data_type',
+          {},
+          'index'
+        )} ${currentDisplayName} ${this.transloco.translate(
+          'with_the_new_data',
+          {},
+          'index'
+        )}?`,
         this.transloco.translate('confirm', {}, 'index'),
         false
       );
@@ -649,27 +657,45 @@ export class RunComponent implements OnInit, AfterViewInit {
               const missingColumns = item.columnRequired.filter(
                 (col) => !columnNames.includes(col)
               );
-              if (missingColumns.length > 0) {
+              if (missingColumns.length === item.columnRequired.length) {
+                // All required columns are missing
                 validationErrors.push(
-                  `${item.displayName}: ${missingColumns.join(', ')}`
+                  `<strong>${this.transloco.translate(
+                    'file_for',
+                    {},
+                    'index'
+                  )} "${item.displayName}" ${this.transloco.translate(
+                    'missing_columns_as_follows',
+                    {},
+                    'index'
+                  )}</strong><span>:</span> <br/><ul>${item.columnRequired
+                    .map((col) => `<li>${col}</li>`)
+                    .join('')}</ul>`
+                );
+              } else if (missingColumns.length > 0) {
+                // Some columns are missing
+                validationErrors.push(
+                  `<strong>${this.transloco.translate(
+                    'file_for',
+                    {},
+                    'index'
+                  )}" ${item.displayName}" ${this.transloco.translate(
+                    'missing_columns_as_follows',
+                    {},
+                    'index'
+                  )}</strong><span>:</span> <ul>${missingColumns
+                    .map((col) => `<li>${col}</li>`)
+                    .join('')}</ul>`
                 );
               }
             }
             this.showInvalidModal(
               `${this.transloco.translate(
-                'missing_required_columns',
+                'column_name_mismatch_template',
                 {},
                 'index'
-              )}:`,
+              )}`,
               validationErrors
-            );
-            this.toastr.error(
-              `${this.transloco.translate(
-                'missing_required_columns',
-                {},
-                'index'
-              )}:`,
-              validationErrors.join(' | ')
             );
             resolve({ isValid: false });
           }
@@ -684,12 +710,12 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   handleUploadSubmit() {
     // Check if all required depot input data types are covered
-    if (!this.canExecuteHandleUploadSubmit()) {
-      this.toastr.error(
-        'Please upload files that match all required data types for the selected depot.'
-      );
-      return;
-    }
+    // if (!this.canExecuteHandleUploadSubmit()) {
+    //   this.toastr.error(
+    //     'Please upload files that match all required data types for the selected depot.'
+    //   );
+    //   return;
+    // }
 
     // Transform preOrderFiles to newPayload format (send actual File object)
     const newPayload = this.preOrderFiles.map(({ file }) => ({
@@ -707,20 +733,15 @@ export class RunComponent implements OnInit, AfterViewInit {
       animation: true,
     });
     dialogRef.componentInstance.title = this.transloco.translate(
-      'upload_preorder_file_confirmation',
+      'upload_file_confirmation',
       {},
       'index'
     );
     dialogRef.componentInstance.question = `${this.transloco.translate(
-      'confirm_to_upload_file',
+      'do_you_want_to_upload_file',
       {},
       'index'
     )} ?`;
-    dialogRef.componentInstance.message = `${this.transloco.translate(
-      'please_make_sure_to_upload_the_file_and_note_that_there_may_be_a_cost_associated_with_finding_the_location',
-      {},
-      'index'
-    )}.`;
 
     dialogRef.result
       .then((confirmed: boolean) => {
@@ -1169,11 +1190,19 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     if (missingColumns.length > 0) {
       this.showInvalidModal(
-        `${this.transloco.translate('missing_required_columns', {}, 'index')}:`,
+        `${this.transloco.translate(
+          'column_name_mismatch_template',
+          {},
+          'index'
+        )}`,
         missingColumns
       );
       this.toastr.error(
-        `${this.transloco.translate('missing_required_columns', {}, 'index')}:`,
+        `${this.transloco.translate(
+          'column_name_mismatch_template',
+          {},
+          'index'
+        )}`,
         missingColumns.join(',')
       );
       return false;
@@ -1668,7 +1697,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
             this.showInvalidModal(
               `${this.transloco.translate(
-                'missing_required_columns',
+                'column_name_mismatch_template',
                 {},
                 'index'
               )}:`,
@@ -1676,10 +1705,10 @@ export class RunComponent implements OnInit, AfterViewInit {
             );
             this.toastr.error(
               `${this.transloco.translate(
-                'missing_required_columns',
+                'column_name_mismatch_template',
                 {},
                 'index'
-              )}:`,
+              )}`,
               validationErrors.join(' | ')
             );
             resolve(false);
