@@ -31,7 +31,7 @@ export class PreOrderService {
       variables: {
         input: {
           runId: runId,
-          deplotId: depotIds,
+          depotId: depotIds,
           preOrderFiles: preOrderFiles
         }
       },

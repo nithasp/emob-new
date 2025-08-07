@@ -213,15 +213,23 @@ export class ResultComponent implements OnInit, AfterViewInit {
             console.log(response);
             this.experiment = { ...response };
             this.expandedElement = [];
-            await this.loadReportData(response.fileUrl.outputReportUrl);
-            await this.loadPlanDetailData(
-              this.experiment.fileUrl.outputPlanDetailUrl
-            );
+            if (response.fileUrl.outputReportUrl) {
+              await this.loadReportData(response.fileUrl.outputReportUrl);
+            }
+            if (this.experiment.fileUrl.outputPlanDetailUrl) {
+              await this.loadPlanDetailData(
+                this.experiment.fileUrl.outputPlanDetailUrl
+              );
+            }
 
-            await this.downloadExcelFromUrlAsJson(response.fileUrl.preOrderUrl);
+            if (response.fileUrl.preOrderUrl) {
+              await this.downloadExcelFromUrlAsJson(response.fileUrl.preOrderUrl);
+            }
 
             this.spinner.hide();
-            await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
+            if (response.fileUrl.outputGeoJsonUrl) {
+              await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
+            }
 
             this.dataRouteInfo.filterPredicate =
               this.multiFilterPredicate.bind(this);

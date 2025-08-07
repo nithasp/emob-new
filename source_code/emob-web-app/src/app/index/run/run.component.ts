@@ -368,7 +368,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   async initializeDataFromExperiment(experiment: Experiment) {
     console.log("initialize Data From Experiment's historical", experiment);
     // Load Parameter
-    if (experiment.parameterBlobPath) {
+    if (experiment.parameterBlobPath && experiment.fileUrl.parameterUrl) {
       this.dataFromFileUrlToJson(experiment.fileUrl.parameterUrl).then(
         (response: Constraint) => {
           console.log('Constraint', response);
@@ -385,9 +385,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       `${this.transloco.translate('please_wait', {}, 'index')} ...`
     );
     // Load PreOrder
-    const isLoadPrOrder = await this.dataFromFileUrlToExcel(
-      experiment.fileUrl.preOrderUrl
-    );
+    const isLoadPrOrder = experiment.fileUrl.preOrderUrl 
+      ? await this.dataFromFileUrlToExcel(experiment.fileUrl.preOrderUrl)
+      : false;
     console.log('isLoadPrOrder', isLoadPrOrder);
     if (!isLoadPrOrder) {
       this.toastr.warning(
@@ -400,12 +400,14 @@ export class RunComponent implements OnInit, AfterViewInit {
       `${this.transloco.translate('please_wait', {}, 'index')} ...`
     );
     // load geocoding location
-    await this.dataFromFileUrlToJson(
-      experiment.fileUrl.LocationBlobPathUrl
-    ).then((response: Result) => {
-      console.log('Result', response);
-      this.groupingCustomer(response.customers, response.depots);
-    });
+    if (experiment.fileUrl.LocationBlobPathUrl) {
+      await this.dataFromFileUrlToJson(
+        experiment.fileUrl.LocationBlobPathUrl
+      ).then((response: Result) => {
+        console.log('Result', response);
+        this.groupingCustomer(response.customers, response.depots);
+      });
+    }
     if (experiment.fileUrl.locationUpdateBlobPathUrl) {
       this.toastr.info(
         this.transloco.translate('loading_geo_location_data', {}, 'index'),
@@ -775,10 +777,12 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.preOrderService
             .uploadPreOrder(this.experiment.runId, depotIds, newPayload)
             .subscribe((response: Experiment) => {
-              this.groupingCustomer(
-                response.result.customers,
-                response.result.depots
-              );
+              if (response.result) {
+                this.groupingCustomer(
+                  response.result.customers,
+                  response.result.depots
+                );
+              }
               this.experiment.name = response.name;
               this.isFilePreview = false;
               this.spinner.hide();
@@ -1458,9 +1462,9 @@ export class RunComponent implements OnInit, AfterViewInit {
         next: (result) => {
           this.haveUpdateAfterValidated = false;
           console.log(result);
-          this.validateExperiment = result.result.validate;
+          this.validateExperiment = result.result?.validate || null;
           this.ngbValidationTableCollectionSize =
-            this.validateExperiment.filters.order_data.invalid_coordinate.length;
+            this.validateExperiment?.filters.order_data.invalid_coordinate.length || 0;
           this.dataService.clearData(this.experiment.runId);
           this.refreshValidationTable();
           this.navigateToTab(3);
