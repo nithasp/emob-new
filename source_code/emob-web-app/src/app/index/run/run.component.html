@@ -145,7 +145,7 @@
                             <mat-select [(value)]="fileObj.file.displayName"
                               (selectionChange)="handleInputDataKeyChange(fileObj, $event)">
                               <mat-option *ngFor="let inputDataKey of inputDataKeys" [value]="inputDataKey">
-                                {{ inputDataKey}}
+                                {{ inputDataKey }}
                               </mat-option>
                             </mat-select>
                           </td>
@@ -451,7 +451,7 @@
                                   {{ constraintsData.earlyDeliveryTime }}
                                 </button>
                                 <div popover-content>
-                                  <div class="card p-3">
+                                  <div class="p-3">
                                     <div class="card-body p-2">
                                       <p class="card-title">
                                         {{ t("time_is") }}:
@@ -478,7 +478,7 @@
                                   {{ constraintsData.backToDepotTime }}
                                 </button>
                                 <div popover-content>
-                                  <div class="card p-3">
+                                  <div class="p-3">
                                     <div class="card-body p-2">
                                       <p class="card-title">
                                         {{ t("time_is") }}:

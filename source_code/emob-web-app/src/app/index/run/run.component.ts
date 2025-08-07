@@ -49,6 +49,7 @@ import { Constraint } from 'src/app/models/constraint.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Experiment,
+  InputDataItem,
   Result,
   StatusExperiment,
   Validate,
@@ -168,7 +169,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   // store data
   public experiment = <Experiment>{};
-  public preOrderFiles: { id: string; file: FileWithCategory }[] = [];
+  public preOrderFiles: { id: string; file: any }[] = [];
   public popupContent?: { data: Customer; isDepot: boolean } | null;
   private dataPreOrder: Array<PreOrder> = [];
   public groupedDataPreOrder: Partial<GroupedDataPreOrder> = {};
@@ -384,21 +385,66 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.transloco.translate('loading_preorder_data', {}, 'index'),
       `${this.transloco.translate('please_wait', {}, 'index')} ...`
     );
+
+
     // Load PreOrder
-    const isLoadPrOrder = experiment.fileUrl.preOrderUrl 
-      ? await this.dataFromFileUrlToExcel(experiment.fileUrl.preOrderUrl)
-      : false;
-    console.log('isLoadPrOrder', isLoadPrOrder);
-    if (!isLoadPrOrder) {
-      this.toastr.warning(
-        this.transloco.translate('cannot_load_data', {}, 'index'),
-        this.transloco.translate('reupload_preorder_file', {}, 'index')
-      );
-    }
+    // const isLoadPrOrder = experiment.fileUrl.preOrderUrl 
+    //   ? await this.dataFromFileUrlToExcel(experiment.fileUrl.preOrderUrl)
+    //   : false;
+    // console.log('isLoadPrOrder', isLoadPrOrder);
+    // if (!isLoadPrOrder) {
+    //   this.toastr.warning(
+    //     this.transloco.translate('cannot_load_data', {}, 'index'),
+    //     this.transloco.translate('reupload_preorder_file', {}, 'index')
+    //   );
+    // }
+
+    // Transform experiment.inputdata to match the expected preOrderFiles structure
+    this.preOrderFiles = experiment.inputdata.map((inputItem: InputDataItem) => {
+      
+      // Create a mock File object that matches the FileWithCategory interface
+      // const mockFile: FileWithCategory = {
+      //   name: inputItem.filename,
+      //   size: inputItem.fileSize,
+      //   type: inputItem.fileFormatType,
+      //   keyName: inputItem.keyName,
+      //   displayName: inputItem.displayName,
+      //   isFirstOfType: true,
+      //   lastModifiedDate: new Date(),
+      //   // File interface methods - minimal implementation
+      //   slice: () => new Blob(),
+      //   stream: () => new ReadableStream(),
+      //   text: () => Promise.resolve(''),
+      //   arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+      //   // Additional File properties
+      //   lastModified: Date.now(),
+      //   webkitRelativePath: ''
+      // } as FileWithCategory;
+
+
+             const mockFile = {
+         keyName: inputItem.keyName,
+         name: inputItem.filename,
+         blobPath: inputItem.blobPath,
+         displayName: inputItem.displayName,
+         type: inputItem.fileFormatType,
+         size: inputItem.fileSize,
+       }
+      
+      return {
+        id: this.generateUniqueId(),
+        file: mockFile
+      };
+    });
+
+    console.log('preOrderFiles', this.preOrderFiles);
+    console.log('experiment.inputdata', experiment.inputdata);
+
     this.toastr.info(
       this.transloco.translate('loading_geo_location_data', {}, 'index'),
       `${this.transloco.translate('please_wait', {}, 'index')} ...`
     );
+    
     // load geocoding location
     if (experiment.fileUrl.LocationBlobPathUrl) {
       await this.dataFromFileUrlToJson(
@@ -1600,6 +1646,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     return jsonData;
   }
+
   async dataFromFileUrlToExcel(url: string): Promise<boolean> {
     try {
       const arrayBuffer = await this.fetchDataFromFileUrl(url);
@@ -2103,7 +2150,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     }>
   ) {
     console.log('updateDepotLocationOnMap depots', depots);
-    this.preOrderFiles = [];
+    //this.preOrderFiles = [];
     this.vectorSourceDepot.clear();
 
     const iconWithLabel = (label: string) =>
