@@ -264,7 +264,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly dataService: DataService,
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService
-  ) {}
+  ) { }
 
   public generateUniqueId(): string {
     return 'f-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
@@ -288,7 +288,7 @@ export class RunComponent implements OnInit, AfterViewInit {
             .getExperiment(params['runId'])
             .subscribe((response: Experiment) => {
               this.experiment = { ...response };
-
+              console.log('experiment', this.experiment);
               if (this.experiment.status !== StatusExperiment.Initializing) {
                 this.spinner.hide();
                 this.openConfirmDialog(
@@ -386,56 +386,23 @@ export class RunComponent implements OnInit, AfterViewInit {
       `${this.transloco.translate('please_wait', {}, 'index')} ...`
     );
 
+    this.preOrderFiles = (experiment.inputdata || []).map(
+      (inputItem: InputDataItem) => {
+        const mockFile = {
+          keyName: inputItem.keyName,
+          name: inputItem.filename,
+          blobPath: inputItem.blobPath,
+          displayName: inputItem.displayName,
+          type: inputItem.fileFormatType,
+          size: inputItem.fileSize,
+        };
 
-    // Load PreOrder
-    // const isLoadPrOrder = experiment.fileUrl.preOrderUrl 
-    //   ? await this.dataFromFileUrlToExcel(experiment.fileUrl.preOrderUrl)
-    //   : false;
-    // console.log('isLoadPrOrder', isLoadPrOrder);
-    // if (!isLoadPrOrder) {
-    //   this.toastr.warning(
-    //     this.transloco.translate('cannot_load_data', {}, 'index'),
-    //     this.transloco.translate('reupload_preorder_file', {}, 'index')
-    //   );
-    // }
-
-    // Transform experiment.inputdata to match the expected preOrderFiles structure
-    this.preOrderFiles = experiment.inputdata.map((inputItem: InputDataItem) => {
-      
-      // Create a mock File object that matches the FileWithCategory interface
-      // const mockFile: FileWithCategory = {
-      //   name: inputItem.filename,
-      //   size: inputItem.fileSize,
-      //   type: inputItem.fileFormatType,
-      //   keyName: inputItem.keyName,
-      //   displayName: inputItem.displayName,
-      //   isFirstOfType: true,
-      //   lastModifiedDate: new Date(),
-      //   // File interface methods - minimal implementation
-      //   slice: () => new Blob(),
-      //   stream: () => new ReadableStream(),
-      //   text: () => Promise.resolve(''),
-      //   arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-      //   // Additional File properties
-      //   lastModified: Date.now(),
-      //   webkitRelativePath: ''
-      // } as FileWithCategory;
-
-
-             const mockFile = {
-         keyName: inputItem.keyName,
-         name: inputItem.filename,
-         blobPath: inputItem.blobPath,
-         displayName: inputItem.displayName,
-         type: inputItem.fileFormatType,
-         size: inputItem.fileSize,
-       }
-      
-      return {
-        id: this.generateUniqueId(),
-        file: mockFile
-      };
-    });
+        return {
+          id: this.generateUniqueId(),
+          file: mockFile,
+        };
+      }
+    );
 
     console.log('preOrderFiles', this.preOrderFiles);
     console.log('experiment.inputdata', experiment.inputdata);
@@ -444,7 +411,19 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.transloco.translate('loading_geo_location_data', {}, 'index'),
       `${this.transloco.translate('please_wait', {}, 'index')} ...`
     );
-    
+
+    // Load PreOrder for table count and grouping
+    if (experiment.fileUrl?.preOrderUrl) {
+      try {
+        const buf = await this.fetchDataFromFileUrl(
+          experiment.fileUrl.preOrderUrl
+        );
+        await this.readExcel(buf);
+      } catch (e) {
+        console.error('Failed to load preOrder file for counting:', e);
+      }
+    }
+
     // load geocoding location
     if (experiment.fileUrl.LocationBlobPathUrl) {
       await this.dataFromFileUrlToJson(
@@ -481,12 +460,12 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (newData.length > 0) {
                 this.toastr.info(
                   `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                    newData.length +
-                    ` ${this.transloco.translate(
-                      'new_edited_location_data_suffix',
-                      {},
-                      'index'
-                    )}`,
+                  newData.length +
+                  ` ${this.transloco.translate(
+                    'new_edited_location_data_suffix',
+                    {},
+                    'index'
+                  )}`,
                   `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
@@ -810,35 +789,71 @@ export class RunComponent implements OnInit, AfterViewInit {
             );
             if (found && found.depotId) depotIds = [found.depotId];
           }
-          // Prepare preOrderFiles payload
-          const filesPayload = this.preOrderFiles.map(({ file }) => ({
-            file,
-            keyName: file.keyName || '',
-          }));
-
-          console.log('this.experiment.runId', this.experiment.runId);
-          console.log('depotIds', depotIds);
-          console.log('newPayload', newPayload);
 
           this.preOrderService
             .uploadPreOrder(this.experiment.runId, depotIds, newPayload)
             .subscribe((response: Experiment) => {
-              if (response.result) {
-                this.groupingCustomer(
-                  response.result.customers,
-                  response.result.depots
-                );
-              }
-              this.experiment.name = response.name;
-              this.isFilePreview = false;
-              this.spinner.hide();
-              this.toastr.success(
-                `${this.transloco.translate(
-                  'upload_preorder_success',
-                  {},
-                  'index'
-                )}.`
-              );
+              // Refresh experiment data first, then proceed with grouping to ensure latest depots exist
+              this.experimentService
+                .getExperiment(this.experiment.runId)
+                .pipe(take(1))
+                .subscribe(async (exp: Experiment) => {
+                  this.experiment = { ...exp };
+                  console.log('this.experiment', this.experiment);
+                  console.log('this.preOrderFiles', this.preOrderFiles);
+                  if (response.result) {
+                    this.groupingCustomer(
+                      response.result.customers,
+                      response.result.depots
+                    );
+                  }
+
+                  this.experiment.name = response.name;
+                  // Map inputdata to UI structure expected by template
+                  this.preOrderFiles = (this.experiment.inputdata || []).map(
+                    (inputItem: InputDataItem) => {
+                      const mockFile = {
+                        keyName: inputItem.keyName,
+                        name: inputItem.filename,
+                        blobPath: inputItem.blobPath,
+                        displayName: inputItem.displayName,
+                        type: inputItem.fileFormatType,
+                        size: inputItem.fileSize,
+                      };
+                      return {
+                        id: this.generateUniqueId(),
+                        file: mockFile,
+                      };
+                    }
+                  );
+
+                  // Also load the uploaded PreOrder file to compute dataPreOrder and preOrderCount
+                  if (this.experiment.fileUrl?.preOrderUrl) {
+                    try {
+                      const buf = await this.fetchDataFromFileUrl(
+                        this.experiment.fileUrl.preOrderUrl
+                      );
+                      await this.readExcel(buf);
+                    } catch (e) {
+                      console.error('Failed to load preOrder file for counting:', e);
+                    }
+                  }
+
+                  console.log('this.experiment', this.experiment);
+                  console.log('this.preOrderFiles', this.preOrderFiles);
+
+                  this.isFilePreview = false;
+                  this.isUploadDisplay = false;
+                  this.spinner.hide();
+                  this.toastr.success(
+                    `${this.transloco.translate(
+                      'upload_preorder_success',
+                      {},
+                      'index'
+                    )}.`
+                  );
+                });
+
             });
         }
       })
@@ -1000,8 +1015,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
-          ? item.name
-          : '';
+            ? item.name
+            : '';
       return {
         depotName: nameKey,
         latitude: Number(item.latitude),
@@ -1014,12 +1029,32 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     this.depots = normalizedIncoming;
 
+    // Ensure experiment.depots is populated so we can use it as the source of truth
+    if (!this.experiment.depots || this.experiment.depots.length === 0) {
+      this.experiment.depots = normalizedIncoming.map((d: any) => ({
+        companyName: this.experiment.companyName,
+        depotId: d.depotId || d.id || '',
+        depotName: d.depotName,
+        latitude: Number(d.latitude),
+        longitude: Number(d.longitude),
+        tw_early: d.tw_early || '',
+        tw_late: d.tw_late || '',
+        createdAt: d.createdAt || '',
+        updatedAt: d.updatedAt || '',
+        columns: d.columns || [],
+        inputdata: d.inputdata || [],
+      }));
+    }
+
     // Set default selection to the first depot in the incoming list
     if (this.depots && this.depots.length > 0) {
-      this.selectedDepotId = this.depots[0].depotName;
+      console.log('this.depots', this.depots);
+      const defaultDepotName =
+        (this.experiment && this.experiment.depots && this.experiment.depots[0]
+          ? this.experiment.depots[0].depotName
+          : this.depots[0].depotName) || this.depots[0].depotName;
+      this.selectedDepotId = defaultDepotName;
       this.selectedDepotIds = [];
-      // Update input data keys from the first depot
-      this.updateInputDataKeysFromDepot(this.depots[0]);
     } else {
       this.selectedDepotId = null;
       this.selectedDepotIds = [];
@@ -1081,7 +1116,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               });
               location.setStyle(
                 this.iconStyle[
-                  uploadDataGroupCustomers[key as keyof DataGroup].type
+                uploadDataGroupCustomers[key as keyof DataGroup].type
                 ]
               );
               this.vectorSource.addFeature(location);
@@ -1822,6 +1857,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (this.validateData(columnNames)) {
       this.dataPreOrder = preOrderData;
       this.preOrderCount = this.dataPreOrder.length;
+
+      console.log('this.dataPreOrder', this.dataPreOrder);
       this.groupDataById();
       return true;
     } else {
@@ -1864,6 +1901,9 @@ export class RunComponent implements OnInit, AfterViewInit {
           data.push(rowData as PreOrder);
         }
       });
+
+      console.log('data', data);
+      console.log('worksheet', worksheet);
 
       return this.appendExcelData(data, worksheet);
     } catch (error) {
@@ -2113,34 +2153,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     await this.validateUploadedFilesAgainstDepot();
   }
 
-  // ─── 4) Persist on multiple-depot change ───────────────────────────────────────────────
-  onMultipleDepotSelectionChange() {
-    // Remove any single-depot storage
-    localStorage.removeItem('selectedDepotId');
-
-    // Persist multiple selection array (or clear it)
-    if (this.selectedDepotIds && this.selectedDepotIds.length > 0) {
-      localStorage.setItem(
-        'selectedDepotIds',
-        JSON.stringify(this.selectedDepotIds)
-      );
-    } else {
-      localStorage.removeItem('selectedDepotIds');
-    }
-
-    // Update map markers
-    this.selectedDepotId = null;
-    const selected = this.depots.filter((d) =>
-      this.selectedDepotIds.includes(d.depotName)
-    );
-    this.updateDepotLocationOnMap(selected);
-
-    // For multiple depot selection, we need to handle input data differently
-    // For now, clear the input data keys as multiple depot logic needs more definition
-    this.inputDataKeys = [];
-    this.depotInputDataItems = [];
-  }
-
   updateDepotLocationOnMap(
     depots: Array<{
       depotName: string;
@@ -2220,10 +2232,12 @@ export class RunComponent implements OnInit, AfterViewInit {
         if (this.depots && this.depots.length > 0) {
           this.selectedDepotId = this.depots[0].depotName;
           this.selectedDepotIds = [];
-          this.updateDepotLocationOnMap([this.depots[0]]);
+
+          //this.updateDepotLocationOnMap([this.depots[0]]);
 
           // Update input data keys from the first depot
           this.updateInputDataKeysFromDepot(this.depots[0]);
+
           if (this.selectedDepotId) {
             localStorage.setItem('selectedDepotId', this.selectedDepotId);
           }
@@ -2253,6 +2267,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       'preOrderFiles.length === inputDataKeys.length',
       this.preOrderFiles.length === this.inputDataKeys.length
     );
+
+    console.log('this.preOrderFiles.length ', this.preOrderFiles.length);
+    console.log('this.inputDataKeys.length ', this.inputDataKeys.length);
   }
 
   handleInputDataKeyChange(

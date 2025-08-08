@@ -271,6 +271,7 @@
   "file_for": "ไฟล์สำหรับ",
   "does_not_contain_any_required_columns": "ไม่มีคอลัมน์ที่จำเป็น",
   "please_upload_file_with_correct_format": "กรุณาอัปโหลดไฟล์ที่มีรูปแบบถูกต้อง",
+  "depots":"ศูนย์ส่งสินค้า",
   "manage_depots": "จัดการศูนย์ส่งสินค้า",
   "single_depot_selection": "เลือกศูนย์ส่งสินค้าเดียว",
   "file_type_to_upload": "ประเภทของไฟล์ที่ต้องอัพโหลด",

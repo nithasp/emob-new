@@ -271,6 +271,7 @@
   "does_not_contain_any_required_columns": "does not contain any of the required columns",
   "please_upload_file_with_correct_format": "Please upload a file with the correct format",
   "missing_columns_as_follows": "Missing columns as follows",
+  "depots": "Depots",
   "manage_depots": "Manage Depots",
   "single_depot_selection": "Single Depot Selection",
   "file_type_to_upload": "File type to upload",

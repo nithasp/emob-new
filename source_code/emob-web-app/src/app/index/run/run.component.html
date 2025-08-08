@@ -1,11 +1,11 @@
 <ng-container *transloco="let t; read: 'index'">
   <h1 (click)="log()">log</h1>
-  <div class="card mt-2 container-fluid main_container" style="min-height: 100vh">
+  <div class="card mt-2 container-fluid" style="min-height: 100vh">
     <ngx-spinner name="run">
       <p class="h-3">{{ t("wait_a_moment") }} ...</p>
     </ngx-spinner>
     <div class="row mt-5 justify-content-center content">
-      <div class="border-right mt-3" [ngClass]="
+      <div class="experiment-container border-right mt-3" [ngClass]="
           preOrderFiles.length > 0 ? 'col-md-7' : 'col-md-6 border-left'
         ">
         <ul ngbNav #nav="ngbNav" [(activeId)]="activeNavId" class="nav-tabs justify-content-center">
@@ -42,28 +42,30 @@
 
 
                 <div class="card p-3 mb-4">
-                  <h4><mat-icon>location_on</mat-icon> {{ t('manage_depots') }}</h4>
+                  <h4>
+                    <mat-icon>location_on</mat-icon> 
+                    <span *ngIf="isUploadDisplay">{{ t('manage_depots') }}</span>
+                    <span *ngIf="!isUploadDisplay">{{ t('depots') }}</span>
+                  </h4>
                   <mat-form-field *ngIf="companyDepotType === 'Single'" appearance="fill" class="w-100">
-                    <mat-label>{{ t('single_depot_selection') }}</mat-label>
-                    <mat-select [(value)]="selectedDepotId" (selectionChange)="onDepotSelectionChange()"
-                      [disabled]="!isFilePreview">
-                      <mat-option *ngFor="let depot of depots" [value]="depot.depotName">
+                    <mat-label>
+                      {{ t('single_depot_selection') }}
+                    </mat-label>
+                      <mat-select *ngIf="isUploadDisplay" [(value)]="selectedDepotId" (selectionChange)="onDepotSelectionChange()"
+                        [disabled]="!isFilePreview">
+                        <mat-option *ngFor="let depot of depots" [value]="depot.depotName">
+                          {{ depot.depotName }}
+                        </mat-option>
+                      </mat-select>
+                      
+                      <mat-select *ngIf="!isUploadDisplay" [(value)]="selectedDepotId" disabled>
+                      <mat-option *ngFor="let depot of experiment.depots" [value]="depot.depotName">
                         {{ depot.depotName }}
                       </mat-option>
                     </mat-select>
                   </mat-form-field>
 
-                  <mat-form-field *ngIf="companyDepotType === 'Multiple'" appearance="fill" class="w-100">
-                    <mat-label>Multiple Depot Selection</mat-label>
-                    <mat-select multiple [(value)]="selectedDepotIds"
-                      (selectionChange)="onMultipleDepotSelectionChange()">
-                      <mat-option *ngFor="let depot of depots" [value]="depot.depotName">
-                        {{ depot.depotName }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-
-                  <h4 class="file-type-required">
+                  <h4 *ngIf="isUploadDisplay" class="file-type-required">
                     <span>{{ t('file_type_to_upload') }}: </span>
                     <ng-container *ngIf="requiredFileTypes.length > 0; else noDepot">
                       <ng-container *ngIf="requiredFileTypes.length === 1; else multipleTypes">
@@ -142,23 +144,27 @@
                             {{ fileObj.file.name }}
                           </td>
                           <td>
-                            <mat-select [(value)]="fileObj.file.displayName"
+                            <mat-select class="step1" *ngIf="isUploadDisplay" [(value)]="fileObj.file.displayName"
                               (selectionChange)="handleInputDataKeyChange(fileObj, $event)">
                               <mat-option *ngFor="let inputDataKey of inputDataKeys" [value]="inputDataKey">
                                 {{ inputDataKey }}
                               </mat-option>
                             </mat-select>
+                            <span class="step2" *ngIf="!isUploadDisplay"> {{ fileObj.file.displayName }} </span>
                           </td>
                           <td>
-                            {{ fileObj.file.size / 1000000 | number : "1.2-2" }} MB
+                            <span class="step1" *ngIf="isUploadDisplay"> {{ fileObj.file.size / 1000000 | number : "1.2-2" }} MB </span>
+                            <span class="step2" *ngIf="!isUploadDisplay"> {{ fileObj.file.size }} MB</span>
                           </td>
                           <td>
-                            {{
-                            (validTypes.includes(fileObj.file.type)
-                            ? "xlsx"
-                            : fileObj.file.type
-                            ) | slice : 0 : 10
-                            }}
+                            <span class="step1" *ngIf="isUploadDisplay">{{
+                              (validTypes.includes(fileObj.file.type)
+                              ? "xlsx"
+                              : fileObj.file.type
+                              ) | slice : 0 : 10
+                              }}
+                            </span>
+                            <span class="step2" *ngIf="!isUploadDisplay"> {{ fileObj.file.type }} </span>
                           </td>
                           <td>
                             <button class="btn" (click)="deleteFileInList(i)" [hidden]="!isOriginalExperiment()">
@@ -1032,7 +1038,7 @@
 
       <div class="col-md-5" [hidden]="!isUpload">
         <div class="row">
-          <div id="map" class="map col-12 mt-3" style="min-height: 900px"></div>
+          <div id="map" class="map col-12 mt-3" style="min-height: 1020px"></div>
 
           <div id="popup" class="ol-popup" [hidden]="popupContent?.isDepot">
             <button (click)="closePopupMapShow()" id="popup-closer" class="ol-popup-closer btn btn-link"></button>

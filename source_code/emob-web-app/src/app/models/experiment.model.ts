@@ -24,7 +24,7 @@ export interface Experiment {
   outputRouteOptimizationBlobPath: string | null;
   configurations: ExperimentConfigurations;
   inputdata: InputDataItem[];
-  depots: Depot[];
+  depots: ExperimentDepot[];
   timeStart: string | null;
   timeEnd: string | null;
   timeDuration: number | null;
@@ -140,6 +140,20 @@ export interface PlanDetail {
   TotalItemWeight: number;
   TotalVehicleWeight: number;
   created_date: string;
+}
+
+export interface ExperimentDepot {
+  companyName: string;
+  depotId: string;
+  depotName: string;
+  latitude: number;
+  longitude: number;
+  tw_early: string;
+  tw_late: string;
+  createdAt: string;
+  updatedAt: string;
+  columns?: string[];
+  inputdata?: InputDataItem[];
 }
 
 export interface NodeSheet {
