@@ -278,5 +278,7 @@
   "replace_data_confirmation": "Replace Data Confirmation",
   "want_to_replace_data_type": "Do you want to replace the data type",
   "with_the_new_data": "with the new data",
-  "do_you_want_to_upload_file": "Do you want to upload file"
+  "do_you_want_to_upload_file": "Do you want to upload file",
+  "back_to_upload_step_confirmation": "Back to Upload File Step Confirmation",
+  "do_you_want_to_back_to_upload_step": "Do you want to go back to the upload file step? Your current data on this page will be cleared."
 }

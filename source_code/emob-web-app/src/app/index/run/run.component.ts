@@ -2220,7 +2220,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  getMyDepots() {
+  getMyDepots(showSpinner: boolean = false) {
+    if (showSpinner) {
+      this.spinner.show();
+    }
     // Fetch company info
     this.experimentService.getMyCompany().subscribe({
       next: (company: any) => {
@@ -2262,6 +2265,14 @@ export class RunComponent implements OnInit, AfterViewInit {
       error: (error) => {
         console.error('Error fetching myDepots data:', error);
         this.toastr.error(error);
+        if (showSpinner) {
+          this.spinner.hide();
+        }
+      },
+      complete: () => {
+        if (showSpinner) {
+          this.spinner.hide();
+        }
       },
     });
   }
@@ -2420,5 +2431,57 @@ export class RunComponent implements OnInit, AfterViewInit {
     return requiredDisplayNames.every((required) =>
       uploadedDisplayNames.includes(required)
     );
+  }
+
+  backToStep1() {
+    console.log('backToStep1');
+    const focusedElement = document.activeElement as HTMLElement;
+    if (focusedElement) {
+      focusedElement.blur();
+    }
+
+    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      centered: true,
+      animation: true,
+    });
+    dialogRef.componentInstance.title = this.transloco.translate(
+      'back_to_upload_step_confirmation',
+      {},
+      'index'
+    );
+    dialogRef.componentInstance.question = this.transloco.translate(
+      'do_you_want_to_back_to_upload_step',
+      {},
+      'index'
+    );
+
+    dialogRef.result
+      .then((confirmed: boolean) => {
+        if (!confirmed) return;
+
+        // Navigate back to first tab (Orders Data)
+        this.activeNavId = 1;
+
+        // Reset step state to upload mode (allow depot selection and file upload)
+        this.isUpload = false;
+        this.isUploadDisplay = true;
+        this.isFilePreview = true;
+
+        // Clear uploaded files and preview data
+        this.preOrderFiles = [];
+
+        // Clear map orders markers and data-related states
+        if (this.vectorSource) {
+          this.vectorSource.clear();
+        }
+        this.dataPreOrder = [];
+        this.resetComponentValue();
+
+        // Refresh depot list and input requirements from server with spinner
+        this.getMyDepots(true);
+      })
+      .catch(() => {
+        // dismissed: do nothing
+      });
   }
 }

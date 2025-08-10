@@ -85,8 +85,8 @@
                   </h4>
                 </div>
 
-                <div class="col-md-12" *ngIf="isUpload">
-                  <div class="input-group mb-3">
+                <div class="col-md-12 mb-3 d-flex" *ngIf="isUpload">
+                  <div class="input-group">
                     <div class="input-group-prepend">
                       <span class="input-group-text" id="basic-addon1">{{
                         t("experiment_name")
@@ -94,6 +94,9 @@
                     </div>
                     <input type="text" class="form-control" [(ngModel)]="experiment.name" disabled="true" />
                   </div>
+                  <button *ngIf="!isUploadDisplay" class="btn" [hidden]="!isOriginalExperiment()" (click)="backToStep1()">
+                    <mat-icon>delete</mat-icon>
+                  </button>
                 </div>
 
 
@@ -167,7 +170,7 @@
                             <span class="step2" *ngIf="!isUploadDisplay"> {{ fileObj.file.type }} </span>
                           </td>
                           <td>
-                            <button class="btn" (click)="deleteFileInList(i)" [hidden]="!isOriginalExperiment()">
+                            <button *ngIf="isUploadDisplay" class="btn" (click)="deleteFileInList(i)" [hidden]="!isOriginalExperiment()">
                               <mat-icon>delete</mat-icon>
                             </button>
                           </td>

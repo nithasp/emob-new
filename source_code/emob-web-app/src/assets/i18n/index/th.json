@@ -278,5 +278,7 @@
   "replace_data_confirmation": "ยืนยันการแทนที่ข้อมูล",
   "want_to_replace_data_type": "คุณต้องการแทนที่ประเภทข้อมูล",
   "with_the_new_data": "ด้วยข้อมูลใหม่",
-  "do_you_want_to_upload_file": "คุณต้องการอัปโหลดไฟล์หรือไม่"
+  "do_you_want_to_upload_file": "คุณต้องการอัปโหลดไฟล์หรือไม่",
+  "back_to_upload_step_confirmation": "ยืนยันการกลับไปขั้นตอนอัปโหลดไฟล์",
+  "do_you_want_to_back_to_upload_step": "คุณต้องการกลับไปขั้นตอนอัปโหลดไฟล์หรือไม่? ข้อมูลปัจจุบันในหน้านี้จะถูกล้าง"
 }
