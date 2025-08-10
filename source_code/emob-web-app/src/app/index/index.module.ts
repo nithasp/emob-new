@@ -23,6 +23,7 @@ import { TruncatePipe } from '../directives/truncate-pipe.directive';
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { NumberCounterInputComponent } from './components/number-counter-input/number-counter-input.component';
 import { TimeFormatPipe } from '../directives/timeformat-pipe.directive';
+import { FormatStringDatePipe } from '../directives/format-string-date.pipe';
 import { TopbarComponent } from './default/topbar/topbar.component';
 import { CustomerDetailsComponent } from './components/customer-details/customer-details.component';
 import { DetailsDialogComponent } from './components/details-dialog/details-dialog.component';
@@ -70,7 +71,7 @@ import { DynamicPopoverComponent } from '../shared/components/dynamic-popover/dy
     ParametersDialogComponent,
     ConsumptionDialogComponent,
     ErrorDialogComponent,
-    
+    FormatStringDatePipe,
   ],
   imports: [
     IndexRoutingModule,
