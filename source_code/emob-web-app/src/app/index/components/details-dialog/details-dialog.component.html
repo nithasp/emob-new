@@ -1,25 +1,23 @@
-<div id="details-dialog" class="m-3 overflow-y-auto overflow-x-hidden" style="margin-bottom: 24px !important">
+<div id="details-dialog" class="m-3">
     <div class="modal-header px-0 pt-0">
         <p mat-dialog-title class="modal-title w-bold text-danger fs-5">{{ title }}</p>
         <button class="btn close-button" (click)="onCancleClick()" aria-label="Close">
             <mat-icon>clear</mat-icon>
         </button>
     </div>
-    <mat-dialog-content class="ml-3">
-        @if(isArray(message)){
-        <div class="row">
-            <div class="col-md-12" *ngFor="let mes of messageArray">
-                <p class="text-break " [innerHTML]="mes"></p>
+    <div class="modal-body p-0 overflow-hidden h-auto" style="max-height: 400px; overflow-y: auto !important">
+        <mat-dialog-content class="ml-3">
+            @if(isArray(message)){
+            <div class="row">
+                <div class="col-md-12" *ngFor="let mes of messageArray">
+                    <p class="text-break " [innerHTML]="mes"></p>
+                </div>
             </div>
-        </div>
-
-        }@else if (isString(message)) {
-        <!-- <p class="text-center ml-3">{{ message }}</p> -->
-        <p [innerHTML]="message"></p>
-        }
-        <p class="text-center ml-3 text-secondary h-2 mt-5 mb-5" [hidden]="message !=''">No Information</p>
-
-
-
-    </mat-dialog-content>
+    
+            }@else if (isString(message)) {
+            <p [innerHTML]="message"></p>
+            }
+            <p class="text-center ml-3 text-secondary h-2 mt-5 mb-5" [hidden]="message !=''">No Information</p>
+        </mat-dialog-content>
+    </div>
 </div>
