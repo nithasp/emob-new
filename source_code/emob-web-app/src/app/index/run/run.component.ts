@@ -662,6 +662,13 @@ export class RunComponent implements OnInit, AfterViewInit {
           await workbook.xlsx.load(arrayBuffer);
           const worksheet = workbook.getWorksheet(1);
           if (!worksheet) {
+            const validationErrors = [
+              this.transloco.translate('worksheet_not_found', {}, 'index'),
+            ];
+            this.showInvalidModal(
+              this.transloco.translate('file_invalid', {}, 'index'),
+              validationErrors
+            );
             resolve({ isValid: false });
             return;
           }
@@ -1754,7 +1761,16 @@ export class RunComponent implements OnInit, AfterViewInit {
 
           const worksheet = workbook.getWorksheet(1);
           if (!worksheet) {
-            this.toastr.error('No worksheet found in the Excel file.');
+            const validationErrors = [
+              this.transloco.translate('worksheet_not_found', {}, 'index'),
+            ];
+            this.showInvalidModal(
+              this.transloco.translate('file_invalid', {}, 'index'),
+              validationErrors
+            );
+            this.toastr.error(
+              this.transloco.translate('worksheet_not_found', {}, 'index')
+            );
             resolve(false);
             return;
           }
@@ -2340,6 +2356,13 @@ export class RunComponent implements OnInit, AfterViewInit {
 
           const worksheet = workbook.getWorksheet(1);
           if (!worksheet) {
+            const validationErrors = [
+              this.transloco.translate('worksheet_not_found', {}, 'index'),
+            ];
+            this.showInvalidModal(
+              this.transloco.translate('file_invalid', {}, 'index'),
+              validationErrors
+            );
             resolve(false);
             return;
           }
