@@ -52,6 +52,8 @@ import {
   Result,
   StatusExperiment,
   Validate,
+  Company,
+  MyDepot,
 } from 'src/app/models/experiment.model';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import {
@@ -240,10 +242,10 @@ export class RunComponent implements OnInit, AfterViewInit {
   isCreateMode: boolean = false;
   isFilePreview: boolean = false;
 
-  public depots: any[] = [];
+  public depots: MyDepot[] = [];
   public selectedDepotId: string | null = null;
   public selectedDepotIds: string[] = [];
-  public inputDataKeys: any[] = [];
+  public inputDataKeys: string[] = [];
 
   constructor(
     private readonly spinner: NgxSpinnerService,
@@ -521,39 +523,40 @@ export class RunComponent implements OnInit, AfterViewInit {
           (this.page - 1) * this.pageSize + this.pageSize
         ) || [];
   }
-  onFileSelected(files: any) {
-    let file: File;
-    if (files instanceof FileList) {
+  onFileSelected(eventOrFiles: Event | FileList) {
+    let file: File | undefined;
+    if (eventOrFiles instanceof FileList) {
+      if (eventOrFiles.length === 0) return;
+      file = eventOrFiles[0];
+      if (eventOrFiles.length > 1) {
+        this.toastr.warning(
+          this.transloco.translate('cannot_use_multiple_files', {}, 'index')
+        );
+      }
+    } else {
+      const input = eventOrFiles.target as HTMLInputElement | null;
+      const files = input?.files || null;
+      if (!files || files.length === 0) return;
       file = files[0];
       if (files.length > 1) {
         this.toastr.warning(
           this.transloco.translate('cannot_use_multiple_files', {}, 'index')
         );
       }
-    } else {
-      file = files.target.files[0];
-      const target: DataTransfer = <DataTransfer>files.target;
-      if (target.files.length > 1) {
-        this.toastr.warning(
-          this.transloco.translate('cannot_use_multiple_files', {}, 'index')
-        );
-      }
     }
-    if (file) {
-      if (!this.validTypes.includes(file.type)) {
-        this.showInvalidModal(
-          this.transloco.translate('file_invalid', {}, 'index'),
-          this.transloco.translate('select_excel_file', {}, 'index')
-        );
-        this.toastr.error(
-          `${this.transloco.translate('file_invalid', {}, 'index')}:`,
-          file.type
-        );
-      } else {
-        // Proceed with file processing
-        this.uploadFile(file);
-      }
+    if (!file) return;
+    if (!this.validTypes.includes(file.type)) {
+      this.showInvalidModal(
+        this.transloco.translate('file_invalid', {}, 'index'),
+        this.transloco.translate('select_excel_file', {}, 'index')
+      );
+      this.toastr.error(
+        `${this.transloco.translate('file_invalid', {}, 'index')}:`,
+        file.type
+      );
+      return;
     }
+    this.uploadFile(file);
   }
 
   /**
@@ -646,9 +649,14 @@ export class RunComponent implements OnInit, AfterViewInit {
   }> {
     return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = async (e: any) => {
+      reader.onload = async (e: ProgressEvent<FileReader>) => {
         try {
-          const arrayBuffer = e.target.result;
+          const result = e.target?.result;
+          if (!(result instanceof ArrayBuffer)) {
+            resolve({ isValid: false });
+            return;
+          }
+          const arrayBuffer = result;
           const workbook = new ExcelJS.Workbook();
           await workbook.xlsx.load(arrayBuffer);
           const worksheet = workbook.getWorksheet(1);
@@ -855,8 +863,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     dialogRef.componentInstance.title = title;
   }
 
-  resetFileInput(event: any): void {
-    event.target.value = null;
+  resetFileInput(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    if (input) input.value = '';
   }
   deleteFileInList(index: number) {
     if (
@@ -933,7 +942,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                   this.transloco.translate('set_default_parameter', {}, 'index')
                 );
               },
-              (error: any) => {
+              (error: unknown) => {
                 this.toastr.error(
                   this.transloco.translate(
                     'set_default_parameter_failed',
@@ -979,47 +988,44 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private loadLocationDepot(incoming: any[]) {
+  private loadLocationDepot(incoming: Array<Partial<MyDepot> & { id?: string; name?: string }>) {
     // Always use the incoming depots array for default selection and display
-    const normalizedIncoming: Array<{
-      depotName: string;
-      latitude: number;
-      longitude: number;
-      columns?: string[];
-      inputdata?: any[];
-      [key: string]: any;
-    }> = incoming.map((item) => {
+    const normalizedIncoming: MyDepot[] = incoming.map((item) => {
       const nameKey =
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
             ? item.name
             : '';
-      return {
+      const mapped: MyDepot = {
+        depotId: (item.depotId || item.id || '') as string,
         depotName: nameKey,
         latitude: Number(item.latitude),
         longitude: Number(item.longitude),
         columns: item.columns || [],
         inputdata: item.inputdata || [],
-        ...item,
+        tw_early: item.tw_early || '',
+        tw_late: item.tw_late || '',
+        createdAt: item.createdAt || '',
+        updatedAt: item.updatedAt || '',
       };
+      return mapped;
     });
 
     this.depots = normalizedIncoming;
 
     if (!this.experiment.depots || this.experiment.depots.length === 0) {
-      this.experiment.depots = normalizedIncoming.map((d: any) => ({
+      this.experiment.depots = normalizedIncoming.map((depot: MyDepot) => ({
         companyName: this.experiment.companyName,
-        depotId: d.depotId || d.id || '',
-        depotName: d.depotName,
-        latitude: Number(d.latitude),
-        longitude: Number(d.longitude),
-        tw_early: d.tw_early || '',
-        tw_late: d.tw_late || '',
-        createdAt: d.createdAt || '',
-        updatedAt: d.updatedAt || '',
-        columns: d.columns || [],
-        inputdata: d.inputdata || [],
+        depotId: depot.depotId || '',
+        depotName: depot.depotName,
+        latitude: Number(depot.latitude),
+        longitude: Number(depot.longitude),
+        tw_early: depot.tw_early || '',
+        tw_late: depot.tw_late || '',
+        createdAt: depot.createdAt || '',
+        updatedAt: depot.updatedAt || '',
+        columns: depot.columns || [],
       }));
     }
 
@@ -1103,7 +1109,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private popupShow(evt: any, element: any) {
+  private popupShow(evt: any, element: HTMLElement) {
     let coordinates: Coordinate;
     const feature = this.map.forEachFeatureAtPixel(
       evt.pixel,
@@ -1829,7 +1835,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
     this.reInitializeDataTable();
     this.loadLocation(this.uploadDataGroupCustomers);
-    this.loadLocationDepot(depots);
+    this.loadLocationDepot(depots as any);
     console.log(this.uploadDataGroupCustomers);
     this.isUpload = true;
     this.isFileSelectionStep = false;
@@ -1853,7 +1859,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   exportValidationData() {
-    const files: Array<{ data: any; name: string }> = [];
+    const files: Array<{ data: Array<Record<string, string | number>>; name: string }> = [];
     if (
       this.validateExperiment?.filters.order_data &&
       this.validateExperiment?.filters.order_data.invalid_coordinate.length > 0
@@ -1863,12 +1869,12 @@ export class RunComponent implements OnInit, AfterViewInit {
           (customer, i) => ({
             index: i + 1,
             ORDER_ID: customer.name,
-            ADDRESS: customer.original_address.address,
-            SUBDISTRICT: customer.original_address.subdistrict,
-            DISTRICT: customer.original_address.district,
-            PROVINCE: customer.original_address.province,
+            ADDRESS: customer.original_address.address ?? '',
+            SUBDISTRICT: customer.original_address.subdistrict ?? '',
+            DISTRICT: customer.original_address.district ?? '',
+            PROVINCE: customer.original_address.province ?? '',
           })
-        ),
+        ) || [],
         name:
           'Remove_Order_' + this.experiment.name + '_' + this.experiment.runId,
       });
@@ -1882,10 +1888,10 @@ export class RunComponent implements OnInit, AfterViewInit {
           (customer, i) => ({
             index: i + 1,
             ORDER_ID: customer.name,
-            PRODUCT_ID_ZERO_WEIGHT: customer.metrics?.product_ids.join(','),
-            PRODUCT_ID_MISSING: customer.metrics?.missing_product_ids.join(','),
+            PRODUCT_ID_ZERO_WEIGHT: (customer.metrics?.product_ids || []).join(',') ?? '',
+            PRODUCT_ID_MISSING: (customer.metrics?.missing_product_ids || []).join(',') ?? '',
           })
-        ),
+        ) || [],
         name:
           'Zero_Weight_' + this.experiment.name + '_' + this.experiment.runId,
       });
@@ -1970,12 +1976,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   updateDepot(
-    depots: Array<{
-      depotName: string;
-      latitude: number | string;
-      longitude: number | string;
-      [key: string]: any;
-    }>
+    depots: Array<Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'> & { [key: string]: any }>
   ) {
     this.preOrderFiles = [];
     this.vectorSourceDepot.clear();
@@ -2020,7 +2021,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
 
     this.experimentService.getMyCompany().subscribe({
-      next: (company: any) => {
+      next: (company: Company) => {
         this.companyDepotType = company.depotType;
       },
       error: (error) => {
@@ -2030,16 +2031,15 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
 
     this.experimentService.getMyDepots().subscribe({
-      next: (depots: any[]) => {
+      next: (depots: MyDepot[]) => {
         // Normalize depot structure for compatibility (moved from service)
-        this.depots = (depots || []).map((depot: any) => ({
+        this.depots = (depots || []).map((depot: MyDepot) => ({
+          ...depot,
           depotName: depot.depotName,
           latitude: Number(depot.latitude),
           longitude: Number(depot.longitude),
           columns: depot.columns || [],
           inputdata: depot.inputdata || [],
-          depotId: depot.depotId,
-          ...depot,
         }));
         if (this.depots && this.depots.length > 0) {
           this.selectedDepotId = this.depots[0].depotName;
@@ -2070,7 +2070,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   handleInputDataKeyChange(
     fileObj: { id: string; file: FileWithCategory },
-    event: any
+    event: { value: string }
   ) {
     const selectedDisplayName = event.value;
     const found = this.depotInputDataItems.find(
@@ -2085,10 +2085,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
-  updateInputDataKeysFromDepot(depot: any) {
+  updateInputDataKeysFromDepot(depot: MyDepot) {
     // Extract input data items from depot
     this.depotInputDataItems =
-      depot.inputdata?.map((item: any) => ({
+      depot.inputdata?.map((item) => ({
         keyName: item.keyName,
         displayName: item.displayName,
         columnRequired: item.columnRequired || [],
@@ -2124,9 +2124,14 @@ export class RunComponent implements OnInit, AfterViewInit {
     // Read the file to get column names
     return new Promise<boolean>((resolve) => {
       const reader = new FileReader();
-      reader.onload = async (e: any) => {
+      reader.onload = async (e: ProgressEvent<FileReader>) => {
         try {
-          const arrayBuffer = e.target.result;
+          const result = e.target?.result;
+          if (!(result instanceof ArrayBuffer)) {
+            resolve(false);
+            return;
+          }
+          const arrayBuffer = result;
           const workbook = new ExcelJS.Workbook();
           await workbook.xlsx.load(arrayBuffer);
 

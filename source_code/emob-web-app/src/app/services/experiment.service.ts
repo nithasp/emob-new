@@ -9,6 +9,7 @@ import {
   Experiment,
   ExperimentState,
 } from '../models/experiment.model';
+import { Company, MyDepot } from '../models/experiment.model';
 import { Constraint } from '../models/constraint.model';
 import { Location } from '../models/location.model';
 import { CustomerUpdated } from '../models/pre-order.model';
@@ -324,9 +325,9 @@ export class ExperimentService {
       );
   }
 
-  getMyCompany(): Observable<any> {
+  getMyCompany(): Observable<Company> {
     return this.apollo
-      .query<{ myCompany: any }>({
+      .query<{ myCompany: Company }>({
         query: gql`
           query myCompany {
             myCompany {
@@ -343,9 +344,9 @@ export class ExperimentService {
       );
   }
 
-  getMyDepots(): Observable<any[]> {
+  getMyDepots(): Observable<MyDepot[]> {
     return this.apollo
-      .query<{ myDepots: any[] }>({
+      .query<{ myDepots: MyDepot[] }>({
         query: gql`
           query myDepots {
             myDepots {

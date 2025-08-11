@@ -79,6 +79,7 @@
   "vehicle": "ยานพาหนะ",
   "no_files_uploaded": "ยังไม่มีไฟล์ที่อัปโหลด",
   "unverified": "ยังไม่ได้ตรวจสอบ",
+  "create_experiment": "สร้างการทดลอง",
   "cancel_experiment": "ยกเลิกการทดลอง",
   "unverify_coordinate": "ยกเลิกการตรวจสอบพิกัด",
   "unverify_location": "ยกเลิกการตรวจสอบตำแหน่ง",

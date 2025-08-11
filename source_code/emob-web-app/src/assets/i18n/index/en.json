@@ -79,6 +79,7 @@
   "vehicle": "Vehicle",
   "no_files_uploaded": "No files are uploaded",
   "unverified": "Unverified",
+  "create_experiment": "Create Experiment",
   "cancel_experiment": "Cancel experiment",
   "unverify_coordinate": "Unverify coordinate",
   "unverify_location": "Unverify location",
