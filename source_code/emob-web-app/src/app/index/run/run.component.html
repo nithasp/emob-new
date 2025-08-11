@@ -44,28 +44,28 @@
                 <div class="card p-3 mb-4">
                   <h4>
                     <mat-icon>location_on</mat-icon> 
-                    <span *ngIf="isUploadDisplay">{{ t('manage_depots') }}</span>
-                    <span *ngIf="!isUploadDisplay">{{ t('depots') }}</span>
+                    <span *ngIf="isFileSelectionStep">{{ t('manage_depots') }}</span>
+                    <span *ngIf="!isFileSelectionStep">{{ t('depots') }}</span>
                   </h4>
                   <mat-form-field *ngIf="companyDepotType === 'Single'" appearance="fill" class="w-100">
                     <mat-label>
                       {{ t('single_depot_selection') }}
                     </mat-label>
-                      <mat-select *ngIf="isUploadDisplay" [(value)]="selectedDepotId" (selectionChange)="onDepotSelectionChange()"
+                      <mat-select *ngIf="isFileSelectionStep" [(value)]="selectedDepotId" (selectionChange)="onDepotSelectionChange()"
                         [disabled]="!isFilePreview">
                         <mat-option *ngFor="let depot of depots" [value]="depot.depotName">
                           {{ depot.depotName }}
                         </mat-option>
                       </mat-select>
                       
-                      <mat-select *ngIf="!isUploadDisplay" [(value)]="selectedDepotId" disabled>
+                      <mat-select *ngIf="!isFileSelectionStep" [(value)]="selectedDepotId" disabled>
                       <mat-option *ngFor="let depot of experiment.depots" [value]="depot.depotName">
                         {{ depot.depotName }}
                       </mat-option>
                     </mat-select>
                   </mat-form-field>
 
-                  <h4 *ngIf="isUploadDisplay" class="file-type-required">
+                  <h4 *ngIf="isFileSelectionStep" class="file-type-required">
                     <span>{{ t('file_type_to_upload') }}: </span>
                     <ng-container *ngIf="requiredFileTypes.length > 0; else noDepot">
                       <ng-container *ngIf="requiredFileTypes.length === 1; else multipleTypes">
@@ -94,14 +94,14 @@
                     </div>
                     <input type="text" class="form-control" [(ngModel)]="experiment.name" disabled="true" />
                   </div>
-                  <button *ngIf="!isUploadDisplay" class="btn" [hidden]="!isOriginalExperiment()" (click)="backToStep1()">
+                  <button *ngIf="!isFileSelectionStep" class="btn" [hidden]="!isOriginalExperiment()" (click)="backToStep1()">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </div>
 
 
                 <div class="col-md-12 rounded-3 dropzone" DropZone (onFileDropped)="onFileSelected($event)"
-                  *ngIf="isUploadDisplay">
+                  *ngIf="isFileSelectionStep">
                   <div class="row">
                     <div class="col-md-12 text-center">
                       <mat-icon class="icon-upload">upload_file</mat-icon>
@@ -147,30 +147,30 @@
                             {{ fileObj.file.name }}
                           </td>
                           <td>
-                            <mat-select class="step1" *ngIf="isUploadDisplay" [(value)]="fileObj.file.displayName"
+                            <mat-select class="step1" *ngIf="isFileSelectionStep" [(value)]="fileObj.file.displayName"
                               (selectionChange)="handleInputDataKeyChange(fileObj, $event)">
                               <mat-option *ngFor="let inputDataKey of inputDataKeys" [value]="inputDataKey">
                                 {{ inputDataKey }}
                               </mat-option>
                             </mat-select>
-                            <span class="step2" *ngIf="!isUploadDisplay"> {{ fileObj.file.displayName }} </span>
+                            <span class="step2" *ngIf="!isFileSelectionStep"> {{ fileObj.file.displayName }} </span>
                           </td>
                           <td>
-                            <span class="step1" *ngIf="isUploadDisplay"> {{ fileObj.file.size / 1000000 | number : "1.2-2" }} MB </span>
-                            <span class="step2" *ngIf="!isUploadDisplay"> {{ fileObj.file.size }} MB</span>
+                            <span class="step1" *ngIf="isFileSelectionStep"> {{ fileObj.file.size / 1000000 | number : "1.2-2" }} MB </span>
+                            <span class="step2" *ngIf="!isFileSelectionStep"> {{ fileObj.file.size }} MB</span>
                           </td>
                           <td>
-                            <span class="step1" *ngIf="isUploadDisplay">{{
+                            <span class="step1" *ngIf="isFileSelectionStep">{{
                               (validTypes.includes(fileObj.file.type)
                               ? "xlsx"
                               : fileObj.file.type
                               ) | slice : 0 : 10
                               }}
                             </span>
-                            <span class="step2" *ngIf="!isUploadDisplay"> {{ fileObj.file.type }} </span>
+                            <span class="step2" *ngIf="!isFileSelectionStep"> {{ fileObj.file.type }} </span>
                           </td>
                           <td>
-                            <button *ngIf="isUploadDisplay" class="btn" (click)="deleteFileInList(i)" [hidden]="!isOriginalExperiment()">
+                            <button *ngIf="isFileSelectionStep" class="btn" (click)="deleteFileInList(i)" [hidden]="!isOriginalExperiment()">
                               <mat-icon>delete</mat-icon>
                             </button>
                           </td>

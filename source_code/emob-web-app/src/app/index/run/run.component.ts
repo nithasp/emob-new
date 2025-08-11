@@ -125,7 +125,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   // Condition
   public activeNavId = 1;
   public isUpload!: boolean;
-  public isUploadDisplay: boolean = true;
+  public isFileSelectionStep: boolean = true;
   public requiredFileType: string = '.xlsx, .xls';
   readonly validTypes = [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -339,7 +339,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                       this.initializeDataFromExperiment(
                         this.experiment
                       ).finally(() => {
-                        this.isUploadDisplay = false;
+                        this.isFileSelectionStep = false;
                         setTimeout(() => {
                           this.toastr.success(
                             this.transloco.translate(
@@ -850,7 +850,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                   console.log('this.preOrderFiles', this.preOrderFiles);
 
                   this.isFilePreview = false;
-                  this.isUploadDisplay = false;
+                  this.isFileSelectionStep = false;
                   this.spinner.hide();
                   this.toastr.success(
                     `${this.transloco.translate(
@@ -2014,7 +2014,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.loadLocationDepot(depots);
     console.log(this.uploadDataGroupCustomers);
     this.isUpload = true;
-    this.isUploadDisplay = false;
+    this.isFileSelectionStep = false;
   }
   isOriginalExperiment(): boolean {
     return this.experiment.run === 'Original';
@@ -2464,7 +2464,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
         // Reset step state to upload mode (allow depot selection and file upload)
         this.isUpload = false;
-        this.isUploadDisplay = true;
+        this.isFileSelectionStep = true;
         this.isFilePreview = true;
 
         // Clear uploaded files and preview data
