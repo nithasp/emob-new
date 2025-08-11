@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   Injectable,
   OnInit,
@@ -81,7 +80,6 @@ import { firstValueFrom, take } from 'rxjs';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import { DataService } from 'src/app/services/data.service';
 import { ExportFileService } from 'src/app/services/export-file.service';
-import { set } from 'ol/transform';
 import Text from 'ol/style/Text';
 import Fill from 'ol/style/Fill';
 import Stroke from 'ol/style/Stroke';
@@ -247,8 +245,6 @@ export class RunComponent implements OnInit, AfterViewInit {
   public selectedDepotIds: string[] = [];
   public inputDataKeys: any[] = [];
 
-  // No longer needed: all per-file state is on fileObj.file
-
   constructor(
     private readonly spinner: NgxSpinnerService,
     private readonly constraintService: ConstraintService,
@@ -283,7 +279,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.route.params
         .pipe(take(1))
         .subscribe((params: { [x: string]: string }) => {
-          console.log(params);
           this.experimentService
             .getExperiment(params['runId'])
             .subscribe((response: Experiment) => {
@@ -403,9 +398,6 @@ export class RunComponent implements OnInit, AfterViewInit {
         };
       }
     );
-
-    console.log('preOrderFiles', this.preOrderFiles);
-    console.log('experiment.inputdata', experiment.inputdata);
 
     this.toastr.info(
       this.transloco.translate('loading_geo_location_data', {}, 'index'),
@@ -530,7 +522,6 @@ export class RunComponent implements OnInit, AfterViewInit {
         ) || [];
   }
   onFileSelected(files: any) {
-    console.log(files);
     let file: File;
     if (files instanceof FileList) {
       file = files[0];
@@ -599,7 +590,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   async uploadFile(file: FileWithCategory) {
     const id = this.generateUniqueId();
-    // Validate the file before adding
+
     const { isValid, keyName, displayName } =
       await this.validateSingleFileAgainstDepot(file);
 
@@ -743,20 +734,11 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   handleUploadSubmit() {
-    // Check if all required depot input data types are covered
-    // if (!this.canExecuteHandleUploadSubmit()) {
-    //   this.toastr.error(
-    //     'Please upload files that match all required data types for the selected depot.'
-    //   );
-    //   return;
-    // }
-
     // Transform preOrderFiles to newPayload format (send actual File object)
     const newPayload = this.preOrderFiles.map(({ file }) => ({
-      file, // send the actual File object
+      file,
       keyName: file.keyName || '',
     }));
-    console.log('newPayload', newPayload);
 
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
@@ -781,20 +763,16 @@ export class RunComponent implements OnInit, AfterViewInit {
       .then((confirmed: boolean) => {
         if (confirmed) {
           this.spinner.show();
-          // Prepare depotIds (single or multiple selection) using depotId, not depotName
+          // Prepare depotIds (single or multiple selection)
           let depotIds: string[] = [];
-          if (this.selectedDepotIds && this.selectedDepotIds.length > 0) {
-            depotIds = this.selectedDepotIds
-              .map((name) => {
-                const found = this.depots.find((d) => d.depotName === name);
-                return found ? found.depotId : null;
-              })
-              .filter((id): id is string => !!id);
-          } else if (this.selectedDepotId) {
+          if (this.selectedDepotId) {
             const found = this.depots.find(
               (d) => d.depotName === this.selectedDepotId
             );
-            if (found && found.depotId) depotIds = [found.depotId];
+            if (found && found.depotId) {
+              depotIds = [found.depotId];
+              depotIds = [found.depotId];
+            }
           }
 
           this.preOrderService
@@ -806,8 +784,6 @@ export class RunComponent implements OnInit, AfterViewInit {
                 .pipe(take(1))
                 .subscribe(async (exp: Experiment) => {
                   this.experiment = { ...exp };
-                  console.log('this.experiment', this.experiment);
-                  console.log('this.preOrderFiles', this.preOrderFiles);
                   if (response.result) {
                     this.groupingCustomer(
                       response.result.customers,
@@ -845,10 +821,6 @@ export class RunComponent implements OnInit, AfterViewInit {
                       console.error('Failed to load preOrder file for counting:', e);
                     }
                   }
-
-                  console.log('this.experiment', this.experiment);
-                  console.log('this.preOrderFiles', this.preOrderFiles);
-
                   this.isFilePreview = false;
                   this.isFileSelectionStep = false;
                   this.spinner.hide();
@@ -860,7 +832,6 @@ export class RunComponent implements OnInit, AfterViewInit {
                     )}.`
                   );
                 });
-
             });
         }
       })
@@ -1036,7 +1007,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     this.depots = normalizedIncoming;
 
-    // Ensure experiment.depots is populated so we can use it as the source of truth
     if (!this.experiment.depots || this.experiment.depots.length === 0) {
       this.experiment.depots = normalizedIncoming.map((d: any) => ({
         companyName: this.experiment.companyName,
@@ -1055,7 +1025,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     // Set default selection to the first depot in the incoming list
     if (this.depots && this.depots.length > 0) {
-      console.log('this.depots', this.depots);
       const defaultDepotName =
         (this.experiment && this.experiment.depots && this.experiment.depots[0]
           ? this.experiment.depots[0].depotName
@@ -1717,150 +1686,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private async processExcelFile(file: File): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = async (e: any) => {
-        try {
-          const arrayBuffer = e.target.result;
-          const isReadExcel = await this.readExcel(arrayBuffer);
-          resolve(isReadExcel);
-        } catch (error) {
-          console.error('Error processing Excel file:', error);
-          this.toastr.error(
-            this.transloco.translate('excel_process_failed', {}, 'index')
-          );
-          resolve(false);
-        }
-      };
-
-      reader.onerror = (error) => {
-        console.error('File reading error:', error);
-        this.toastr.error(
-          this.transloco.translate('cannot_read_file', {}, 'index')
-        );
-        reject(false);
-      };
-
-      reader.readAsArrayBuffer(file);
-    });
-  }
-
-  private async processExcelFileWithDepotValidation(
-    file: File
-  ): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = async (e: any) => {
-        try {
-          const arrayBuffer = e.target.result;
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(arrayBuffer);
-
-          const worksheet = workbook.getWorksheet(1);
-          if (!worksheet) {
-            const validationErrors = [
-              this.transloco.translate('worksheet_not_found', {}, 'index'),
-            ];
-            this.showInvalidModal(
-              this.transloco.translate('file_invalid', {}, 'index'),
-              validationErrors
-            );
-            this.toastr.error(
-              this.transloco.translate('worksheet_not_found', {}, 'index')
-            );
-            resolve(false);
-            return;
-          }
-
-          const columnNames = (
-            worksheet.getRow(1).values as (string | undefined)[]
-          ).filter((value) => typeof value === 'string');
-
-          // Find matching input data item for this file
-          const matchingInputDataItem =
-            this.findMatchingInputDataItem(columnNames);
-
-          if (!matchingInputDataItem) {
-            // Show missing columns for each required input data type
-            const validationErrors = [];
-            for (const item of this.depotInputDataItems) {
-              const missingColumns = item.columnRequired.filter(
-                (col) => !columnNames.includes(col)
-              );
-              if (missingColumns.length > 0) {
-                validationErrors.push(
-                  `${item.displayName}: ${missingColumns.join(', ')}`
-                );
-              }
-            }
-
-            this.showInvalidModal(
-              `${this.transloco.translate(
-                'column_name_mismatch_template',
-                {},
-                'index'
-              )}:`,
-              validationErrors
-            );
-            this.toastr.error(
-              `${this.transloco.translate(
-                'column_name_mismatch_template',
-                {},
-                'index'
-              )}`,
-              validationErrors.join(' | ')
-            );
-            resolve(false);
-            return;
-          }
-
-          // Count how many files already have this data type
-          const currentType = matchingInputDataItem.displayName;
-          const alreadyAssignedCount = this.preOrderFiles.filter(
-            (f) => f.file.displayName === currentType
-          ).length;
-
-          if (alreadyAssignedCount === 0) {
-            // First file for this data type: auto-assign and disable
-            (file as FileWithCategory).keyName = matchingInputDataItem.keyName;
-            (file as FileWithCategory).displayName =
-              matchingInputDataItem.displayName;
-            (file as FileWithCategory).isFirstOfType = true;
-          } else {
-            // Second or later file for this data type: require user selection
-            (file as FileWithCategory).keyName = '';
-            (file as FileWithCategory).displayName = '';
-            (file as FileWithCategory).isFirstOfType = false;
-          }
-
-          // Use the original validation logic with the matching columns
-          this.requiredColumns = matchingInputDataItem.columnRequired;
-          const isValid = await this.readExcel(arrayBuffer);
-          resolve(isValid);
-        } catch (error) {
-          console.error('Error processing Excel file:', error);
-          this.toastr.error(
-            this.transloco.translate('excel_process_failed', {}, 'index')
-          );
-          resolve(false);
-        }
-      };
-
-      reader.onerror = (error) => {
-        console.error('File reading error:', error);
-        this.toastr.error(
-          this.transloco.translate('cannot_read_file', {}, 'index')
-        );
-        reject(false);
-      };
-
-      reader.readAsArrayBuffer(file);
-    });
-  }
-
   appendExcelData(
     preOrderData: PreOrder[],
     worksheet: ExcelJS.Worksheet
@@ -1873,8 +1698,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (this.validateData(columnNames)) {
       this.dataPreOrder = preOrderData;
       this.preOrderCount = this.dataPreOrder.length;
-
-      console.log('this.dataPreOrder', this.dataPreOrder);
       this.groupDataById();
       return true;
     } else {
@@ -1890,7 +1713,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     try {
       await workbook.xlsx.load(arrayBuffer);
       const data: PreOrder[] = [];
-      console.log('Worksheet length:', workbook.worksheets.length);
 
       let worksheet =
         workbook.getWorksheet('PreOrder') || workbook.worksheets[0];
@@ -1917,10 +1739,6 @@ export class RunComponent implements OnInit, AfterViewInit {
           data.push(rowData as PreOrder);
         }
       });
-
-      console.log('data', data);
-      console.log('worksheet', worksheet);
-
       return this.appendExcelData(data, worksheet);
     } catch (error) {
       console.error('Error reading Excel file:', error);
@@ -2059,7 +1877,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.validateExperiment?.warning &&
       this.validateExperiment?.warning.zero_weight.length > 0
     ) {
-      console.log(this.validateExperiment?.warning.zero_weight);
       files.push({
         data: this.validateExperiment?.warning.zero_weight.map(
           (customer, i) => ({
@@ -2073,7 +1890,6 @@ export class RunComponent implements OnInit, AfterViewInit {
           'Zero_Weight_' + this.experiment.name + '_' + this.experiment.runId,
       });
     }
-    console.log(files);
     this.exportService.exportMultipleCsv(
       files.map((file) => file.data),
       files.map((file) => file.name)
@@ -2142,34 +1958,18 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   async onDepotSelectionChange() {
-    // Remove any multiple-depot storage
-    localStorage.removeItem('selectedDepotIds');
-
-    // Persist single selection (or clear it)
-    if (this.selectedDepotId) {
-      localStorage.setItem('selectedDepotId', this.selectedDepotId);
-    } else {
-      localStorage.removeItem('selectedDepotId');
-    }
-
-    // Update map markers
-    this.selectedDepotIds = [];
-    this.updateDepotLocationOnMap([]);
-
     const depot = this.depots.find((d) => d.depotName === this.selectedDepotId);
     if (depot) {
-      this.updateDepotLocationOnMap([depot]);
+      this.updateDepot([depot]);
       this.updateInputDataKeysFromDepot(depot);
     } else {
       this.inputDataKeys = [];
       this.depotInputDataItems = [];
     }
-
-    // Re-validate existing uploaded files against new depot requirements
     await this.validateUploadedFilesAgainstDepot();
   }
 
-  updateDepotLocationOnMap(
+  updateDepot(
     depots: Array<{
       depotName: string;
       latitude: number | string;
@@ -2177,8 +1977,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       [key: string]: any;
     }>
   ) {
-    console.log('updateDepotLocationOnMap depots', depots);
-    //this.preOrderFiles = [];
+    this.preOrderFiles = [];
     this.vectorSourceDepot.clear();
 
     const iconWithLabel = (label: string) =>
@@ -2206,17 +2005,12 @@ export class RunComponent implements OnInit, AfterViewInit {
       const lon = Number(depot.longitude);
       const lat = Number(depot.latitude);
       const coord = OlProj.fromLonLat([lon, lat]);
-
       const feature = new Feature({
         geometry: new Point(coord),
         data: { data: depot, isDepot: true },
       });
-
       feature.setStyle(iconWithLabel(depot.depotName));
-
       this.vectorSourceDepot.addFeature(feature);
-
-      console.log('feature', feature);
     });
   }
 
@@ -2224,7 +2018,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (showSpinner) {
       this.spinner.show();
     }
-    // Fetch company info
+
     this.experimentService.getMyCompany().subscribe({
       next: (company: any) => {
         this.companyDepotType = company.depotType;
@@ -2235,7 +2029,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       },
     });
 
-    // Fetch depots
     this.experimentService.getMyDepots().subscribe({
       next: (depots: any[]) => {
         // Normalize depot structure for compatibility (moved from service)
@@ -2245,14 +2038,12 @@ export class RunComponent implements OnInit, AfterViewInit {
           longitude: Number(depot.longitude),
           columns: depot.columns || [],
           inputdata: depot.inputdata || [],
-          depotId: depot.depotId, // Add depotId to the normalized depots
+          depotId: depot.depotId,
           ...depot,
         }));
         if (this.depots && this.depots.length > 0) {
           this.selectedDepotId = this.depots[0].depotName;
           this.selectedDepotIds = [];
-
-          //this.updateDepotLocationOnMap([this.depots[0]]);
 
           // Update input data keys from the first depot
           this.updateInputDataKeysFromDepot(this.depots[0]);
@@ -2275,28 +2066,6 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
       },
     });
-  }
-
-  log() {
-    console.log('this.depots', this.depots);
-    console.log('selectedDepotId', this.selectedDepotId);
-
-    console.log('this.preOrderFiles', this.preOrderFiles);
-    console.log('this.requiredColumns', this.requiredColumns);
-
-    console.log('this.inputDataKeys', this.inputDataKeys);
-
-    console.log('this.depotInputDataItems', this.depotInputDataItems);
-
-    console.log('this.inputDataKeys', this.inputDataKeys);
-
-    console.log(
-      'preOrderFiles.length === inputDataKeys.length',
-      this.preOrderFiles.length === this.inputDataKeys.length
-    );
-
-    console.log('this.preOrderFiles.length ', this.preOrderFiles.length);
-    console.log('this.inputDataKeys.length ', this.inputDataKeys.length);
   }
 
   handleInputDataKeyChange(
@@ -2330,14 +2099,10 @@ export class RunComponent implements OnInit, AfterViewInit {
       (item, index, self) =>
         index === self.findIndex((t) => t.keyName === item.keyName)
     );
-
     this.inputDataKeys = uniqueItems.map((item) => item.displayName);
-    console.log('Updated inputDataKeys:', this.inputDataKeys);
-    console.log('Depot input data items:', this.depotInputDataItems);
   }
 
   async validateUploadedFilesAgainstDepot() {
-    // Validate each uploaded file against depot requirements
     const validFiles = [];
     for (const file of this.preOrderFiles) {
       const isValid = await this.validateFileAgainstDepotRequirements(file);
@@ -2434,7 +2199,6 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   backToStep1() {
-    console.log('backToStep1');
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
