@@ -30,10 +30,8 @@ import { MatPaginator } from '@angular/material/paginator';
 
 import * as ExcelJS from 'exceljs';
 import {
-  Address,
   Customer,
   CustomerUpdated,
-  DataCustomer,
   DataPreOrder,
   Depot,
   GroupedDataPreOrder,
@@ -405,18 +403,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.transloco.translate('loading_geo_location_data', {}, 'index'),
       `${this.transloco.translate('please_wait', {}, 'index')} ...`
     );
-
-    // Load PreOrder for table count and grouping
-    if (experiment.fileUrl?.preOrderUrl) {
-      try {
-        const buf = await this.fetchDataFromFileUrl(
-          experiment.fileUrl.preOrderUrl
-        );
-        await this.readExcel(buf);
-      } catch (e) {
-        console.error('Failed to load preOrder file for counting:', e);
-      }
-    }
 
     // load geocoding location
     if (experiment.fileUrl.LocationBlobPathUrl) {
@@ -818,17 +804,6 @@ export class RunComponent implements OnInit, AfterViewInit {
                     }
                   );
 
-                  // Also load the uploaded PreOrder file to compute dataPreOrder and preOrderCount
-                  if (this.experiment.fileUrl?.preOrderUrl) {
-                    try {
-                      const buf = await this.fetchDataFromFileUrl(
-                        this.experiment.fileUrl.preOrderUrl
-                      );
-                      await this.readExcel(buf);
-                    } catch (e) {
-                      console.error('Failed to load preOrder file for counting:', e);
-                    }
-                  }
                   this.isFilePreview = false;
                   this.isFileSelectionStep = false;
                   this.spinner.hide();
@@ -1646,6 +1621,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     return dialogRef;
   }
+
   async fetchDataFromFileUrl(url: string) {
     const blob = await firstValueFrom(
       this.configurationService.getDatafromUrl(url)
@@ -1662,106 +1638,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     const jsonData = JSON.parse(text);
 
     return jsonData;
-  }
-
-  async dataFromFileUrlToExcel(url: string): Promise<boolean> {
-    try {
-      const arrayBuffer = await this.fetchDataFromFileUrl(url);
-      const isReadExcel = await this.readExcel(arrayBuffer);
-      const fileName = 'PreOrder.xlsx';
-      const mimeType =
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
-      const file: FileWithCategory = this.arrayBufferToFile(
-        arrayBuffer,
-        fileName,
-        mimeType
-      ) as FileWithCategory;
-      // Set default values for imported files (keep them editable)
-      file.keyName = '';
-      file.displayName = '';
-      file.isFirstOfType = false;
-      this.preOrderFiles.push({ id: this.generateUniqueId(), file });
-      return isReadExcel;
-    } catch (error) {
-      this.toastr.error(
-        this.transloco.translate('file_fetch_or_parse_error', {}, 'index')
-      );
-      console.error('Error fetching or parsing file:', error);
-      return false;
-    }
-  }
-
-  appendExcelData(
-    preOrderData: PreOrder[],
-    worksheet: ExcelJS.Worksheet
-  ): boolean {
-    const columnNames = (
-      worksheet.getRow(1).values as (string | undefined)[]
-    ).filter((value) => typeof value === 'string');
-    console.log('Columns in excel file:', columnNames);
-
-    if (this.validateData(columnNames)) {
-      this.dataPreOrder = preOrderData;
-      this.preOrderCount = this.dataPreOrder.length;
-      this.groupDataById();
-      return true;
-    } else {
-      this.toastr.error(
-        this.transloco.translate('data_validation_failed', {}, 'index')
-      );
-      return false;
-    }
-  }
-
-  async readExcel(arrayBuffer: ArrayBuffer): Promise<boolean> {
-    const workbook = new ExcelJS.Workbook();
-    try {
-      await workbook.xlsx.load(arrayBuffer);
-      const data: PreOrder[] = [];
-
-      let worksheet =
-        workbook.getWorksheet('PreOrder') || workbook.worksheets[0];
-
-      if (!worksheet) {
-        this.toastr.warning(
-          this.transloco.translate('worksheet_not_found', {}, 'index')
-        );
-        return false;
-      }
-
-      worksheet.eachRow((row, rowNumber) => {
-        if (rowNumber > 1) {
-          // Assuming the first row is the header
-          const rowData: any = {};
-          row.eachCell((cell, colNumber) => {
-            const header = worksheet.getRow(1).getCell(colNumber)
-              .value as string;
-            rowData[header] = cell.value;
-          });
-          // Correcting the user input template word
-          rowData['PROVINCE'] = rowData['PROVICE'];
-          delete rowData['PROVICE']; // Optionally remove the incorrect key
-          data.push(rowData as PreOrder);
-        }
-      });
-      return this.appendExcelData(data, worksheet);
-    } catch (error) {
-      console.error('Error reading Excel file:', error);
-      this.toastr.error(
-        this.transloco.translate('excel_read_failed', {}, 'index')
-      );
-      return false;
-    }
-  }
-
-  arrayBufferToFile(
-    arrayBuffer: ArrayBuffer,
-    fileName: string,
-    mimeType: string
-  ): File {
-    const blob = new Blob([arrayBuffer], { type: mimeType });
-    return new File([blob], fileName, { type: mimeType });
   }
 
   updateCustomerGroup(customers: Array<CustomerUpdated>) {
@@ -1809,6 +1685,11 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
   groupingCustomer(customers: Customer[], depots: Depot[]) {
     this.countUploadedCustomers = customers.length;
+    // Sum all products_info lengths across customers for preOrderCount
+    this.preOrderCount = customers.reduce((sum, customer) => {
+      const products = customer?.extra?.products_info;
+      return sum + (Array.isArray(products) ? products.length : 0);
+    }, 0);
     const groupedCustomer = this.groupCustomers(customers);
     console.log('groupedCustomer', groupedCustomer);
     this.uploadDataGroupCustomers = {

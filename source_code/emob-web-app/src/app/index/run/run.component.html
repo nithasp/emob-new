@@ -360,7 +360,7 @@
                         </th>
 
                         <td mat-cell *matCellDef="let element" class="ps-3">
-                          {{ countOrder(element.name) }}
+                          {{ element?.extra?.products_info?.length || "" }}
                         </td>
                       </ng-container>
                       <ng-container matColumnDef>
