@@ -14,6 +14,23 @@ import { firstValueFrom } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 
+interface Depot {
+  depotId: string;
+  depotName: string;
+  fileType: FileType[];
+}
+
+interface FileType {
+  category: string;
+  children: Child[];
+}
+
+interface Child {
+  name: string;
+  timestamp: string;
+  type: string;
+}
+
 @Component({
   selector: 'app-configuration',
   templateUrl: './configuration.component.html',
@@ -22,7 +39,7 @@ import { TranslocoService } from '@jsverse/transloco';
 export class ConfigurationComponent implements OnInit {
   //Categories
   public selectedNode: string | null = null;
-  public configurationsExplorer: Categories[] = [];
+  public configurationsExplorer: Depot[] = [];
   public readonly configurationAllData: {
     configurations: Configuration[];
     actualLocations: ActualLocation[];
@@ -36,7 +53,15 @@ export class ConfigurationComponent implements OnInit {
   public excelData: any[] = [];
   public headers: string[] = [];
   public searchText = '';
-  childrenAccessor = (node: Categories) => node.children ?? [];
+  childrenAccessor = (node: any) => {
+    if (node.depotId) {
+      return node.fileType;
+    } else if (node.category) {
+      return node.children;
+    } else {
+      return [];
+    }
+  };
 
   hasChild = (_: number, node: Categories) =>
     !!node.children && node.children.length > 0;
@@ -60,69 +85,47 @@ export class ConfigurationComponent implements OnInit {
       console.log(data);
       this.configurationAllData.configurations = data.configurations;
       this.configurationAllData.actualLocations = data.actualLocations;
-      const configurationCategory: Categories[] = [];
-      // map data to tree structure
+      const depotMap = new Map();
+
       data.configurations.forEach((configuration) => {
-        const category = configurationCategory.find(
-          (item) => item.name === configuration.category
-        );
-        if (category) {
-          configurationCategory
-            .find((item) => item.name === configuration.category)
-            ?.children?.push({
-              name: configuration.name,
-              timestamp: formatDate(
-                configuration.timestamp,
-                'dd-MMM-YYYY HH:mm:ss',
-                'en-US'
-              ),
-              type: 'configuration',
-            });
-        } else {
-          configurationCategory.push({
-            name: configuration.category,
-            children: [
-              {
-                timestamp: formatDate(
-                  configuration.timestamp,
-                  'dd-MMM-YYYY HH:mm:ss',
-                  'en-US'
-                ),
-                name: configuration.name,
-                type: 'configuration',
-              },
-            ],
+        const depotId = configuration.depotId;
+        const depotName = configuration.depot?.depotName;
+        const category = configuration.category;
+        const type = 'configuration';
+
+        if (!depotMap.has(depotId)) {
+          depotMap.set(depotId, {
+            depotId,
+            depotName,
+            fileType: [],
           });
         }
-      });
-      const actualLocationList: Categories[] = [];
-      data.actualLocations.forEach((location) => {
-        actualLocationList.push({
-          name: location.year,
-          children: location.children.map((child) => ({
-            name: child.month,
-            children: child.children.map((grandChild) => ({
-              name: grandChild.fileName,
-              blobPath: grandChild.fileBlobPath,
-              timestamp: formatDate(
-                grandChild.timestamp,
-                'dd-MMM-YYYY HH:mm:ss',
-                'en-US'
-              ),
-              type: 'actualLocation',
-            })),
-          })),
+
+        const depot = depotMap.get(depotId);
+        let categoryObj = depot.fileType.find((ft: any) => ft.category === category);
+
+        if (!categoryObj) {
+          categoryObj = {
+            category,
+            children: [],
+          };
+          depot.fileType.push(categoryObj);
+        }
+
+        categoryObj.children.push({
+          name: configuration.name,
+          timestamp: formatDate(
+            configuration.timestamp,
+            'dd-MMM-YYYY HH:mm:ss',
+            'en-US'
+          ),
+          type,
         });
       });
-      configurationCategory.push({
-        name: 'actualLocation',
-        children: actualLocationList,
-      });
-      this.configurationsExplorer = configurationCategory;
+
+      this.configurationsExplorer = Array.from(depotMap.values());
       console.log(this.configurationsExplorer);
-      this.dataSource = this.configurationsExplorer.filter(
-        (item) => item.name !== 'actualLocation'
-      );
+      this.dataSource = this.configurationsExplorer;
       this.spinner.hide();
     });
   }
@@ -385,5 +388,25 @@ export class ConfigurationComponent implements OnInit {
           });
       }
     }
+  }
+
+  isDepotNode(_: number, node: any): boolean {
+    return node.depotId !== undefined;
+  }
+
+  isFileTypeNode(_: number, node: any): boolean {
+    return node.category !== undefined && node.children !== undefined;
+  }
+
+  isChildNode(_: number, node: any): boolean {
+    return node.name !== undefined && node.type !== undefined;
+  }
+
+  trackByDepotId(index: number, depot: any): string {
+    return depot.depotId;
+  }
+
+  trackByFileType(index: number, fileType: any): string {
+    return fileType.category;
   }
 }

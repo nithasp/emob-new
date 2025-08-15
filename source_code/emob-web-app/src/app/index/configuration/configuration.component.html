@@ -16,33 +16,43 @@
           {{ "update" | transloco }}
         </button>
         <div ngbDropdownMenu aria-labelledby="dropdownManual">
-          @for(category of configurationsExplorer; track $index){
-          <button
-            ngbDropdownItem
-            *ngIf="category.name !== 'actualLocation'"
-            [disabled]="category.name != 'actualLocation'"
-            (click)="
-              openUploadFile(category.name, category.name, 'actualLocation')
-            "
-          >
-            <mat-icon class="mr-2">folder</mat-icon>
-            <span class="text-capitalize font-weight-bold">
-              {{ category.name }}
-            </span>
-          </button>
-          @for (item of category.children; track $index) { @if(category.name !=
-          'actualLocation'){
-          <button
-            ngbDropdownItem
-            (click)="openUploadFile(category.name, item.name, item.type!)"
-            class="pl-4"
-          >
-            <mat-icon class="icon-file mr-2">description</mat-icon>
-            <span class="text-capitalize">
-              {{ item.name }}
-            </span>
-          </button>
-          } } }
+          <ng-container *ngFor="let depot of configurationsExplorer; trackBy: trackByDepotId">
+            <button
+              ngbDropdownItem
+              *ngIf="depot.depotId"
+              disabled
+            >
+              <mat-icon class="mr-2">folder</mat-icon>
+              <span class="text-capitalize font-weight-bold">
+                {{ depot.depotName }}
+              </span>
+            </button>
+            <ng-container *ngFor="let fileType of depot.fileType; trackBy: trackByFileType">
+              <button
+                ngbDropdownItem
+                *ngIf="fileType.category"
+                class="pl-4"
+                disabled
+              >
+                <mat-icon class="mr-2">folder</mat-icon>
+                <span class="text-capitalize font-weight-bold">
+                  {{ fileType.category }}
+                </span>
+              </button>
+              <ng-container *ngFor="let child of fileType.children">
+                <button
+                  ngbDropdownItem
+                  (click)="openUploadFile(child.name, child.name, child.type)"
+                  class="pl-5"
+                >
+                  <mat-icon class="icon-file mr-2">insert_drive_file</mat-icon>
+                  <span class="text-capitalize">
+                    {{ child.name }}
+                  </span>
+                </button>
+              </ng-container>
+            </ng-container>
+          </ng-container>
         </div>
       </div>
     </div>
@@ -61,18 +71,72 @@
         [childrenAccessor]="childrenAccessor"
       >
         <mat-tree-node
-          *matTreeNodeDef="let node"
+          *matTreeNodeDef="let depot; when: isDepotNode"
           matTreeNodePadding
-          [class.active]="node.name === selectedNode"
+          [class.active]="depot.depotId === selectedNode"
           style="cursor: pointer"
         >
-          @if( (configurationAllData.actualLocations.length > 0 && node.type ===
-          'actualLocation') || node.type === 'configuration' ){
+          <div
+            matTreeNodeToggle
+            style="display: flex; align-items: center"
+            placement="top"
+            [ngbTooltip]="depot.depotName"
+          >
+            <button mat-icon-button matTreeNodeToggle>
+              <mat-icon class="mat-icon-rtl-mirror">
+                {{ tree.isExpanded(depot) ? "expand_more" : "chevron_right" }}
+              </mat-icon>
+            </button>
+            <div class="icon-category-wrapper">
+              <button mat-icon-button matTreeNodeToggle>
+                <mat-icon class="mat-icon-rtl-mirror icon-category">
+                  folder
+                </mat-icon>
+              </button>
+              <strong>{{ depot.depotName }}</strong>
+            </div>
+          </div>
+        </mat-tree-node>
+
+        <mat-tree-node
+          *matTreeNodeDef="let fileType; when: isFileTypeNode"
+          matTreeNodePadding
+          [class.active]="fileType.category === selectedNode"
+          style="cursor: pointer"
+        >
+          <div
+            matTreeNodeToggle
+            style="display: flex; align-items: center"
+            placement="top"
+            [ngbTooltip]="fileType.category"
+          >
+            <button mat-icon-button matTreeNodeToggle>
+              <mat-icon class="mat-icon-rtl-mirror">
+                {{ tree.isExpanded(fileType) ? "expand_more" : "chevron_right" }}
+              </mat-icon>
+            </button>
+            <div class="icon-category-wrapper">
+              <button mat-icon-button matTreeNodeToggle>
+                <mat-icon class="mat-icon-rtl-mirror icon-category">
+                  folder
+                </mat-icon>
+              </button>
+              <strong>{{ fileType.category }}</strong>
+            </div>
+          </div>
+        </mat-tree-node>
+
+        <mat-tree-node
+          *matTreeNodeDef="let child; when: isChildNode"
+          matTreeNodePadding
+          [class.active]="child.name === selectedNode"
+          style="cursor: pointer"
+        >
           <div
             style="display: flex; align-items: center"
-            (click)="onChangeFile(node.name, node.type, node.blobPath)"
+            (click)="onChangeFile(child.name, child.type, '')"
             placement="top"
-            [ngbTooltip]="node.timestamp"
+            [ngbTooltip]="child.timestamp"
           >
             <button mat-icon-button disabled>
               <div style="text-align: center">
@@ -81,7 +145,7 @@
               </div>
             </button>
             <div>
-              {{ node.name }}
+              {{ child.name }}
             </div>
           </div>
           <span style="flex-grow: 1"></span>
@@ -97,61 +161,18 @@
             >
               <button
                 ngbDropdownItem
-                [hidden]="node.type === 'actualLocation'"
-                (click)="openUploadFile(node.category, node.name, node.type)"
+                [hidden]="child.type === 'actualLocation'"
+                (click)="openUploadFile(child.category, child.name, child.type)"
               >
                 <mat-icon>upload_file</mat-icon>
                 {{ "update_file" | transloco }}
               </button>
               <button
                 ngbDropdownItem
-                (click)="getFileUrl(node.name, node.type, node.blobPath)"
+                (click)="getFileUrl(child.name, child.type, child.blobPath)"
               >
                 <mat-icon>download</mat-icon>
                 {{ "download" | transloco }}
-              </button>
-            </div>
-          </div>
-          }
-        </mat-tree-node>
-
-        <mat-tree-node
-          *matTreeNodeDef="let node; when: hasChild"
-          [cdkTreeNodeTypeaheadLabel]="node.name"
-          style="cursor: pointer"
-          placement="end"
-          [ngbTooltip]="node.timestamp"
-        >
-          <div
-            matTreeNodeToggle
-            matTreeNodePadding
-            [class.active]="node.name === selectedNode"
-          >
-            <button mat-icon-button matTreeNodeToggle>
-              <mat-icon class="mat-icon-rtl-mirror">
-                {{ tree.isExpanded(node) ? "expand_more" : "chevron_right" }}
-              </mat-icon>
-            </button>
-            <mat-icon class="icon-category mr-2">folder</mat-icon>
-            <strong class="text-capitalize">{{ node.name }}</strong>
-          </div>
-
-          <div
-            class="d-inline-block ml-5"
-            ngbDropdown
-            #myDrop="ngbDropdown"
-            *ngIf="node.name === 'actualLocation'"
-          >
-            <button mat-icon-button id="dropdownManual" (focus)="myDrop.open()">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownManual">
-              <button
-                ngbDropdownItem
-                (click)="openUploadFile(node.name, node.name, 'actualLocation')"
-              >
-                <mat-icon>upload_file</mat-icon>
-                {{ "update_file" | transloco }}
               </button>
             </div>
           </div>
