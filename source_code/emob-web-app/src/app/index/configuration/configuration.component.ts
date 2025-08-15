@@ -57,6 +57,7 @@ export class ConfigurationComponent implements OnInit {
   private loadDataConfiguration() {
     this.spinner.show();
     this.configurationService.getConfigurations().subscribe((data) => {
+      console.log(data);
       this.configurationAllData.configurations = data.configurations;
       this.configurationAllData.actualLocations = data.actualLocations;
       const configurationCategory: Categories[] = [];

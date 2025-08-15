@@ -38,6 +38,20 @@ export class ConfigurationService {
               category
               type
               columns
+              depotId
+              depot {
+                companyName
+                depotId
+                depotName
+                latitude
+                longitude
+                inputdata {
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                }
+              }
             }
             actualLocations {
               year
