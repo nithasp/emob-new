@@ -42,7 +42,7 @@
               <ng-container *ngFor="let child of fileType.children">
                 <button
                   ngbDropdownItem
-                  (click)="openUploadFile(child.name, child.name, child.type)"
+                  (click)="openUploadFile(child.name, child.name, child.type, child.depotId)"
                   class="pl-5"
                 >
                   <mat-icon class="icon-file mr-2">insert_drive_file</mat-icon>
@@ -162,7 +162,7 @@
               <button
                 ngbDropdownItem
                 [hidden]="child.type === 'actualLocation'"
-                (click)="openUploadFile(child.category, child.name, child.type)"
+                (click)="openUploadFile(child.category, child.name, child.type, child.depotId)"
               >
                 <mat-icon>upload_file</mat-icon>
                 {{ "update_file" | transloco }}

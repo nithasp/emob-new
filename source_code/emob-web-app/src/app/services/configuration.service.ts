@@ -163,8 +163,7 @@ export class ConfigurationService {
 
   uploadConfiguration(
     file: File,
-    category: string,
-    type: string
+    id: string
   ): Observable<Configuration> {
     return this.apollo
       .mutate<Response>({
@@ -184,8 +183,7 @@ export class ConfigurationService {
         variables: {
           input: {
             file: file,
-            category: category,
-            type: type,
+            id: id,
           },
         },
         context: {

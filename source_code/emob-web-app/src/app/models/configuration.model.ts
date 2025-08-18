@@ -65,3 +65,21 @@ interface InputData {
     createdAt: Date;
     modifiedAt: Date;
 }
+
+export interface ConfigurationExplorerDepot {
+    depotId: string;
+    depotName: string;
+    fileType: ConfigurationExplorerFileType[];
+}
+
+export interface ConfigurationExplorerFileType {
+    category: string;
+    children: ConfigurationExplorerFileTypeChildren[];
+}
+
+export interface ConfigurationExplorerFileTypeChildren {
+    name: string;
+    timestamp: string;
+    type: string;
+    depotId: string;
+}

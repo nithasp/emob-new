@@ -4,6 +4,7 @@ import {
   ActualLocation,
   Categories,
   Configuration,
+  ConfigurationExplorerDepot,
 } from 'src/app/models/configuration.model';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import * as ExcelJS from 'exceljs';
@@ -14,23 +15,6 @@ import { firstValueFrom } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 
-interface Depot {
-  depotId: string;
-  depotName: string;
-  fileType: FileType[];
-}
-
-interface FileType {
-  category: string;
-  children: Child[];
-}
-
-interface Child {
-  name: string;
-  timestamp: string;
-  type: string;
-}
-
 @Component({
   selector: 'app-configuration',
   templateUrl: './configuration.component.html',
@@ -39,7 +23,7 @@ interface Child {
 export class ConfigurationComponent implements OnInit {
   //Categories
   public selectedNode: string | null = null;
-  public configurationsExplorer: Depot[] = [];
+  public configurationsExplorer: ConfigurationExplorerDepot[] = [];
   public readonly configurationAllData: {
     configurations: Configuration[];
     actualLocations: ActualLocation[];
@@ -54,9 +38,9 @@ export class ConfigurationComponent implements OnInit {
   public headers: string[] = [];
   public searchText = '';
   childrenAccessor = (node: any) => {
-    if (node.depotId) {
+    if (Array.isArray(node?.fileType)) {
       return node.fileType;
-    } else if (node.category) {
+    } else if (Array.isArray(node?.children)) {
       return node.children;
     } else {
       return [];
@@ -120,6 +104,7 @@ export class ConfigurationComponent implements OnInit {
             'en-US'
           ),
           type,
+          depotId,
         });
       });
 
@@ -250,10 +235,12 @@ export class ConfigurationComponent implements OnInit {
     }, 500);
   }
 
-  openUploadFile(category: string, name: string, type: string) {
+  openUploadFile(category: string, name: string, type: string, depotId: string) {
     console.log('openUploadFile', category, name, type);
     console.log('name', name);
 
+    console.log('depotId', depotId);
+    
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -275,7 +262,7 @@ export class ConfigurationComponent implements OnInit {
     dialogRef.componentInstance.name = name;
     if (type === 'configuration') {
       const cfg: any = this.configurationAllData.configurations.find(
-        (c) => c.name === name
+        (c) => c.name === name && c.depotId === depotId
       );
       dialogRef.componentInstance.headersColumns = cfg?.columns ?? [];
     }
@@ -283,16 +270,21 @@ export class ConfigurationComponent implements OnInit {
     dialogRef.result
       .then((file: File) => {
         if (file) {
-          this.uploadFile(category, name, type, file);
+          this.uploadFile(category, name, type, file, depotId);
         }
       })
       .catch((error) => {
         console.error('Dialog was dismissed:', error);
       });
   }
-  uploadFile(category: string, name: string, type: string, file: File) {
-    console.log(category, name, type, file);
+
+  uploadFile(category: string, name: string, type: string, file: File, depotId: string) {
+    console.log(category, type, file, depotId);
+    console.log('name', name);
+
+    //return
     this.showSpinner();
+
     if (type === 'actualLocation') {
       this.configurationService
         .uploadActualLocation(file)
@@ -306,13 +298,15 @@ export class ConfigurationComponent implements OnInit {
           this.hiddenSpinner();
         });
     } else if (type === 'configuration') {
-      const configuration = this.configurationAllData.configurations.find(
-        (cat) => cat.name == name
+      const configuration: any = this.configurationAllData.configurations.find(
+        (cat) => cat.name === name && cat.depotId === depotId
       );
-      console.info('check before upload', configuration);
+      console.log('configuration', configuration);
+      console.log('this.configurationAllData.configurations', this.configurationAllData.configurations);
+      
       if (configuration) {
         this.configurationService
-          .uploadConfiguration(file, configuration.category, configuration.type)
+          .uploadConfiguration(file, configuration.id)
           .subscribe((response) => {
             console.log(response);
             this.loadDataConfiguration();
@@ -391,15 +385,20 @@ export class ConfigurationComponent implements OnInit {
   }
 
   isDepotNode(_: number, node: any): boolean {
-    return node.depotId !== undefined;
+    return Array.isArray(node?.fileType);
   }
 
   isFileTypeNode(_: number, node: any): boolean {
-    return node.category !== undefined && node.children !== undefined;
+    return typeof node?.category === 'string' && Array.isArray(node?.children);
   }
 
   isChildNode(_: number, node: any): boolean {
-    return node.name !== undefined && node.type !== undefined;
+    return (
+      typeof node?.name === 'string' &&
+      typeof node?.type === 'string' &&
+      !Array.isArray(node?.children) &&
+      !Array.isArray(node?.fileType)
+    );
   }
 
   trackByDepotId(index: number, depot: any): string {
