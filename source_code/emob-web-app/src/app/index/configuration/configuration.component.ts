@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   ActualLocation,
@@ -21,6 +21,7 @@ import { TranslocoService } from '@jsverse/transloco';
   styleUrl: './configuration.component.scss',
 })
 export class ConfigurationComponent implements OnInit {
+  readonly panelOpenState = signal(false);
   //Categories
   public selectedNode: string | null = null;
   public configurationsExplorer: ConfigurationExplorerDepot[] = [];
