@@ -153,6 +153,7 @@ export function getDescription(
   return enumDescriptions[enumValue] || 'No description available';
 }
 export interface Depot {
+  id: string
   delivery: number;
   index: number;
   is_depot: boolean;
@@ -204,6 +205,8 @@ export interface DataPreOrder {
   ZIPCODE: number | null;
   CUSTOMER_NAME: string;
   ORDERID_ORG: string;
+  CHANNEL: string | null;
+  TEL: string | null;
   ADDRESS: string;
   AUMPHER: string | null;
   PROVINCE: string | null;

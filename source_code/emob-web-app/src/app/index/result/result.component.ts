@@ -213,15 +213,23 @@ export class ResultComponent implements OnInit, AfterViewInit {
             console.log(response);
             this.experiment = { ...response };
             this.expandedElement = [];
-            await this.loadReportData(response.fileUrl.outputReportUrl);
-            await this.loadPlanDetailData(
-              this.experiment.fileUrl.outputPlanDetailUrl
-            );
+            if (response.fileUrl.outputReportUrl) {
+              await this.loadReportData(response.fileUrl.outputReportUrl);
+            }
+            if (this.experiment.fileUrl.outputPlanDetailUrl) {
+              await this.loadPlanDetailData(
+                this.experiment.fileUrl.outputPlanDetailUrl
+              );
+            }
 
-            await this.downloadExcelFromUrlAsJson(response.fileUrl.preOrderUrl);
+            if (response.fileUrl.preOrderUrl) {
+              await this.downloadExcelFromUrlAsJson(response.fileUrl.preOrderUrl);
+            }
 
             this.spinner.hide();
-            await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
+            if (response.fileUrl.outputGeoJsonUrl) {
+              await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
+            }
 
             this.dataRouteInfo.filterPredicate =
               this.multiFilterPredicate.bind(this);
@@ -553,13 +561,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
       target: 'mapResult',
       layers: [
         new TileLayer({
-          source: new XYZ({
-            url: 'https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+          source: new OSM({
             attributions:
-              '&copy;<a href="https://carto.com" target="_blank"> CARTO</a>' +
-              '&copy;<a href="http://openmaptiles.org/" target="_blank"> OpenMapTiles</a>' +
-              '&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank"> OpenStreetMap contributors</a>' +
-              '&copy;<a href="http://map.project-osrm.org" target="_blank"> Project OSRM contributors</a>',
+              '&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank"> OpenStreetMap contributors</a>',
             crossOrigin: 'anonymous',
             cacheSize: 500000,
             tileLoadFunction,

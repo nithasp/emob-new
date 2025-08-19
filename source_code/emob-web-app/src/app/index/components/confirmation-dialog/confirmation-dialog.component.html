@@ -1,12 +1,7 @@
 <div class="modal-header">
   <h4 class="modal-title" id="modal-title">{{ title }}</h4>
-  <button
-    type="button"
-    class="btn-close"
-    aria-label="Close button"
-    aria-describedby="modal-title"
-    (click)="onCancleClick()"
-  ></button>
+  <button type="button" class="btn-close" aria-label="Close button" aria-describedby="modal-title"
+    (click)="onCancleClick()"></button>
 </div>
 <div class="modal-body">
   <p>
@@ -17,21 +12,10 @@
   </p>
 </div>
 <div class="modal-footer">
-  <button
-    type="button"
-    class="btn btn-outline-secondary"
-    (click)="onCancleClick()"
-    [hidden]="disableCancelButton"
-  >
+  <button type="button" class="btn btn-outline-secondary" (click)="onCancleClick()" [hidden]="disableCancelButton">
     {{ "cancel" | transloco }}
   </button>
-  <button
-    type="button"
-    ngbAutofocus
-    mat-raised-button
-    class="bg-custom-primary"
-    (click)="onConfirmClick()"
-  >
+  <button type="button" ngbAutofocus mat-raised-button class="bg-custom-primary" (click)="onConfirmClick()">
     {{ ("confirm" | transloco) || acceptButton }}
   </button>
 </div>

@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   Injectable,
   OnInit,
@@ -31,10 +30,8 @@ import { MatPaginator } from '@angular/material/paginator';
 
 import * as ExcelJS from 'exceljs';
 import {
-  Address,
   Customer,
   CustomerUpdated,
-  DataCustomer,
   DataPreOrder,
   Depot,
   GroupedDataPreOrder,
@@ -49,9 +46,12 @@ import { Constraint } from 'src/app/models/constraint.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Experiment,
+  InputDataItem,
   Result,
   StatusExperiment,
   Validate,
+  Company,
+  MyDepot,
 } from 'src/app/models/experiment.model';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import {
@@ -80,10 +80,19 @@ import { firstValueFrom, take } from 'rxjs';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import { DataService } from 'src/app/services/data.service';
 import { ExportFileService } from 'src/app/services/export-file.service';
-import { set } from 'ol/transform';
+import Text from 'ol/style/Text';
+import Fill from 'ol/style/Fill';
+import Stroke from 'ol/style/Stroke';
 import { TranslocoService } from '@jsverse/transloco';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
+
+export interface FileWithCategory extends File {
+  keyName?: string;
+  displayName?: string;
+  isFirstOfType?: boolean;
+  lastModifiedDate?: Date;
+}
 
 @Injectable()
 export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
@@ -114,28 +123,20 @@ export class RunComponent implements OnInit, AfterViewInit {
   // Condition
   public activeNavId = 1;
   public isUpload!: boolean;
+  public isFileSelectionStep: boolean = true;
   public requiredFileType: string = '.xlsx, .xls';
   readonly validTypes = [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
   ];
-  private readonly requiredColumns: Array<string> = [
-    'ORDERID_ORG',
-    'CHANNEL',
-    'ORDERDATE',
-    'DELIVERYDATE',
-    'ADDRESS',
-    'TUMBOL',
-    'AUMPHER',
-    'PROVICE',
-    'ZIPCODE',
-    'PRODUCTID',
-    'PRODUCTNAME',
-    'QUANTITYMAIN',
-    'QUANTITYMINOR',
-    'DELIVERYDATE_CONFIRM',
-    'ORDER_ID',
-  ];
+
+  private requiredColumns: Array<string> = [];
+  private depotInputDataItems: Array<{
+    keyName: string;
+    displayName: string;
+    columnRequired: string[];
+  }> = [];
+
   public haveUpdateAfterValidated: boolean = false;
   haveValidated = false;
   public isValidateShowMessage = {
@@ -166,7 +167,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   // store data
   public experiment = <Experiment>{};
-  public preOrderFiles: File[] = [];
+  public preOrderFiles: { id: string; file: any }[] = [];
   public popupContent?: { data: Customer; isDepot: boolean } | null;
   private dataPreOrder: Array<PreOrder> = [];
   public groupedDataPreOrder: Partial<GroupedDataPreOrder> = {};
@@ -189,6 +190,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     serviceDurationTime: '',
   };
   public validateExperiment: Validate | null = null;
+  public companyDepotType: string = '';
 
   //display table and virtualization
 
@@ -236,6 +238,12 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   isCreateMode: boolean = false;
+  isFilePreview: boolean = false;
+
+  public depots: MyDepot[] = [];
+  public selectedDepotId: string | null = null;
+  public selectedDepotIds: string[] = [];
+  public inputDataKeys: string[] = [];
 
   constructor(
     private readonly spinner: NgxSpinnerService,
@@ -252,7 +260,15 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly dataService: DataService,
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService
-  ) {}
+  ) { }
+
+  public generateUniqueId(): string {
+    return 'f-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+  }
+
+  get requiredFileTypes(): string[] {
+    return this.depotInputDataItems.map((item) => item.displayName);
+  }
 
   ngOnInit(): void {
     this.spinner.show();
@@ -263,11 +279,11 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.route.params
         .pipe(take(1))
         .subscribe((params: { [x: string]: string }) => {
-          console.log(params);
           this.experimentService
             .getExperiment(params['runId'])
             .subscribe((response: Experiment) => {
               this.experiment = { ...response };
+              console.log('experiment', this.experiment);
               if (this.experiment.status !== StatusExperiment.Initializing) {
                 this.spinner.hide();
                 this.openConfirmDialog(
@@ -313,10 +329,12 @@ export class RunComponent implements OnInit, AfterViewInit {
                       });
                     } else if (!this.experiment.preOrderBlobPath) {
                       this.initializeDefaultParameter();
+                      this.isFilePreview = true;
                     } else {
                       this.initializeDataFromExperiment(
                         this.experiment
                       ).finally(() => {
+                        this.isFileSelectionStep = false;
                         setTimeout(() => {
                           this.toastr.success(
                             this.transloco.translate(
@@ -336,6 +354,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
       this.initIconStyle();
       this.initMap();
+      this.getMyDepots();
       this.getValidateMessage();
     }, 100);
     this.dataSource.paginator = this.paginator; // For pagination
@@ -345,7 +364,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   async initializeDataFromExperiment(experiment: Experiment) {
     console.log("initialize Data From Experiment's historical", experiment);
     // Load Parameter
-    if (experiment.parameterBlobPath) {
+    if (experiment.parameterBlobPath && experiment.fileUrl.parameterUrl) {
       this.dataFromFileUrlToJson(experiment.fileUrl.parameterUrl).then(
         (response: Constraint) => {
           console.log('Constraint', response);
@@ -361,28 +380,39 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.transloco.translate('loading_preorder_data', {}, 'index'),
       `${this.transloco.translate('please_wait', {}, 'index')} ...`
     );
-    // Load PreOrder
-    const isLoadPrOrder = await this.dataFromFileUrlToExcel(
-      experiment.fileUrl.preOrderUrl
+
+    this.preOrderFiles = (experiment.inputdata || []).map(
+      (inputItem: InputDataItem) => {
+        const mockFile = {
+          keyName: inputItem.keyName,
+          name: inputItem.filename,
+          blobPath: inputItem.blobPath,
+          displayName: inputItem.displayName,
+          type: inputItem.fileFormatType,
+          size: inputItem.fileSize,
+        };
+
+        return {
+          id: this.generateUniqueId(),
+          file: mockFile,
+        };
+      }
     );
-    console.log('isLoadPrOrder', isLoadPrOrder);
-    if (!isLoadPrOrder) {
-      this.toastr.warning(
-        this.transloco.translate('cannot_load_data', {}, 'index'),
-        this.transloco.translate('reupload_preorder_file', {}, 'index')
-      );
-    }
+
     this.toastr.info(
       this.transloco.translate('loading_geo_location_data', {}, 'index'),
       `${this.transloco.translate('please_wait', {}, 'index')} ...`
     );
+
     // load geocoding location
-    await this.dataFromFileUrlToJson(
-      experiment.fileUrl.LocationBlobPathUrl
-    ).then((response: Result) => {
-      console.log('Result', response);
-      this.groupingCustomer(response.customers, response.depots);
-    });
+    if (experiment.fileUrl.LocationBlobPathUrl) {
+      await this.dataFromFileUrlToJson(
+        experiment.fileUrl.LocationBlobPathUrl
+      ).then((response: Result) => {
+        console.log('Result', response);
+        this.groupingCustomer(response.customers, response.depots);
+      });
+    }
     if (experiment.fileUrl.locationUpdateBlobPathUrl) {
       this.toastr.info(
         this.transloco.translate('loading_geo_location_data', {}, 'index'),
@@ -410,12 +440,12 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (newData.length > 0) {
                 this.toastr.info(
                   `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                    newData.length +
-                    ` ${this.transloco.translate(
-                      'new_edited_location_data_suffix',
-                      {},
-                      'index'
-                    )}`,
+                  newData.length +
+                  ` ${this.transloco.translate(
+                    'new_edited_location_data_suffix',
+                    {},
+                    'index'
+                  )}`,
                   `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
@@ -479,40 +509,40 @@ export class RunComponent implements OnInit, AfterViewInit {
           (this.page - 1) * this.pageSize + this.pageSize
         ) || [];
   }
-  onFileSelected(files: any) {
-    console.log(files);
-    let file: File;
-    if (files instanceof FileList) {
+  onFileSelected(eventOrFiles: Event | FileList) {
+    let file: File | undefined;
+    if (eventOrFiles instanceof FileList) {
+      if (eventOrFiles.length === 0) return;
+      file = eventOrFiles[0];
+      if (eventOrFiles.length > 1) {
+        this.toastr.warning(
+          this.transloco.translate('cannot_use_multiple_files', {}, 'index')
+        );
+      }
+    } else {
+      const input = eventOrFiles.target as HTMLInputElement | null;
+      const files = input?.files || null;
+      if (!files || files.length === 0) return;
       file = files[0];
       if (files.length > 1) {
         this.toastr.warning(
           this.transloco.translate('cannot_use_multiple_files', {}, 'index')
         );
       }
-    } else {
-      file = files.target.files[0];
-      const target: DataTransfer = <DataTransfer>files.target;
-      if (target.files.length > 1) {
-        this.toastr.warning(
-          this.transloco.translate('cannot_use_multiple_files', {}, 'index')
-        );
-      }
     }
-    if (file) {
-      if (!this.validTypes.includes(file.type)) {
-        this.showInvalidModal(
-          this.transloco.translate('file_invalid', {}, 'index'),
-          this.transloco.translate('select_excel_file', {}, 'index')
-        );
-        this.toastr.error(
-          `${this.transloco.translate('file_invalid', {}, 'index')}:`,
-          file.type
-        );
-      } else {
-        // Proceed with file processing
-        this.uploadFile(file);
-      }
+    if (!file) return;
+    if (!this.validTypes.includes(file.type)) {
+      this.showInvalidModal(
+        this.transloco.translate('file_invalid', {}, 'index'),
+        this.transloco.translate('select_excel_file', {}, 'index')
+      );
+      this.toastr.error(
+        `${this.transloco.translate('file_invalid', {}, 'index')}:`,
+        file.type
+      );
+      return;
     }
+    this.uploadFile(file);
   }
 
   /**
@@ -547,67 +577,251 @@ export class RunComponent implements OnInit, AfterViewInit {
     }, {} as GroupedDataPreOrder);
   }
 
-  async uploadFile(file: File) {
-    const isValid = await this.processExcelFile(file);
-    if (isValid) {
-      console.log('Data is valid');
+  async uploadFile(file: FileWithCategory) {
+    const id = this.generateUniqueId();
 
-      const focusedElement = document.activeElement as HTMLElement;
-      if (focusedElement) {
-        focusedElement.blur();
-      }
-      const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
-        centered: true,
-        animation: true,
-      });
-      dialogRef.componentInstance.title = this.transloco.translate(
-        'upload_preorder_file_confirmation',
-        {},
-        'index'
+    const { isValid, keyName, displayName } =
+      await this.validateSingleFileAgainstDepot(file);
+
+    if (!isValid || !keyName || !displayName) return;
+
+    // Find if a file of this type already exists
+    const index = this.preOrderFiles.findIndex(
+      (f) => f.file.keyName === keyName
+    );
+
+    if (index !== -1) {
+      // Show confirmation dialog before replacing
+      const currentDisplayName = this.preOrderFiles[index].file.displayName;
+      const confirmDialog = this.openConfirmDialog(
+        this.transloco.translate('replace_data_confirmation', {}, 'index'),
+        '',
+        `${this.transloco.translate(
+          'want_to_replace_data_type',
+          {},
+          'index'
+        )} ${currentDisplayName} ${this.transloco.translate(
+          'with_the_new_data',
+          {},
+          'index'
+        )}?`,
+        this.transloco.translate('confirm', {}, 'index'),
+        false
       );
-      dialogRef.componentInstance.question = `${this.transloco.translate(
-        'confirm_to_upload_file',
-        {},
-        'index'
-      )} ?`;
-      dialogRef.componentInstance.message = `${this.transloco.translate(
-        'please_make_sure_to_upload_the_file_and_note_that_there_may_be_a_cost_associated_with_finding_the_location',
-        {},
-        'index'
-      )}.`;
+      confirmDialog.result.then((confirmed: boolean) => {
+        if (confirmed) {
+          file.keyName = keyName;
+          file.displayName = displayName;
+          file.isFirstOfType = true;
+          this.preOrderFiles[index] = { id, file };
+          this.isFilePreview = true;
+        }
+        // If not confirmed, do nothing
+      });
+    } else {
+      file.keyName = keyName;
+      file.displayName = displayName;
+      file.isFirstOfType = true;
+      this.preOrderFiles.push({ id, file });
+      this.isFilePreview = true;
+    }
+  }
 
-      dialogRef.result
-        .then((confirmed: boolean) => {
-          if (confirmed) {
-            this.spinner.show();
-
-            this.preOrderService
-              .uploadPreOrder(this.experiment.runId, file)
-              .subscribe((response: Experiment) => {
-                this.groupingCustomer(
-                  response.result.customers,
-                  response.result.depots
-                );
-                this.preOrderFiles.push(file);
-                this.experiment.name = response.name;
-                this.spinner.hide();
-                this.toastr.success(
-                  `${this.transloco.translate(
-                    'upload_preorder_success',
+  async validateSingleFileAgainstDepot(file: FileWithCategory): Promise<{
+    isValid: boolean;
+    keyName?: string;
+    displayName?: string;
+    isFirstOfType?: boolean;
+  }> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = async (e: ProgressEvent<FileReader>) => {
+        try {
+          const result = e.target?.result;
+          if (!(result instanceof ArrayBuffer)) {
+            resolve({ isValid: false });
+            return;
+          }
+          const arrayBuffer = result;
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.load(arrayBuffer);
+          const worksheet = workbook.getWorksheet(1);
+          if (!worksheet) {
+            const validationErrors = [
+              this.transloco.translate('worksheet_not_found', {}, 'index'),
+            ];
+            this.showInvalidModal(
+              this.transloco.translate('file_invalid', {}, 'index'),
+              validationErrors
+            );
+            resolve({ isValid: false });
+            return;
+          }
+          const columnNames = (
+            worksheet.getRow(1).values as (string | undefined)[]
+          ).filter((value) => typeof value === 'string');
+          const matchingInputDataItem =
+            this.findMatchingInputDataItem(columnNames);
+          if (matchingInputDataItem) {
+            resolve({
+              isValid: true,
+              keyName: matchingInputDataItem.keyName,
+              displayName: matchingInputDataItem.displayName,
+              isFirstOfType: true,
+            });
+          } else {
+            // Show missing columns for each required input data type
+            const validationErrors = [];
+            for (const item of this.depotInputDataItems) {
+              const missingColumns = item.columnRequired.filter(
+                (col) => !columnNames.includes(col)
+              );
+              if (missingColumns.length === item.columnRequired.length) {
+                // All required columns are missing
+                validationErrors.push(
+                  `<strong>${this.transloco.translate(
+                    'file_for',
                     {},
                     'index'
-                  )}.`
+                  )} "${item.displayName}" ${this.transloco.translate(
+                    'missing_columns_as_follows',
+                    {},
+                    'index'
+                  )}</strong><span>:</span> <br/><ul>${item.columnRequired
+                    .map((col) => `<li>${col}</li>`)
+                    .join('')}</ul>`
                 );
-              });
+              } else if (missingColumns.length > 0) {
+                // Some columns are missing
+                validationErrors.push(
+                  `<strong>${this.transloco.translate(
+                    'file_for',
+                    {},
+                    'index'
+                  )}" ${item.displayName}" ${this.transloco.translate(
+                    'missing_columns_as_follows',
+                    {},
+                    'index'
+                  )}</strong><span>:</span> <ul>${missingColumns
+                    .map((col) => `<li>${col}</li>`)
+                    .join('')}</ul>`
+                );
+              }
+            }
+            this.showInvalidModal(
+              `${this.transloco.translate(
+                'column_name_mismatch_template',
+                {},
+                'index'
+              )}`,
+              validationErrors
+            );
+            resolve({ isValid: false });
           }
-        })
-        .catch((error) => {
-          console.error('Dialog was dismissed:', error);
-          this.spinner.hide();
-        });
-    } else {
-      console.log('Data is invalid');
+        } catch (error) {
+          console.error('Error validating file:', error);
+          resolve({ isValid: false });
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  handleUploadSubmit() {
+    // Transform preOrderFiles to newPayload format (send actual File object)
+    const newPayload = this.preOrderFiles.map(({ file }) => ({
+      file,
+      keyName: file.keyName || '',
+    }));
+
+    const focusedElement = document.activeElement as HTMLElement;
+    if (focusedElement) {
+      focusedElement.blur();
     }
+    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      centered: true,
+      animation: true,
+    });
+    dialogRef.componentInstance.title = this.transloco.translate(
+      'upload_file_confirmation',
+      {},
+      'index'
+    );
+    dialogRef.componentInstance.question = `${this.transloco.translate(
+      'do_you_want_to_upload_file',
+      {},
+      'index'
+    )} ?`;
+
+    dialogRef.result
+      .then((confirmed: boolean) => {
+        if (confirmed) {
+          this.spinner.show();
+          // Prepare depotIds (single or multiple selection)
+          let depotIds: string[] = [];
+          if (this.selectedDepotId) {
+            const found = this.depots.find(
+              (d) => d.depotName === this.selectedDepotId
+            );
+            if (found && found.depotId) {
+              depotIds = [found.depotId];
+              depotIds = [found.depotId];
+            }
+          }
+
+          this.preOrderService
+            .uploadPreOrder(this.experiment.runId, depotIds, newPayload)
+            .subscribe((response: Experiment) => {
+              // Refresh experiment data first, then proceed with grouping to ensure latest depots exist
+              this.experimentService
+                .getExperiment(this.experiment.runId)
+                .pipe(take(1))
+                .subscribe(async (exp: Experiment) => {
+                  this.experiment = { ...exp };
+                  if (response.result) {
+                    this.groupingCustomer(
+                      response.result.customers,
+                      response.result.depots
+                    );
+                  }
+
+                  this.experiment.name = response.name;
+                  // Map inputdata to UI structure expected by template
+                  this.preOrderFiles = (this.experiment.inputdata || []).map(
+                    (inputItem: InputDataItem) => {
+                      const mockFile = {
+                        keyName: inputItem.keyName,
+                        name: inputItem.filename,
+                        blobPath: inputItem.blobPath,
+                        displayName: inputItem.displayName,
+                        type: inputItem.fileFormatType,
+                        size: inputItem.fileSize,
+                      };
+                      return {
+                        id: this.generateUniqueId(),
+                        file: mockFile,
+                      };
+                    }
+                  );
+
+                  this.isFilePreview = false;
+                  this.isFileSelectionStep = false;
+                  this.spinner.hide();
+                  this.toastr.success(
+                    `${this.transloco.translate(
+                      'upload_preorder_success',
+                      {},
+                      'index'
+                    )}.`
+                  );
+                });
+            });
+        }
+      })
+      .catch((error) => {
+        console.error('Dialog was dismissed:', error);
+        this.spinner.hide();
+      });
   }
 
   private showInvalidModal(title: string, message: string | string[]): void {
@@ -624,8 +838,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     dialogRef.componentInstance.title = title;
   }
 
-  resetFileInput(event: any): void {
-    event.target.value = null;
+  resetFileInput(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    if (input) input.value = '';
   }
   deleteFileInList(index: number) {
     if (
@@ -702,7 +917,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                   this.transloco.translate('set_default_parameter', {}, 'index')
                 );
               },
-              (error: any) => {
+              (error: unknown) => {
                 this.toastr.error(
                   this.transloco.translate(
                     'set_default_parameter_failed',
@@ -748,34 +963,97 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private loadLocationDepot(depots: Array<Depot>) {
-    this.vectorSourceDepot.clear();
-    let iconLocation = new Style({
-      image: new Icon({
-        anchor: [0.5, 0.5],
-        anchorOrigin: 'bottom-left',
-        anchorXUnits: 'fraction',
-        anchorYUnits: 'pixels',
-        crossOrigin: 'anonymous',
-        opacity: 1,
-        src: `assets/image/depot.png`,
-      }),
+  private loadLocationDepot(incoming: Array<Partial<MyDepot> & { id?: string; name?: string }>) {
+    // Always use the incoming depots array for default selection and display
+    const normalizedIncoming: MyDepot[] = incoming.map((item) => {
+      const nameKey =
+        typeof item.depotName === 'string'
+          ? item.depotName
+          : typeof item.name === 'string'
+            ? item.name
+            : '';
+      const mapped: MyDepot = {
+        depotId: (item.depotId || item.id || '') as string,
+        depotName: nameKey,
+        latitude: Number(item.latitude),
+        longitude: Number(item.longitude),
+        columns: item.columns || [],
+        inputdata: item.inputdata || [],
+        tw_early: item.tw_early || '',
+        tw_late: item.tw_late || '',
+        createdAt: item.createdAt || '',
+        updatedAt: item.updatedAt || '',
+      };
+      return mapped;
     });
 
-    depots.forEach((depot) => {
-      if (depot.latitude && depot.longitude) {
-        const location: Feature = new Feature({
-          geometry: new Point(
-            OlProj.fromLonLat([Number(depot.longitude), Number(depot.latitude)])
-          ),
+    this.depots = normalizedIncoming;
 
-          data: { data: depot, isDepot: true },
-        });
-        location.setStyle(iconLocation);
-        this.vectorSourceDepot.addFeature(location);
-      }
+    if (!this.experiment.depots || this.experiment.depots.length === 0) {
+      this.experiment.depots = normalizedIncoming.map((depot: MyDepot) => ({
+        companyName: this.experiment.companyName,
+        depotId: depot.depotId || '',
+        depotName: depot.depotName,
+        latitude: Number(depot.latitude),
+        longitude: Number(depot.longitude),
+        tw_early: depot.tw_early || '',
+        tw_late: depot.tw_late || '',
+        createdAt: depot.createdAt || '',
+        updatedAt: depot.updatedAt || '',
+        columns: depot.columns || [],
+      }));
+    }
+
+    // Set default selection to the first depot in the incoming list
+    if (this.depots && this.depots.length > 0) {
+      const defaultDepotName =
+        (this.experiment && this.experiment.depots && this.experiment.depots[0]
+          ? this.experiment.depots[0].depotName
+          : this.depots[0].depotName) || this.depots[0].depotName;
+      this.selectedDepotId = defaultDepotName;
+      this.selectedDepotIds = [];
+    } else {
+      this.selectedDepotId = null;
+      this.selectedDepotIds = [];
+      this.inputDataKeys = [];
+      this.depotInputDataItems = [];
+    }
+
+    // Plot all depots on the map
+    this.vectorSourceDepot.clear();
+    const iconWithLabel = (label: string) =>
+      new Style({
+        image: new Icon({
+          anchor: [0.5, 1],
+          anchorOrigin: 'bottom-left',
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          crossOrigin: 'anonymous',
+          opacity: 1,
+          scale: 1,
+          src: `assets/image/depot.png`,
+        }),
+        text: new Text({
+          text: label,
+          offsetY: 25,
+          font: '12px Arial',
+          fill: new Fill({ color: '#000000' }),
+          stroke: new Stroke({ color: '#ffffff', width: 2 }),
+        }),
+      });
+    this.depots.forEach((depot) => {
+      const lon = Number(depot.longitude);
+      const lat = Number(depot.latitude);
+      const coord = OlProj.fromLonLat([lon, lat]);
+      const feature = new Feature({
+        geometry: new Point(coord),
+        data: { data: depot, isDepot: true },
+      });
+      feature.setStyle(iconWithLabel(depot.depotName));
+      this.vectorSourceDepot.addFeature(feature);
     });
   }
+
   private loadLocation(uploadDataGroupCustomers: DataGroup) {
     this.vectorSource.clear();
     Object.keys(uploadDataGroupCustomers).forEach((key: string) => {
@@ -795,7 +1073,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               });
               location.setStyle(
                 this.iconStyle[
-                  uploadDataGroupCustomers[key as keyof DataGroup].type
+                uploadDataGroupCustomers[key as keyof DataGroup].type
                 ]
               );
               this.vectorSource.addFeature(location);
@@ -806,7 +1084,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private popupShow(evt: any, element: any) {
+  private popupShow(evt: any, element: HTMLElement) {
     let coordinates: Coordinate;
     const feature = this.map.forEachFeatureAtPixel(
       evt.pixel,
@@ -860,10 +1138,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       layers: [
         new TileLayer({
           source: new OSM({
-            url: 'https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
             attributions:
-              '&copy;<a href="https://carto.com" "> CARTO</a>' +
-              '&copy;<a href="http://openmaptiles.org/" > OpenMapTiles</a>' +
               '&copy;<a href="https://www.openstreetmap.org/copyright"> OpenStreetMap contributors</a>',
             crossOrigin: 'anonymous',
             cacheSize: 10000,
@@ -957,11 +1232,19 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     if (missingColumns.length > 0) {
       this.showInvalidModal(
-        `${this.transloco.translate('missing_required_columns', {}, 'index')}:`,
+        `${this.transloco.translate(
+          'column_name_mismatch_template',
+          {},
+          'index'
+        )}`,
         missingColumns
       );
       this.toastr.error(
-        `${this.transloco.translate('missing_required_columns', {}, 'index')}:`,
+        `${this.transloco.translate(
+          'column_name_mismatch_template',
+          {},
+          'index'
+        )}`,
         missingColumns.join(',')
       );
       return false;
@@ -1031,6 +1314,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         return false;
       },
     });
+
     const existingIndex = this.customersLocationUpdated.findIndex(
       (item) => item.index === customer.index && item.name === customer.name
     );
@@ -1039,38 +1323,16 @@ export class RunComponent implements OnInit, AfterViewInit {
       modalRef.componentInstance.locationType = LocationType.Edit;
     }
 
-    let dataPreOder: DataPreOrder = {
-      ZIPCODE: customer.original_address.postal_code,
-      CUSTOMER_NAME: customer.extra.customer_name,
-      ORDERID_ORG: customer.name,
-      ADDRESS: customer.original_address.address,
-      AUMPHER: customer.original_address.district,
-      PROVINCE: customer.original_address.province,
-
-      details: customer.extra.products_info.map((product: ProductInfo) => ({
-        PRODUCTID: product.product_id,
-        ORDER_ID: product.order_id,
-        PRODUCTNAME: product.product_name,
-        QUANTITYMAIN: product.quantity_major,
-        QUANTITYMINOR: product.quantity_minor,
-        UserConfirm: product.user_confirm,
-        DateConfirm: product.date_confirm,
-      })),
-    };
-
-    let dataCustomer: DataCustomer = {
+    // Create dataPreOder using primarily customer.extra data
+    const dataPreOder: DataPreOrder = {
       ORDERID_ORG: customer.name,
       CHANNEL: customer.extra.channel,
       CUSTOMER_NAME: customer.extra.customer_name,
       TEL: customer.extra.tel,
+      ADDRESS: customer.original_address.address,
       AUMPHER: customer.original_address.district,
       PROVINCE: customer.original_address.province,
       ZIPCODE: customer.original_address.postal_code,
-      ADDRESS: customer.original_address.address,
-      latitude: customer.latitude,
-      longitude: customer.longitude,
-      validation_type: customer.validation_type,
-      replace_type: customer.replace_type,
       details: customer.extra.products_info.map((product: ProductInfo) => ({
         PRODUCTID: product.product_id,
         ORDER_ID: product.order_id,
@@ -1082,35 +1344,29 @@ export class RunComponent implements OnInit, AfterViewInit {
       })),
     };
 
+    // Pass customer directly as dataCustomer (the component expects Customer type)
     modalRef.componentInstance.dataPreOder = dataPreOder;
-    modalRef.componentInstance.dataCustomer = dataCustomer;
+    modalRef.componentInstance.dataCustomer = customer;
 
-    console.log('customer details previous', customer);
     modalRef.result.then((locationUpdated: Location) => {
-      console.log('new value customer details', locationUpdated);
       if (
-        Number(customer.longitude) != Number(locationUpdated.longitude) &&
-        Number(customer.latitude) != Number(locationUpdated.latitude)
+        Number(customer.longitude) !== Number(locationUpdated.longitude) ||
+        Number(customer.latitude) !== Number(locationUpdated.latitude)
       ) {
+        const updatedCustomer = {
+          node_id: customer.node_id,
+          index: customer.index,
+          name: customer.name,
+          latitude: locationUpdated.latitude,
+          longitude: locationUpdated.longitude,
+        };
+
         if (existingIndex !== -1) {
-          // Replace the existing entry
-          this.customersLocationUpdated[existingIndex] = {
-            node_id: customer.node_id,
-            index: customer.index,
-            name: customer.name,
-            latitude: locationUpdated.latitude,
-            longitude: locationUpdated.longitude,
-          };
+          this.customersLocationUpdated[existingIndex] = updatedCustomer;
         } else {
-          // Add a new entry
-          this.customersLocationUpdated.push({
-            node_id: customer.node_id,
-            index: customer.index,
-            name: customer.name,
-            latitude: locationUpdated.latitude,
-            longitude: locationUpdated.longitude,
-          });
+          this.customersLocationUpdated.push(updatedCustomer);
         }
+
         this.moveCustomerToEdit(customer, locationUpdated);
         this.haveUpdateAfterValidated = true;
         this.dataService.saveData(
@@ -1244,9 +1500,9 @@ export class RunComponent implements OnInit, AfterViewInit {
         next: (result) => {
           this.haveUpdateAfterValidated = false;
           console.log(result);
-          this.validateExperiment = result.result.validate;
+          this.validateExperiment = result.result?.validate || null;
           this.ngbValidationTableCollectionSize =
-            this.validateExperiment.filters.order_data.invalid_coordinate.length;
+            this.validateExperiment?.filters.order_data.invalid_coordinate.length || 0;
           this.dataService.clearData(this.experiment.runId);
           this.refreshValidationTable();
           this.navigateToTab(3);
@@ -1365,6 +1621,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     return dialogRef;
   }
+
   async fetchDataFromFileUrl(url: string) {
     const blob = await firstValueFrom(
       this.configurationService.getDatafromUrl(url)
@@ -1381,133 +1638,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     const jsonData = JSON.parse(text);
 
     return jsonData;
-  }
-  async dataFromFileUrlToExcel(url: string): Promise<boolean> {
-    try {
-      const arrayBuffer = await this.fetchDataFromFileUrl(url);
-      const isReadExcel = await this.readExcel(arrayBuffer);
-      const fileName = 'PreOrder.xlsx';
-      const mimeType =
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
-      const file: File = this.arrayBufferToFile(
-        arrayBuffer,
-        fileName,
-        mimeType
-      );
-      this.preOrderFiles.push(file);
-      return isReadExcel;
-    } catch (error) {
-      this.toastr.error(
-        this.transloco.translate('file_fetch_or_parse_error', {}, 'index')
-      );
-      console.error('Error fetching or parsing file:', error);
-      return false;
-    }
-  }
-
-  private async processExcelFile(file: File): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = async (e: any) => {
-        try {
-          const arrayBuffer = e.target.result;
-          const isReadExcel = await this.readExcel(arrayBuffer);
-          resolve(isReadExcel);
-        } catch (error) {
-          console.error('Error processing Excel file:', error);
-          this.toastr.error(
-            this.transloco.translate('excel_process_failed', {}, 'index')
-          );
-          resolve(false);
-        }
-      };
-
-      reader.onerror = (error) => {
-        console.error('File reading error:', error);
-        this.toastr.error(
-          this.transloco.translate('cannot_read_file', {}, 'index')
-        );
-        reject(false);
-      };
-
-      reader.readAsArrayBuffer(file);
-    });
-  }
-
-  appendExcelData(
-    preOrderData: PreOrder[],
-    worksheet: ExcelJS.Worksheet
-  ): boolean {
-    const columnNames = (
-      worksheet.getRow(1).values as (string | undefined)[]
-    ).filter((value) => typeof value === 'string');
-    console.log('Columns in excel file:', columnNames);
-
-    if (this.validateData(columnNames)) {
-      this.dataPreOrder = preOrderData;
-      this.preOrderCount = this.dataPreOrder.length;
-      this.groupDataById();
-      return true;
-    } else {
-      this.toastr.error(
-        this.transloco.translate('data_validation_failed', {}, 'index')
-      );
-      return false;
-    }
-  }
-
-  async readExcel(arrayBuffer: ArrayBuffer): Promise<boolean> {
-    const workbook = new ExcelJS.Workbook();
-    try {
-      await workbook.xlsx.load(arrayBuffer);
-      const data: PreOrder[] = [];
-      console.log('Worksheet length:', workbook.worksheets.length);
-
-      let worksheet =
-        workbook.getWorksheet('PreOrder') || workbook.worksheets[0];
-
-      if (!worksheet) {
-        this.toastr.warning(
-          this.transloco.translate('worksheet_not_found', {}, 'index')
-        );
-        return false;
-      }
-
-      worksheet.eachRow((row, rowNumber) => {
-        if (rowNumber > 1) {
-          // Assuming the first row is the header
-          const rowData: any = {};
-          row.eachCell((cell, colNumber) => {
-            const header = worksheet.getRow(1).getCell(colNumber)
-              .value as string;
-            rowData[header] = cell.value;
-          });
-          // Correcting the user input template word
-          rowData['PROVINCE'] = rowData['PROVICE'];
-          delete rowData['PROVICE']; // Optionally remove the incorrect key
-          data.push(rowData as PreOrder);
-        }
-      });
-
-      return this.appendExcelData(data, worksheet);
-    } catch (error) {
-      console.error('Error reading Excel file:', error);
-      this.toastr.error(
-        this.transloco.translate('excel_read_failed', {}, 'index')
-      );
-      return false;
-    }
-  }
-
-  arrayBufferToFile(
-    arrayBuffer: ArrayBuffer,
-    fileName: string,
-    mimeType: string
-  ): File {
-    const blob = new Blob([arrayBuffer], { type: mimeType });
-    return new File([blob], fileName, { type: mimeType });
   }
 
   updateCustomerGroup(customers: Array<CustomerUpdated>) {
@@ -1555,6 +1685,11 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
   groupingCustomer(customers: Customer[], depots: Depot[]) {
     this.countUploadedCustomers = customers.length;
+    // Sum all products_info lengths across customers for preOrderCount
+    this.preOrderCount = customers.reduce((sum, customer) => {
+      const products = customer?.extra?.products_info;
+      return sum + (Array.isArray(products) ? products.length : 0);
+    }, 0);
     const groupedCustomer = this.groupCustomers(customers);
     console.log('groupedCustomer', groupedCustomer);
     this.uploadDataGroupCustomers = {
@@ -1581,9 +1716,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
     this.reInitializeDataTable();
     this.loadLocation(this.uploadDataGroupCustomers);
-    this.loadLocationDepot(depots);
+    this.loadLocationDepot(depots as any);
     console.log(this.uploadDataGroupCustomers);
     this.isUpload = true;
+    this.isFileSelectionStep = false;
   }
   isOriginalExperiment(): boolean {
     return this.experiment.run === 'Original';
@@ -1604,7 +1740,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   exportValidationData() {
-    const files: Array<{ data: any; name: string }> = [];
+    const files: Array<{ data: Array<Record<string, string | number>>; name: string }> = [];
     if (
       this.validateExperiment?.filters.order_data &&
       this.validateExperiment?.filters.order_data.invalid_coordinate.length > 0
@@ -1614,12 +1750,12 @@ export class RunComponent implements OnInit, AfterViewInit {
           (customer, i) => ({
             index: i + 1,
             ORDER_ID: customer.name,
-            ADDRESS: customer.original_address.address,
-            SUBDISTRICT: customer.original_address.subdistrict,
-            DISTRICT: customer.original_address.district,
-            PROVINCE: customer.original_address.province,
+            ADDRESS: customer.original_address.address ?? '',
+            SUBDISTRICT: customer.original_address.subdistrict ?? '',
+            DISTRICT: customer.original_address.district ?? '',
+            PROVINCE: customer.original_address.province ?? '',
           })
-        ),
+        ) || [],
         name:
           'Remove_Order_' + this.experiment.name + '_' + this.experiment.runId,
       });
@@ -1628,21 +1764,19 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.validateExperiment?.warning &&
       this.validateExperiment?.warning.zero_weight.length > 0
     ) {
-      console.log(this.validateExperiment?.warning.zero_weight);
       files.push({
         data: this.validateExperiment?.warning.zero_weight.map(
           (customer, i) => ({
             index: i + 1,
             ORDER_ID: customer.name,
-            PRODUCT_ID_ZERO_WEIGHT: customer.metrics?.product_ids.join(','),
-            PRODUCT_ID_MISSING: customer.metrics?.missing_product_ids.join(','),
+            PRODUCT_ID_ZERO_WEIGHT: (customer.metrics?.product_ids || []).join(',') ?? '',
+            PRODUCT_ID_MISSING: (customer.metrics?.missing_product_ids || []).join(',') ?? '',
           })
-        ),
+        ) || [],
         name:
           'Zero_Weight_' + this.experiment.name + '_' + this.experiment.runId,
       });
     }
-    console.log(files);
     this.exportService.exportMultipleCsv(
       files.map((file) => file.data),
       files.map((file) => file.name)
@@ -1710,7 +1844,294 @@ export class RunComponent implements OnInit, AfterViewInit {
       });
   }
 
-  log() {
-    console.log(this.haveUpdateAfterValidated, this.haveValidated);
+  async onDepotSelectionChange() {
+    const depot = this.depots.find((d) => d.depotName === this.selectedDepotId);
+    if (depot) {
+      this.updateDepot([depot]);
+      this.updateInputDataKeysFromDepot(depot);
+    } else {
+      this.inputDataKeys = [];
+      this.depotInputDataItems = [];
+    }
+    await this.validateUploadedFilesAgainstDepot();
+  }
+
+  updateDepot(
+    depots: Array<Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'> & { [key: string]: any }>
+  ) {
+    this.preOrderFiles = [];
+    this.vectorSourceDepot.clear();
+
+    const iconWithLabel = (label: string) =>
+      new Style({
+        image: new Icon({
+          anchor: [0.5, 1],
+          anchorOrigin: 'bottom-left',
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'pixels',
+          crossOrigin: 'anonymous',
+          opacity: 1,
+          scale: 1,
+          src: `assets/image/depot.png`,
+        }),
+        text: new Text({
+          text: label,
+          offsetY: 25,
+          font: '12px Arial',
+          fill: new Fill({ color: '#000000' }),
+          stroke: new Stroke({ color: '#ffffff', width: 2 }),
+        }),
+      });
+
+    depots.forEach((depot) => {
+      const lon = Number(depot.longitude);
+      const lat = Number(depot.latitude);
+      const coord = OlProj.fromLonLat([lon, lat]);
+      const feature = new Feature({
+        geometry: new Point(coord),
+        data: { data: depot, isDepot: true },
+      });
+      feature.setStyle(iconWithLabel(depot.depotName));
+      this.vectorSourceDepot.addFeature(feature);
+    });
+  }
+
+  getMyDepots(showSpinner: boolean = false) {
+    if (showSpinner) {
+      this.spinner.show();
+    }
+
+    this.experimentService.getMyCompany().subscribe({
+      next: (company: Company) => {
+        this.companyDepotType = company.depotType;
+      },
+      error: (error) => {
+        console.error('Error fetching myCompany data:', error);
+        this.toastr.error(error);
+      },
+    });
+
+    this.experimentService.getMyDepots().subscribe({
+      next: (depots: MyDepot[]) => {
+        // Normalize depot structure for compatibility (moved from service)
+        this.depots = (depots || []).map((depot: MyDepot) => ({
+          ...depot,
+          depotName: depot.depotName,
+          latitude: Number(depot.latitude),
+          longitude: Number(depot.longitude),
+          columns: depot.columns || [],
+          inputdata: depot.inputdata || [],
+        }));
+        if (this.depots && this.depots.length > 0) {
+          this.selectedDepotId = this.depots[0].depotName;
+          this.selectedDepotIds = [];
+
+          // Update input data keys from the first depot
+          this.updateInputDataKeysFromDepot(this.depots[0]);
+
+          if (this.selectedDepotId) {
+            localStorage.setItem('selectedDepotId', this.selectedDepotId);
+          }
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching myDepots data:', error);
+        this.toastr.error(error);
+        if (showSpinner) {
+          this.spinner.hide();
+        }
+      },
+      complete: () => {
+        if (showSpinner) {
+          this.spinner.hide();
+        }
+      },
+    });
+  }
+
+  handleInputDataKeyChange(
+    fileObj: { id: string; file: FileWithCategory },
+    event: { value: string }
+  ) {
+    const selectedDisplayName = event.value;
+    const found = this.depotInputDataItems.find(
+      (item) => item.displayName === selectedDisplayName
+    );
+    if (found) {
+      fileObj.file.keyName = found.keyName;
+      fileObj.file.displayName = found.displayName;
+    } else {
+      fileObj.file.keyName = '';
+      fileObj.file.displayName = '';
+    }
+  }
+
+  updateInputDataKeysFromDepot(depot: MyDepot) {
+    // Extract input data items from depot
+    this.depotInputDataItems =
+      depot.inputdata?.map((item) => ({
+        keyName: item.keyName,
+        displayName: item.displayName,
+        columnRequired: item.columnRequired || [],
+      })) || [];
+
+    // Remove duplicates based on keyName and create inputDataKeys array
+    const uniqueItems = this.depotInputDataItems.filter(
+      (item, index, self) =>
+        index === self.findIndex((t) => t.keyName === item.keyName)
+    );
+    this.inputDataKeys = uniqueItems.map((item) => item.displayName);
+  }
+
+  async validateUploadedFilesAgainstDepot() {
+    const validFiles = [];
+    for (const file of this.preOrderFiles) {
+      const isValid = await this.validateFileAgainstDepotRequirements(file);
+      if (isValid) {
+        validFiles.push(file);
+      } else {
+        this.toastr.warning(
+          `File ${file.file.name} does not match current depot requirements and has been removed.`
+        );
+      }
+    }
+    this.preOrderFiles = validFiles;
+  }
+
+  validateFileAgainstDepotRequirements(file: {
+    id: string;
+    file: FileWithCategory;
+  }): Promise<boolean> {
+    // Read the file to get column names
+    return new Promise<boolean>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = async (e: ProgressEvent<FileReader>) => {
+        try {
+          const result = e.target?.result;
+          if (!(result instanceof ArrayBuffer)) {
+            resolve(false);
+            return;
+          }
+          const arrayBuffer = result;
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.load(arrayBuffer);
+
+          const worksheet = workbook.getWorksheet(1);
+          if (!worksheet) {
+            const validationErrors = [
+              this.transloco.translate('worksheet_not_found', {}, 'index'),
+            ];
+            this.showInvalidModal(
+              this.transloco.translate('file_invalid', {}, 'index'),
+              validationErrors
+            );
+            resolve(false);
+            return;
+          }
+
+          const columnNames = (
+            worksheet.getRow(1).values as (string | undefined)[]
+          ).filter((value) => typeof value === 'string');
+
+          // Check if file matches any of the depot's input data requirements
+          const matchingInputDataItem =
+            this.findMatchingInputDataItem(columnNames);
+          if (matchingInputDataItem) {
+            (file.file as FileWithCategory).keyName =
+              matchingInputDataItem.keyName;
+            (file.file as FileWithCategory).displayName =
+              matchingInputDataItem.displayName;
+            // Keep existing files editable when re-validating against depot
+            (file.file as FileWithCategory).isFirstOfType = false;
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        } catch (error) {
+          console.error('Error validating file:', error);
+          resolve(false);
+        }
+      };
+      reader.readAsArrayBuffer(file.file);
+    });
+  }
+
+  findMatchingInputDataItem(
+    columnNames: string[]
+  ): { keyName: string; displayName: string; columnRequired: string[] } | null {
+    return (
+      this.depotInputDataItems.find((item) => {
+        // Check if all required columns are present in the file
+        return item.columnRequired.every((requiredCol) =>
+          columnNames.includes(requiredCol)
+        );
+      }) || null
+    );
+  }
+
+  canExecuteHandleUploadSubmit(): boolean {
+    if (this.preOrderFiles.length === 0) return false;
+    // Check if all depot input data types are covered by uploaded files
+    const requiredDisplayNames = this.depotInputDataItems.map(
+      (item) => item.displayName
+    );
+    const uploadedDisplayNames = this.preOrderFiles
+      .map((f) => (f.file as FileWithCategory).displayName)
+      .filter((cat) => !!cat);
+    // All required types must be covered
+    return requiredDisplayNames.every((required) =>
+      uploadedDisplayNames.includes(required)
+    );
+  }
+
+  backToStep1() {
+    const focusedElement = document.activeElement as HTMLElement;
+    if (focusedElement) {
+      focusedElement.blur();
+    }
+
+    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      centered: true,
+      animation: true,
+    });
+    dialogRef.componentInstance.title = this.transloco.translate(
+      'back_to_upload_step_confirmation',
+      {},
+      'index'
+    );
+    dialogRef.componentInstance.question = this.transloco.translate(
+      'do_you_want_to_back_to_upload_step',
+      {},
+      'index'
+    );
+
+    dialogRef.result
+      .then((confirmed: boolean) => {
+        if (!confirmed) return;
+
+        // Navigate back to first tab (Orders Data)
+        this.activeNavId = 1;
+
+        // Reset step state to upload mode (allow depot selection and file upload)
+        this.isUpload = false;
+        this.isFileSelectionStep = true;
+        this.isFilePreview = true;
+
+        // Clear uploaded files and preview data
+        this.preOrderFiles = [];
+
+        // Clear map orders markers and data-related states
+        if (this.vectorSource) {
+          this.vectorSource.clear();
+        }
+        this.dataPreOrder = [];
+        this.resetComponentValue();
+
+        // Refresh depot list and input requirements from server with spinner
+        this.getMyDepots(true);
+      })
+      .catch(() => {
+        // dismissed: do nothing
+      });
   }
 }

@@ -3,13 +3,13 @@ import { Apollo } from 'apollo-angular';
 import { Observable, ObservableInput, throwError } from 'rxjs';
 import { catchError, map, retry } from 'rxjs/operators';
 import gql from 'graphql-tag';
-
 import { Response } from '../models/graphql.model';
 import {
   DownloadResultFile,
   Experiment,
   ExperimentState,
 } from '../models/experiment.model';
+import { Company, MyDepot } from '../models/experiment.model';
 import { Constraint } from '../models/constraint.model';
 import { Location } from '../models/location.model';
 import { CustomerUpdated } from '../models/pre-order.model';
@@ -17,9 +17,7 @@ import type { Error } from '../models/graphql.model';
 import { ToastrService } from 'ngx-toastr';
 import { ErrorHandlingService } from './handle-error.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class ExperimentService {
   constructor(
     private readonly apollo: Apollo,
@@ -70,6 +68,7 @@ export class ExperimentService {
         this.errorHandlingService.handleError
       );
   }
+
   getExperiment(runId: string): Observable<Experiment> {
     return this.apollo
       .query<Response>({
@@ -91,6 +90,18 @@ export class ExperimentService {
               status
               run
               groupId
+              inputdata
+              depots {
+                companyName
+                depotId
+                depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                createdAt
+                updatedAt
+              }
               fileUrl {
                 parameterUrl
                 preOrderUrl
@@ -310,6 +321,60 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.replicateExperiment),
+        this.errorHandlingService.handleError
+      );
+  }
+
+  getMyCompany(): Observable<Company> {
+    return this.apollo
+      .query<{ myCompany: Company }>({
+        query: gql`
+          query myCompany {
+            myCompany {
+              companyName
+              depotType
+            }
+          }
+        `,
+        fetchPolicy: 'network-only',
+      })
+      .pipe(
+        map((result) => result.data.myCompany),
+        this.errorHandlingService.handleError
+      );
+  }
+
+  getMyDepots(): Observable<MyDepot[]> {
+    return this.apollo
+      .query<{ myDepots: MyDepot[] }>({
+        query: gql`
+          query myDepots {
+            myDepots {
+              depotId
+              depotName
+              latitude
+              longitude
+              tw_early
+              tw_late
+              createdAt
+              updatedAt
+              inputdata {
+                companyName
+                depotId
+                keyName
+                displayName
+                columnRequired
+                fileFormatType
+                createdAt
+                modifiedAt
+              }
+            }
+          }
+        `,
+        fetchPolicy: 'network-only',
+      })
+      .pipe(
+        map((result) => result.data.myDepots),
         this.errorHandlingService.handleError
       );
   }

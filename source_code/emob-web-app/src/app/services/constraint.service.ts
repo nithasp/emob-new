@@ -18,7 +18,8 @@ export class ConstraintService {
     ) { }
 
   getMyParameter():Observable<Constraint>{
-    return this.apollo.query<Response>({
+    return this.apollo.
+    query<Response>({
       query: gql`
       query MyParameter {
         myParameter {

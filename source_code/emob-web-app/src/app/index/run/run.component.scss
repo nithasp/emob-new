@@ -1,14 +1,12 @@
 a:link,
 a:visited {
   text-decoration: none;
-
 }
 
 .excerpt {
   margin-bottom: 10px;
   max-height: 4.6em;
   overflow: hidden;
-
 }
 
 .gray-button {
@@ -74,14 +72,12 @@ button.link-verify {
   width: fit-content;
   color: rgba(86, 87, 89, 0.726);
   display: inline-flex;
-
 }
 
 .dropzone {
   background-color: rgb(240, 242, 246);
   padding: 80px 0px;
   border-radius: 0.5rem;
-
 }
 
 .mat-mdc-button-base {
@@ -139,8 +135,7 @@ button.link-verify {
   min-width: 280px;
 }
 
-
-.text-highlight{
+.text-highlight {
   background-color: #f8d7da;
 }
 
@@ -229,9 +224,6 @@ table {
   transition: 0.3s;
 }
 
-
-
-
 .small-icon-button {
   width: 24px !important;
   height: 24px !important;
@@ -240,7 +232,7 @@ table {
   align-items: center;
   justify-content: center;
 
-  &>*[role=img] {
+  & > *[role="img"] {
     width: 16px;
     height: 16px;
     font-size: 16px;
@@ -257,7 +249,7 @@ table {
   }
 }
 
-.mat-column-No{
+.mat-column-No {
   word-wrap: break-word !important;
   white-space: unset !important;
   flex: 0 0 5% !important;
@@ -359,12 +351,12 @@ tr.mat-mdc-footer-row td {
 }
 
 .table-responsive {
-  height:200px;
-  width:100%;
-  overflow:auto;
+  //height:200px;
+  width: 100%;
+  overflow: auto;
 }
 
-mat-icon{
+mat-icon {
   vertical-align: middle;
 }
 
@@ -377,4 +369,9 @@ mat-icon{
   td {
     place-content: center;
   }
+}
+
+.upload-submit-button {
+  max-width: 80px;
+  width: 100%;
 }

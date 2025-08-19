@@ -169,7 +169,7 @@ export class CustomerDetailsComponent
     });
   }
 
-  private setLocation(customer: Customer, latlong: any) {
+  private setLocation(customer: Customer, latlong: Location) {
     this.vectorSource.clear();
     const location: Feature = new Feature({
       geometry: new Point(
@@ -306,7 +306,7 @@ export class CustomerDetailsComponent
       this.dataCustomer.original_address.address;
 
     dialogRef.result
-      .then((result: any) => {
+      .then((result: Location) => {
         if (result) {
           console.log(result);
           this.location.latitude = Number(result.latitude);

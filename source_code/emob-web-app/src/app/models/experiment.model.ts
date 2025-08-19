@@ -17,22 +17,26 @@ export interface Experiment {
   groupZoneBlobPath: string;
   productMat1BlobPath: string;
   productMat7BlobPath: string;
-  parameterBlobPath: string;
   locationBlobPath: string;
-  validatedBlobPath: string;
-  outputRouteOptimizationBlobPath: string;
-  timeStart: Date;
-  timeEnd: Date;
-  timeDuration: string;
+  locationUpdateBlobPath: string | null;
+  validatedBlobPath: string | null;
+  parameterBlobPath: string | null;
+  outputRouteOptimizationBlobPath: string | null;
+  configurations: ExperimentConfigurations;
+  inputdata: InputDataItem[];
+  depots: ExperimentDepot[];
+  timeStart: string | null;
+  timeEnd: string | null;
+  timeDuration: number | null;
   triggeredBy: string;
   triggeredByName: string;
   status: StatusExperiment;
-  run: 'Original' | 'Rerun';
+  run: string;
   groupId: string;
   countGeocoding: number;
   countReroute: number;
-  result: Result;
-  fileUrl: FileURL;
+  fileUrl: FileUrl;
+  result?: Result;
 }
 
 export enum StatusExperiment {
@@ -44,15 +48,30 @@ export enum StatusExperiment {
   Initializing = 'Initializing',
 }
 
-interface FileURL {
-  parameterUrl: string;
-  preOrderUrl: string;
-  LocationBlobPathUrl: string;
-  locationUpdateBlobPathUrl: string;
-  validatedBlobPathUrl: string;
-  outputGeoJsonUrl:string;
-  outputReportUrl:string;
-  outputPlanDetailUrl:string;
+export interface ExperimentConfigurations {
+  groupZone: string;
+  productMat1: string;
+  productMat7: string;
+}
+
+export interface InputDataItem {
+  keyName: string;
+  filename: string;
+  blobPath: string;
+  displayName: string;
+  fileFormatType: string;
+  fileSize: number;
+}
+
+export interface FileUrl {
+  parameterUrl: string | null;
+  preOrderUrl: string | null;
+  LocationBlobPathUrl: string | null;
+  locationUpdateBlobPathUrl: string | null;
+  validatedBlobPathUrl: string | null;
+  outputGeoJsonUrl: string | null;
+  outputReportUrl: string | null;
+  outputPlanDetailUrl: string | null;
 }
 export interface Result {
   customers: Customer[];
@@ -89,6 +108,43 @@ export interface DownloadResultFile {
   };
 }
 
+export interface Company {
+  companyName: string;
+  depotType: string;
+}
+
+export interface DepotInputRequirement {
+  companyName: string;
+  depotId: string;
+  keyName: string;
+  displayName: string;
+  columnRequired: string[];
+  fileFormatType: string;
+  createdAt: string;
+  modifiedAt: string;
+}
+
+export interface MyDepot {
+  depotId: string;
+  depotName: string;
+  latitude: number | string;
+  longitude: number | string;
+  tw_early: string;
+  tw_late: string;
+  createdAt: string;
+  updatedAt: string;
+  inputdata: DepotInputRequirement[];
+  columns?: string[];
+}
+
+export interface myDepots {
+  depotName: string;
+  latitude: string;
+  longitude: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ExperimentCounts extends Pick<Experiment, 'countGeocoding' | 'countReroute'> {}
 
 export interface PlanDetail {
@@ -113,6 +169,20 @@ export interface PlanDetail {
   TotalItemWeight: number;
   TotalVehicleWeight: number;
   created_date: string;
+}
+
+export interface ExperimentDepot {
+  companyName: string;
+  depotId: string;
+  depotName: string;
+  latitude: number;
+  longitude: number;
+  tw_early: string;
+  tw_late: string;
+  createdAt: string;
+  updatedAt: string;
+  columns?: string[];
+  inputdata?: InputDataItem[];
 }
 
 export interface NodeSheet {
