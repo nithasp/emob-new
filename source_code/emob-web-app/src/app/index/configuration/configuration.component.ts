@@ -5,6 +5,12 @@ import {
   Categories,
   Configuration,
   ConfigurationExplorerDepot,
+  ConfigurationExplorerFileType,
+  ConfigurationExplorerFileTypeChildren,
+  ExplorerNode,
+  ExcelRow,
+  ConfigurationComponentData,
+  FileType,
 } from 'src/app/models/configuration.model';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import * as ExcelJS from 'exceljs';
@@ -21,31 +27,36 @@ import { TranslocoService } from '@jsverse/transloco';
   styleUrl: './configuration.component.scss',
 })
 export class ConfigurationComponent implements OnInit {
-  readonly panelOpenState = signal(false);
+  readonly panelOpenState = signal<boolean>(false);
   //Categories
   public selectedNode: string | null = null;
   public configurationsExplorer: ConfigurationExplorerDepot[] = [];
-  public readonly configurationAllData: {
-    configurations: Configuration[];
-    actualLocations: ActualLocation[];
-  } = { configurations: [], actualLocations: [] };
-  activeColor: Array<string> = [];
+  public readonly configurationAllData: ConfigurationComponentData = {
+    configurations: [],
+    actualLocations: [],
+  };
+  activeColor: string[] = [];
 
   // NgbTable
   currentPage = 1; // Current page
   pageSize = 60;
-  public dataSource: any[] = [];
-  public excelData: any[] = [];
+  public dataSource: ConfigurationExplorerDepot[] = [];
+  public excelData: ExcelRow[] = [];
   public headers: string[] = [];
   public searchText = '';
-  childrenAccessor = (node: any) => {
-    if (Array.isArray(node?.fileType)) {
+  childrenAccessor = (
+    node: ExplorerNode
+  ):
+    | ConfigurationExplorerFileType[]
+    | ConfigurationExplorerFileTypeChildren[]
+    | [] => {
+    if ('fileType' in node) {
       return node.fileType;
-    } else if (Array.isArray(node?.children)) {
-      return node.children;
-    } else {
-      return [];
     }
+    if ('children' in node) {
+      return node.children;
+    }
+    return [];
   };
 
   hasChild = (_: number, node: Categories) =>
@@ -69,7 +80,7 @@ export class ConfigurationComponent implements OnInit {
     this.configurationService.getConfigurations().subscribe((data) => {
       this.configurationAllData.configurations = data.configurations;
       this.configurationAllData.actualLocations = data.actualLocations;
-      const depotMap = new Map();
+      const depotMap = new Map<string, ConfigurationExplorerDepot>();
 
       data.configurations.forEach((configuration) => {
         const depotId = configuration.depotId;
@@ -85,8 +96,10 @@ export class ConfigurationComponent implements OnInit {
           });
         }
 
-        const depot = depotMap.get(depotId);
-        let categoryObj = depot.fileType.find((ft: any) => ft.category === category);
+        const depot = depotMap.get(depotId)!;
+        let categoryObj = depot.fileType.find(
+          (ft: ConfigurationExplorerFileType) => ft.category === category
+        );
 
         if (!categoryObj) {
           categoryObj = {
@@ -119,6 +132,7 @@ export class ConfigurationComponent implements OnInit {
   }
 
   onChangeFile(fileName: string, type: string, blobPath: string) {
+    console.log(fileName, type, blobPath);
     this.showSpinner();
     try {
       this.selectedNode = fileName;
@@ -133,9 +147,10 @@ export class ConfigurationComponent implements OnInit {
               this.hiddenSpinner();
             });
       } else if (type === 'configuration') {
-        const configuration = this.configurationAllData.configurations.find(
-          (configuration) => configuration.name === fileName
-        );
+        const configuration: Configuration | undefined =
+          this.configurationAllData.configurations.find(
+            (configuration) => configuration.name === fileName
+          );
 
         if (configuration) {
           this.configurationService
@@ -178,34 +193,41 @@ export class ConfigurationComponent implements OnInit {
 
       worksheet
         .getRow(1)
-        .eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
-          this.headers[colNumber - 1] =
-            cell.value !== null ? String(cell.value) : `Column ${colNumber}`;
-        });
-
-      worksheet.eachRow((row: any, rowIndex: any) => {
-        if (rowIndex === 1) return;
-        const rowData: any = {};
-        row.eachCell({ includeEmpty: true }, (cell: any, colNumber: any) => {
-          let cellValue = cell.value;
-          if (cellValue === null) {
-            cellValue = 'New Value';
-            switch (typeof cellValue) {
-              case 'string':
-                cellValue = cellValue.trim();
-                break;
-              case 'number':
-                cellValue = Number(cellValue);
-                break;
-              case 'boolean':
-                cellValue = cellValue ? 'Yes' : 'No';
-                break;
-              default:
-                cellValue = String(cellValue);
-            }
+        .eachCell(
+          { includeEmpty: true },
+          (cell: ExcelJS.Cell, colNumber: number) => {
+            this.headers[colNumber - 1] =
+              cell.value !== null ? String(cell.value) : `Column ${colNumber}`;
           }
-          rowData[this.headers[colNumber - 1]] = cellValue;
-        });
+        );
+
+      worksheet.eachRow((row: ExcelJS.Row, rowIndex: number) => {
+        if (rowIndex === 1) return;
+        const rowData: ExcelRow = {};
+        row.eachCell(
+          { includeEmpty: true },
+          (cell: ExcelJS.Cell, colNumber: number) => {
+            let cellValue = cell.value;
+            if (cellValue === null || cellValue === undefined) {
+              cellValue = 'New Value';
+            } else {
+              switch (typeof cellValue) {
+                case 'string':
+                  cellValue = cellValue.trim();
+                  break;
+                case 'number':
+                  cellValue = Number(cellValue);
+                  break;
+                case 'boolean':
+                  cellValue = cellValue ? 'Yes' : 'No';
+                  break;
+                default:
+                  cellValue = String(cellValue);
+              }
+            }
+            rowData[this.headers[colNumber - 1]] = cellValue;
+          }
+        );
         this.excelData.push(rowData);
       });
     } catch (error) {
@@ -228,7 +250,12 @@ export class ConfigurationComponent implements OnInit {
     }, 500);
   }
 
-  openUploadFile(category: string, name: string, type: string, depotId: string) {
+  openUploadFile(
+    category: string,
+    name: string,
+    type: string,
+    depotId: string
+  ) {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -249,9 +276,10 @@ export class ConfigurationComponent implements OnInit {
     dialogRef.componentInstance.type = type;
     dialogRef.componentInstance.name = name;
     if (type === 'configuration') {
-      const cfg: any = this.configurationAllData.configurations.find(
-        (c) => c.name === name && c.depotId === depotId
-      );
+      const cfg: Configuration | undefined =
+        this.configurationAllData.configurations.find(
+          (c) => c.name === name && c.depotId === depotId
+        );
       dialogRef.componentInstance.headersColumns = cfg?.columns ?? [];
     }
 
@@ -266,7 +294,13 @@ export class ConfigurationComponent implements OnInit {
       });
   }
 
-  uploadFile(category: string, name: string, type: string, file: File, depotId: string) {
+  uploadFile(
+    category: string,
+    name: string,
+    type: string,
+    file: File,
+    depotId: string
+  ) {
     this.showSpinner();
 
     if (type === 'actualLocation') {
@@ -281,9 +315,10 @@ export class ConfigurationComponent implements OnInit {
           this.hiddenSpinner();
         });
     } else if (type === 'configuration') {
-      const configuration: any = this.configurationAllData.configurations.find(
-        (cat) => cat.name === name && cat.depotId === depotId
-      );
+      const configuration: Configuration | undefined =
+        this.configurationAllData.configurations.find(
+          (cat) => cat.name === name && cat.depotId === depotId
+        );
 
       if (configuration) {
         this.configurationService
@@ -347,9 +382,10 @@ export class ConfigurationComponent implements OnInit {
             );
           });
     } else if (type === 'configuration') {
-      const configuration = this.configurationAllData.configurations.find(
-        (configuration) => configuration.name === fileName
-      );
+      const configuration: Configuration | undefined =
+        this.configurationAllData.configurations.find(
+          (configuration) => configuration.name === fileName
+        );
 
       if (configuration) {
         this.configurationService
@@ -361,28 +397,48 @@ export class ConfigurationComponent implements OnInit {
     }
   }
 
-  isDepotNode(_: number, node: any): boolean {
-    return Array.isArray(node?.fileType);
-  }
-
-  isFileTypeNode(_: number, node: any): boolean {
-    return typeof node?.category === 'string' && Array.isArray(node?.children);
-  }
-
-  isChildNode(_: number, node: any): boolean {
+  isDepotNode(_: number, node: unknown): node is ConfigurationExplorerDepot {
     return (
-      typeof node?.name === 'string' &&
-      typeof node?.type === 'string' &&
-      !Array.isArray(node?.children) &&
-      !Array.isArray(node?.fileType)
+      typeof node === 'object' &&
+      node !== null &&
+      Array.isArray((node as { fileType?: unknown }).fileType)
     );
   }
 
-  trackByDepotId(index: number, depot: any): string {
+  isFileTypeNode(
+    _: number,
+    node: unknown
+  ): node is ConfigurationExplorerFileType {
+    return (
+      typeof node === 'object' &&
+      node !== null &&
+      typeof (node as { category?: unknown }).category === 'string' &&
+      Array.isArray((node as { children?: unknown }).children)
+    );
+  }
+
+  isChildNode(
+    _: number,
+    node: unknown
+  ): node is ConfigurationExplorerFileTypeChildren {
+    return (
+      typeof node === 'object' &&
+      node !== null &&
+      typeof (node as { name?: unknown }).name === 'string' &&
+      typeof (node as { type?: unknown }).type === 'string' &&
+      !Array.isArray((node as { children?: unknown }).children) &&
+      !Array.isArray((node as { fileType?: unknown }).fileType)
+    );
+  }
+
+  trackByDepotId(index: number, depot: ConfigurationExplorerDepot): string {
     return depot.depotId;
   }
 
-  trackByFileType(index: number, fileType: any): string {
+  trackByFileType(
+    index: number,
+    fileType: ConfigurationExplorerFileType
+  ): string {
     return fileType.category;
   }
 }

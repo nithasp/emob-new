@@ -42,12 +42,15 @@ tr:nth-child(even) {
   background-color: #0e145f;
   color: white;
 }
+
 .icon-category-wrapper {
   margin-left: -16px;
 }
+
 .icon-category {
   color: rgba(255, 214, 99, 255);
 }
+
 .icon-file {
   color: rgba(16, 119, 63, 255);
 }
@@ -56,25 +59,19 @@ tr:nth-child(even) {
   background-color: rgb(223, 149, 149);
 }
 
-#upload-button-expand {
-  .icon-file {
-    //font-size: 24px;
-  }
-}
-
 .icon-folder {
   color: rgba(33,37,41,0.5);
 }
 
-
 ::ng-deep .mat-expansion-panel-body {
-  //padding: 24px 0px !important;
-  padding: 0 !important;
+  padding: 0 0 12px 0 !important;
 }
+
 .configuration-category-wrapper{
   padding-left: 36px !important;
   margin-top: 5px !important;
 }
+
 .configuration-name-wrapper {
   padding-left: 50px !important;
   &:hover {
@@ -82,12 +79,21 @@ tr:nth-child(even) {
     background: #f8f9fa !important;
   }
 }
+
 .configuration-depot-name,
 .configuration-category {
   font-size: 16px;
   color: rgba(33,37,41,0.5);
-
 }
+
+.configuration-depot-name {
+  color: black;
+}
+
+.configuration-depot-name-icon {
+  color: black;
+}
+
 .configuration-name {
   font-size: 16px;
   letter-spacing: 0;
@@ -102,13 +108,18 @@ tr:nth-child(even) {
 }
 .dropdown-menu {
   width: 300px !important;
-  //border: none;
 }
+
 .mat-expanded {
   ::ng-deep .mat-expansion-panel-content {
     margin-top: -15px !important;
   }
 }
+
 ::ng-deep .mat-expansion-panel-body {
   position: relative;
+}
+
+::ng-deep .mat-expansion-panel {
+  box-shadow: none !important;
 }
