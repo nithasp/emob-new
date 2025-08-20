@@ -67,7 +67,6 @@ export class ConfigurationComponent implements OnInit {
   private loadDataConfiguration() {
     this.spinner.show();
     this.configurationService.getConfigurations().subscribe((data) => {
-      console.log(data);
       this.configurationAllData.configurations = data.configurations;
       this.configurationAllData.actualLocations = data.actualLocations;
       const depotMap = new Map();
@@ -110,7 +109,6 @@ export class ConfigurationComponent implements OnInit {
       });
 
       this.configurationsExplorer = Array.from(depotMap.values());
-      console.log(this.configurationsExplorer);
       this.dataSource = this.configurationsExplorer;
       this.spinner.hide();
     });
@@ -121,7 +119,6 @@ export class ConfigurationComponent implements OnInit {
   }
 
   onChangeFile(fileName: string, type: string, blobPath: string) {
-    console.log(fileName, type, blobPath);
     this.showSpinner();
     try {
       this.selectedNode = fileName;
@@ -130,7 +127,6 @@ export class ConfigurationComponent implements OnInit {
           this.configurationService
             .getActualLocation(blobPath)
             .subscribe((data) => {
-              console.log(data);
               this.fetchAndParseExcel(
                 data.children[0].children[0].fileUrl.fileActualLocationUrl
               );
@@ -140,13 +136,11 @@ export class ConfigurationComponent implements OnInit {
         const configuration = this.configurationAllData.configurations.find(
           (configuration) => configuration.name === fileName
         );
-        console.log(configuration);
 
         if (configuration) {
           this.configurationService
             .getConfiguration(configuration.id)
             .subscribe(async (data) => {
-              console.log(data);
               await this.fetchAndParseExcel(data.fileUrl.fileConfigurationUrl);
             });
         }
@@ -174,8 +168,6 @@ export class ConfigurationComponent implements OnInit {
         this.configurationService.getDatafromUrl(url)
       );
       const arrayBuffer = await blob.arrayBuffer();
-      console.log('ArrayBuffer:', arrayBuffer);
-
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.load(arrayBuffer);
 
@@ -237,11 +229,6 @@ export class ConfigurationComponent implements OnInit {
   }
 
   openUploadFile(category: string, name: string, type: string, depotId: string) {
-    console.log('openUploadFile', category, name, type);
-    console.log('name', name);
-
-    console.log('depotId', depotId);
-    
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -280,17 +267,12 @@ export class ConfigurationComponent implements OnInit {
   }
 
   uploadFile(category: string, name: string, type: string, file: File, depotId: string) {
-    console.log(category, type, file, depotId);
-    console.log('name', name);
-
-    //return
     this.showSpinner();
 
     if (type === 'actualLocation') {
       this.configurationService
         .uploadActualLocation(file)
         .subscribe((response) => {
-          console.log(response);
           this.loadDataConfiguration();
           this.toastr.success(
             this.transloco.translate('file_uploaded_successfully', {}, 'index'),
@@ -302,14 +284,11 @@ export class ConfigurationComponent implements OnInit {
       const configuration: any = this.configurationAllData.configurations.find(
         (cat) => cat.name === name && cat.depotId === depotId
       );
-      console.log('configuration', configuration);
-      console.log('this.configurationAllData.configurations', this.configurationAllData.configurations);
-      
+
       if (configuration) {
         this.configurationService
           .uploadConfiguration(file, configuration.id)
           .subscribe((response) => {
-            console.log(response);
             this.loadDataConfiguration();
             this.toastr.success(
               this.transloco.translate(
@@ -363,7 +342,6 @@ export class ConfigurationComponent implements OnInit {
         this.configurationService
           .getActualLocation(blobPath)
           .subscribe((data) => {
-            console.log(data);
             this.downloadFile(
               data.children[0].children[0].fileUrl.fileActualLocationUrl
             );
@@ -372,13 +350,11 @@ export class ConfigurationComponent implements OnInit {
       const configuration = this.configurationAllData.configurations.find(
         (configuration) => configuration.name === fileName
       );
-      console.log(configuration);
 
       if (configuration) {
         this.configurationService
           .getConfiguration(configuration.id)
           .subscribe(async (data) => {
-            console.log(data);
             this.downloadFile(data.fileUrl.fileConfigurationUrl);
           });
       }

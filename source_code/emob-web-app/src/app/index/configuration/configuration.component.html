@@ -41,43 +41,6 @@
       </div>
     </div>
 
-    <div class="col-md-12 mb-3 text-right mt-4">
-      <div id="upload-button-overflow" class="d-inline-block" ngbDropdown #overflowDrop="ngbDropdown">
-        <button mat-raised-button class="me-2 bg-custom-secondary" id="dropdownOverflow" ngbDropdownAnchor
-          (focus)="overflowDrop.open()">
-          <mat-icon>upload_2</mat-icon>
-          {{ "update" | transloco }}
-        </button>
-        <div ngbDropdownMenu aria-labelledby="dropdownOverflow">
-          <ng-container *ngFor="let depot of configurationsExplorer; trackBy: trackByDepotId">
-            <button ngbDropdownItem *ngIf="depot.depotId" disabled>
-              <mat-icon class="mr-2">folder</mat-icon>
-              <span class="text-capitalize font-weight-bold">
-                {{ depot.depotName }}
-              </span>
-            </button>
-            <ng-container *ngFor="let fileType of depot.fileType; trackBy: trackByFileType">
-              <button ngbDropdownItem *ngIf="fileType.category" class="pl-4" disabled>
-                <mat-icon class="mr-2">folder</mat-icon>
-                <span class="text-capitalize font-weight-bold">
-                  {{ fileType.category }}
-                </span>
-              </button>
-              <ng-container *ngFor="let child of fileType.children">
-                <button ngbDropdownItem (click)="openUploadFile(child.name, child.name, child.type, child.depotId)"
-                  class="pl-5">
-                  <mat-icon class="icon-file mr-2">insert_drive_file</mat-icon>
-                  <span class="text-capitalize">
-                    {{ child.name }}
-                  </span>
-                </button>
-              </ng-container>
-            </ng-container>
-          </ng-container>
-        </div>
-      </div>
-    </div>
-
     <div class="col-md-4 border" style="height: 800px; overflow-y: auto; overflow-x: auto">
       <div class="bg-category w-100" style="text-align: center">
         <p class="font-weight-bold text-uppercase h3 p-3">
