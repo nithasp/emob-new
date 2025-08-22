@@ -8,7 +8,8 @@ import {
   MyVehicles,
   VehicleEnumOption,
   VehicleType,
-  Depot,
+  VehicleInput,
+  VehicleUpdateInput,
 } from '../models/vehicle.model';
 
 @Injectable({ providedIn: 'root' })
@@ -32,31 +33,6 @@ export class VehicleService {
       })
       .pipe(
         map((result) => result.data.getEnumValues),
-        this.errorHandlingService.handleError
-      );
-  }
-
-  getMyDepots(): Observable<Depot[]> {
-    return this.apollo
-      .query<Response>({
-        query: gql`
-          query myDepots {
-            myDepots {
-              depotId
-              depotName
-              latitude
-              longitude
-              tw_early
-              tw_late
-              columns
-              createdAt
-              updatedAt
-            }
-          }
-        `,
-      })
-      .pipe(
-        map((result) => result.data.myDepots),
         this.errorHandlingService.handleError
       );
   }
@@ -129,7 +105,6 @@ export class VehicleService {
                 longitude
                 tw_early
                 tw_late
-                columns
                 createdAt
                 updatedAt
               }
@@ -140,7 +115,6 @@ export class VehicleService {
                 longitude
                 tw_early
                 tw_late
-                columns
                 createdAt
                 updatedAt
               }
@@ -238,61 +212,85 @@ export class VehicleService {
       );
   }
 
-  createVehicle(input: any): Observable<MyVehicles> {
+  createVehicle(input: VehicleInput): Observable<any> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
           mutation createVehicle($input: VehicleInput!) {
             createVehicle(input: $input) {
-              companyName
-              vehicleIds
-              licensePlate
-              startDepotId {
-                depotId
-                depotName
-                latitude
-                longitude
-                tw_early
-                tw_late
-                columns
-                createdAt
-                updatedAt
-              }
-              endDepotId {
-                depotId
-                depotName
-                latitude
-                longitude
-                tw_early
-                tw_late
-                columns
-                createdAt
-                updatedAt
-              }
-              vehicleTypeId
-              vehicleType {
+              vehicles {
+                companyName
+                vehicleIds
+                licensePlate
+                startDepotId {
+                  companyName
+                  depotId
+                  depotName
+                  latitude
+                  longitude
+                  tw_early
+                  tw_late
+                  createdAt
+                  updatedAt
+                  inputdata {
+                    companyName
+                    depotId
+                    keyName
+                    displayName
+                    columnRequired
+                    fileFormatType
+                    createdAt
+                    modifiedAt
+                  }
+                }
+                endDepotId {
+                  companyName
+                  depotId
+                  depotName
+                  latitude
+                  longitude
+                  tw_early
+                  tw_late
+                  createdAt
+                  updatedAt
+                  inputdata {
+                    companyName
+                    depotId
+                    keyName
+                    displayName
+                    columnRequired
+                    fileFormatType
+                    createdAt
+                    modifiedAt
+                  }
+                }
                 vehicleTypeId
-                name
-                width
-                height
-                length
-                access
-                capacity
-                volume
-                twEarly
-                twLate
-                maxDistance
-                maxDuration
-                fixedCost
-                unitDistanceCost
-                unitDurationCost
-                vehicleProfileType
+                vehicleType {
+                  vehicleTypeId
+                  name
+                  width
+                  height
+                  length
+                  access
+                  capacity
+                  volume
+                  twEarly
+                  twLate
+                  maxDistance
+                  maxDuration
+                  fixedCost
+                  unitDistanceCost
+                  unitDurationCost
+                  vehicleProfileType
+                  createdAt
+                  modifiedAt
+                }
+                isActive
                 createdAt
                 modifiedAt
               }
-              isActive
-              createdAt
-              modifiedAt
+              duplicates
+              message
             }
           }
         `,
@@ -306,7 +304,7 @@ export class VehicleService {
       );
   }
 
-  updateVehicle(vehicleIds: string, input: any): Observable<MyVehicles> {
+  updateVehicle(vehicleIds: string, input: VehicleUpdateInput): Observable<MyVehicles> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
@@ -319,26 +317,46 @@ export class VehicleService {
               vehicleIds
               licensePlate
               startDepotId {
+                companyName
                 depotId
                 depotName
                 latitude
                 longitude
                 tw_early
                 tw_late
-                columns
                 createdAt
                 updatedAt
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  createdAt
+                  modifiedAt
+                }
               }
               endDepotId {
+                companyName
                 depotId
                 depotName
                 latitude
                 longitude
                 tw_early
                 tw_late
-                columns
                 createdAt
                 updatedAt
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  createdAt
+                  modifiedAt
+                }
               }
               vehicleTypeId
               vehicleType {

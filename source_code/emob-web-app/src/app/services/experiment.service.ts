@@ -9,6 +9,7 @@ import {
   DownloadResultFile,
   Experiment,
   ExperimentState,
+  MyDepot,
 } from '../models/experiment.model';
 import { Constraint } from '../models/constraint.model';
 import { Location } from '../models/location.model';
@@ -310,6 +311,41 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.replicateExperiment),
+        this.errorHandlingService.handleError
+      );
+  }
+
+  getMyDepots(): Observable<MyDepot[]> {
+    return this.apollo
+      .query<{ myDepots: MyDepot[] }>({
+        query: gql`
+          query myDepots {
+            myDepots {
+              depotId
+              depotName
+              latitude
+              longitude
+              tw_early
+              tw_late
+              createdAt
+              updatedAt
+              inputdata {
+                companyName
+                depotId
+                keyName
+                displayName
+                columnRequired
+                fileFormatType
+                createdAt
+                modifiedAt
+              }
+            }
+          }
+        `,
+        fetchPolicy: 'network-only',
+      })
+      .pipe(
+        map((result) => result.data.myDepots),
         this.errorHandlingService.handleError
       );
   }

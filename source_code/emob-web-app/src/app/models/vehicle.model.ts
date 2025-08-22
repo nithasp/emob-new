@@ -75,11 +75,18 @@ export const VehicleEnumConfigs = [
   }
 ];
 
-export interface UpdateVehicleInput {
-  licensePlate?: string;
-  startDepotId?: string;
-  endDepotId?: string;
-  vehicleTypeId?: string;
+export interface VehicleInput {
+  licensePlates: string[];
+  startDepotId: string;
+  endDepotId: string;
+  vehicleTypeId: string;
+}
+
+export interface VehicleUpdateInput {
+  licensePlate: string;
+  startDepotId: string;
+  endDepotId: string;
+  vehicleTypeId: string;
   isActive?: boolean;
 }
 

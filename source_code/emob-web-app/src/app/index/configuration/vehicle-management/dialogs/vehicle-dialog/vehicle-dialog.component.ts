@@ -1,17 +1,17 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import {
   FormBuilder,
-  FormControl,
   FormGroup,
   Validators,
 } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { VehicleService } from 'src/app/services/vehicle.service';
+import { ExperimentService } from 'src/app/services/experiment.service';
 import {
   VehicleType,
   Depot,
   MyVehicles,
-  UpdateVehicleInput,
+  VehicleUpdateInput,
 } from 'src/app/models/vehicle.model';
 import { forkJoin } from 'rxjs';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -43,6 +43,7 @@ export class VehicleDialogComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<VehicleDialogComponent>,
+    private experimentService: ExperimentService,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
@@ -103,7 +104,7 @@ export class VehicleDialogComponent implements OnInit {
     // First, load vehicle types and depots
     const baseObservables = {
       vehicleTypes: this.vehicleService.getMyVehicleTypes(),
-      depots: this.vehicleService.getMyDepots(),
+      depots: this.experimentService.getMyDepots(),
     };
 
     forkJoin(baseObservables)
@@ -113,7 +114,7 @@ export class VehicleDialogComponent implements OnInit {
         })
       )
       .subscribe({
-        next: (data: { vehicleTypes: VehicleType[]; depots: Depot[] }) => {
+        next: (data: { vehicleTypes: VehicleType[]; depots: any }) => {
           this.vehicleTypeOptions = data.vehicleTypes;
           this.startDepotOptions = data.depots;
           this.endDepotOptions = data.depots;
@@ -301,7 +302,7 @@ export class VehicleDialogComponent implements OnInit {
       typeof formValues.endDepot === 'object' && formValues.endDepot !== null
         ? (formValues.endDepot as Depot).depotId
         : formValues.endDepot;
-    const payload: UpdateVehicleInput = {
+    const payload: VehicleUpdateInput = {
       vehicleTypeId: formValues.vehicleType!,
       startDepotId: startDepotId!,
       endDepotId: endDepotId!,
