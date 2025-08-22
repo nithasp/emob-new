@@ -15,6 +15,7 @@ import {
   VehicleCreationResult,
   VehicleInput,
 } from 'src/app/models/vehicle.model';
+import { MyDepot } from 'src/app/models/experiment.model';
 import { forkJoin } from 'rxjs';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { finalize } from 'rxjs/operators';
@@ -39,8 +40,8 @@ export class VehicleDialogComponent implements OnInit {
   isViewMode: boolean = false;
 
   vehicleTypeOptions: VehicleType[] = [];
-  startDepotOptions: Depot[] = [];
-  endDepotOptions: Depot[] = [];
+  startDepotOptions: MyDepot[] = [];
+  endDepotOptions: MyDepot[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -68,8 +69,8 @@ export class VehicleDialogComponent implements OnInit {
   initializeForm(): void {
     this.form = this.fb.group<VehicleFormControls>({
       vehicleType: this.fb.control<string | null>('', [Validators.required]),
-      startDepot: this.fb.control<Depot | string | null>('', [Validators.required]),
-      endDepot: this.fb.control<Depot | string | null>('', [Validators.required]),
+      startDepot: this.fb.control<string | null>('', [Validators.required]),
+      endDepot: this.fb.control<string | null>('', [Validators.required]),
       licensePlate: this.fb.control<string | null>(''),
     });
 
@@ -77,7 +78,6 @@ export class VehicleDialogComponent implements OnInit {
       this.form.controls.licensePlate.setValidators([Validators.required]);
     }
 
-    // Initialize license plate duplicate validator
     this.updateLicensePlateValidators();
 
     if (this.isViewMode) {
@@ -88,12 +88,10 @@ export class VehicleDialogComponent implements OnInit {
   updateLicensePlateValidators(): void {
     const validators = [];
 
-    // Add required validator if in edit or view mode
     if (this.isEditMode || this.isViewMode) {
       validators.push(Validators.required);
     }
 
-    // Add duplicate validator
     validators.push(licensePlateDuplicateValidator(this.licensePlates));
 
     this.form.controls.licensePlate.setValidators(validators);
@@ -103,7 +101,6 @@ export class VehicleDialogComponent implements OnInit {
   loadData(): void {
     this.isLoading = true;
 
-    // First, load vehicle types and depots
     const baseObservables = {
       vehicleTypes: this.vehicleService.getMyVehicleTypes(),
       depots: this.experimentService.getMyDepots(),
@@ -116,12 +113,11 @@ export class VehicleDialogComponent implements OnInit {
         })
       )
       .subscribe({
-        next: (data: { vehicleTypes: VehicleType[]; depots: any }) => {
+        next: (data: { vehicleTypes: VehicleType[]; depots: MyDepot[] }) => {
           this.vehicleTypeOptions = data.vehicleTypes;
           this.startDepotOptions = data.depots;
           this.endDepotOptions = data.depots;
 
-          // If in edit or view mode, fetch fresh vehicle data and patch form
           if (
             (this.isEditMode || this.isViewMode) &&
             this.data.vehicle?.vehicleIds
@@ -145,11 +141,10 @@ export class VehicleDialogComponent implements OnInit {
 
     this.vehicleService.getMyVehicle(this.data.vehicle.vehicleIds).subscribe({
       next: (vehicleData: MyVehicles) => {
-        // Always use fresh data from API to patch the form
         this.form.patchValue({
           vehicleType: vehicleData.vehicleTypeId,
-          startDepot: vehicleData.startDepotId,
-          endDepot: vehicleData.endDepotId,
+          startDepot: vehicleData.startDepotId?.depotId,
+          endDepot: vehicleData.endDepotId?.depotId,
           licensePlate: vehicleData.licensePlate,
         });
 
@@ -225,28 +220,28 @@ export class VehicleDialogComponent implements OnInit {
       .then((confirmed: boolean) => {
         if (confirmed) {
           if (action === 'create') {
-            this.handleCreate();
+            this.handleCreateVehicle();
           } else if (action === 'update') {
-            this.handleUpdate();
+            this.handleUpdateVehicle();
           } else if (action === 'delete') {
-            this.handleDelete();
+            this.handleDeleteVehicle();
           }
         }
       })
       .catch(() => {});
   }
 
-  private handleCreate(): void {
+  handleCreateVehicle(): void {
     this.isSaving = true;
     const formValues = this.form.value;
     const startDepotId =
       typeof formValues.startDepot === 'object' &&
       formValues.startDepot !== null
-        ? (formValues.startDepot as Depot).depotId
+        ? (formValues.startDepot as MyDepot).depotId
         : formValues.startDepot;
     const endDepotId =
       typeof formValues.endDepot === 'object' && formValues.endDepot !== null
-        ? (formValues.endDepot as Depot).depotId
+        ? (formValues.endDepot as MyDepot).depotId
         : formValues.endDepot;
     const payload: VehicleInput = {
       vehicleTypeId: formValues.vehicleType!,
@@ -261,7 +256,6 @@ export class VehicleDialogComponent implements OnInit {
       .subscribe({
         next: (result: VehicleCreationResult) => {
           this.isSaving = false;
-          // Extract the first vehicle from the result
           const newVehicle = result.vehicles[0];
           if (newVehicle) {
             this.toastr.success(
@@ -297,17 +291,17 @@ export class VehicleDialogComponent implements OnInit {
       });
   }
 
-  private handleUpdate(): void {
+  handleUpdateVehicle(): void {
     this.isSaving = true;
     const formValues = this.form.value;
     const startDepotId =
       typeof formValues.startDepot === 'object' &&
       formValues.startDepot !== null
-        ? (formValues.startDepot as Depot).depotId
+        ? (formValues.startDepot as MyDepot).depotId
         : formValues.startDepot;
     const endDepotId =
       typeof formValues.endDepot === 'object' && formValues.endDepot !== null
-        ? (formValues.endDepot as Depot).depotId
+        ? (formValues.endDepot as MyDepot).depotId
         : formValues.endDepot;
     const payload: VehicleUpdateInput = {
       vehicleTypeId: formValues.vehicleType!,
@@ -347,7 +341,7 @@ export class VehicleDialogComponent implements OnInit {
       });
   }
 
-  private handleDelete(): void {
+  handleDeleteVehicle(): void {
     if (this.data.vehicle && this.data.vehicle.vehicleIds) {
       this.isSaving = true;
       this.spinner.show();

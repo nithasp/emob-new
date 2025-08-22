@@ -1,10 +1,11 @@
 import { FormControl } from '@angular/forms';
 import { AccessTypeEnum, Depot } from './vehicle.model';
+import { MyDepot } from './experiment.model';
 
 export interface VehicleFormControls {
   vehicleType: FormControl<string | null>;
-  startDepot: FormControl<Depot | string | null>;
-  endDepot: FormControl<Depot | string | null>;
+  startDepot: FormControl<string | null>;
+  endDepot: FormControl<string | null>;
   licensePlate: FormControl<string | null>;
 }
 
