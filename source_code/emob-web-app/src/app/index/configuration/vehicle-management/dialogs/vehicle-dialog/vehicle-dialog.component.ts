@@ -12,6 +12,8 @@ import {
   Depot,
   MyVehicles,
   VehicleUpdateInput,
+  VehicleCreationResult,
+  VehicleInput,
 } from 'src/app/models/vehicle.model';
 import { forkJoin } from 'rxjs';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -64,11 +66,11 @@ export class VehicleDialogComponent implements OnInit {
   }
 
   initializeForm(): void {
-    this.form = this.fb.group({
-      vehicleType: ['', [Validators.required]],
-      startDepot: ['', [Validators.required]],
-      endDepot: ['', [Validators.required]],
-      licensePlate: [''],
+    this.form = this.fb.group<VehicleFormControls>({
+      vehicleType: this.fb.control<string | null>('', [Validators.required]),
+      startDepot: this.fb.control<Depot | string | null>('', [Validators.required]),
+      endDepot: this.fb.control<Depot | string | null>('', [Validators.required]),
+      licensePlate: this.fb.control<string | null>(''),
     });
 
     if (this.isEditMode || this.isViewMode) {
@@ -246,13 +248,7 @@ export class VehicleDialogComponent implements OnInit {
       typeof formValues.endDepot === 'object' && formValues.endDepot !== null
         ? (formValues.endDepot as Depot).depotId
         : formValues.endDepot;
-    type CreateVehicleInput = {
-      vehicleTypeId: string;
-      startDepotId: string;
-      endDepotId: string;
-      licensePlates: string[];
-    };
-    const payload: CreateVehicleInput = {
+    const payload: VehicleInput = {
       vehicleTypeId: formValues.vehicleType!,
       startDepotId: startDepotId!,
       endDepotId: endDepotId!,
@@ -263,19 +259,30 @@ export class VehicleDialogComponent implements OnInit {
       .createVehicle(payload)
       .pipe(finalize(() => this.spinner.hide()))
       .subscribe({
-        next: (newVehicle: MyVehicles) => {
+        next: (result: VehicleCreationResult) => {
           this.isSaving = false;
-          this.toastr.success(
-            this.transloco.translate(
-              'vehicleManagement.vehicle_created_successfully'
-            ),
-            this.transloco.translate('success')
-          );
-          this.dialogRef.close({
-            success: true,
-            operation: 'create',
-            vehicle: newVehicle,
-          });
+          // Extract the first vehicle from the result
+          const newVehicle = result.vehicles[0];
+          if (newVehicle) {
+            this.toastr.success(
+              this.transloco.translate(
+                'vehicleManagement.vehicle_created_successfully'
+              ),
+              this.transloco.translate('success')
+            );
+            this.dialogRef.close({
+              success: true,
+              operation: 'create',
+              vehicle: newVehicle,
+            });
+          } else {
+            this.toastr.error(
+              this.transloco.translate(
+                'vehicleManagement.failed_to_create_vehicle'
+              ),
+              this.transloco.translate('error')
+            );
+          }
         },
         error: (error: unknown) => {
           console.error('Error creating vehicle:', error);

@@ -10,6 +10,8 @@ import {
   VehicleType,
   VehicleInput,
   VehicleUpdateInput,
+  VehicleCreationResult,
+  Vehicle,
 } from '../models/vehicle.model';
 
 @Injectable({ providedIn: 'root' })
@@ -49,10 +51,22 @@ export class VehicleService {
               startDepotId {
                 depotId
                 depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                createdAt
+                updatedAt
               }
               endDepotId {
                 depotId
                 depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                createdAt
+                updatedAt
               }
               vehicleTypeId
               vehicleType {
@@ -195,10 +209,26 @@ export class VehicleService {
     return this.apollo
       .query<Response>({
         query: gql`
-          query myVehicle($vehicleTypeId: String!) {
-            myVehicle(vehicleTypeId: $vehicleTypeId) {
+          query myVehicleType($vehicleTypeId: String!) {
+            myVehicleType(vehicleTypeId: $vehicleTypeId) {
               vehicleTypeId
               name
+              width
+              height
+              length
+              access
+              capacity
+              volume
+              twEarly
+              twLate
+              maxDistance
+              maxDuration
+              fixedCost
+              unitDistanceCost
+              unitDurationCost
+              vehicleProfileType
+              createdAt
+              modifiedAt
             }
           }
         `,
@@ -212,7 +242,7 @@ export class VehicleService {
       );
   }
 
-  createVehicle(input: VehicleInput): Observable<any> {
+  createVehicle(input: VehicleInput): Observable<VehicleCreationResult> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
@@ -223,7 +253,6 @@ export class VehicleService {
                 vehicleIds
                 licensePlate
                 startDepotId {
-                  companyName
                   depotId
                   depotName
                   latitude
@@ -232,19 +261,8 @@ export class VehicleService {
                   tw_late
                   createdAt
                   updatedAt
-                  inputdata {
-                    companyName
-                    depotId
-                    keyName
-                    displayName
-                    columnRequired
-                    fileFormatType
-                    createdAt
-                    modifiedAt
-                  }
                 }
                 endDepotId {
-                  companyName
                   depotId
                   depotName
                   latitude
@@ -253,16 +271,6 @@ export class VehicleService {
                   tw_late
                   createdAt
                   updatedAt
-                  inputdata {
-                    companyName
-                    depotId
-                    keyName
-                    displayName
-                    columnRequired
-                    fileFormatType
-                    createdAt
-                    modifiedAt
-                  }
                 }
                 vehicleTypeId
                 vehicleType {
@@ -317,7 +325,6 @@ export class VehicleService {
               vehicleIds
               licensePlate
               startDepotId {
-                companyName
                 depotId
                 depotName
                 latitude
@@ -326,19 +333,8 @@ export class VehicleService {
                 tw_late
                 createdAt
                 updatedAt
-                inputdata {
-                  companyName
-                  depotId
-                  keyName
-                  displayName
-                  columnRequired
-                  fileFormatType
-                  createdAt
-                  modifiedAt
-                }
               }
               endDepotId {
-                companyName
                 depotId
                 depotName
                 latitude
@@ -347,16 +343,6 @@ export class VehicleService {
                 tw_late
                 createdAt
                 updatedAt
-                inputdata {
-                  companyName
-                  depotId
-                  keyName
-                  displayName
-                  columnRequired
-                  fileFormatType
-                  createdAt
-                  modifiedAt
-                }
               }
               vehicleTypeId
               vehicleType {
@@ -430,7 +416,6 @@ export class VehicleService {
                 longitude
                 tw_early
                 tw_late
-                columns
                 createdAt
                 updatedAt
               }
@@ -441,7 +426,6 @@ export class VehicleService {
                 longitude
                 tw_early
                 tw_late
-                columns
                 createdAt
                 updatedAt
               }

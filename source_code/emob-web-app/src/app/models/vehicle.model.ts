@@ -1,10 +1,14 @@
 export interface Vehicle {
-  availableCar: number;
-  limitVehicleCapacity: number;
-  deliveryTime: string;
-  backToDepotTime: string;
-  maxTravelDistance: number;
-  MaxWorkDuration: number;
+  companyName: string;
+  vehicleIds: string;
+  licensePlate: string;
+  startDepotId: Depot;
+  endDepotId: Depot;
+  vehicleTypeId: string;
+  vehicleType: VehicleType;
+  isActive: boolean;
+  createdAt: string;
+  modifiedAt: string;
 }
 
 export interface Depot {
@@ -14,7 +18,6 @@ export interface Depot {
   longitude: number;
   tw_early: string;
   tw_late: string;
-  columns: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -23,8 +26,8 @@ export interface MyVehicles {
   companyName: string;
   vehicleIds: string;
   licensePlate: string;
-  startDepotId: string;
-  endDepotId: string;
+  startDepotId: Depot;
+  endDepotId: Depot;
   vehicleTypeId: string;
   vehicleType: VehicleType;
   isActive: boolean;
@@ -38,7 +41,7 @@ export interface VehicleType {
   width: number;
   height: number;
   length: number;
-  access: AccessType[];
+  access: AccessTypeEnum[];
   capacity: number;
   volume: number;
   twEarly: number;
@@ -48,18 +51,23 @@ export interface VehicleType {
   fixedCost: number;
   unitDistanceCost: number;
   unitDurationCost: number;
-  vehicleProfileType: string;
+  vehicleProfileType: VehicleProfileTypeEnum;
   createdAt: string;
   modifiedAt: string;
 }
 
-export enum AccessType {
+export enum AccessTypeEnum {
   FRONT = "FRONT",
   REAR = "REAR",
   LEFT = "LEFT",
   RIGHT = "RIGHT",
   TOP = "TOP",
   BOTTOM = "BOTTOM",
+}
+
+export enum VehicleProfileTypeEnum {
+  CAR = "CAR",
+  TRUCK = "TRUCK",
 }
 
 export const VehicleEnumConfigs = [
@@ -88,6 +96,12 @@ export interface VehicleUpdateInput {
   endDepotId: string;
   vehicleTypeId: string;
   isActive?: boolean;
+}
+
+export interface VehicleCreationResult {
+  vehicles: Vehicle[];
+  duplicates: string[];
+  message: string;
 }
 
 export interface VehicleEnumOption {

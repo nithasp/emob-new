@@ -14,7 +14,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
 import {
   VehicleType,
-  AccessType,
+  AccessTypeEnum,
   VehicleEnumOption,
   VehicleEnumConfigs,
   TimeObject,
@@ -136,9 +136,9 @@ export class VehicleTypeDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  onAccessPointChange(event: MatCheckboxChange, accessPoint: AccessType): void {
+  onAccessPointChange(event: MatCheckboxChange, accessPoint: AccessTypeEnum): void {
     const accessPoints = this.formVehicleType.get('access') as FormControl<
-      AccessType[] | null
+      AccessTypeEnum[] | null
     >;
     let currentValues = accessPoints.value || [];
     if (event.checked) {
@@ -152,21 +152,21 @@ export class VehicleTypeDialogComponent implements OnInit {
     accessPoints.setValue(currentValues);
   }
 
-  isAccessPointChecked(accessPoint: AccessType): boolean {
+  isAccessPointChecked(accessPoint: AccessTypeEnum): boolean {
     return (
       this.formVehicleType.get('access')?.value?.includes(accessPoint) ?? false
     );
   }
 
   isAccessPointCheckedString(accessPointKey: string): boolean {
-    return this.isAccessPointChecked(accessPointKey as AccessType);
+    return this.isAccessPointChecked(accessPointKey as AccessTypeEnum);
   }
 
   onAccessPointChangeString(
     event: MatCheckboxChange,
     accessPointKey: string
   ): void {
-    this.onAccessPointChange(event, accessPointKey as AccessType);
+    this.onAccessPointChange(event, accessPointKey as AccessTypeEnum);
   }
 
   openDialogConfirm(): void {
