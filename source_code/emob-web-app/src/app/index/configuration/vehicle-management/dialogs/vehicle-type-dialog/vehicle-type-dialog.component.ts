@@ -24,7 +24,7 @@ import {
   timeStringToMinutes,
   minutesToTimeString,
 } from 'src/app/directives/time-string-to-minutes.pipe';
-import { VehicleTypeFormControls } from 'src/app/models/form-control.model';
+import { VehicleTypeFormControls } from 'src/app/models/forms/vehicle-type-form-control.model';
 import { compareTimeValidator } from 'src/app/shared/validators/time-range.validator';
 import { TranslocoService } from '@jsverse/transloco';
 

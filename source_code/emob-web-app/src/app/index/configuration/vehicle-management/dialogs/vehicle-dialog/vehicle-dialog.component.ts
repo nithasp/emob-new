@@ -22,7 +22,7 @@ import { finalize } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 import { licensePlateDuplicateValidator } from 'src/app/shared/validators/license-plate.validator';
-import { VehicleFormControls } from 'src/app/models/form-control.model';
+import { VehicleFormControls } from 'src/app/models/forms/vehicle-form-control.model';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
 
