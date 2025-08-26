@@ -1,15 +1,17 @@
 
 export interface Configuration {
+    companyName: string;
+    id: string;
+    timestamp: string;
+    name: string;
     category: string;
     type: string;
-    id: string;
-    name: string;
-    timestamp: Date;
-    fileUrl: FileURL;
     depotId: string;
     fileBlobPath: string;
     columns: string[];
+    replace: boolean;
     depot: Depot;
+    fileUrl: FileURL;
 }
 export interface ActualLocation {
     year: string;

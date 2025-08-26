@@ -32,36 +32,29 @@ export class ConfigurationService {
         query: gql`
           {
             configurations {
+              companyName
               id
               timestamp
               name
               category
               type
-              columns
               depotId
+              fileBlobPath
+              columns
+              replace
               depot {
                 companyName
                 depotId
                 depotName
                 latitude
                 longitude
-                inputdata {
-                  keyName
-                  displayName
-                  columnRequired
-                  fileFormatType
-                }
+                tw_early
+                tw_late
+                createdAt
+                updatedAt
               }
-            }
-            actualLocations {
-              year
-              children {
-                month
-                children {
-                  fileName
-                  timestamp
-                  fileBlobPath
-                }
+              fileUrl {
+                fileConfigurationUrl
               }
             }
           }
@@ -161,10 +154,7 @@ export class ConfigurationService {
       );
   }
 
-  uploadConfiguration(
-    file: File,
-    id: string
-  ): Observable<Configuration> {
+  uploadConfiguration(file: File, id: string): Observable<Configuration> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
