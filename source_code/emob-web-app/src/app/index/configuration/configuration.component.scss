@@ -1,9 +1,10 @@
 .table-responsive {
-  height:700px;
-  width:100%;
-  overflow:auto;
+  height: 700px;
+  width: 100%;
+  overflow: auto;
 }
-.table th, .table td {
+.table th,
+.table td {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -12,11 +13,11 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background-color: #0e145f; 
+  background-color: #0e145f;
   color: white;
 }
 tr:nth-child(even) {
-  background-color: #D6EEEE;
+  background-color: #d6eeee;
 }
 .container-preview {
   text-align: center;
@@ -31,27 +32,94 @@ tr:nth-child(even) {
   z-index: 1000; /* Adjust the value as needed */
 }
 
-
 .active {
   background-color: #d3d3d3; /* Change this to your desired color */
   border-left: 5px solid #0e145f;
   padding-bottom: 10px;
 }
 
-.bg-category{
+.bg-category {
   background-color: #0e145f;
   color: white;
 }
+
 .icon-category-wrapper {
   margin-left: -16px;
 }
-.icon-category{
-  color: rgba(255,214,99,255);
-}
-.icon-file{
-  color: rgba(16,119,63,255);
+
+.icon-category {
+  color: rgba(255, 214, 99, 255);
 }
 
-.td-warning{
+.icon-file {
+  color: rgba(16, 119, 63, 255);
+}
+
+.td-warning {
   background-color: rgb(223, 149, 149);
+}
+
+.icon-folder {
+  color: rgba(33,37,41,0.5);
+}
+
+::ng-deep .mat-expansion-panel-body {
+  padding: 0 0 12px 0 !important;
+}
+
+.configuration-category-wrapper{
+  padding-left: 36px !important;
+  margin-top: 5px !important;
+}
+
+.configuration-name-wrapper {
+  padding-left: 50px !important;
+  &:hover {
+    cursor: pointer;
+    background: #f8f9fa !important;
+  }
+}
+
+.configuration-depot-name,
+.configuration-category {
+  font-size: 16px;
+  color: rgba(33,37,41,0.5);
+}
+
+.configuration-depot-name {
+  color: black;
+}
+
+.configuration-depot-name-icon {
+  color: black;
+}
+
+.configuration-name {
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+#upload-button-overflow {
+  .dropdown-menu.show {
+    display: block;
+    height: 300px;
+    overflow: auto;
+  }
+}
+.dropdown-menu {
+  width: 300px !important;
+}
+
+.mat-expanded {
+  ::ng-deep .mat-expansion-panel-content {
+    margin-top: -15px !important;
+  }
+}
+
+::ng-deep .mat-expansion-panel-body {
+  position: relative;
+}
+
+::ng-deep .mat-expansion-panel {
+  box-shadow: none !important;
 }
