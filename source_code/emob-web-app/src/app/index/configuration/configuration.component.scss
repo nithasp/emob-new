@@ -60,20 +60,38 @@ tr:nth-child(even) {
 }
 
 .icon-folder {
-  color: rgba(33,37,41,0.5);
+  color: rgba(33, 37, 41, 0.5);
+}
+
+.icon-calendar {
+  color: rgba(255, 152, 0, 0.8);
+}
+
+.icon-event {
+  color: rgba(156, 39, 176, 0.8);
 }
 
 ::ng-deep .mat-expansion-panel-body {
   padding: 0 0 12px 0 !important;
 }
 
-.configuration-category-wrapper{
+.configuration-category-wrapper {
   padding-left: 36px !important;
   margin-top: 5px !important;
 }
 
-.configuration-name-wrapper {
+.configuration-year-wrapper {
   padding-left: 50px !important;
+  margin-top: 5px !important;
+}
+
+.configuration-month-wrapper {
+  padding-left: 64px !important;
+  margin-top: 5px !important;
+}
+
+.configuration-name-wrapper {
+  padding-left: 78px !important;
   &:hover {
     cursor: pointer;
     background: #f8f9fa !important;
@@ -83,7 +101,7 @@ tr:nth-child(even) {
 .configuration-depot-name,
 .configuration-category {
   font-size: 16px;
-  color: rgba(33,37,41,0.5);
+  color: rgba(33, 37, 41, 0.5);
 }
 
 .configuration-depot-name {

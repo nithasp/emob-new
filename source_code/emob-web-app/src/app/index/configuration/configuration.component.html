@@ -3,7 +3,8 @@
     <p class="h-3">{{ "wait_a_moment" | transloco }} ...</p>
   </ngx-spinner>
   <div class="row mt-4 mb-4">
-    <div class="col-md-12 mb-3 text-right mt-4">
+
+    <div class="mat-tree-left col-md-12 mb-3 text-right mt-4">
       <div id="upload-button-expand" class="d-inline-block" ngbDropdown [autoClose]="'outside'"
         #expandDrop="ngbDropdown">
         <button mat-raised-button class="me-2 bg-custom-secondary" id="dropdownExpand" ngbDropdownAnchor
@@ -11,8 +12,8 @@
           <mat-icon>upload_2</mat-icon>
           {{ "update" | transloco }}
         </button>
-        <div ngbDropdownMenu aria-labelledby="dropdownExpand"
-          class="overflow-auto p-2" style="max-height: 400px; width: 360px;">
+        <div ngbDropdownMenu aria-labelledby="dropdownExpand" class="overflow-auto p-2"
+          style="max-height: 400px; width: 360px;">
           <mat-accordion>
             <mat-expansion-panel *ngFor="let depot of configurationsExplorer; trackBy: trackByDepotId">
               <mat-expansion-panel-header>
@@ -26,12 +27,42 @@
                   <mat-icon class="icon-folder mr-2">folder</mat-icon>
                   <span class="configuration-category text-capitalize font-weight-bold">{{ fileType.category }}</span>
                 </div>
-                <div *ngFor="let child of fileType.children" class="configuration-name-wrapper">
-                  <div class="d-flex align-items-center py-2" (click)="openUploadFile(child.name, child.name, child.type, child.depotId)">
-                    <mat-icon class="icon-file mr-2">insert_drive_file</mat-icon>
-                    <span class="configuration-name text-capitalize">
-                      {{ child.name }}
-                    </span>
+
+                <!-- Handle actual category with year/month structure -->
+                <div *ngIf="fileType.type === 'actual'">
+                  <div *ngFor="let yearNode of getYearChildren(fileType); trackBy: trackByYear">
+                    <div class="configuration-year-wrapper d-flex align-items-center mb-1">
+                      <mat-icon class="icon-calendar mr-2">calendar_today</mat-icon>
+                      <span class="configuration-year text-capitalize font-weight-bold">{{ yearNode.year }}</span>
+                    </div>
+                    <div *ngFor="let monthNode of yearNode.children; trackBy: trackByMonth">
+                      <div class="configuration-month-wrapper d-flex align-items-center mb-1">
+                        <mat-icon class="icon-calendar mr-2">event</mat-icon>
+                        <span class="configuration-month text-capitalize font-weight-bold">{{ monthNode.month }}</span>
+                      </div>
+                      <div *ngFor="let child of monthNode.children" class="configuration-name-wrapper">
+                        <div class="d-flex align-items-center py-2"
+                          (click)="openUploadFile(child.category || fileType.category, child.name, child.type, child.depotId)">
+                          <mat-icon class="icon-file mr-2">insert_drive_file</mat-icon>
+                          <span class="configuration-name text-capitalize">
+                            {{ child.name }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Handle other categories normally -->
+                <div *ngIf="fileType.type === 'regular'">
+                  <div *ngFor="let child of getRegularChildren(fileType)" class="configuration-name-wrapper">
+                    <div class="d-flex align-items-center py-2"
+                      (click)="openUploadFile(child.name, child.name, child.type, child.depotId)">
+                      <mat-icon class="icon-file mr-2">insert_drive_file</mat-icon>
+                      <span class="configuration-name text-capitalize">
+                        {{ child.name }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -41,7 +72,7 @@
       </div>
     </div>
 
-    <div class="col-md-4 border" style="height: 800px; overflow-y: auto; overflow-x: auto">
+    <div class="mat-tree-top-right col-md-4 border" style="height: 800px; overflow-y: auto; overflow-x: auto">
       <div class="bg-category w-100" style="text-align: center">
         <p class="font-weight-bold text-uppercase h3 p-3">
           {{ "configurations" | transloco }}
@@ -84,6 +115,48 @@
                 </mat-icon>
               </button>
               <strong>{{ fileType.category }}</strong>
+            </div>
+          </div>
+        </mat-tree-node>
+
+        <!-- Year node for actual locations -->
+        <mat-tree-node *matTreeNodeDef="let yearNode; when: isYearNode" matTreeNodePadding
+          [class.active]="yearNode.year === selectedNode" style="cursor: pointer">
+          <div matTreeNodeToggle style="display: flex; align-items: center" placement="top"
+            [ngbTooltip]="yearNode.year">
+            <button mat-icon-button matTreeNodeToggle>
+              <mat-icon class="mat-icon-rtl-mirror">
+                {{ tree.isExpanded(yearNode) ? "expand_more" : "chevron_right" }}
+              </mat-icon>
+            </button>
+            <div class="icon-category-wrapper">
+              <button mat-icon-button matTreeNodeToggle>
+                <mat-icon class="mat-icon-rtl-mirror icon-category">
+                  calendar_today
+                </mat-icon>
+              </button>
+              <strong>{{ yearNode.year }}</strong>
+            </div>
+          </div>
+        </mat-tree-node>
+
+        <!-- Month node for actual locations -->
+        <mat-tree-node *matTreeNodeDef="let monthNode; when: isMonthNode" matTreeNodePadding
+          [class.active]="monthNode.month === selectedNode" style="cursor: pointer">
+          <div matTreeNodeToggle style="display: flex; align-items: center" placement="top"
+            [ngbTooltip]="monthNode.month">
+            <button mat-icon-button matTreeNodeToggle>
+              <mat-icon class="mat-icon-rtl-mirror">
+                {{ tree.isExpanded(monthNode) ? "expand_more" : "chevron_right" }}
+              </mat-icon>
+            </button>
+            <div class="icon-category-wrapper">
+              <button mat-icon-button matTreeNodeToggle>
+                <mat-icon class="mat-icon-rtl-mirror icon-category">
+                  event
+                </mat-icon>
+              </button>
+              <strong>{{ monthNode.month }}</strong>
             </div>
           </div>
         </mat-tree-node>

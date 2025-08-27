@@ -1,16 +1,16 @@
 export interface Configuration {
-    companyName: string;
-    id: string;
-    timestamp: string;
-    name: string;
-    category: string;
-    type: string;
-    depotId: string;
-    fileBlobPath: string;
-    columns: string[];
-    replace: boolean;
-    depot: Depot;
-    fileUrl: FileURL;
+  companyName: string;
+  id: string;
+  timestamp: string;
+  name: string;
+  category: string;
+  type: string;
+  depotId: string;
+  fileBlobPath: string;
+  columns: string[];
+  replace: boolean;
+  depot: Depot;
+  fileUrl: FileURL;
 }
 
 export interface ActualLocation {
@@ -78,7 +78,10 @@ export interface ConfigurationExplorerDepot {
 
 export interface ConfigurationExplorerFileType {
   category: string;
-  children: ConfigurationExplorerFileTypeChildren[];
+  type: 'regular' | 'actual';
+  children:
+    | ConfigurationExplorerFileTypeChildren[]
+    | ConfigurationExplorerYearNode[];
 }
 
 export type FileType = 'configuration' | 'actualLocation';
@@ -92,10 +95,23 @@ export interface ConfigurationExplorerFileTypeChildren {
   blobPath?: string;
 }
 
+// New interfaces for actual location year/month grouping
+export interface ConfigurationExplorerYearNode {
+  year: string;
+  children: ConfigurationExplorerMonthNode[];
+}
+
+export interface ConfigurationExplorerMonthNode {
+  month: string;
+  children: ConfigurationExplorerFileTypeChildren[];
+}
+
 export type ExplorerNode =
   | ConfigurationExplorerDepot
   | ConfigurationExplorerFileType
-  | ConfigurationExplorerFileTypeChildren;
+  | ConfigurationExplorerFileTypeChildren
+  | ConfigurationExplorerYearNode
+  | ConfigurationExplorerMonthNode;
 
 export interface ExcelRow {
   [key: string]: string | number | Date | boolean | undefined;
