@@ -134,7 +134,6 @@ export class ConfigurationComponent implements OnInit {
   onChangeFile(fileName: string, type: string, blobPath: string) {
     console.log(fileName, type, blobPath);
     this.showSpinner();
- 
     try {
       this.selectedNode = fileName;
       if (type === 'configuration') {
@@ -293,7 +292,6 @@ export class ConfigurationComponent implements OnInit {
     depotId: string
   ) {
     this.showSpinner();
-
     if (type === 'configuration') {
       const configuration: Configuration | undefined =
         this.configurationAllData.configurations.find(
@@ -318,8 +316,20 @@ export class ConfigurationComponent implements OnInit {
       }
     }
   }
-  downloadFile(url: string) {
+  downloadFile(url: string, hideSpinnerOnError: boolean = false) {
     console.log('url', url);
+
+    if (!url || url.trim() === '') {
+      this.toastr.error(
+        this.transloco.translate('error_no_url_provided', {}, 'index'),
+        this.transloco.translate('download_error', {}, 'index')
+      );
+      if (hideSpinnerOnError) {
+        this.spinner.hide();
+      }
+      return;
+    }
+
     this.spinner.show();
     this.configurationService.downloadFile(url).subscribe((response) => {
       const contentDisposition = response.headers.get('Content-Disposition');
@@ -356,8 +366,6 @@ export class ConfigurationComponent implements OnInit {
     console.log('type', type);
     console.log('blobPath', blobPath);
 
-    this.spinner.show();
-
     if (type === 'configuration') {
       const configuration: Configuration | undefined =
         this.configurationAllData.configurations.find(
@@ -365,11 +373,17 @@ export class ConfigurationComponent implements OnInit {
         );
 
       if (configuration) {
+        this.spinner.show();
         this.configurationService
           .getConfiguration(configuration.id)
           .subscribe(async (data) => {
-            this.downloadFile(data.fileUrl.fileConfigurationUrl);
+            this.downloadFile(data.fileUrl.fileConfigurationUrl, true);
           });
+      } else {
+        this.toastr.error(
+          this.transloco.translate('configuration_not_found', {}, 'index'),
+          this.transloco.translate('error', {}, 'index')
+        );
       }
     }
   }
