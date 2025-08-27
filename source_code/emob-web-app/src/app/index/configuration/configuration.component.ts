@@ -78,8 +78,8 @@ export class ConfigurationComponent implements OnInit {
   private loadDataConfiguration() {
     this.spinner.show();
     this.configurationService.getConfigurations().subscribe((data) => {
+      console.log('data', data);
       this.configurationAllData.configurations = data.configurations;
-      this.configurationAllData.actualLocations = data.actualLocations;
       const depotMap = new Map<string, ConfigurationExplorerDepot>();
 
       data.configurations.forEach((configuration) => {
@@ -134,19 +134,10 @@ export class ConfigurationComponent implements OnInit {
   onChangeFile(fileName: string, type: string, blobPath: string) {
     console.log(fileName, type, blobPath);
     this.showSpinner();
+ 
     try {
       this.selectedNode = fileName;
-      if (type === 'actualLocation') {
-        if (blobPath)
-          this.configurationService
-            .getActualLocation(blobPath)
-            .subscribe((data) => {
-              this.fetchAndParseExcel(
-                data.children[0].children[0].fileUrl.fileActualLocationUrl
-              );
-              this.hiddenSpinner();
-            });
-      } else if (type === 'configuration') {
+      if (type === 'configuration') {
         const configuration: Configuration | undefined =
           this.configurationAllData.configurations.find(
             (configuration) => configuration.name === fileName
@@ -303,18 +294,7 @@ export class ConfigurationComponent implements OnInit {
   ) {
     this.showSpinner();
 
-    if (type === 'actualLocation') {
-      this.configurationService
-        .uploadActualLocation(file)
-        .subscribe((response) => {
-          this.loadDataConfiguration();
-          this.toastr.success(
-            this.transloco.translate('file_uploaded_successfully', {}, 'index'),
-            'Actual Location'
-          );
-          this.hiddenSpinner();
-        });
-    } else if (type === 'configuration') {
+    if (type === 'configuration') {
       const configuration: Configuration | undefined =
         this.configurationAllData.configurations.find(
           (cat) => cat.name === name && cat.depotId === depotId
@@ -339,6 +319,7 @@ export class ConfigurationComponent implements OnInit {
     }
   }
   downloadFile(url: string) {
+    console.log('url', url);
     this.spinner.show();
     this.configurationService.downloadFile(url).subscribe((response) => {
       const contentDisposition = response.headers.get('Content-Disposition');
@@ -371,17 +352,13 @@ export class ConfigurationComponent implements OnInit {
   }
 
   getFileUrl(fileName: string, type: string, blobPath: string) {
+    console.log('fileName', fileName);
+    console.log('type', type);
+    console.log('blobPath', blobPath);
+
     this.spinner.show();
-    if (type === 'actualLocation') {
-      if (blobPath)
-        this.configurationService
-          .getActualLocation(blobPath)
-          .subscribe((data) => {
-            this.downloadFile(
-              data.children[0].children[0].fileUrl.fileActualLocationUrl
-            );
-          });
-    } else if (type === 'configuration') {
+
+    if (type === 'configuration') {
       const configuration: Configuration | undefined =
         this.configurationAllData.configurations.find(
           (configuration) => configuration.name === fileName
