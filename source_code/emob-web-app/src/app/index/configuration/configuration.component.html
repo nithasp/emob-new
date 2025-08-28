@@ -4,7 +4,7 @@
   </ngx-spinner>
   <div class="row mt-4 mb-4">
 
-    <div class="mat-tree-left col-md-12 mb-3 text-right mt-4">
+    <div class="mat-tree-top-right col-md-12 mb-3 text-right mt-4">
       <div id="upload-button-expand" class="d-inline-block" ngbDropdown [autoClose]="'outside'"
         #expandDrop="ngbDropdown">
         <button mat-raised-button class="me-2 bg-custom-secondary" id="dropdownExpand" ngbDropdownAnchor
@@ -28,27 +28,15 @@
                   <span class="configuration-category text-capitalize font-weight-bold">{{ fileType.category }}</span>
                 </div>
 
-                <!-- Handle actual category with year/month structure -->
+                <!-- Handle actual category - flattened structure without year/month -->
                 <div *ngIf="fileType.type === 'actual'">
-                  <div *ngFor="let yearNode of getYearChildren(fileType); trackBy: trackByYear">
-                    <div class="configuration-year-wrapper d-flex align-items-center mb-1">
-                      <mat-icon class="icon-calendar mr-2">calendar_today</mat-icon>
-                      <span class="configuration-year text-capitalize font-weight-bold">{{ yearNode.year }}</span>
-                    </div>
-                    <div *ngFor="let monthNode of yearNode.children; trackBy: trackByMonth">
-                      <div class="configuration-month-wrapper d-flex align-items-center mb-1">
-                        <mat-icon class="icon-calendar mr-2">event</mat-icon>
-                        <span class="configuration-month text-capitalize font-weight-bold">{{ monthNode.month }}</span>
-                      </div>
-                      <div *ngFor="let child of monthNode.children" class="configuration-name-wrapper">
-                        <div class="d-flex align-items-center py-2"
-                          (click)="openUploadFile(child.category || fileType.category, child.name, child.type, child.depotId)">
-                          <mat-icon class="icon-file mr-2">insert_drive_file</mat-icon>
-                          <span class="configuration-name text-capitalize">
-                            {{ child.name }}
-                          </span>
-                        </div>
-                      </div>
+                  <div *ngFor="let child of getFlattenedActualChildren(fileType)" class="configuration-name-wrapper">
+                    <div class="d-flex align-items-center py-2"
+                      (click)="openUploadFile(child.category || fileType.category, child.name, child.type, child.depotId)">
+                      <mat-icon class="icon-file mr-2">insert_drive_file</mat-icon>
+                      <span class="configuration-name text-capitalize">
+                        {{ child.name }}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -65,6 +53,7 @@
                     </div>
                   </div>
                 </div>
+
               </div>
             </mat-expansion-panel>
           </mat-accordion>
@@ -72,7 +61,7 @@
       </div>
     </div>
 
-    <div class="mat-tree-top-right col-md-4 border" style="height: 800px; overflow-y: auto; overflow-x: auto">
+    <div class="mat-tree-left col-md-4 border" style="height: 800px; overflow-y: auto; overflow-x: auto">
       <div class="bg-category w-100" style="text-align: center">
         <p class="font-weight-bold text-uppercase h3 p-3">
           {{ "configurations" | transloco }}
@@ -132,7 +121,7 @@
             <div class="icon-category-wrapper">
               <button mat-icon-button matTreeNodeToggle>
                 <mat-icon class="mat-icon-rtl-mirror icon-category">
-                  calendar_today
+                  folder
                 </mat-icon>
               </button>
               <strong>{{ yearNode.year }}</strong>
@@ -153,7 +142,7 @@
             <div class="icon-category-wrapper">
               <button mat-icon-button matTreeNodeToggle>
                 <mat-icon class="mat-icon-rtl-mirror icon-category">
-                  event
+                  folder
                 </mat-icon>
               </button>
               <strong>{{ monthNode.month }}</strong>
@@ -163,7 +152,7 @@
 
         <mat-tree-node *matTreeNodeDef="let child; when: isChildNode" matTreeNodePadding
           [class.active]="child.name === selectedNode" style="cursor: pointer">
-          <div style="display: flex; align-items: center" (click)="onChangeFile(child.name, child.type, '')"
+          <div style="display: flex; align-items: center" (click)="onChangeFile(child.name, child.type, child.blobPath)"
             placement="top" [ngbTooltip]="child.timestamp">
             <button mat-icon-button disabled>
               <div style="text-align: center">
@@ -195,6 +184,7 @@
         </mat-tree-node>
       </mat-tree>
     </div>
+    
     <div class="col-md-8 pl-3 border">
       <div class="container-preview" *ngIf="!(excelData.length > 0) && !selectedNode">
         <mat-icon style="color: gray; font-size: 250px; width: auto; height: auto">folder_open</mat-icon>

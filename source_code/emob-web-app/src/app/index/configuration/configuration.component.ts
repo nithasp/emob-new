@@ -47,511 +47,6 @@ export class ConfigurationComponent implements OnInit {
   public headers: string[] = [];
   public searchText = '';
 
-  mockData: any = {
-    configurations: [
-      {
-        companyName: 'COMTAN',
-        id: '0198a798-0311-71d8-a86a-c566379200f4',
-        timestamp: '2025-08-20T07:19:36.6603778Z',
-        name: 'groupZone.xlsx',
-        category: 'groupZone',
-        type: 'groupZone',
-        depotId: '0198a788-b237-716c-9e46-71540108e085',
-        fileBlobPath:
-          'COMTAN/configuration/0198a788-b237-716c-9e46-71540108e085/groupZone_groupZone.xlsx',
-        columns: [
-          'province_th',
-          'province_en',
-          'name_in_thai',
-          'name_in_english',
-          'zone_group',
-        ],
-        replace: true,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b237-716c-9e46-71540108e085',
-          depotName: 'Depot 1 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '08:00',
-          tw_late: '17:00',
-          createdAt: '2025-08-14T07:43:30.359Z',
-          updatedAt: '2025-08-14T07:43:36.1302597Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/configuration/0198a788-b237-716c-9e46-71540108e085/groupZone_groupZone.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26skt%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DD1SORx7n5o7NcztNd3UrbKT7pn%252BIxXmb7I8aG2R40GI%253D',
-        },
-      },
-      {
-        companyName: 'COMTAN',
-        id: '0198a798-089a-77ba-9c63-941c774ca092',
-        timestamp: '2025-08-19T08:53:56.2600354Z',
-        name: 'groupZone.xlsx',
-        category: 'groupZone',
-        type: 'groupZone',
-        depotId: '0198a788-b775-7758-8759-00b75821756a',
-        fileBlobPath:
-          'COMTAN/configuration/0198a788-b775-7758-8759-00b75821756a/groupZone_groupZone.xlsx',
-        columns: [
-          'province_th',
-          'province_en',
-          'name_in_thai',
-          'name_in_english',
-          'zone_group',
-        ],
-        replace: true,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b775-7758-8759-00b75821756a',
-          depotName: 'Depot 2 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '09:00',
-          tw_late: '18:00',
-          createdAt: '2025-08-14T07:43:31.701Z',
-          updatedAt: '2025-08-14T07:43:36.2302034Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/configuration/0198a788-b775-7758-8759-00b75821756a/groupZone_groupZone.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26skt%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DTiy3j3ApebLGz5GXOsdJkSl3OCkpS3hob0ebuhKPbIo%253D',
-        },
-      },
-      {
-        companyName: 'COMTAN',
-        id: '0198a798-0900-710f-8f88-5d243c538c1b',
-        timestamp: '2025-08-20T06:54:57.339228Z',
-        name: 'productMat1.xlsx',
-        category: 'inventory',
-        type: 'productMat1',
-        depotId: '0198a788-b237-716c-9e46-71540108e085',
-        fileBlobPath:
-          'COMTAN/configuration/0198a788-b237-716c-9e46-71540108e085/inventory_productMat1.xlsx',
-        columns: [
-          'Material',
-          'Material Number',
-          'หน่วยใหญ่\nQUANTITYMAIN\t',
-          'หน่วยเล็ก\nQUANTITYMINOR',
-          'Sale Unit',
-          'InnerPack',
-          'NET_VOLUME (KG) / Piece',
-          'PROD_SIZE (g) /  Piece',
-          'Length',
-          'Width',
-          'Height',
-        ],
-        replace: true,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b237-716c-9e46-71540108e085',
-          depotName: 'Depot 1 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '08:00',
-          tw_late: '17:00',
-          createdAt: '2025-08-14T07:43:30.359Z',
-          updatedAt: '2025-08-14T07:43:36.1302597Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/configuration/0198a788-b237-716c-9e46-71540108e085/inventory_productMat1.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26skt%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DrSGZ3om6ivzhFkCDHv72faNS%252BajANg1Ors8oFbkF48Y%253D',
-        },
-      },
-      {
-        companyName: 'COMTAN',
-        id: '0198a798-097b-759b-9625-2f0c2b5c6ecf',
-        timestamp: '2025-08-27T02:56:51.784498Z',
-        name: 'productMat1.xlsx',
-        category: 'inventory',
-        type: 'productMat1',
-        depotId: '0198a788-b775-7758-8759-00b75821756a',
-        fileBlobPath:
-          'COMTAN/configuration/0198a788-b775-7758-8759-00b75821756a/productMat1.xlsx',
-        columns: [
-          'Material',
-          'Material Number',
-          'หน่วยใหญ่\nQUANTITYMAIN\t',
-          'หน่วยเล็ก\nQUANTITYMINOR',
-          'Sale Unit',
-          'InnerPack',
-          'NET_VOLUME (KG) / Piece',
-          'PROD_SIZE (g) /  Piece',
-          'Length',
-          'Width',
-          'Height',
-        ],
-        replace: true,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b775-7758-8759-00b75821756a',
-          depotName: 'Depot 2 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '09:00',
-          tw_late: '18:00',
-          createdAt: '2025-08-14T07:43:31.701Z',
-          updatedAt: '2025-08-14T07:43:36.2302034Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/configuration/0198a788-b775-7758-8759-00b75821756a/productMat1.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26skt%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DYnJ074YxCGOcMQNoy2el1mO8U2XL%252FChsyCwlglJXo%252Bg%253D',
-        },
-      },
-      {
-        companyName: 'COMTAN',
-        id: '0198a798-09e0-73c3-a8a8-bf52d6f1d611',
-        timestamp: '2025-08-20T07:19:43.502453Z',
-        name: 'productMat7.xlsx',
-        category: 'inventory',
-        type: 'productMat7',
-        depotId: '0198a788-b237-716c-9e46-71540108e085',
-        fileBlobPath:
-          'COMTAN/configuration/0198a788-b237-716c-9e46-71540108e085/inventory_productMat7.xlsx',
-        columns: [
-          'ลำดับ',
-          'Product ID',
-          'รายการสินค้า',
-          'กว้าง / Cm.',
-          'ยาว / Cm.',
-          'สูง / Cm.',
-          'หนัก / Kg.',
-        ],
-        replace: true,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b237-716c-9e46-71540108e085',
-          depotName: 'Depot 1 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '08:00',
-          tw_late: '17:00',
-          createdAt: '2025-08-14T07:43:30.359Z',
-          updatedAt: '2025-08-14T07:43:36.1302597Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/configuration/0198a788-b237-716c-9e46-71540108e085/inventory_productMat7.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26skt%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DFNezeoqDQd4wrkIbbvliiDRpBpDH%252BlIZj2Zmtbw5Ql0%253D',
-        },
-      },
-      {
-        companyName: 'COMTAN',
-        id: '0198a798-0a46-75ff-85f0-1739f36deabc',
-        timestamp: '2025-08-20T06:55:51.3102637Z',
-        name: 'productMat7.xlsx',
-        category: 'inventory',
-        type: 'productMat7',
-        depotId: '0198a788-b775-7758-8759-00b75821756a',
-        fileBlobPath:
-          'COMTAN/configuration/0198a788-b775-7758-8759-00b75821756a/inventory_productMat7.xlsx',
-        columns: [
-          'ลำดับ',
-          'Product ID',
-          'รายการสินค้า',
-          'กว้าง / Cm.',
-          'ยาว / Cm.',
-          'สูง / Cm.',
-          'หนัก / Kg.',
-        ],
-        replace: true,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b775-7758-8759-00b75821756a',
-          depotName: 'Depot 2 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '09:00',
-          tw_late: '18:00',
-          createdAt: '2025-08-14T07:43:31.701Z',
-          updatedAt: '2025-08-14T07:43:36.2302034Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/configuration/0198a788-b775-7758-8759-00b75821756a/inventory_productMat7.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26skt%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DbVC3a0OFv2EmB0g2Pk8l7%252Bnpq6MNR9vTRahRPwHYMyc%253D',
-        },
-      },
-      {
-        companyName: 'COMTAN',
-        id: '0198e2ec-4420-76bc-b453-f3f6c05a4ecd',
-        timestamp: '2025-08-25T20:29:56.1012528Z',
-        name: 'Location.xlsx',
-        category: 'actual',
-        type: 'location',
-        depotId: '0198a788-b237-716c-9e46-71540108e085',
-        fileBlobPath: '',
-        columns: [],
-        replace: false,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b237-716c-9e46-71540108e085',
-          depotName: 'Depot 1 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '08:00',
-          tw_late: '17:00',
-          createdAt: '2025-08-14T07:43:30.359Z',
-          updatedAt: '2025-08-14T07:43:36.1302597Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl: null,
-        },
-      },
-      {
-        companyName: 'COMTAN',
-        id: '0198e2ec-4471-703b-919e-9b1c6b50f07e',
-        timestamp: '2025-08-25T20:29:56.1812057Z',
-        name: 'Location.xlsx',
-        category: 'actual',
-        type: 'location',
-        depotId: '0198a788-b775-7758-8759-00b75821756a',
-        fileBlobPath: '',
-        columns: [],
-        replace: false,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b775-7758-8759-00b75821756a',
-          depotName: 'Depot 2 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '09:00',
-          tw_late: '18:00',
-          createdAt: '2025-08-14T07:43:31.701Z',
-          updatedAt: '2025-08-14T07:43:36.2302034Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl: null,
-        },
-      },
-      {
-        companyName: 'COMTAN',
-        id: '0198e304-42db-70bd-a2b1-4982f807e6b1',
-        timestamp: '2025-08-25T20:56:08.6864852Z',
-        name: 'actual_location_2025-08-26T03:56:01.xlsx',
-        category: 'actual',
-        type: 'location',
-        depotId: '0198a788-b237-716c-9e46-71540108e085',
-        fileBlobPath:
-          'COMTAN/actualLocation/0198a788-b237-716c-9e46-71540108e085/2025/08/actual_location_2025-08-26T03:56:01.xlsx',
-        columns: [],
-        replace: false,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b237-716c-9e46-71540108e085',
-          depotName: 'Depot 1 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '08:00',
-          tw_late: '17:00',
-          createdAt: '2025-08-14T07:43:30.359Z',
-          updatedAt: '2025-08-14T07:43:36.1302597Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/actualLocation/0198a788-b237-716c-9e46-71540108e085/2025/08/actual_location_2025-08-26T03:56:01.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26skt%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DbHd1Ab2ejgJ6VLlU7otBl1Zr5p21ABKCD8gxHDoPGC8%253D',
-        },
-      },
-      {
-        companyName: 'COMTAN',
-        id: '0198e4b8-b6bd-75d3-8624-ea94be9127c1',
-        timestamp: '2025-08-26T04:52:47.4793047Z',
-        name: 'actual_location_2025-08-26T11:52:45.xlsx',
-        category: 'actual',
-        type: 'location',
-        depotId: '0198a788-b775-7758-8759-00b75821756a',
-        fileBlobPath:
-          'COMTAN/actualLocation/0198a788-b775-7758-8759-00b75821756a/2025/08/actual_location_2025-08-26T11:52:45.xlsx',
-        columns: [],
-        replace: false,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b775-7758-8759-00b75821756a',
-          depotName: 'Depot 2 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '09:00',
-          tw_late: '18:00',
-          createdAt: '2025-08-14T07:43:31.701Z',
-          updatedAt: '2025-08-14T07:43:36.2302034Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/actualLocation/0198a788-b775-7758-8759-00b75821756a/2025/08/actual_location_2025-08-26T11:52:45.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26skt%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DY4Agj%252FvwYDtR8Mz4xSIon191nwIRUb%252Fu%252FLNm7gz2Ohw%253D',
-        },
-      },
-      {
-        companyName: 'COMTAN',
-        id: '0198e4b9-1c12-7173-bfde-5b8acc3fc9b5',
-        timestamp: '2025-08-26T04:53:13.4087015Z',
-        name: 'actual_location_2025-08-26T11:53:13.xlsx',
-        category: 'actual',
-        type: 'location',
-        depotId: '0198a788-b775-7758-8759-00b75821756a',
-        fileBlobPath:
-          'COMTAN/actualLocation/0198a788-b775-7758-8759-00b75821756a/2025/08/actual_location_2025-08-26T11:53:13.xlsx',
-        columns: [],
-        replace: false,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b775-7758-8759-00b75821756a',
-          depotName: 'Depot 2 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '09:00',
-          tw_late: '18:00',
-          createdAt: '2025-08-14T07:43:31.701Z',
-          updatedAt: '2025-08-14T07:43:36.2302034Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/actualLocation/0198a788-b775-7758-8759-00b75821756a/2025/08/actual_location_2025-08-26T11:53:13.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26skt%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DGYpPdnkvEaYVdf%252BJwfnL%252BQy5qA13f5s2wEDvwAz%252B6AA%253D',
-        },
-      },
-      {
-        companyName: 'COMTAN',
-        id: '0198e4b9-1c12-7173-bfde-5b8acc3fc9b6', // Fixed: Unique ID
-        timestamp: '2025-05-15T04:53:13.4087015Z',
-        name: 'actual_location_2025-05-15T11:22:22.xlsx',
-        category: 'actual',
-        type: 'location',
-        depotId: '0198a788-b775-7758-8759-00b75821756a',
-        fileBlobPath:
-          'COMTAN/actualLocation/0198a788-b775-7758-8759-00b75821756a/2025/05/actual_location_2025-05-15T11:22:22.xlsx', // Fixed: Correct month path
-        columns: [],
-        replace: false,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b775-7758-8759-00b75821756a',
-          depotName: 'Depot 2 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '09:00',
-          tw_late: '18:00',
-          createdAt: '2025-08-14T07:43:31.701Z',
-          updatedAt: '2025-08-14T07:43:36.2302034Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/actualLocation/0198a788-b775-7758-8759-00b75821756a/2025/05/actual_location_2025-05-15T11:22:22.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26sktid%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DGYpPdnkvEaYVdf%252BJwfnL%252BQy5qA13f5s2wEDvwAz%252B6AA%253D',
-        },
-      },
-
-      {
-        companyName: 'COMTAN',
-        id: '0198e4b9-1c12-7173-bfde-5b8acc3fc9b7', // Fixed: Unique ID
-        timestamp: '2025-12-10T04:53:13.4087015Z',
-        name: 'actual_location_2025-12-10T21:22:22.xlsx',
-        category: 'actual',
-        type: 'location',
-        depotId: '0198a788-b775-7758-8759-00b75821756a',
-        fileBlobPath:
-          'COMTAN/actualLocation/0198a788-b775-7758-8759-00b75821756a/2025/05/actual_location_2025-05-10T21:22:22.xlsx', // Fixed: Correct month path
-        columns: [],
-        replace: false,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b775-7758-8759-00b75821756a',
-          depotName: 'Depot 2 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '09:00',
-          tw_late: '18:00',
-          createdAt: '2025-08-14T07:43:31.701Z',
-          updatedAt: '2025-08-14T07:43:36.1302034Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/actualLocation/0198a788-b775-7758-8759-00b75821756a/2025/05/actual_location_2025-05-10T21:22:22.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26sktid%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DGYpPdnkvEaYVdf%252BJwfnL%252BQy5qA13f5s2wEDvwAz%252B6AA%253D',
-        },
-      },
-
-      {
-        companyName: 'COMTAN',
-        id: '0198e4b9-1c12-7173-bfde-5b8acc3fc9b7', // Fixed: Unique ID
-        timestamp: '2024-02-10T04:53:13.4087015Z',
-        name: 'actual_location_2024-02-10T21:22:22.xlsx',
-        category: 'actual',
-        type: 'location',
-        depotId: '0198a788-b775-7758-8759-00b75821756a',
-        fileBlobPath:
-          'COMTAN/actualLocation/0198a788-b775-7758-8759-00b75821756a/2025/05/actual_location_2025-05-10T21:22:22.xlsx', // Fixed: Correct month path
-        columns: [],
-        replace: false,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b775-7758-8759-00b75821756a',
-          depotName: 'Depot 2 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '09:00',
-          tw_late: '18:00',
-          createdAt: '2025-08-14T07:43:31.701Z',
-          updatedAt: '2025-08-14T07:43:36.1302034Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/actualLocation/0198a788-b775-7758-8759-00b75821756a/2025/05/actual_location_2025-05-10T21:22:22.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26sktid%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DGYpPdnkvEaYVdf%252BJwfnL%252BQy5qA13f5s2wEDvwAz%252B6AA%253D',
-        },
-      },
-
-      {
-        companyName: 'COMTAN',
-        id: '0198e4b9-1c12-7173-bfde-5b8acc3fc9b7', // Fixed: Unique ID
-        timestamp: '2024-07-10T04:53:13.4087015Z',
-        name: 'actual_location_2024-02-10T21:22:22.xlsx',
-        category: 'actual',
-        type: 'location',
-        depotId: '0198a788-b775-7758-8759-00b75821756a',
-        fileBlobPath:
-          'COMTAN/actualLocation/0198a788-b775-7758-8759-00b75821756a/2025/05/actual_location_2025-05-10T21:22:22.xlsx', // Fixed: Correct month path
-        columns: [],
-        replace: false,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b775-7758-8759-00b75821756a',
-          depotName: 'Depot 2 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '09:00',
-          tw_late: '18:00',
-          createdAt: '2025-08-14T07:43:31.701Z',
-          updatedAt: '2025-08-14T07:43:36.1302034Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/actualLocation/0198a788-b775-7758-8759-00b75821756a/2025/05/actual_location_2025-05-10T21:22:22.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26sktid%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DGYpPdnkvEaYVdf%252BJwfnL%252BQy5qA13f5s2wEDvwAz%252B6AA%253D',
-        },
-      },
-
-      {
-        companyName: 'COMTAN',
-        id: '0198e304-42db-70bd-a2b1-4982f807e6b1',
-        timestamp: '2025-06-25T20:56:08.6864852Z',
-        name: 'actual_location_2025-08-26T03:56:01.xlsx',
-        category: 'actual',
-        type: 'location',
-        depotId: '0198a788-b237-716c-9e46-71540108e085',
-        fileBlobPath:
-          'COMTAN/actualLocation/0198a788-b237-716c-9e46-71540108e085/2025/08/actual_location_2025-08-26T03:56:01.xlsx',
-        columns: [],
-        replace: false,
-        depot: {
-          companyName: 'COMTAN',
-          depotId: '0198a788-b237-716c-9e46-71540108e085',
-          depotName: 'Depot 1 Input',
-          latitude: 13.7563,
-          longitude: 100.5018,
-          tw_early: '08:00',
-          tw_late: '17:00',
-          createdAt: '2025-08-14T07:43:30.359Z',
-          updatedAt: '2025-08-14T07:43:36.1302597Z',
-        },
-        fileUrl: {
-          fileConfigurationUrl:
-            '/api/v1/service/download-file?location=backend/COMTAN/actualLocation/0198a788-b237-716c-9e46-71540108e085/2025/08/actual_location_2025-08-26T03:56:01.xlsx&companyName=COMTAN&sasToken=sv%3D2025-01-05%26st%3D2025-08-27T02%253A58%253A26Z%26se%3D2025-08-28T02%253A58%253A26Z%26skoid%3D91a81a42-6eb5-476b-921c-cf92b4ed7492%26sktid%3Dbbb8da8f-f374-490f-9190-2242176e117c%26skt%3D2025-08-27T02%253A58%253A26Z%26ske%3D2025-08-28T02%253A58%253A26Z%26sks%3Db%26skv%3D2025-01-05%26sr%3Db%26sp%3Dr%26sig%3DbHd1Ab2ejgJ6VLlU7otBl1Zr5p21ABKCD8gxHDoPGC8%253D',
-        },
-      },
-    ],
-  };
-
   childrenAccessor = (
     node: ExplorerNode
   ):
@@ -604,7 +99,13 @@ export class ConfigurationComponent implements OnInit {
       console.log('data', data);
 
       this.configurationAllData.configurations = data.configurations;
-      const depotMap = new Map<string, ConfigurationExplorerDepot>();
+      
+      // Create two separate data structures:
+      // 1. configurationsExplorer - for mat-tree-top-right (dropdown) - shows all configurations
+      // 2. dataSource - for mat-tree-left (tree) - only shows configurations with fileBlobPath
+      
+      const depotMapForDropdown = new Map<string, ConfigurationExplorerDepot>();
+      const depotMapForTree = new Map<string, ConfigurationExplorerDepot>();
 
       data.configurations.forEach((configuration) => {
         const depotId = configuration.depotId;
@@ -612,35 +113,61 @@ export class ConfigurationComponent implements OnInit {
         const category = configuration.category;
         const type = 'configuration';
 
-        if (!depotMap.has(depotId)) {
-          depotMap.set(depotId, {
-            depotId,
-            depotName,
-            fileType: [],
-          });
-        }
-
-        const depot = depotMap.get(depotId)!;
-        let categoryObj = depot.fileType.find(
-          (ft: ConfigurationExplorerFileType) => ft.category === category
-        );
-
-        if (!categoryObj) {
-          categoryObj = {
-            category,
-            type: category === 'actual' ? 'actual' : 'regular',
-            children: [],
-          };
-          depot.fileType.push(categoryObj);
-        }
-
-        // Handle actual category differently - group by year and month
+        // Process for dropdown (reversed logic for actual category)
         if (category === 'actual') {
-          this.addActualLocationToTree(categoryObj, configuration);
+          // For actual category: only show items where fileBlobPath is EMPTY
+          if (!configuration.fileBlobPath || configuration.fileBlobPath.trim() === '') {
+            if (!depotMapForDropdown.has(depotId)) {
+              depotMapForDropdown.set(depotId, {
+                depotId,
+                depotName,
+                fileType: [],
+              });
+            }
+
+            const depotForDropdown = depotMapForDropdown.get(depotId)!;
+            let categoryObjForDropdown = depotForDropdown.fileType.find(
+              (ft: ConfigurationExplorerFileType) => ft.category === category
+            );
+
+            if (!categoryObjForDropdown) {
+              categoryObjForDropdown = {
+                category,
+                type: 'actual',
+                children: [],
+              };
+              depotForDropdown.fileType.push(categoryObjForDropdown);
+            }
+
+            this.addActualLocationToTree(categoryObjForDropdown, configuration);
+          }
         } else {
+          // For other categories: show all items (keep current logic)
+          if (!depotMapForDropdown.has(depotId)) {
+            depotMapForDropdown.set(depotId, {
+              depotId,
+              depotName,
+              fileType: [],
+            });
+          }
+
+          const depotForDropdown = depotMapForDropdown.get(depotId)!;
+          let categoryObjForDropdown = depotForDropdown.fileType.find(
+            (ft: ConfigurationExplorerFileType) => ft.category === category
+          );
+
+          if (!categoryObjForDropdown) {
+            categoryObjForDropdown = {
+              category,
+              type: 'regular',
+              children: [],
+            };
+            depotForDropdown.fileType.push(categoryObjForDropdown);
+          }
+
           // Handle other categories normally
           (
-            categoryObj.children as ConfigurationExplorerFileTypeChildren[]
+            categoryObjForDropdown.children as ConfigurationExplorerFileTypeChildren[]
           ).push({
             name: configuration.name,
             timestamp: formatDate(
@@ -650,12 +177,101 @@ export class ConfigurationComponent implements OnInit {
             ),
             type,
             depotId,
+            blobPath: configuration.fileBlobPath,
           });
+        }
+
+        // Process for tree (only configurations with fileBlobPath)
+        if (configuration.fileBlobPath && configuration.fileBlobPath.trim() !== '') {
+          if (!depotMapForTree.has(depotId)) {
+            depotMapForTree.set(depotId, {
+              depotId,
+              depotName,
+              fileType: [],
+            });
+          }
+
+          const depotForTree = depotMapForTree.get(depotId)!;
+          let categoryObjForTree = depotForTree.fileType.find(
+            (ft: ConfigurationExplorerFileType) => ft.category === category
+          );
+
+          if (!categoryObjForTree) {
+            categoryObjForTree = {
+              category,
+              type: category === 'actual' ? 'actual' : 'regular',
+              children: [],
+            };
+            depotForTree.fileType.push(categoryObjForTree);
+          }
+
+          // Handle actual category differently - group by year and month
+          if (category === 'actual') {
+            this.addActualLocationToTree(categoryObjForTree, configuration);
+          } else {
+            // Handle other categories normally
+            (
+              categoryObjForTree.children as ConfigurationExplorerFileTypeChildren[]
+            ).push({
+              name: configuration.name,
+              timestamp: formatDate(
+                configuration.timestamp,
+                'dd-MMM-YYYY HH:mm:ss',
+                'en-US'
+              ),
+              type,
+              depotId,
+              blobPath: configuration.fileBlobPath,
+            });
+          }
         }
       });
 
-      this.configurationsExplorer = Array.from(depotMap.values());
-      this.dataSource = this.configurationsExplorer;
+      // Clean up empty categories and depots for dropdown
+      this.configurationsExplorer = Array.from(depotMapForDropdown.values())
+        .map(depot => ({
+          ...depot,
+          fileType: depot.fileType.filter(category => {
+            if (category.type === 'actual') {
+              // For actual categories, check if there are any files in year/month nodes
+              const yearNodes = category.children as ConfigurationExplorerYearNode[];
+              return yearNodes.some(yearNode => 
+                yearNode.children.some(monthNode => monthNode.children.length > 0)
+              );
+            } else {
+              // For regular categories, check if there are any files
+              const children = category.children as ConfigurationExplorerFileTypeChildren[];
+              return children.length > 0;
+            }
+          })
+        }))
+        .filter(depot => depot.fileType.length > 0);
+
+      // Clean up empty categories and depots for tree
+      const treeData = Array.from(depotMapForTree.values())
+        .map(depot => ({
+          ...depot,
+          fileType: depot.fileType.filter(category => {
+            if (category.type === 'actual') {
+              // For actual categories, check if there are any files in year/month nodes
+              const yearNodes = category.children as ConfigurationExplorerYearNode[];
+              return yearNodes.some(yearNode => 
+                yearNode.children.some(monthNode => monthNode.children.length > 0)
+              );
+            } else {
+              // For regular categories, check if there are any files
+              const children = category.children as ConfigurationExplorerFileTypeChildren[];
+              return children.length > 0;
+            }
+          })
+        }))
+        .filter(depot => depot.fileType.length > 0);
+
+      // Set dataSource for tree (only configurations with fileBlobPath)
+      this.dataSource = treeData;
+
+      console.log('this.configurationsExplorer (dropdown):', this.configurationsExplorer);
+      console.log('this.dataSource (tree):', this.dataSource);
       this.spinner.hide();
     });
   }
@@ -825,6 +441,7 @@ export class ConfigurationComponent implements OnInit {
       ),
       type: 'actualLocation',
       depotId: configuration.depotId,
+      blobPath: configuration.fileBlobPath,
     });
 
     console.log(`  Added file to month node: ${configuration.name}`);
@@ -842,6 +459,16 @@ export class ConfigurationComponent implements OnInit {
 
   onChangeFile(fileName: string, type: string, blobPath: string) {
     console.log(fileName, type, blobPath);
+    
+    // Check if blobPath is empty
+    if (!blobPath || blobPath.trim() === '') {
+      this.toastr.error(
+        this.transloco.translate('error_no_file_path', {}, 'index') || 'No file path available',
+        this.transloco.translate('error', {}, 'index') || 'Error'
+      );
+      return;
+    }
+    
     this.showSpinner();
     try {
       this.selectedNode = fileName;
@@ -1089,6 +716,15 @@ export class ConfigurationComponent implements OnInit {
     console.log('type', type);
     console.log('blobPath', blobPath);
 
+    // Check if blobPath is empty
+    if (!blobPath || blobPath.trim() === '') {
+      this.toastr.error(
+        this.transloco.translate('error_no_file_path', {}, 'index') || 'No file path available',
+        this.transloco.translate('error', {}, 'index') || 'Error'
+      );
+      return;
+    }
+
     if (type === 'configuration' || type === 'actualLocation') {
       const configuration: Configuration | undefined =
         this.configurationAllData.configurations.find(
@@ -1214,6 +850,27 @@ export class ConfigurationComponent implements OnInit {
   ): ConfigurationExplorerFileTypeChildren[] {
     if (fileType.type === 'regular') {
       return fileType.children as ConfigurationExplorerFileTypeChildren[];
+    }
+    return [];
+  }
+
+  // Helper method to get flattened actual children without year/month hierarchy
+  getFlattenedActualChildren(
+    fileType: ConfigurationExplorerFileType
+  ): ConfigurationExplorerFileTypeChildren[] {
+    if (fileType.type === 'actual') {
+      const yearNodes = fileType.children as ConfigurationExplorerYearNode[];
+      const flattenedChildren: ConfigurationExplorerFileTypeChildren[] = [];
+      
+      yearNodes.forEach(yearNode => {
+        yearNode.children.forEach(monthNode => {
+          monthNode.children.forEach(child => {
+            flattenedChildren.push(child);
+          });
+        });
+      });
+      
+      return flattenedChildren;
     }
     return [];
   }
