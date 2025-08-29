@@ -28,7 +28,6 @@
                   <span class="configuration-category text-capitalize font-weight-bold">{{ fileType.category }}</span>
                 </div>
 
-                <!-- Handle actual category - flattened structure without year/month -->
                 <div *ngIf="fileType.type === 'actual'">
                   <div *ngFor="let child of getFlattenedActualChildren(fileType)" class="configuration-name-wrapper">
                     <div class="d-flex align-items-center py-2"
@@ -41,7 +40,6 @@
                   </div>
                 </div>
 
-                <!-- Handle other categories normally -->
                 <div *ngIf="fileType.type === 'regular'">
                   <div *ngFor="let child of getRegularChildren(fileType)" class="configuration-name-wrapper">
                     <div class="d-flex align-items-center py-2"
@@ -108,7 +106,6 @@
           </div>
         </mat-tree-node>
 
-        <!-- Year node for actual locations -->
         <mat-tree-node *matTreeNodeDef="let yearNode; when: isYearNode" matTreeNodePadding
           [class.active]="yearNode.year === selectedNode" style="cursor: pointer">
           <div matTreeNodeToggle style="display: flex; align-items: center" placement="top"
@@ -129,7 +126,6 @@
           </div>
         </mat-tree-node>
 
-        <!-- Month node for actual locations -->
         <mat-tree-node *matTreeNodeDef="let monthNode; when: isMonthNode" matTreeNodePadding
           [class.active]="monthNode.month === selectedNode" style="cursor: pointer">
           <div matTreeNodeToggle style="display: flex; align-items: center" placement="top"

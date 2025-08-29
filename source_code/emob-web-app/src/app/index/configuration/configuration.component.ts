@@ -92,17 +92,10 @@ export class ConfigurationComponent implements OnInit {
     this.loadDataConfiguration();
   }
 
-  //Limit the number of rows displayed
   private loadDataConfiguration() {
     this.spinner.show();
     this.configurationService.getConfigurations().subscribe((data) => {
-      console.log('data', data);
-
       this.configurationAllData.configurations = data.configurations;
-      
-      // Create two separate data structures:
-      // 1. configurationsExplorer - for mat-tree-top-right (dropdown) - shows all configurations
-      // 2. dataSource - for mat-tree-left (tree) - only shows configurations with fileBlobPath
       
       const depotMapForDropdown = new Map<string, ConfigurationExplorerDepot>();
       const depotMapForTree = new Map<string, ConfigurationExplorerDepot>();
@@ -113,9 +106,7 @@ export class ConfigurationComponent implements OnInit {
         const category = configuration.category;
         const type = 'configuration';
 
-        // Process for dropdown (reversed logic for actual category)
         if (category === 'actual') {
-          // For actual category: only show items where fileBlobPath is EMPTY
           if (!configuration.fileBlobPath || configuration.fileBlobPath.trim() === '') {
             if (!depotMapForDropdown.has(depotId)) {
               depotMapForDropdown.set(depotId, {
@@ -142,7 +133,6 @@ export class ConfigurationComponent implements OnInit {
             this.addActualLocationToTree(categoryObjForDropdown, configuration);
           }
         } else {
-          // For other categories: show all items (keep current logic)
           if (!depotMapForDropdown.has(depotId)) {
             depotMapForDropdown.set(depotId, {
               depotId,
@@ -165,7 +155,6 @@ export class ConfigurationComponent implements OnInit {
             depotForDropdown.fileType.push(categoryObjForDropdown);
           }
 
-          // Handle other categories normally
           (
             categoryObjForDropdown.children as ConfigurationExplorerFileTypeChildren[]
           ).push({
@@ -181,7 +170,6 @@ export class ConfigurationComponent implements OnInit {
           });
         }
 
-        // Process for tree (only configurations with fileBlobPath)
         if (configuration.fileBlobPath && configuration.fileBlobPath.trim() !== '') {
           if (!depotMapForTree.has(depotId)) {
             depotMapForTree.set(depotId, {
@@ -205,11 +193,9 @@ export class ConfigurationComponent implements OnInit {
             depotForTree.fileType.push(categoryObjForTree);
           }
 
-          // Handle actual category differently - group by year and month
           if (category === 'actual') {
             this.addActualLocationToTree(categoryObjForTree, configuration);
           } else {
-            // Handle other categories normally
             (
               categoryObjForTree.children as ConfigurationExplorerFileTypeChildren[]
             ).push({
@@ -227,19 +213,16 @@ export class ConfigurationComponent implements OnInit {
         }
       });
 
-      // Clean up empty categories and depots for dropdown
       this.configurationsExplorer = Array.from(depotMapForDropdown.values())
         .map(depot => ({
           ...depot,
           fileType: depot.fileType.filter(category => {
             if (category.type === 'actual') {
-              // For actual categories, check if there are any files in year/month nodes
               const yearNodes = category.children as ConfigurationExplorerYearNode[];
               return yearNodes.some(yearNode => 
                 yearNode.children.some(monthNode => monthNode.children.length > 0)
               );
             } else {
-              // For regular categories, check if there are any files
               const children = category.children as ConfigurationExplorerFileTypeChildren[];
               return children.length > 0;
             }
@@ -247,19 +230,16 @@ export class ConfigurationComponent implements OnInit {
         }))
         .filter(depot => depot.fileType.length > 0);
 
-      // Clean up empty categories and depots for tree
       const treeData = Array.from(depotMapForTree.values())
         .map(depot => ({
           ...depot,
           fileType: depot.fileType.filter(category => {
             if (category.type === 'actual') {
-              // For actual categories, check if there are any files in year/month nodes
               const yearNodes = category.children as ConfigurationExplorerYearNode[];
               return yearNodes.some(yearNode => 
                 yearNode.children.some(monthNode => monthNode.children.length > 0)
               );
             } else {
-              // For regular categories, check if there are any files
               const children = category.children as ConfigurationExplorerFileTypeChildren[];
               return children.length > 0;
             }
@@ -267,107 +247,11 @@ export class ConfigurationComponent implements OnInit {
         }))
         .filter(depot => depot.fileType.length > 0);
 
-      // Set dataSource for tree (only configurations with fileBlobPath)
       this.dataSource = treeData;
 
-      console.log('this.configurationsExplorer (dropdown):', this.configurationsExplorer);
-      console.log('this.dataSource (tree):', this.dataSource);
       this.spinner.hide();
     });
   }
-
-  // private loadDataConfiguration() {
-  //   this.spinner.show();
-
-  //   // Use mock data for testing instead of service call
-  //   const data = this.mockData;
-  //   console.log('Using mock data:', data);
-
-  //   this.configurationAllData.configurations = data.configurations;
-  //   const depotMap = new Map<string, ConfigurationExplorerDepot>();
-
-  //   data.configurations.forEach((configuration: Configuration) => {
-  //     const depotId = configuration.depotId;
-  //     const depotName = configuration.depot?.depotName;
-  //     const category = configuration.category;
-  //     const type = 'configuration';
-
-  //     if (!depotMap.has(depotId)) {
-  //       depotMap.set(depotId, {
-  //         depotId,
-  //         depotName,
-  //         fileType: [],
-  //       });
-  //     }
-
-  //     const depot = depotMap.get(depotId)!;
-  //     let categoryObj = depot.fileType.find(
-  //       (ft: ConfigurationExplorerFileType) => ft.category === category
-  //     );
-
-  //     if (!categoryObj) {
-  //       categoryObj = {
-  //         category,
-  //         type: category === 'actual' ? 'actual' : 'regular',
-  //         children: [],
-  //       };
-  //       depot.fileType.push(categoryObj);
-  //     }
-
-  //     // Handle actual category differently - group by year and month
-  //     if (category === 'actual') {
-  //       this.addActualLocationToTree(categoryObj, configuration);
-  //     } else {
-  //       // Handle other categories normally
-  //       (categoryObj.children as ConfigurationExplorerFileTypeChildren[]).push({
-  //         name: configuration.name,
-  //         timestamp: formatDate(
-  //           configuration.timestamp,
-  //           'dd-MMM-YYYY HH:mm:ss',
-  //           'en-US'
-  //         ),
-  //         type,
-  //         depotId,
-  //       });
-  //     }
-  //   });
-
-  //   this.configurationsExplorer = Array.from(depotMap.values());
-  //   this.dataSource = this.configurationsExplorer;
-
-  //   // Debug: Log the final tree structure
-  //   console.log('Final tree structure:');
-  //   this.configurationsExplorer.forEach((depot) => {
-  //     console.log(`Depot: ${depot.depotName}`);
-  //     depot.fileType.forEach((category) => {
-  //       console.log(`  Category: ${category.category} (${category.type})`);
-  //       if (category.type === 'actual') {
-  //         const yearNodes =
-  //           category.children as ConfigurationExplorerYearNode[];
-  //         yearNodes.forEach((yearNode) => {
-  //           console.log(`    Year: ${yearNode.year}`);
-  //           yearNode.children.forEach((monthNode) => {
-  //             console.log(
-  //               `      Month: ${monthNode.month} (${monthNode.children.length} files)`
-  //             );
-  //             monthNode.children.forEach((file) => {
-  //               console.log(`        File: ${file.name}`);
-  //             });
-  //           });
-  //         });
-  //       } else {
-  //         const regularChildren =
-  //           category.children as ConfigurationExplorerFileTypeChildren[];
-  //         console.log(`    Regular files: ${regularChildren.length}`);
-  //         regularChildren.forEach((file) => {
-  //           console.log(`      File: ${file.name}`);
-  //         });
-  //       }
-  //     });
-  //   });
-
-  //   this.spinner.hide();
-  // }
 
   private addActualLocationToTree(
     categoryObj: ConfigurationExplorerFileType,
@@ -378,14 +262,8 @@ export class ConfigurationComponent implements OnInit {
     const monthNumber = timestamp.getMonth() + 1;
     const month = monthNumber.toString().padStart(2, '0');
 
-    // Use month numbers (01-12) for display
-    const monthDisplay = month; // 01, 02, 03, etc.
+    const monthDisplay = month;
 
-    console.log(`Processing actual location: ${configuration.name}`);
-    console.log(`  Timestamp: ${configuration.timestamp}`);
-    console.log(`  Year: ${year}, Month: ${month} (${monthDisplay})`);
-
-    // Find or create year node
     let yearNode = (
       categoryObj.children as ConfigurationExplorerYearNode[]
     ).find((yn: ConfigurationExplorerYearNode) => yn.year === year);
@@ -396,42 +274,32 @@ export class ConfigurationComponent implements OnInit {
         children: [],
       };
       (categoryObj.children as ConfigurationExplorerYearNode[]).push(yearNode);
-      console.log(`  Created new year node: ${year}`);
 
-      // Sort years in chronological order (2024, 2025, etc.)
       (categoryObj.children as ConfigurationExplorerYearNode[]).sort((a, b) => {
         const yearA = parseInt(a.year);
         const yearB = parseInt(b.year);
         return yearA - yearB;
       });
-    } else {
-      console.log(`  Found existing year node: ${year}`);
     }
 
-    // Find or create month node
     let monthNode = yearNode.children.find(
       (mn: ConfigurationExplorerMonthNode) => mn.month === monthDisplay
     );
 
     if (!monthNode) {
       monthNode = {
-        month: monthDisplay, // Use month number (01, 02, etc.)
+        month: monthDisplay,
         children: [],
       };
       yearNode.children.push(monthNode);
-      console.log(`  Created new month node: ${monthDisplay}`);
 
-      // Sort months in chronological order (01, 02, 03, ..., 12)
       yearNode.children.sort((a, b) => {
         const monthA = parseInt(a.month);
         const monthB = parseInt(b.month);
         return monthA - monthB;
       });
-    } else {
-      console.log(`  Found existing month node: ${monthDisplay}`);
     }
 
-    // Add the file to the month node
     monthNode.children.push({
       name: configuration.name,
       timestamp: formatDate(
@@ -443,24 +311,14 @@ export class ConfigurationComponent implements OnInit {
       depotId: configuration.depotId,
       blobPath: configuration.fileBlobPath,
     });
-
-    console.log(`  Added file to month node: ${configuration.name}`);
-    console.log(
-      `  Current year node children count: ${yearNode.children.length}`
-    );
-    console.log(
-      `  Current month node children count: ${monthNode.children.length}`
-    );
   }
+
   get limitedExcelData() {
-    const maxRows = 10; // Set the maximum number of rows to display
+    const maxRows = 10;
     return this.excelData.slice(0, maxRows);
   }
 
   onChangeFile(fileName: string, type: string, blobPath: string) {
-    console.log(fileName, type, blobPath);
-    
-    // Check if blobPath is empty
     if (!blobPath || blobPath.trim() === '') {
       this.toastr.error(
         this.transloco.translate('error_no_file_path', {}, 'index') || 'No file path available',
@@ -501,7 +359,6 @@ export class ConfigurationComponent implements OnInit {
         }
       }
     } catch (error) {
-      console.error(error);
       this.hiddenSpinner();
     }
 
@@ -584,6 +441,7 @@ export class ConfigurationComponent implements OnInit {
       fullScreen: false,
     });
   }
+
   hiddenSpinner() {
     setTimeout(() => {
       this.spinner.hide('configuration');
@@ -666,9 +524,8 @@ export class ConfigurationComponent implements OnInit {
       }
     }
   }
-  downloadFile(url: string, hideSpinnerOnError: boolean = false) {
-    console.log('url', url);
 
+  downloadFile(url: string, hideSpinnerOnError: boolean = false) {
     if (!url || url.trim() === '') {
       this.toastr.error(
         this.transloco.translate('error_no_url_provided', {}, 'index'),
@@ -696,14 +553,14 @@ export class ConfigurationComponent implements OnInit {
         const link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
         link.download = fileName;
-        link.target = '_blank'; // Open in a new window
+        link.target = '_blank';
         link.click();
         this.spinner.hide();
         this.toastr.success(
           this.transloco.translate('success_to_download_plan', {}, 'index'),
           this.transloco.translate('download_plan', {}, 'index')
         );
-        window.URL.revokeObjectURL(link.href); // Clean up
+        window.URL.revokeObjectURL(link.href);
       } else {
         console.error('Download failed: Blob is null');
         this.spinner.hide();
@@ -712,11 +569,6 @@ export class ConfigurationComponent implements OnInit {
   }
 
   getFileUrl(fileName: string, type: string, blobPath: string) {
-    console.log('fileName', fileName);
-    console.log('type', type);
-    console.log('blobPath', blobPath);
-
-    // Check if blobPath is empty
     if (!blobPath || blobPath.trim() === '') {
       this.toastr.error(
         this.transloco.translate('error_no_file_path', {}, 'index') || 'No file path available',
@@ -835,7 +687,6 @@ export class ConfigurationComponent implements OnInit {
     return monthNode.month;
   }
 
-  // Helper methods to get children with proper typing
   getYearChildren(
     fileType: ConfigurationExplorerFileType
   ): ConfigurationExplorerYearNode[] {
@@ -854,7 +705,6 @@ export class ConfigurationComponent implements OnInit {
     return [];
   }
 
-  // Helper method to get flattened actual children without year/month hierarchy
   getFlattenedActualChildren(
     fileType: ConfigurationExplorerFileType
   ): ConfigurationExplorerFileTypeChildren[] {
