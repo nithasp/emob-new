@@ -1,17 +1,19 @@
+import { DepotInputRequirement } from "./experiment.model";
+
 export interface Vehicle {
   companyName: string;
-  vehicleIds: string;
+  vehicleId: string;
   licensePlate: string;
-  startDepotId: Depot;
-  endDepotId: Depot;
-  vehicleTypeId: string;
-  vehicleType: VehicleType;
+  startDepotId: string;
+  endDepotId: string;
+  vehicleType: any;
   isActive: boolean;
   createdAt: string;
   modifiedAt: string;
 }
 
 export interface Depot {
+  companyName?: string;
   depotId: string;
   depotName: string;
   latitude: number;
@@ -20,11 +22,12 @@ export interface Depot {
   tw_late: string;
   createdAt: string;
   updatedAt: string;
+  inputdata?: DepotInputRequirement[];
 }
 
 export interface MyVehicles {
   companyName: string;
-  vehicleIds: string;
+  vehicleId: string;
   licensePlate: string;
   startDepotId: Depot;
   endDepotId: Depot;

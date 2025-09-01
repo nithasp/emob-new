@@ -117,10 +117,9 @@ export class VehicleDialogComponent implements OnInit {
           this.vehicleTypeOptions = data.vehicleTypes;
           this.startDepotOptions = data.depots;
           this.endDepotOptions = data.depots;
-
           if (
             (this.isEditMode || this.isViewMode) &&
-            this.data.vehicle?.vehicleIds
+            this.data.vehicle?.vehicleId
           ) {
             this.fetchAndPatchVehicleData();
           }
@@ -135,14 +134,16 @@ export class VehicleDialogComponent implements OnInit {
   }
 
   fetchAndPatchVehicleData(): void {
-    if (!this.data.vehicle?.vehicleIds) {
+    console.log('fetchAndPatchVehicleData');
+    if (!this.data.vehicle?.vehicleId) {
       return;
     }
 
-    this.vehicleService.getMyVehicle(this.data.vehicle.vehicleIds).subscribe({
+    this.vehicleService.getMyVehicle(this.data.vehicle.vehicleId).subscribe({
       next: (vehicleData: MyVehicles) => {
+        console.log('vehicleData', vehicleData);
         this.form.patchValue({
-          vehicleType: vehicleData.vehicleTypeId,
+          vehicleType: vehicleData.vehicleType.vehicleTypeId,
           startDepot: vehicleData.startDepotId?.depotId,
           endDepot: vehicleData.endDepotId?.depotId,
           licensePlate: vehicleData.licensePlate,
@@ -311,7 +312,7 @@ export class VehicleDialogComponent implements OnInit {
     };
     this.spinner.show();
     this.vehicleService
-      .updateVehicle(this.data.vehicle!.vehicleIds, payload)
+      .updateVehicle(this.data.vehicle!.vehicleId, payload)
       .pipe(finalize(() => this.spinner.hide()))
       .subscribe({
         next: (updatedVehicle: MyVehicles) => {
@@ -342,11 +343,11 @@ export class VehicleDialogComponent implements OnInit {
   }
 
   handleDeleteVehicle(): void {
-    if (this.data.vehicle && this.data.vehicle.vehicleIds) {
+    if (this.data.vehicle && this.data.vehicle.vehicleId) {
       this.isSaving = true;
       this.spinner.show();
       this.vehicleService
-        .deleteVehicle(this.data.vehicle.vehicleIds)
+        .deleteVehicle(this.data.vehicle.vehicleId)
         .pipe(finalize(() => this.spinner.hide()))
         .subscribe({
           next: (result: boolean) => {
@@ -361,7 +362,7 @@ export class VehicleDialogComponent implements OnInit {
               this.dialogRef.close({
                 success: true,
                 operation: 'delete',
-                vehicleIds: this.data.vehicle!.vehicleIds,
+                vehicleId: this.data.vehicle!.vehicleId,
               });
             }
           },

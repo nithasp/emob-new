@@ -46,7 +46,7 @@ export class VehicleService {
           query myVehicles {
             myVehicles {
               companyName
-              vehicleIds
+              vehicleId
               licensePlate
               startDepotId {
                 depotId
@@ -68,7 +68,6 @@ export class VehicleService {
                 createdAt
                 updatedAt
               }
-              vehicleTypeId
               vehicleType {
                 vehicleTypeId
                 name
@@ -103,14 +102,14 @@ export class VehicleService {
       );
   }
 
-  getMyVehicle(vehicleIds: string): Observable<MyVehicles> {
+  getMyVehicle(vehicleId: string): Observable<MyVehicles> {
     return this.apollo
       .query<Response>({
         query: gql`
-          query myVehicle($vehicleIds: String!) {
-            myVehicle(vehicleIds: $vehicleIds) {
+          query myVehicle($vehicleId: String!) {
+            myVehicle(vehicleId: $vehicleId) {
               companyName
-              vehicleIds
+              vehicleId
               licensePlate
               startDepotId {
                 depotId
@@ -132,7 +131,6 @@ export class VehicleService {
                 createdAt
                 updatedAt
               }
-              vehicleTypeId
               vehicleType {
                 vehicleTypeId
                 name
@@ -160,7 +158,7 @@ export class VehicleService {
           }
         `,
         variables: {
-          vehicleIds: vehicleIds,
+          vehicleId: vehicleId,
         },
         fetchPolicy: 'network-only',
       })
@@ -250,49 +248,11 @@ export class VehicleService {
             createVehicle(input: $input) {
               vehicles {
                 companyName
-                vehicleIds
+                vehicleId
                 licensePlate
-                startDepotId {
-                  depotId
-                  depotName
-                  latitude
-                  longitude
-                  tw_early
-                  tw_late
-                  createdAt
-                  updatedAt
-                }
-                endDepotId {
-                  depotId
-                  depotName
-                  latitude
-                  longitude
-                  tw_early
-                  tw_late
-                  createdAt
-                  updatedAt
-                }
-                vehicleTypeId
-                vehicleType {
-                  vehicleTypeId
-                  name
-                  width
-                  height
-                  length
-                  access
-                  capacity
-                  volume
-                  twEarly
-                  twLate
-                  maxDistance
-                  maxDuration
-                  fixedCost
-                  unitDistanceCost
-                  unitDurationCost
-                  vehicleProfileType
-                  createdAt
-                  modifiedAt
-                }
+                startDepotId
+                endDepotId
+                vehicleType
                 isActive
                 createdAt
                 modifiedAt
@@ -312,19 +272,23 @@ export class VehicleService {
       );
   }
 
-  updateVehicle(vehicleIds: string, input: VehicleUpdateInput): Observable<MyVehicles> {
+  updateVehicle(
+    vehicleId: string,
+    input: VehicleUpdateInput
+  ): Observable<MyVehicles> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
           mutation updateVehicle(
-            $vehicleIds: String!
+            $vehicleId: String!
             $input: VehicleUpdateInput!
           ) {
-            updateVehicle(vehicleIds: $vehicleIds, input: $input) {
+            updateVehicle(vehicleId: $vehicleId, input: $input) {
               companyName
-              vehicleIds
+              vehicleId
               licensePlate
               startDepotId {
+                companyName
                 depotId
                 depotName
                 latitude
@@ -333,8 +297,19 @@ export class VehicleService {
                 tw_late
                 createdAt
                 updatedAt
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  createdAt
+                  modifiedAt
+                }
               }
               endDepotId {
+                companyName
                 depotId
                 depotName
                 latitude
@@ -343,8 +318,17 @@ export class VehicleService {
                 tw_late
                 createdAt
                 updatedAt
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  createdAt
+                  modifiedAt
+                }
               }
-              vehicleTypeId
               vehicleType {
                 vehicleTypeId
                 name
@@ -372,7 +356,7 @@ export class VehicleService {
           }
         `,
         variables: {
-          vehicleIds,
+          vehicleId,
           input,
         },
       })

@@ -98,7 +98,7 @@ export class VehicleComponent implements OnInit {
       if (confirmed) {
         this.spinner.show();
         this.vehicleService
-          .deleteVehicle(vehicle.vehicleIds)
+          .deleteVehicle(vehicle.vehicleId)
           .pipe(finalize(() => this.spinner.hide()))
           .subscribe({
             next: () => {
