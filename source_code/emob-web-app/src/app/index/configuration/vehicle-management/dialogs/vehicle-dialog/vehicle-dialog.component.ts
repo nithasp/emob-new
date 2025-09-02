@@ -137,22 +137,18 @@ export class VehicleDialogComponent implements OnInit {
   }
 
   fetchAndPatchVehicleData(): void {
-    console.log('fetchAndPatchVehicleData');
     if (!this.data.vehicle?.vehicleId) {
       return;
     }
 
     this.vehicleService.getMyVehicle(this.data.vehicle.vehicleId).subscribe({
       next: (vehicleData: MyVehicles) => {
-        console.log('vehicleData', vehicleData);
         this.form.patchValue({
-          vehicleType: vehicleData.vehicleType.vehicleTypeId,
+          vehicleType: vehicleData.vehicleType?.vehicleTypeId,
           startDepot: vehicleData.startDepotId?.depotId,
           endDepot: vehicleData.endDepotId?.depotId,
           licensePlate: vehicleData.licensePlate,
         });
-
-        console.log('Fresh vehicle data from API:', vehicleData);
       },
       error: (error: unknown) => {
         console.error('Error fetching vehicle data:', error);

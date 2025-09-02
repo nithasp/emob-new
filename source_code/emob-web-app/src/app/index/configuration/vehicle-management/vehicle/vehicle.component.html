@@ -16,38 +16,38 @@
 
         <ng-container matColumnDef="vehicleType">
           <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("vehicle_type") }}</th>
-          <td mat-cell *matCellDef="let v" class="text-nowrap text-center">{{ v.vehicleType.name }}</td>
+          <td mat-cell *matCellDef="let v" class="text-nowrap text-center">{{ v.vehicleType?.name }}</td>
         </ng-container>
 
         <ng-container matColumnDef="maxLoadWeight">
           <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("max_load_weight") }}</th>
           <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
-            <span>{{ v.vehicleType.capacity }} </span>
-            <span *ngIf="v.vehicleType.capacity">{{ "kg" | transloco }}</span>
+            <span>{{ v.vehicleType?.capacity }} </span>
+            <span *ngIf="v.vehicleType?.capacity">{{ "kg" | transloco }}</span>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="cargoWidth">
           <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("cargo_width") }}</th>
           <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
-            <span>{{ v.vehicleType.width }} </span>
-            <span *ngIf="v.vehicleType.width">{{ "m" | transloco }}</span>
+            <span>{{ v.vehicleType?.width }} </span>
+            <span *ngIf="v.vehicleType?.width">{{ "m" | transloco }}</span>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="cargoLength">
           <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("cargo_length") }}</th>
           <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
-            <span>{{ v.vehicleType.length }} </span>
-            <span *ngIf="v.vehicleType.length">{{ "m" | transloco }}</span>
+            <span>{{ v.vehicleType?.length }} </span>
+            <span *ngIf="v.vehicleType?.length">{{ "m" | transloco }}</span>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="cargoHeight">
           <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("cargo_height") }}</th>
           <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
-            <span>{{ v.vehicleType.height }} </span>
-            <span *ngIf="v.vehicleType.height">{{ "m" | transloco }}</span>
+            <span>{{ v.vehicleType?.height }} </span>
+            <span *ngIf="v.vehicleType?.height">{{ "m" | transloco }}</span>
           </td>
         </ng-container>
 
