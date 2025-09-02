@@ -1,9 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import { ExperimentService } from 'src/app/services/experiment.service';
@@ -96,6 +92,13 @@ export class VehicleDialogComponent implements OnInit {
 
     this.form.controls.licensePlate.setValidators(validators);
     this.form.controls.licensePlate.updateValueAndValidity();
+
+    if (
+      this.form.controls.licensePlate.value === null ||
+      this.form.controls.licensePlate.value === ''
+    ) {
+      this.form.controls.licensePlate.setErrors(null);
+    }
   }
 
   loadData(): void {
@@ -166,6 +169,12 @@ export class VehicleDialogComponent implements OnInit {
         this.form.controls.licensePlate.reset();
         this.updateLicensePlateValidators();
       }
+    } else if (licensePlateValue && !this.form.controls.licensePlate.valid) {
+      if (!this.licensePlates.includes(licensePlateValue)) {
+        this.licensePlates.push(licensePlateValue);
+        this.form.controls.licensePlate.reset();
+        this.updateLicensePlateValidators();
+      }
     }
   }
 
@@ -177,7 +186,14 @@ export class VehicleDialogComponent implements OnInit {
   save(): void {
     if (!this.isEditMode && this.licensePlates.length === 0) {
       this.form.controls.licensePlate.setErrors({ licensePlatesEmpty: true });
+      this.form.markAllAsTouched();
+      return;
     }
+
+    if (!this.isEditMode && this.licensePlates.length > 0) {
+      this.form.controls.licensePlate.setErrors(null);
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
