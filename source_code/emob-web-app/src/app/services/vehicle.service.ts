@@ -250,9 +250,68 @@ export class VehicleService {
                 companyName
                 vehicleId
                 licensePlate
-                startDepotId
-                endDepotId
-                vehicleType
+                startDepotId {
+                  companyName
+                  depotId
+                  depotName
+                  latitude
+                  longitude
+                  tw_early
+                  tw_late
+                  createdAt
+                  updatedAt
+                  inputdata {
+                    companyName
+                    depotId
+                    keyName
+                    displayName
+                    columnRequired
+                    fileFormatType
+                    createdAt
+                    modifiedAt
+                  }
+                }
+                endDepotId {
+                  companyName
+                  depotId
+                  depotName
+                  latitude
+                  longitude
+                  tw_early
+                  tw_late
+                  createdAt
+                  updatedAt
+                  inputdata {
+                    companyName
+                    depotId
+                    keyName
+                    displayName
+                    columnRequired
+                    fileFormatType
+                    createdAt
+                    modifiedAt
+                  }
+                }
+                vehicleType {
+                  vehicleTypeId
+                  name
+                  width
+                  height
+                  length
+                  access
+                  capacity
+                  volume
+                  twEarly
+                  twLate
+                  maxDistance
+                  maxDuration
+                  fixedCost
+                  unitDistanceCost
+                  unitDurationCost
+                  vehicleProfileType
+                  createdAt
+                  modifiedAt
+                }
                 isActive
                 createdAt
                 modifiedAt
@@ -366,16 +425,16 @@ export class VehicleService {
       );
   }
 
-  deleteVehicle(vehicleIds: string): Observable<boolean> {
+  deleteVehicle(vehicleId: string): Observable<boolean> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
-          mutation deleteVehicle($vehicleIds: String!) {
-            deleteVehicle(vehicleIds: $vehicleIds)
+          mutation deleteVehicle($vehicleId: String!) {
+            deleteVehicle(vehicleId: $vehicleId)
           }
         `,
         variables: {
-          vehicleIds,
+          vehicleId,
         },
       })
       .pipe(
@@ -384,14 +443,14 @@ export class VehicleService {
       );
   }
 
-  softDeleteVehicle(vehicleIds: string): Observable<MyVehicles> {
+  softDeleteVehicle(vehicleId: string): Observable<MyVehicles> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
-          mutation softDeleteVehicle($vehicleIds: String!) {
-            softDeleteVehicle(vehicleIds: $vehicleIds) {
+          mutation softDeleteVehicle($vehicleId: String!) {
+            softDeleteVehicle(vehicleId: $vehicleId) {
               companyName
-              vehicleIds
+              vehicleId
               licensePlate
               startDepotId {
                 depotId
@@ -441,7 +500,7 @@ export class VehicleService {
           }
         `,
         variables: {
-          vehicleIds,
+          vehicleId,
         },
       })
       .pipe(
