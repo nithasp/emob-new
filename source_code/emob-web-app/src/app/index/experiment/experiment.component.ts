@@ -428,7 +428,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       size: 'medium',
       bdColor: 'rgba(255,255,255, .9)',
       color: 'black',
-      fullScreen: false,
+      fullScreen: true,
     });
   }
 
