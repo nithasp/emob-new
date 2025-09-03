@@ -109,7 +109,11 @@
 
       <ng-template #noVehicleTypes>
         <div class="text-center mt-5">
-          <p>{{ t("no_vehicle_types_found") }}</p>
+          <p
+            class="vh-100 d-flex justify-content-center align-items-center h1 text-muted"
+          >
+            {{ "no_records_found" | transloco }}
+          </p>
         </div>
       </ng-template>
 

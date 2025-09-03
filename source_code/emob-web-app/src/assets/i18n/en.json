@@ -74,6 +74,7 @@
   "warning": "Warning",
   "width": "Width",
   "zipcode": "ZIPCODE",
+  "no_records_found": "No records found",
   "form": {
     "error": {
       "required": "This field is required",

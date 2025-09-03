@@ -212,7 +212,7 @@
   "cannot_open_experiment": "ไม่สามารถเปิดการทดลองได้",
   "no_report_available_to_load": "ไม่มีรายงานที่สามารถโหลดได้",
   "does_not_contain": "ไม่มีคำว่า",
-  "no_records_found": "ไม่พบข้อมูล",
+
   "worksheet_not_found": "ไม่พบแผ่นงาน",
   "does_not_end_with": "ไม่ได้ลงท้ายด้วย",
   "does_not_start_with": "ไม่ได้ขึ้นต้นด้วย",
