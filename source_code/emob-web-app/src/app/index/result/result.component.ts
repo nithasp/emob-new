@@ -21,6 +21,7 @@ import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import VectorLayer from 'ol/layer/Vector';
+import MapBrowserEvent from 'ol/MapBrowserEvent';
 import {
   defaults as defaultControls,
   ZoomSlider,
@@ -65,7 +66,16 @@ import {
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import { firstValueFrom, take } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
-import { RouteInfo } from 'src/app/models/location.model';
+import { 
+  RouteInfo, 
+  FeatureProperties, 
+  GeoJSONFeature, 
+  FeatureCollection, 
+  ReportDataItem, 
+  PreOrderDataItem, 
+  PopupContent,
+  NumberValue
+} from 'src/app/models/location.model';
 import { FormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
@@ -100,20 +110,20 @@ export class ResultComponent implements OnInit, AfterViewInit {
   public iconStyle?: Style;
   allFiles: File[] = [];
   public popUp?: Overlay;
-  public popupContent?: any;
+  public popupContent?: PopupContent;
   private dimStyle: Style;
   private highlightedFeatureCollectionId: number | null = null;
-  private featureCollections: any[] = [];
-  private featureDepots: any[] = [];
-  private featureRoutes: any[] = [];
+  private featureCollections: FeatureCollection[] = [];
+  private featureDepots: FeatureCollection[] = [];
+  private featureRoutes: FeatureCollection[] = [];
   public mapAlreadyRendered: boolean = false;
   readonly panelOpenState = signal(false);
 
   headersReport: string[] = [];
-  dataSourceReport: any[] = [];
+  dataSourceReport: ReportDataItem[] = [];
 
   dataRouteInfo = new MatTableDataSource<RouteInfo>([]);
-  searchControl = new FormControl();
+  searchControl = new FormControl<string>('');
   showFilterPanel = false;
   columnsToDisplay: string[] = [
     'route_label',
@@ -154,11 +164,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
   selectedFilterCriteria: string = 'equal';
   selectedSearchOption: string = 'route_label';
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
-  expandedElement: Array<any> = [];
+  expandedElement: RouteInfo[] = [];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('filterModal', { static: false, read: TemplateRef })
-  filterModal!: TemplateRef<any>;
+  filterModal!: TemplateRef<unknown>;
   vectorLayer!: VectorLayer;
   clusterLayer!: VectorLayer;
 
@@ -170,8 +180,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
   experiment?: Experiment;
   nodeSheetData: NodeSheet[] = [];
   planDetailData: PlanDetail[] = [];
-  preOrderData: any[] = [];
-  routeInfoDetails: any = null;
+  preOrderData: PreOrderDataItem[] = [];
+  routeInfoDetails: RouteInfo | null = null;
   visibleRoutes = new Set<number>();
 
   isLoading: boolean = true;
@@ -251,15 +261,17 @@ export class ResultComponent implements OnInit, AfterViewInit {
       value: string;
     };
     const rawValue = data[column as keyof RouteInfo];
-    return this.evaluateFilter(column, rawValue, value);
+    return this.evaluateFilter(column, rawValue as number, value);
   }
 
   evaluateFilter(
     column: string,
-    rawValue: any,
+    rawValue: number,
     searchValue: string,
     crit?: string
   ): boolean {
+    console.log('rawValue', rawValue);
+
     const critUsed = crit ?? this.selectedFilterCriteria;
     const search = searchValue.trim().toLowerCase();
     let displayValue: number | string;
@@ -330,7 +342,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     await this.fetchAndParseExcel(arrayBuffer, 1);
     await this.fetchAndParseExcel(arrayBuffer, 3);
   }
-  calculateDuration(start: any, end: any): number {
+  calculateDuration(start: string | Date | number, end: string | Date | number): number {
     if (!start || !end) return 0;
     const startTime = new Date(start).getTime();
     const endTime = new Date(end).getTime();
@@ -402,7 +414,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   createFilter(): (data: RouteInfo, filter: string) => boolean {
     return (data: RouteInfo, filter: string): boolean => {
       const searchTerms = JSON.parse(filter);
-      return Object.keys(searchTerms).every((key: any) => {
+      return Object.keys(searchTerms).every((key: string) => {
         const value = data[key as keyof RouteInfo];
         const searchValues = searchTerms[key]
           .split(',')
@@ -410,13 +422,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
         if (Array.isArray(value)) {
           return searchValues.every((searchValue: string) =>
-            value.some((item: any) =>
+            value.some((item: string | number) =>
               item.toString().toLowerCase().includes(searchValue)
             )
           );
         } else {
           return searchValues.some((searchValue: string) => {
             if (searchValue === '') return false;
+            if (value === null || value === undefined) return false;
             return value.toString().toLowerCase() === searchValue;
           });
         }
@@ -427,7 +440,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   private async loadAndProcessGeoJSON(url: string): Promise<void> {
     const geoJson = await this.dataFromFileUrlToJson(url);
     this.featureCollections = geoJson.routes.map(
-      (rc: { features: { properties: { route_index: number } }[] }) => ({
+      (rc: FeatureCollection) => ({
         ...rc,
         route_index: rc.features[0]?.properties?.route_index,
       })
@@ -436,7 +449,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.featureRoutes = geoJson.routes;
 
     const allFeatures: Feature<Geometry>[] = [];
-    geoJson.routes.forEach((item: any, index_: number) => {
+    geoJson.routes.forEach((item: FeatureCollection, index_: number) => {
       const itemFeatures = new GeoJSON().readFeatures(item, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
@@ -490,7 +503,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     });
 
     const depotFeatures: Feature<Geometry>[] = [];
-    geoJson.depots.forEach((depot: any) => {
+    geoJson.depots.forEach((depot: FeatureCollection) => {
       const itemFeatures = new GeoJSON().readFeatures(depot, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
@@ -602,7 +615,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.map.addOverlay(this.popUp);
   }
 
-  handlePointerMove(event: any): void {
+  handlePointerMove(event: MapBrowserEvent<UIEvent>): void {
     // show popup and compute hovered feature
     let coordinates: Coordinate;
     const feature = this.map.forEachFeatureAtPixel(event.pixel, (feat) => feat);
@@ -678,13 +691,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.clusterLayer.getSource()?.changed();
   }
 
-  handleClick(event: any): void {
-    const feature = this.map.forEachFeatureAtPixel(event.pixel, (feat) => feat);
+  handleClick(event: MapBrowserEvent<UIEvent>): void {
+    const feature = this.map.forEachFeatureAtPixel(event.pixel, (feat: FeatureLike) => feat);
     if (!feature || feature.getGeometry()?.getType() !== 'LineString') {
       return;
     }
 
-    const routeIndex = feature.getProperties()['route_index'];
+    const routeIndex: number | undefined = feature.getProperties()['route_index'];
     if (routeIndex == null) {
       console.error('Clicked LineString has no route_index');
       return;
@@ -693,7 +706,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.openRouteDetails(routeIndex);
   }
 
-  private pointMove(evt: any): void {
+  private pointMove(evt: MapBrowserEvent<UIEvent>): void {
     const target = this.map.getTargetElement();
     const pixel = this.map.getEventPixel(evt.originalEvent);
     const hit = this.map.hasFeatureAtPixel(pixel);
@@ -705,7 +718,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     }
   }
 
-  openModal(featureCollection: any, featureDepots: any[]): void {
+  openModal(featureCollection: FeatureCollection, featureDepots: FeatureCollection[]): void {
     const modalRef = this.ngbModal.open(MapDetailsDialogComponent, {
       size: 'xl',
       centered: true,
@@ -886,8 +899,41 @@ export class ResultComponent implements OnInit, AfterViewInit {
     return 'expanded';
   }
 
-  isNumber(value: any): boolean {
-    return !isNaN(value);
+  isNumber(value: NumberValue): boolean {
+    if (value === null || value === undefined) {
+      return false;
+    }
+
+    if (typeof value === 'object') {
+      const stringValue = String(value);
+      return !isNaN(Number(stringValue));
+    }
+    
+    return !isNaN(Number(value));
+  }
+
+  getNumberValue(value: NumberValue): number {
+    if (value === null || value === undefined) {
+      return 0;
+    }
+    
+    if (typeof value === 'boolean') {
+      return value ? 1 : 0;
+    }
+    
+    if (typeof value === 'number') {
+      return value;
+    }
+    
+    if (typeof value === 'object') {
+      // For objects, try to convert to string first
+      const stringValue = String(value);
+      const numValue = Number(stringValue);
+      return isNaN(numValue) ? 0 : numValue;
+    }
+
+    const numValue = Number(value);
+    return isNaN(numValue) ? 0 : numValue;
   }
   haveTime(): boolean {
     return (
@@ -895,7 +941,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     );
   }
 
-  applyFilter(p0: any = ''): void {
+  applyFilter(searchValue: string = ''): void {
     const raw = this.searchControl.value?.toString().trim();
     if (!raw) return;
 
@@ -943,7 +989,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     return filters.some((f) =>
       this.evaluateFilter(
         f.column,
-        data[f.column as keyof RouteInfo],
+        data[f.column as keyof RouteInfo] as number,
         f.value,
         f.criteria
       )
@@ -965,13 +1011,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     this.routeInfoDetails = this.dataRouteInfo.data.find(
       (r) => r.route_index === routeIndex
-    );
+    ) || null;
 
-    const collection = this.featureCollections.find((collection: any) => {
-      return collection.features.some((feature: any) => {
+    const collection = this.featureCollections.find((collection: FeatureCollection) => {
+      return collection.features.some((feature: GeoJSONFeature) => {
         if (feature.properties.route_index === routeIndex) {
-          depotStartId = feature.properties.start_depot_id;
-          depotEndId = feature.properties.end_depot_id;
+          depotStartId = feature.properties.start_depot_id || null;
+          depotEndId = feature.properties.end_depot_id || null;
           return collection.route_index === routeIndex;
         }
         return false;
@@ -983,17 +1029,43 @@ export class ResultComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const featureDepots: any[] = [];
+    const featureDepots: FeatureCollection[] = [];
+    
+    // Debug logging
+    console.log('featureDepots array:', this.featureDepots);
+    console.log('depotStartId:', depotStartId, 'depotEndId:', depotEndId);
+    
+    // Check if featureDepots is properly initialized
+    if (!this.featureDepots || !Array.isArray(this.featureDepots)) {
+      console.error('featureDepots is not properly initialized:', this.featureDepots);
+      return;
+    }
+    
     if (this.featureDepots.length === 1) {
       featureDepots.push(this.featureDepots[0]);
-    }
-    {
-      const matchingDepots = this.featureDepots.filter((depot: any) =>
-        [depotStartId, depotEndId].includes(depot.properties.depot_id)
-      );
+    } else {
+      const matchingDepots = this.featureDepots.filter((depot: FeatureCollection) => {
+        // Check if depot has features and at least one feature exists
+        if (!depot || !depot.features || !Array.isArray(depot.features) || depot.features.length === 0) {
+          console.warn('Depot missing features or invalid structure:', depot);
+          return false;
+        }
+        
+        // Safely access the first feature and its properties
+        const firstFeature = depot.features[0];
+        if (!firstFeature || !firstFeature.properties) {
+          console.warn('Depot feature missing properties:', firstFeature);
+          return false;
+        }
+        
+        const depotId = firstFeature.properties.depot_id || null;
+        const isMatch = [depotStartId, depotEndId].includes(depotId);
+        console.log('Checking depot:', depotId, 'isMatch:', isMatch);
+        return isMatch;
+      });
       featureDepots.push(...matchingDepots);
     }
-    if (!featureDepots) {
+    if (featureDepots.length === 0) {
       console.error(
         `No depot found with depot_id ${depotStartId} : ${depotEndId}`
       );
@@ -1407,12 +1479,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
       );
 
       const matchedPreOrderData = this.preOrderData.find(
-        (item) => item.ORDERID === matchedItem?.node_name
+        (item) => item['ORDERID'] === matchedItem?.node_name
       );
 
-      const matchedFC = this.featureRoutes.find((fc) =>
+      const matchedFC = this.featureRoutes.find((fc: FeatureCollection) =>
         fc.features.some(
-          (feature: any) => feature.properties.node_index === distance
+          (feature: GeoJSONFeature) => feature.properties.node_index === distance
         )
       );
 
@@ -1421,7 +1493,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         ...matchedPreOrderData,
         validation_type: matchedItem?.validation_type,
         replace_type: matchedItem?.replace_type,
-        PROVINCE: matchedPreOrderData.PROVICE || '',
+        PROVINCE: matchedPreOrderData?.['PROVICE'] || '',
       };
 
       planDetails = {
@@ -1430,27 +1502,27 @@ export class ResultComponent implements OnInit, AfterViewInit {
       };
       const matchedFeatureRoutes = {
         ...matchedFC,
-        features: matchedFC.features.filter(
-          (feature: any) => feature.properties.node_index === distance
-        ),
+        features: matchedFC?.features.filter(
+          (feature: GeoJSONFeature) => feature.properties.node_index === distance
+        ) || [],
       };
 
-      if (matchedFC) {
+      if (matchedFC && matchedFeatureRoutes.features && matchedFeatureRoutes.features[0]) {
         const { type, properties, geometry } = matchedFeatureRoutes.features[0];
 
         planDetails = {
           ORDERID_ORG: properties.name,
-          CHANNEL: properties.extra.channel,
-          CUSTOMER_NAME: properties.extra.customer_name,
-          TEL: properties.extra.tel,
-          AUMPHER: properties.original_address.district,
-          PROVINCE: properties.original_address.province,
-          ZIPCODE: properties.original_address.postal_code,
-          ADDRESS: properties.original_address.address,
+          CHANNEL: properties.extra?.channel,
+          CUSTOMER_NAME: properties.extra?.customer_name,
+          TEL: properties.extra?.tel,
+          AUMPHER: properties.original_address?.district,
+          PROVINCE: properties.original_address?.province,
+          ZIPCODE: properties.original_address?.postal_code,
+          ADDRESS: properties.original_address?.address,
           latitude: geometry.coordinates[1],
           longitude: geometry.coordinates[0],
 
-          details: properties.extra.products_info.map((product: any) => ({
+          details: properties.extra?.products_info?.map((product) => ({
             PRODUCTID: product.product_id,
             ORDER_ID: product.order_id,
             PRODUCTNAME: product.product_name,
@@ -1495,7 +1567,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   async downloadExcelFromUrlAsJson(
     location: string
-  ): Promise<Array<{ [key: string]: any }>> {
+  ): Promise<PreOrderDataItem[]> {
     try {
       const arrayBuffer = await this.fetchDataFromFileUrl(location);
       const workbook = new Workbook();
@@ -1515,7 +1587,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       });
 
       // parse rows
-      const result: Array<Record<string, any>> = [];
+      const result: Record<string, any>[] = [];
       worksheet.eachRow((row, rowNumber) => {
         if (rowNumber === 1) return;
         const obj: Record<string, any> = {};
@@ -1526,12 +1598,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
         result.push(obj);
       });
 
-      const transformed = result.map((r) => this.splitLatLng(r));
+      const transformed: PreOrderDataItem[] = result.map((r) => this.splitLatLng(r)) as PreOrderDataItem[];
 
       this.preOrderData = transformed;
       console.log('this.preOrderData', this.preOrderData);
       return transformed;
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('downloadExcelFromUrlAsJson failed', err);
       this.toastr.error('Failed to fetch or parse PreOrder file');
       return [];

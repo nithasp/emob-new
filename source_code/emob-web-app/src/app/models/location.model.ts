@@ -73,3 +73,63 @@ export interface RouteInfo {
     weight: number;
     zone: string[];
 }
+
+export interface FeatureProperties {
+    route_index?: number;
+    start_depot_id?: number;
+    end_depot_id?: number;
+    depot_id?: number;
+    node_index?: number;
+    name?: string;
+    extra?: {
+        channel?: string;
+        customer_name?: string;
+        tel?: string;
+        products_info?: Array<{
+            product_id: string;
+            order_id: string;
+            product_name: string;
+            quantity_major: number;
+            quantity_minor: number;
+            user_confirm: string;
+            date_confirm: string;
+        }>;
+    };
+    original_address?: {
+        district: string;
+        province: string;
+        postal_code: string;
+        address: string;
+    };
+}
+
+export interface GeoJSONFeature {
+    type: string;
+    properties: FeatureProperties;
+    geometry: {
+        type: string;
+        coordinates: number[];
+    };
+}
+
+export interface FeatureCollection {
+    type: string;
+    features: GeoJSONFeature[];
+    route_index?: number;
+}
+
+export interface ReportDataItem {
+    [key: string]: string | number | boolean;
+}
+
+export interface PreOrderDataItem {
+    ORDERID: string;
+    PROVICE?: string;
+    [key: string]: string | number | boolean | undefined;
+}
+
+export interface PopupContent {
+    [key: string]: string | number | boolean | object | undefined;
+}
+
+export type NumberValue = string | number | boolean | object | null | undefined;
