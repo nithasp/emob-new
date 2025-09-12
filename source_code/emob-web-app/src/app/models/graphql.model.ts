@@ -1,5 +1,5 @@
 import { ActualLocation, Configuration } from './configuration.model';
-import { Constraint } from './constraint.model';
+import { Constraint, DynamicParameter, DeleteDynamicParameter } from './constraint.model';
 import { DownloadResultFile, Experiment, ExperimentState } from './experiment.model';
 
 export interface Response {
@@ -27,6 +27,9 @@ export interface Response {
   actualLocation: ActualLocation;
   uploadActualLocation: ActualLocation;
   downloadResultFile: DownloadResultFile;
+  dynamicParameters: DynamicParameter[];
+  updateDynamicParameter: DynamicParameter;
+  deleteDynamicParameter: DeleteDynamicParameter;
 }
 
 export interface Error {

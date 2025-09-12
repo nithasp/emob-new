@@ -42,7 +42,7 @@ import {
 } from 'src/app/models/pre-order.model';
 import Style from 'ol/style/Style';
 import { ConstraintService } from 'src/app/services/constraint.service';
-import { Constraint } from 'src/app/models/constraint.model';
+import { Constraint, DynamicParameter } from 'src/app/models/constraint.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Experiment,
@@ -328,7 +328,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                         this.router.navigate(['/users/experiments']);
                       });
                     } else if (!this.experiment.preOrderBlobPath) {
-                      this.initializeDefaultParameter();
+                      this.getDynamicParameters();
                       this.isFilePreview = true;
                     } else {
                       this.initializeDataFromExperiment(
@@ -373,7 +373,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
       );
     } else {
-      this.initializeDefaultParameter();
+      this.getDynamicParameters();
     }
 
     this.toastr.info(
@@ -2133,5 +2133,64 @@ export class RunComponent implements OnInit, AfterViewInit {
       .catch(() => {
         // dismissed: do nothing
       });
+  }
+
+  getDynamicParameters() {
+    this.constraintService
+      .getDynamicParameters('parameters')
+      .subscribe((response: DynamicParameter[]) => {
+        console.log('Dynamic parameters response', response);
+        this.constraintsData = this.transformDynamicParametersToConstraint(response);
+        console.log('Transformed constraints data', this.constraintsData);
+
+        if (this.isCreateMode) {
+          this.spinner.hide();
+        }
+      });
+  }
+
+  transformDynamicParametersToConstraint(dynamicParameters: DynamicParameter[]): Constraint {
+    const constraint: Constraint = {
+      MaxWorkDuration: 0,
+      maxTravelDistance: 0,
+      deliveryTime: '',
+      limitVehicleCapacity: 0,
+      availableCar: 0,
+      earlyDeliveryTime: '',
+      backToDepotTime: '',
+      maximumWorkDuration: '',
+      numberOfVehicleAvailable: 0,
+      vehicleOrderSizeCapacity: 0,
+      maximumTravelDistance: 0,
+      serviceDurationTime: ''
+    };
+
+    dynamicParameters.forEach(param => {
+      switch (param.keyName) {
+        case 'EarlyDeliveryTime':
+          constraint.earlyDeliveryTime = param.value as string;
+          break;
+        case 'BackToDepotTime':
+          constraint.backToDepotTime = param.value as string;
+          break;
+        case 'MaximumWorkDuration':
+          constraint.maximumWorkDuration = param.value as string;
+          break;
+        case 'NumberOfVehicleAvailable':
+          constraint.numberOfVehicleAvailable = param.value as number;
+          break;
+        case 'VehicleOrderSizeCapacity':
+          constraint.vehicleOrderSizeCapacity = param.value as number;
+          break;
+        case 'MaximumTravelDistance':
+          constraint.maximumTravelDistance = param.value as number;
+          break;
+        case 'ServiceDurationTime':
+          constraint.serviceDurationTime = param.value as string;
+          break;
+      }
+    });
+
+    return constraint;
   }
 }
