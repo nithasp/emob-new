@@ -23,8 +23,15 @@ export type TimingAndCapacity = Pick<
   | 'serviceDurationTime'
 >;
 
+export interface LocalizedText {
+  th_TH: string;
+  en_US: string;
+}
+
 export interface JoiConfig {
-  pattern?: Record<string, any>;
+  type: string;
+  required: boolean;
+  pattern?: string;
   min?: number;
   max?: number;
   message: string;
@@ -33,30 +40,32 @@ export interface JoiConfig {
 export interface DynamicParameter {
   companyName: string;
   id: string;
-  category: string;
+  category: LocalizedText;
+  depotId: string;
   keyName: string;
-  displayName: string;
+  displayName: LocalizedText;
   valueType: string;
   value: string | number;
   joiConfig: JoiConfig;
   isRequired: boolean;
   defaultValue: string;
-  description: string;
+  description: LocalizedText;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface DynamicParameterUpdateInput {
   companyName?: string;
-  category?: string;
+  category?: LocalizedText;
+  depotId?: string;
   keyName?: string;
-  displayName?: string;
+  displayName?: LocalizedText;
   valueType?: string;
   value?: string | number;
   joiConfig?: JoiConfig;
   isRequired?: boolean;
   defaultValue?: string;
-  description?: string;
+  description?: LocalizedText;
 }
 
 export interface DeleteDynamicParameter {
