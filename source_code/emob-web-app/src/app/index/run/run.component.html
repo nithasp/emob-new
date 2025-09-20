@@ -431,7 +431,7 @@
                 </ngb-alert>
                 }
                 <mat-accordion [multi]="true">
-                  <mat-expansion-panel [expanded]="true" *ngFor="let group of dynamicParametersByCategory">
+                  <mat-expansion-panel [expanded]="true" *ngFor="let group of dynamicParametersByCategory; trackBy: trackByGroup">
                     <mat-expansion-panel-header>
                       <mat-panel-title>
                         {{ getLocalized(group.items[0].category) || group.key }}
@@ -444,7 +444,7 @@
                     <ul class="list-unstyled">
                       <li>
                         <ul>
-                          <li *ngFor="let p of group.items" [ngClass]="{
+                          <li *ngFor="let p of group.items; trackBy: trackByParam" [ngClass]="{
                               'text-highlight': (isOverWeightKey(p) && validateExperiment && validateExperiment.filters.constraints.over_weight.length > 0)
                                                || (isOverDistanceKey(p) && validateExperiment && validateExperiment.filters.constraints.over_distance.length > 0)
                             }">

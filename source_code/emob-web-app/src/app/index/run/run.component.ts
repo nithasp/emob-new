@@ -273,6 +273,14 @@ export class RunComponent implements OnInit, AfterViewInit {
     return this.depotInputDataItems.map((item) => item.displayName);
   }
 
+  // trackBy helpers to keep accordion stable across change detection/language swaps
+  trackByGroup(index: number, group: { key: string; items: DynamicParameter[] }): string {
+    return group.key;
+  }
+  trackByParam(index: number, p: DynamicParameter): string {
+    return p.id || `${p.depotId}-${p.keyName}-${index}`;
+  }
+
   ngOnInit(): void {
     this.spinner.show();
   }
@@ -362,9 +370,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     }, 100);
     this.dataSource.paginator = this.paginator; // For pagination
     this.dataSource.sort = this.sort; // For sort
-    // react to language changes to update localized category/labels
+    // react to language changes: only trigger change detection (no regroup)
     this.transloco.langChanges$.subscribe(() => {
-      this.refreshDynamicParametersForSelectedDepot();
+      this.cdr.detectChanges();
     });
   }
 
