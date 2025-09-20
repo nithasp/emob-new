@@ -42,7 +42,7 @@ import {
 } from 'src/app/models/pre-order.model';
 import Style from 'ol/style/Style';
 import { ConstraintService } from 'src/app/services/constraint.service';
-import { Constraint, DynamicParameter } from 'src/app/models/constraint.model';
+import { Constraint, DynamicParameter, LocalizedText } from 'src/app/models/constraint.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Experiment,
@@ -244,6 +244,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   public selectedDepotId: string | null = null;
   public selectedDepotIds: string[] = [];
   public inputDataKeys: string[] = [];
+  // dynamic parameters rendering
+  public allDynamicParameters: DynamicParameter[] = [];
+  public dynamicParametersByCategory: Array<{ key: string; items: DynamicParameter[] }> = [];
 
   constructor(
     private readonly spinner: NgxSpinnerService,
@@ -359,6 +362,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     }, 100);
     this.dataSource.paginator = this.paginator; // For pagination
     this.dataSource.sort = this.sort; // For sort
+    // react to language changes to update localized category/labels
+    this.transloco.langChanges$.subscribe(() => {
+      this.refreshDynamicParametersForSelectedDepot();
+    });
   }
 
   async initializeDataFromExperiment(experiment: Experiment) {
@@ -375,6 +382,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     } else {
       this.getDynamicParameters();
     }
+    // ensure dynamic parameter metadata for rendering is loaded too
+    this.getDynamicParameters();
 
     this.toastr.info(
       this.transloco.translate('loading_preorder_data', {}, 'index'),
@@ -1854,6 +1863,8 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.depotInputDataItems = [];
     }
     await this.validateUploadedFilesAgainstDepot();
+    // refresh dynamic parameters render when depot changes
+    this.refreshDynamicParametersForSelectedDepot();
   }
 
   updateDepot(
@@ -1928,6 +1939,8 @@ export class RunComponent implements OnInit, AfterViewInit {
 
           // Update input data keys from the first depot
           this.updateInputDataKeysFromDepot(this.depots[0]);
+          // refresh dynamic parameters view for selected depot
+          this.refreshDynamicParametersForSelectedDepot();
 
           if (this.selectedDepotId) {
             localStorage.setItem('selectedDepotId', this.selectedDepotId);
@@ -2137,15 +2150,17 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   getDynamicParameters() {
     this.constraintService
-      .getDynamicParameters('parameters')
+      .getDynamicParameters('')
       .subscribe((response: DynamicParameter[]) => {
         console.log('Dynamic parameters response', response);
+        this.allDynamicParameters = response || [];
         this.constraintsData = this.transformDynamicParametersToConstraint(response);
         console.log('Transformed constraints data', this.constraintsData);
 
         if (this.isCreateMode) {
           this.spinner.hide();
         }
+        this.refreshDynamicParametersForSelectedDepot();
       });
   }
 
@@ -2192,5 +2207,138 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
 
     return constraint;
+  }
+
+  // Value accessor for template
+  getConstraintValue(p: DynamicParameter): any {
+    const key = this.getConstraintKeyForParam(p);
+    if (!key) return null;
+    return (this.constraintsData as any)[key];
+  }
+
+  onParamValueChange(p: DynamicParameter, newValue: any): void {
+    // update displayed dynamic parameter value
+    p.value = newValue;
+    // keep constraintsData in sync for validation and submission
+    const key = this.getConstraintKeyForParam(p);
+    if (key) {
+      this.onValueChange(newValue as any, key);
+    }
+  }
+
+  // Helpers for dynamic parameters UI
+  getBackendLocaleKey(): keyof LocalizedText {
+    const active = this.transloco.getActiveLang();
+    return active?.toLowerCase().startsWith('th') ? 'th_TH' : 'en_US';
+  }
+
+  getLocalized(text?: LocalizedText | string | null): string {
+    if (!text) return '';
+    const key = this.getBackendLocaleKey();
+    if (typeof text === 'string') {
+      // Handle JSON-stringified localized text
+      try {
+        const parsed = JSON.parse(text) as LocalizedText;
+        return parsed[key] ?? '';
+      } catch {
+        return text; // fallback to raw string
+      }
+    }
+    return text[key] ?? '';
+  }
+
+  coerceLocalizedText(value: LocalizedText | string | null | undefined): LocalizedText | null {
+    if (!value) return null;
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value) as LocalizedText;
+      } catch {
+        // Fallback: duplicate to both locales
+        return { th_TH: value, en_US: value } as LocalizedText;
+      }
+    }
+    return value as LocalizedText;
+  }
+
+  getSelectedDepotObject(): MyDepot | undefined {
+    if (!this.selectedDepotId) return undefined;
+    return this.depots.find((d) => d.depotName === this.selectedDepotId);
+  }
+
+  refreshDynamicParametersForSelectedDepot(): void {
+    const selectedDepot = this.getSelectedDepotObject();
+    const filteredRaw = selectedDepot
+      ? this.allDynamicParameters.filter((p) => p.depotId === selectedDepot.depotId)
+      : this.allDynamicParameters;
+
+    // Normalize localized fields when backend returns JSON strings
+    const filtered = filteredRaw.map((p) => {
+      const normalized = { ...p } as any;
+      normalized.displayName = this.coerceLocalizedText(p.displayName) as any;
+      normalized.category = this.coerceLocalizedText(p.category) as any;
+      normalized.description = this.coerceLocalizedText(p.description) as any;
+      return normalized as DynamicParameter;
+    });
+
+    const groups: Record<string, DynamicParameter[]> = {};
+    for (const p of filtered) {
+      const cat = (p as any).category as LocalizedText;
+      const k = (cat?.en_US || 'General').trim();
+      if (!groups[k]) groups[k] = [];
+      groups[k].push(p);
+    }
+    this.dynamicParametersByCategory = Object.keys(groups).map((k) => ({ key: k, items: groups[k] }));
+
+    console.log('dynamicParametersByCategory', this.dynamicParametersByCategory);
+  }
+
+  isTimeType(p: DynamicParameter): boolean {
+    const vt = (p.valueType || '').toLowerCase();
+    return vt === 'time' || vt.includes('duration');
+  }
+
+  isNumberType(p: DynamicParameter): boolean {
+    const vt = (p.valueType || '').toLowerCase();
+    return vt.startsWith('number');
+  }
+
+  getUnitKey(p: DynamicParameter): string | null {
+    switch (p.keyName) {
+      case 'VehicleOrderSizeCapacity':
+        return 'kilogram';
+      case 'MaximumTravelDistance':
+        return 'kilometer';
+      default:
+        return null;
+    }
+  }
+
+  getConstraintKeyForParam(p: DynamicParameter): keyof Constraint | null {
+    switch (p.keyName) {
+      case 'EarlyDeliveryTime':
+        return 'earlyDeliveryTime';
+      case 'BackToDepotTime':
+        return 'backToDepotTime';
+      case 'MaximumWorkDuration':
+        return 'maximumWorkDuration';
+      case 'NumberOfVehicleAvailable':
+        return 'numberOfVehicleAvailable';
+      case 'VehicleOrderSizeCapacity':
+        return 'vehicleOrderSizeCapacity';
+      case 'MaximumTravelDistance':
+        return 'maximumTravelDistance';
+      case 'ServiceDurationTime':
+        return 'serviceDurationTime';
+      default:
+        return null;
+    }
+  }
+
+  isOverWeightKey(p: DynamicParameter): boolean {
+    return p.keyName === 'VehicleOrderSizeCapacity';
+  }
+
+  isOverDistanceKey(p: DynamicParameter): boolean {
+    return p.keyName === 'MaximumTravelDistance';
   }
 }

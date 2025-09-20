@@ -431,247 +431,47 @@
                 </ngb-alert>
                 }
                 <mat-accordion [multi]="true">
-                  <mat-expansion-panel [expanded]="true">
+                  <mat-expansion-panel [expanded]="true" *ngFor="let group of dynamicParametersByCategory">
                     <mat-expansion-panel-header>
                       <mat-panel-title>
-                        {{ t("generals") }}
-                        <mat-error class="text-danger ml-3" style="font-size: 12px" *ngIf="
-                            constraintsData.earlyDeliveryTime >
-                            constraintsData.backToDepotTime
-                          ">
-                          ***
-                          {{
-                          t(
-                          "early_delivery_time_should_be_less_than_back_to_depot"
-                          )
-                          }}
+                        {{ getLocalized(group.items[0].category) || group.key }}
+                        <mat-error class="text-danger ml-3" style="font-size: 12px" *ngIf="group.key === 'Generals' &&
+                            constraintsData.earlyDeliveryTime > constraintsData.backToDepotTime">
+                          *** {{ t("early_delivery_time_should_be_less_than_back_to_depot") }}
                         </mat-error>
                       </mat-panel-title>
                     </mat-expansion-panel-header>
                     <ul class="list-unstyled">
                       <li>
                         <ul>
-                          <li>
-                            <p>
-                              {{ t("early_delivery_time_is") }}
-                              <app-dynamic-popover [placement]="'bottom-start'">
-                                <button popover-trigger class="link link-primary">
-                                  {{ constraintsData.earlyDeliveryTime }}
-                                </button>
-                                <div popover-content>
-                                  <div class="p-3">
-                                    <div class="card-body p-2">
-                                      <p class="card-title">
-                                        {{ t("time_is") }}:
-                                      </p>
-                                      <ngb-timepicker [ngModel]="
-                                          constraintsData.earlyDeliveryTime
-                                        " (ngModelChange)="
-                                          onValueChange(
-                                            $event,
-                                            'earlyDeliveryTime'
-                                          )
-                                        " />
-                                    </div>
-                                  </div>
-                                </div>
-                              </app-dynamic-popover>
-                            </p>
-                          </li>
-                          <li>
-                            <p>
-                              {{ t("back_to_depot_time_is") }}
-                              <app-dynamic-popover [placement]="'bottom-start'">
-                                <button popover-trigger class="link link-primary">
-                                  {{ constraintsData.backToDepotTime }}
-                                </button>
-                                <div popover-content>
-                                  <div class="p-3">
-                                    <div class="card-body p-2">
-                                      <p class="card-title">
-                                        {{ t("time_is") }}:
-                                      </p>
-                                      <ngb-timepicker [ngModel]="
-                                          constraintsData.backToDepotTime
-                                        " (ngModelChange)="
-                                          onValueChange(
-                                            $event,
-                                            'backToDepotTime'
-                                          )
-                                        " />
-                                    </div>
-                                  </div>
-                                </div>
-                              </app-dynamic-popover>
-                            </p>
-                          </li>
-                          <li>
-                            <p>
-                              {{ t("maximum_work_duration_is") }}
-                              <app-dynamic-popover [placement]="'bottom-start'">
-                                <button popover-trigger class="link link-primary link-opacity-75-hover">
-                                  {{
-                                  constraintsData.maximumWorkDuration
-                                  | timeFormat
-                                  }}
-                                </button>
-
-                                <div popover-content>
-                                  <p class="card-title">
-                                    {{ t("maximum_work_duration") }} (0 - 23
-                                    {{ "hours" | transloco }}):
-                                  </p>
-
-                                  <ngb-timepicker [ngModel]="
-                                      constraintsData.maximumWorkDuration
-                                    " (ngModelChange)="
-                                      onValueChange(
-                                        $event,
-                                        'maximumWorkDuration'
-                                      )
-                                    " />
-                                </div>
-                              </app-dynamic-popover>
-                            </p>
-                          </li>
-                        </ul>
-                      </li>
-                    </ul>
-                  </mat-expansion-panel>
-                  <mat-expansion-panel [expanded]="true">
-                    <mat-expansion-panel-header>
-                      <mat-panel-title>{{ t("vehicle") }}</mat-panel-title>
-                    </mat-expansion-panel-header>
-                    <ul class="list-unstyled">
-                      <li>
-                        <ul>
-                          <li>
-                            <p>
-                              {{ t("number_of_vehicle_available_is_set_to") }}
-                              <app-dynamic-popover [placement]="'bottom-start'">
-                                <button popover-trigger class="link link-primary link-opacity-75-hover">
-                                  {{
-                                  constraintsData.numberOfVehicleAvailable
-                                  | number : "1.0-0"
-                                  }}
-                                </button>
-                                <div popover-content>
-                                  <p class="card-title">
-                                    {{ t("number_of_vehicle_available") }}:
-                                  </p>
-                                  <app-number-counter-input [value]="
-                                      constraintsData.numberOfVehicleAvailable
-                                    " (valueChange)="
-                                      onValueChange(
-                                        $event,
-                                        'numberOfVehicleAvailable'
-                                      )
-                                    " [maxValue]="250" [minValue]="0">
-                                  </app-number-counter-input>
-                                </div>
-                              </app-dynamic-popover>
-                            </p>
-                          </li>
-                          <li [ngClass]="{
-                              'text-highlight':
-                                validateExperiment &&
-                                validateExperiment.filters.constraints
-                                  .over_weight.length > 0
+                          <li *ngFor="let p of group.items" [ngClass]="{
+                              'text-highlight': (isOverWeightKey(p) && validateExperiment && validateExperiment.filters.constraints.over_weight.length > 0)
+                                               || (isOverDistanceKey(p) && validateExperiment && validateExperiment.filters.constraints.over_distance.length > 0)
                             }">
                             <p>
-                              {{ t("vehicle_order_size_capacity_is") }}
+                              <span>{{ getLocalized(p.displayName) }}</span>
                               <app-dynamic-popover [placement]="'bottom-start'">
                                 <button popover-trigger class="link link-primary link-opacity-75-hover">
-                                  {{
-                                  constraintsData.vehicleOrderSizeCapacity
-                                  | number : "1.0-0"
-                                  }}
-                                  {{ "kilogram" | transloco }}
+                                  <ng-container [ngSwitch]="p.keyName">
+                                    <ng-container *ngSwitchCase="'MaximumWorkDuration'">{{ ('' + p.value) | timeFormat }}</ng-container>
+                                    <ng-container *ngSwitchCase="'ServiceDurationTime'">{{ ('' + p.value) | timeFormat }}</ng-container>
+                                    <ng-container *ngSwitchCase="'NumberOfVehicleAvailable'">{{ (+p.value) | number: '1.0-0' }}</ng-container>
+                                    <ng-container *ngSwitchCase="'VehicleOrderSizeCapacity'">{{ (+p.value) | number: '1.0-0' }} {{ 'kilogram' | transloco }}</ng-container>
+                                    <ng-container *ngSwitchCase="'MaximumTravelDistance'">{{ (+p.value) | number: '1.0-0' }} {{ 'kilometer' | transloco }}</ng-container>
+                                    <ng-container *ngSwitchCase="'EarlyDeliveryTime'">{{ p.value }}</ng-container>
+                                    <ng-container *ngSwitchCase="'BackToDepotTime'">{{ p.value }}</ng-container>
+                                    <ng-container *ngSwitchDefault>{{ p.value }}</ng-container>
+                                  </ng-container>
                                 </button>
                                 <div popover-content>
-                                  <p class="card-title">
-                                    {{ t("order_size_capacity") }} :
-                                  </p>
-
-                                  <app-number-counter-input [ngModel]="
-                                      constraintsData.vehicleOrderSizeCapacity
-                                    " (ngModelChange)="
-                                      onValueChange(
-                                        $event,
-                                        'vehicleOrderSizeCapacity'
-                                      )
-                                    " [maxValue]="10000" [minValue]="0" [count]="100">
-                                  </app-number-counter-input>
-                                </div>
-                              </app-dynamic-popover>
-                            </p>
-                          </li>
-                          <li [ngClass]="{
-                              'text-highlight':
-                                validateExperiment &&
-                                validateExperiment.filters.constraints
-                                  .over_distance.length > 0
-                            }">
-                            <p>
-                              {{ t("maximum_travel_distance_is") }}
-                              <app-dynamic-popover [placement]="'bottom-start'">
-                                <button popover-trigger class="link link-primary link-opacity-75-hover">
-                                  {{
-                                  constraintsData.maximumTravelDistance
-                                  | number : "1.0-0"
-                                  }}
-                                  {{ "kilometer" | transloco }}
-                                </button>
-                                <div popover-content>
-                                  <p class="card-title">
-                                    {{ t("maximum_travel_distance") }} :
-                                  </p>
-                                  <app-number-counter-input [ngModel]="
-                                      constraintsData.maximumTravelDistance
-                                    " (ngModelChange)="
-                                      onValueChange(
-                                        $event,
-                                        'maximumTravelDistance'
-                                      )
-                                    " [maxValue]="1200" [minValue]="0">
-                                  </app-number-counter-input>
-                                </div>
-                              </app-dynamic-popover>
-                            </p>
-                          </li>
-                        </ul>
-                      </li>
-                    </ul>
-                  </mat-expansion-panel>
-                  <mat-expansion-panel [expanded]="true">
-                    <mat-expansion-panel-header>
-                      <mat-panel-title>{{ t("customer") }}</mat-panel-title>
-                    </mat-expansion-panel-header>
-                    <ul class="list-unstyled">
-                      <li>
-                        <ul>
-                          <li>
-                            <p>
-                              {{ t("service_time_is") }}
-                              <app-dynamic-popover [placement]="'bottom-start'">
-                                <button popover-trigger class="link link-primary link-opacity-75-hover">
-                                  {{
-                                  constraintsData.serviceDurationTime
-                                  | timeFormat
-                                  }}
-                                </button>
-                                <div popover-content>
-                                  <p class="card-title">
-                                    {{ t("service_duration_time") }} :
-                                  </p>
-                                  <ngb-timepicker [ngModel]="
-                                      constraintsData.serviceDurationTime
-                                    " (ngModelChange)="
-                                      onValueChange(
-                                        $event,
-                                        'serviceDurationTime'
-                                      )
-                                    " />
+                                  <p class="card-title">{{ getLocalized(p.displayName) }}</p>
+                                  <ng-container *ngIf="isTimeType(p); else numberEditor">
+                                    <ngb-timepicker [ngModel]="('' + p.value)" (ngModelChange)="onParamValueChange(p, $event)" />
+                                  </ng-container>
+                                  <ng-template #numberEditor>
+                                    <app-number-counter-input [value]="+p.value || 0" (valueChange)="onParamValueChange(p, $event)" [maxValue]="p.joiConfig.max || 100000" [minValue]="p.joiConfig.min || 0" [count]="p.keyName === 'VehicleOrderSizeCapacity' ? 100 : 1"></app-number-counter-input>
+                                  </ng-template>
+                                  <div><small class="text-muted">{{ getLocalized(p.description) }}</small></div>
                                 </div>
                               </app-dynamic-popover>
                             </p>

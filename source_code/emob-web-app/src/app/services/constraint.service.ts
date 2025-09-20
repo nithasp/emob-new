@@ -96,12 +96,12 @@ export class ConstraintService {
       );
   }
 
-  getDynamicParameters(category: string = ''): Observable<DynamicParameter[]> {
+  getDynamicParameters(depotId: string = ''): Observable<DynamicParameter[]> {
     return this.apollo
       .query<Response>({
         query: gql`
-          query dynamicParameters($category: String!) {
-            dynamicParameters(category: $category) {
+          query dynamicParameters($depotId: String!) {
+            dynamicParameters(depotId: $depotId) {
               companyName
               id
               category
@@ -120,7 +120,7 @@ export class ConstraintService {
           }
         `,
         variables: {
-          category: category,
+          depotId: depotId,
         },
         fetchPolicy: 'network-only',
       })
