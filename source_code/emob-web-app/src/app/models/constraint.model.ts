@@ -71,3 +71,20 @@ export interface DynamicParameterUpdateInput {
 export interface DeleteDynamicParameter {
   success: boolean;
 }
+
+export type DynamicParameterValueUpdate = {
+  id: string;
+  value: string | number;
+};
+
+export interface DynamicParameterUpdateError {
+  id: string;
+  message: string;
+}
+
+export interface UpdateDynamicParameterResponse {
+  success: boolean;
+  updatedCount: number;
+  errors: DynamicParameterUpdateError[];
+  results: DynamicParameter[];
+}

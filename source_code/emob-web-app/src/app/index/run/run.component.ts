@@ -2234,6 +2234,46 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // Build [{ id, value }] payload from current dynamic parameters UI state
+  buildDynamicParametersUpdatePayload(): Array<{ id: string; value: string | number }> {
+    const updates: Array<{ id: string; value: string | number }> = [];
+    for (const group of this.dynamicParametersByCategory) {
+      for (const p of group.items) {
+        if (p?.id && (p.value !== undefined && p.value !== null)) {
+          updates.push({ id: p.id, value: p.value });
+        }
+      }
+    }
+    return updates;
+  }
+
+  // Optional: submit all dynamic parameter updates in parallel
+  updateDynamicParameters(): void {
+    const payload = this.buildDynamicParametersUpdatePayload();
+    if (!payload.length) return;
+
+    // console.log('payload', payload);
+    // return
+    this.showSpinner();
+    this.constraintService.updateDynamicParameter(payload).subscribe({
+      next: (res) => {
+        // Optionally inspect res.success / res.updatedCount / res.errors
+        this.toastr.success(
+          this.transloco.translate('succeed', {}, 'index'),
+          this.transloco.translate('update', {}, 'index')
+        );
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastr.error(
+          this.transloco.translate('failed', {}, 'index'),
+          this.transloco.translate('update', {}, 'index')
+        );
+      },
+      complete: () => this.hiddenSpinner(),
+    });
+  }
+
   // Helpers for dynamic parameters UI
   getBackendLocaleKey(): keyof LocalizedText {
     const active = this.transloco.getActiveLang();
@@ -2275,29 +2315,71 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   refreshDynamicParametersForSelectedDepot(): void {
     const selectedDepot = this.getSelectedDepotObject();
-    const filteredRaw = selectedDepot
-      ? this.allDynamicParameters.filter((p) => p.depotId === selectedDepot.depotId)
-      : this.allDynamicParameters;
+    const base = Array.isArray(this.allDynamicParameters)
+      ? this.allDynamicParameters
+      : [];
+
+    console.log('allDynamicParameters', base);
+    console.log('selectedDepot', selectedDepot);
+
+    // Prefer parameters scoped to selected depot; fall back if none found
+    let scoped = base;
+    if (selectedDepot?.depotId) {
+      scoped = base.filter((p) => p.depotId === selectedDepot.depotId);
+    }
+    if (!scoped.length) {
+      // fallback to parameters without depot binding
+      scoped = base.filter((p) => !p.depotId);
+    }
+    if (!scoped.length) {
+      // final fallback to all
+      scoped = base;
+    }
 
     // Normalize localized fields when backend returns JSON strings
-    const filtered = filteredRaw.map((p) => {
-      const normalized = { ...p } as any;
-      normalized.displayName = this.coerceLocalizedText(p.displayName) as any;
-      normalized.category = this.coerceLocalizedText(p.category) as any;
-      normalized.description = this.coerceLocalizedText(p.description) as any;
-      return normalized as DynamicParameter;
+    const normalized = scoped.map((p) => {
+      const normalizedParam = { ...p } as any;
+      normalizedParam.displayName = this.coerceLocalizedText(p.displayName) as any;
+      normalizedParam.category = this.coerceLocalizedText(p.category) as any;
+      normalizedParam.description = this.coerceLocalizedText(p.description) as any;
+      return normalizedParam as DynamicParameter;
     });
 
-    const groups: Record<string, DynamicParameter[]> = {};
-    for (const p of filtered) {
-      const cat = (p as any).category as LocalizedText;
-      const k = (cat?.en_US || 'General').trim();
-      if (!groups[k]) groups[k] = [];
-      groups[k].push(p);
+    console.log('normalizedDynamicParameters', normalized);
+
+    // Group by English category label to create { key, items } structure
+    const groupsMap: Record<string, DynamicParameter[]> = {};
+    for (const p of normalized) {
+      const cat = (p as any).category as LocalizedText | undefined;
+      const key = (cat?.en_US || 'Generals').trim();
+      if (!groupsMap[key]) groupsMap[key] = [];
+      groupsMap[key].push(p);
     }
-    this.dynamicParametersByCategory = Object.keys(groups).map((k) => ({ key: k, items: groups[k] }));
+
+    // Build category order dynamically from the incoming parameters' category sequence
+    const categoryOrderFromParams: string[] = [];
+    for (const p of normalized) {
+      const cat = (p as any).category as LocalizedText | undefined;
+      const k = (cat?.en_US || 'Generals').trim();
+      if (!categoryOrderFromParams.includes(k)) categoryOrderFromParams.push(k);
+    }
+    const orderedKeys = Object.keys(groupsMap).sort((a, b) => {
+      const ia = categoryOrderFromParams.indexOf(a);
+      const ib = categoryOrderFromParams.indexOf(b);
+      if (ia === -1 && ib === -1) return a.localeCompare(b);
+      if (ia === -1) return 1;
+      if (ib === -1) return -1;
+      return ia - ib;
+    });
+
+    this.dynamicParametersByCategory = orderedKeys.map((k) => ({
+      key: k,
+      items: groupsMap[k],
+    }));
 
     console.log('dynamicParametersByCategory', this.dynamicParametersByCategory);
+    // ensure UI updates
+    this.cdr.detectChanges();
   }
 
   isTimeType(p: DynamicParameter): boolean {

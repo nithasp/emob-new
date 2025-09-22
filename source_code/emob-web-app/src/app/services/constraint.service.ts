@@ -7,8 +7,9 @@ import gql from 'graphql-tag';
 import {
   Constraint,
   DynamicParameter,
-  DynamicParameterUpdateInput,
   DeleteDynamicParameter,
+  UpdateDynamicParameterResponse,
+  DynamicParameterValueUpdate,
 } from '../models/constraint.model';
 import { Response } from '../models/graphql.model';
 import { ErrorHandlingService } from './handle-error.service';
@@ -130,41 +131,44 @@ export class ConstraintService {
       );
   }
 
+  // New bulk update mutation signature: updateDynamicParameter(updates: [...])
   updateDynamicParameter(
-    id: string,
-    input: DynamicParameterUpdateInput
-  ): Observable<DynamicParameter> {
+    updates: DynamicParameterValueUpdate[]
+  ): Observable<UpdateDynamicParameterResponse> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
-          mutation updateDynamicParameter(
-            $id: String!
-            $input: DynamicParameterUpdateInput!
-          ) {
-            updateDynamicParameter(id: $id, input: $input) {
-              companyName
-              id
-              category
-              keyName
-              displayName
-              valueType
-              value
-              joiConfig
-              isRequired
-              defaultValue
-              description
-              createdAt
-              updatedAt
+          mutation updateDynamicParameter($updates: [DynamicParameterUpdateItemInput!]!) {
+            updateDynamicParameter(updates: $updates) {
+              success
+              updatedCount
+              errors {
+                id
+                message
+              }
+              results {
+                companyName
+                id
+                category
+                depotId
+                keyName
+                displayName
+                valueType
+                value
+                joiConfig
+                isRequired
+                defaultValue
+                description
+                createdAt
+                updatedAt
+              }
             }
           }
         `,
-        variables: {
-          id: id,
-          input: input,
-        },
+        variables: { updates },
       })
       .pipe(
-        map((result) => result.data!.updateDynamicParameter),
+        map((result) => result.data!.updateDynamicParameter as UpdateDynamicParameterResponse),
         this.errorHandlingService.handleError
       );
   }
