@@ -2257,17 +2257,16 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.showSpinner();
     this.constraintService.updateDynamicParameter(payload).subscribe({
       next: (res) => {
-        // Optionally inspect res.success / res.updatedCount / res.errors
         this.toastr.success(
-          this.transloco.translate('succeed', {}, 'index'),
-          this.transloco.translate('update', {}, 'index')
+          this.transloco.translate('success', {}, 'index'),
+          this.transloco.translate('set_default_parameter', {}, 'index')
         );
       },
       error: (err) => {
         console.error(err);
         this.toastr.error(
           this.transloco.translate('failed', {}, 'index'),
-          this.transloco.translate('update', {}, 'index')
+          this.transloco.translate('set_default_parameter_failed', {}, 'index')
         );
       },
       complete: () => this.hiddenSpinner(),
@@ -2378,7 +2377,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     }));
 
     console.log('dynamicParametersByCategory', this.dynamicParametersByCategory);
-    // ensure UI updates
     this.cdr.detectChanges();
   }
 

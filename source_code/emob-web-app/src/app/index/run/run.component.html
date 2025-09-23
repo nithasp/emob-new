@@ -470,7 +470,7 @@
                                     <ngb-timepicker [ngModel]="('' + p.value)" (ngModelChange)="onParamValueChange(p, $event)" />
                                   </ng-container>
                                   <ng-template #numberEditor>
-                                    <app-number-counter-input [value]="+p.value || 0" (valueChange)="onParamValueChange(p, $event)" [maxValue]="p.joiConfig.max || 100000" [minValue]="p.joiConfig.min || 0" [count]="p.keyName === 'VehicleOrderSizeCapacity' ? 100 : 1"></app-number-counter-input>
+                                    <app-number-counter-input [value]="+p.value || 0" (valueChange)="onParamValueChange(p, $event)" [maxValue]="p.joiConfig.max || 100000" [minValue]="p.joiConfig.min || 0" [count]="p.keyName === 'VehicleOrderSizeCapacity' ? 100 : 1" class="d-inline-block mt-0 mb-3"></app-number-counter-input>
                                   </ng-template>
                                   <div><small class="text-muted">{{ getLocalized(p.description) }}</small></div>
                                 </div>
