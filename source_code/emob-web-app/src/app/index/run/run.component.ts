@@ -42,7 +42,11 @@ import {
 } from 'src/app/models/pre-order.model';
 import Style from 'ol/style/Style';
 import { ConstraintService } from 'src/app/services/constraint.service';
-import { Constraint, DynamicParameter, LocalizedText } from 'src/app/models/constraint.model';
+import {
+  Constraint,
+  DynamicParameter,
+  LocalizedText,
+} from 'src/app/models/constraint.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Experiment,
@@ -246,7 +250,10 @@ export class RunComponent implements OnInit, AfterViewInit {
   public inputDataKeys: string[] = [];
   // dynamic parameters rendering
   public allDynamicParameters: DynamicParameter[] = [];
-  public dynamicParametersByCategory: Array<{ key: string; items: DynamicParameter[] }> = [];
+  public dynamicParametersByCategory: Array<{
+    key: string;
+    items: DynamicParameter[];
+  }> = [];
 
   constructor(
     private readonly spinner: NgxSpinnerService,
@@ -263,7 +270,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly dataService: DataService,
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService
-  ) { }
+  ) {}
 
   public generateUniqueId(): string {
     return 'f-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
@@ -274,7 +281,10 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   // trackBy helpers to keep accordion stable across change detection/language swaps
-  trackByGroup(index: number, group: { key: string; items: DynamicParameter[] }): string {
+  trackByGroup(
+    index: number,
+    group: { key: string; items: DynamicParameter[] }
+  ): string {
     return group.key;
   }
   trackByParam(index: number, p: DynamicParameter): string {
@@ -457,12 +467,12 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (newData.length > 0) {
                 this.toastr.info(
                   `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                  newData.length +
-                  ` ${this.transloco.translate(
-                    'new_edited_location_data_suffix',
-                    {},
-                    'index'
-                  )}`,
+                    newData.length +
+                    ` ${this.transloco.translate(
+                      'new_edited_location_data_suffix',
+                      {},
+                      'index'
+                    )}`,
                   `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
@@ -925,27 +935,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     dialogRef.result
       .then((confirmed: boolean) => {
         if (confirmed) {
-          this.constraintService
-            .updateParameter(this.constraintsData)
-            .subscribe(
-              (response: { status_message: string | undefined }) => {
-                this.toastr.success(
-                  response.status_message,
-                  this.transloco.translate('set_default_parameter', {}, 'index')
-                );
-              },
-              (error: unknown) => {
-                this.toastr.error(
-                  this.transloco.translate(
-                    'set_default_parameter_failed',
-                    {},
-                    'index'
-                  ),
-                  this.transloco.translate('error', {}, 'index')
-                );
-                console.error('Error updating parameter:', error);
-              }
-            );
+          this.updateDynamicParameters();
         }
       })
       .catch((error) => {
@@ -980,15 +970,17 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private loadLocationDepot(incoming: Array<Partial<MyDepot> & { id?: string; name?: string }>) {
+  private loadLocationDepot(
+    incoming: Array<Partial<MyDepot> & { id?: string; name?: string }>
+  ) {
     // Always use the incoming depots array for default selection and display
     const normalizedIncoming: MyDepot[] = incoming.map((item) => {
       const nameKey =
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
-            ? item.name
-            : '';
+          ? item.name
+          : '';
       const mapped: MyDepot = {
         depotId: (item.depotId || item.id || '') as string,
         depotName: nameKey,
@@ -1090,7 +1082,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               });
               location.setStyle(
                 this.iconStyle[
-                uploadDataGroupCustomers[key as keyof DataGroup].type
+                  uploadDataGroupCustomers[key as keyof DataGroup].type
                 ]
               );
               this.vectorSource.addFeature(location);
@@ -1519,7 +1511,8 @@ export class RunComponent implements OnInit, AfterViewInit {
           console.log(result);
           this.validateExperiment = result.result?.validate || null;
           this.ngbValidationTableCollectionSize =
-            this.validateExperiment?.filters.order_data.invalid_coordinate.length || 0;
+            this.validateExperiment?.filters.order_data.invalid_coordinate
+              .length || 0;
           this.dataService.clearData(this.experiment.runId);
           this.refreshValidationTable();
           this.navigateToTab(3);
@@ -1757,22 +1750,24 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   exportValidationData() {
-    const files: Array<{ data: Array<Record<string, string | number>>; name: string }> = [];
+    const files: Array<{
+      data: Array<Record<string, string | number>>;
+      name: string;
+    }> = [];
     if (
       this.validateExperiment?.filters.order_data &&
       this.validateExperiment?.filters.order_data.invalid_coordinate.length > 0
     ) {
       files.push({
-        data: this.validateExperiment?.warning.zero_weight.map(
-          (customer, i) => ({
+        data:
+          this.validateExperiment?.warning.zero_weight.map((customer, i) => ({
             index: i + 1,
             ORDER_ID: customer.name,
             ADDRESS: customer.original_address.address ?? '',
             SUBDISTRICT: customer.original_address.subdistrict ?? '',
             DISTRICT: customer.original_address.district ?? '',
             PROVINCE: customer.original_address.province ?? '',
-          })
-        ) || [],
+          })) || [],
         name:
           'Remove_Order_' + this.experiment.name + '_' + this.experiment.runId,
       });
@@ -1782,14 +1777,15 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.validateExperiment?.warning.zero_weight.length > 0
     ) {
       files.push({
-        data: this.validateExperiment?.warning.zero_weight.map(
-          (customer, i) => ({
+        data:
+          this.validateExperiment?.warning.zero_weight.map((customer, i) => ({
             index: i + 1,
             ORDER_ID: customer.name,
-            PRODUCT_ID_ZERO_WEIGHT: (customer.metrics?.product_ids || []).join(',') ?? '',
-            PRODUCT_ID_MISSING: (customer.metrics?.missing_product_ids || []).join(',') ?? '',
-          })
-        ) || [],
+            PRODUCT_ID_ZERO_WEIGHT:
+              (customer.metrics?.product_ids || []).join(',') ?? '',
+            PRODUCT_ID_MISSING:
+              (customer.metrics?.missing_product_ids || []).join(',') ?? '',
+          })) || [],
         name:
           'Zero_Weight_' + this.experiment.name + '_' + this.experiment.runId,
       });
@@ -1876,7 +1872,11 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   updateDepot(
-    depots: Array<Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'> & { [key: string]: any }>
+    depots: Array<
+      Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'> & {
+        [key: string]: any;
+      }
+    >
   ) {
     this.preOrderFiles = [];
     this.vectorSourceDepot.clear();
@@ -2162,7 +2162,8 @@ export class RunComponent implements OnInit, AfterViewInit {
       .subscribe((response: DynamicParameter[]) => {
         console.log('Dynamic parameters response', response);
         this.allDynamicParameters = response || [];
-        this.constraintsData = this.transformDynamicParametersToConstraint(response);
+        this.constraintsData =
+          this.transformDynamicParametersToConstraint(response);
         console.log('Transformed constraints data', this.constraintsData);
 
         if (this.isCreateMode) {
@@ -2172,7 +2173,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       });
   }
 
-  transformDynamicParametersToConstraint(dynamicParameters: DynamicParameter[]): Constraint {
+  transformDynamicParametersToConstraint(
+    dynamicParameters: DynamicParameter[]
+  ): Constraint {
     const constraint: Constraint = {
       MaxWorkDuration: 0,
       maxTravelDistance: 0,
@@ -2185,10 +2188,10 @@ export class RunComponent implements OnInit, AfterViewInit {
       numberOfVehicleAvailable: 0,
       vehicleOrderSizeCapacity: 0,
       maximumTravelDistance: 0,
-      serviceDurationTime: ''
+      serviceDurationTime: '',
     };
 
-    dynamicParameters.forEach(param => {
+    dynamicParameters.forEach((param) => {
       switch (param.keyName) {
         case 'EarlyDeliveryTime':
           constraint.earlyDeliveryTime = param.value as string;
@@ -2235,11 +2238,14 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   // Build [{ id, value }] payload from current dynamic parameters UI state
-  buildDynamicParametersUpdatePayload(): Array<{ id: string; value: string | number }> {
+  buildDynamicParametersUpdatePayload(): Array<{
+    id: string;
+    value: string | number;
+  }> {
     const updates: Array<{ id: string; value: string | number }> = [];
     for (const group of this.dynamicParametersByCategory) {
       for (const p of group.items) {
-        if (p?.id && (p.value !== undefined && p.value !== null)) {
+        if (p?.id && p.value !== undefined && p.value !== null) {
           updates.push({ id: p.id, value: p.value });
         }
       }
@@ -2294,7 +2300,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     return text[key] ?? '';
   }
 
-  coerceLocalizedText(value: LocalizedText | string | null | undefined): LocalizedText | null {
+  coerceLocalizedText(
+    value: LocalizedText | string | null | undefined
+  ): LocalizedText | null {
     if (!value) return null;
     if (typeof value === 'string') {
       try {
@@ -2338,9 +2346,13 @@ export class RunComponent implements OnInit, AfterViewInit {
     // Normalize localized fields when backend returns JSON strings
     const normalized = scoped.map((p) => {
       const normalizedParam = { ...p } as any;
-      normalizedParam.displayName = this.coerceLocalizedText(p.displayName) as any;
+      normalizedParam.displayName = this.coerceLocalizedText(
+        p.displayName
+      ) as any;
       normalizedParam.category = this.coerceLocalizedText(p.category) as any;
-      normalizedParam.description = this.coerceLocalizedText(p.description) as any;
+      normalizedParam.description = this.coerceLocalizedText(
+        p.description
+      ) as any;
       return normalizedParam as DynamicParameter;
     });
 
@@ -2376,7 +2388,10 @@ export class RunComponent implements OnInit, AfterViewInit {
       items: groupsMap[k],
     }));
 
-    console.log('dynamicParametersByCategory', this.dynamicParametersByCategory);
+    console.log(
+      'dynamicParametersByCategory',
+      this.dynamicParametersByCategory
+    );
     this.cdr.detectChanges();
   }
 
