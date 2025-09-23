@@ -1488,9 +1488,12 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   validateExperimentPreOrder() {
+    console.log('validateExperimentPreOrder');
+    // return;
+    const parameterPayload = this.buildValidateParameterFromDynamic();
     if (
-      this.constraintsData.earlyDeliveryTime >
-      this.constraintsData.backToDepotTime
+      (parameterPayload.earlyDeliveryTime || '') >
+      (parameterPayload.backToDepotTime || '')
     ) {
       this.showInvalidModal(
         'INVALID : Early Delivery Time',
@@ -1502,7 +1505,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.experimentService
       .validateExperiment(
         this.experiment.runId,
-        this.constraintsData,
+        parameterPayload as any,
         this.customersLocationUpdated
       )
       .subscribe({
@@ -1537,6 +1540,61 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.hiddenSpinner();
         },
       });
+  }
+
+  // Build validateExperiment parameter payload from dynamicParametersByCategory
+  buildValidateParameterFromDynamic(): Pick<
+    Constraint,
+    | 'earlyDeliveryTime'
+    | 'backToDepotTime'
+    | 'maximumWorkDuration'
+    | 'numberOfVehicleAvailable'
+    | 'vehicleOrderSizeCapacity'
+    | 'maximumTravelDistance'
+    | 'serviceDurationTime'
+  > {
+    const payload: Partial<Constraint> = {};
+
+    for (const group of this.dynamicParametersByCategory) {
+      for (const p of group.items) {
+        const key = this.getConstraintKeyForParam(p);
+        if (!key) continue;
+        if (
+          key === 'numberOfVehicleAvailable' ||
+          key === 'vehicleOrderSizeCapacity' ||
+          key === 'maximumTravelDistance'
+        ) {
+          // numeric fields
+          (payload as any)[key] = Number(p.value);
+        } else if (
+          key === 'earlyDeliveryTime' ||
+          key === 'backToDepotTime' ||
+          key === 'maximumWorkDuration' ||
+          key === 'serviceDurationTime'
+        ) {
+          // time/duration fields
+          (payload as any)[key] = String(p.value ?? '');
+        }
+      }
+    }
+
+    // Ensure all required keys exist; fall back to current constraintsData
+    const requiredKeys: Array<keyof Constraint> = [
+      'earlyDeliveryTime',
+      'backToDepotTime',
+      'maximumWorkDuration',
+      'numberOfVehicleAvailable',
+      'vehicleOrderSizeCapacity',
+      'maximumTravelDistance',
+      'serviceDurationTime',
+    ];
+    for (const k of requiredKeys) {
+      if ((payload as any)[k] === undefined || (payload as any)[k] === null) {
+        (payload as any)[k] = (this.constraintsData as any)[k];
+      }
+    }
+
+    return payload as any;
   }
   showSpinner() {
     this.spinner.show('run', {
@@ -2443,5 +2501,12 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isOverDistanceKey(p: DynamicParameter): boolean {
     return p.keyName === 'MaximumTravelDistance';
+  }
+
+  log() {
+    console.log(
+      'this.dynamicParametersByCategory',
+      this.dynamicParametersByCategory
+    );
   }
 }
