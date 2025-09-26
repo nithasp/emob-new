@@ -195,6 +195,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   };
   public validateExperiment: Validate | null = null;
   public companyDepotType: string = '';
+  private constraintsFromFileLoaded: boolean = false;
 
   //display table and virtualization
 
@@ -394,6 +395,11 @@ export class RunComponent implements OnInit, AfterViewInit {
         (response: Constraint) => {
           console.log('Constraint', response);
           this.constraintsData = { ...response };
+          this.constraintsFromFileLoaded = true;
+          // Ensure UI reflects constraint values on init
+          if (this.allDynamicParameters?.length) {
+            this.refreshDynamicParametersForSelectedDepot();
+          }
           console.log(this.constraintsData);
         }
       );
@@ -498,6 +504,10 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.validateExperiment.filters.order_data.invalid_coordinate.length;
         this.refreshValidationTable();
         this.haveValidated = true;
+        // Rebuild dynamic parameters so values reflect constraintsData when page initializes with historical validation
+        if (this.allDynamicParameters?.length) {
+          this.refreshDynamicParametersForSelectedDepot();
+        }
         this.isValidateShowMessage = {
           OrderData: {
             invalidCoordinate: true,
@@ -1517,6 +1527,8 @@ export class RunComponent implements OnInit, AfterViewInit {
             this.validateExperiment?.filters.order_data.invalid_coordinate
               .length || 0;
           this.dataService.clearData(this.experiment.runId);
+          // Rebuild dynamic parameters so values reflect constraintsData when validated
+          this.refreshDynamicParametersForSelectedDepot();
           this.refreshValidationTable();
           this.navigateToTab(3);
         },
@@ -2220,9 +2232,12 @@ export class RunComponent implements OnInit, AfterViewInit {
       .subscribe((response: DynamicParameter[]) => {
         console.log('Dynamic parameters response', response);
         this.allDynamicParameters = response || [];
-        this.constraintsData =
-          this.transformDynamicParametersToConstraint(response);
-        console.log('Transformed constraints data', this.constraintsData);
+        // Only derive constraints from dynamic params if we didn't already load from file
+        if (!this.constraintsFromFileLoaded) {
+          this.constraintsData =
+            this.transformDynamicParametersToConstraint(response);
+          console.log('Transformed constraints data', this.constraintsData);
+        }
 
         if (this.isCreateMode) {
           this.spinner.hide();
@@ -2441,10 +2456,31 @@ export class RunComponent implements OnInit, AfterViewInit {
       return ia - ib;
     });
 
-    this.dynamicParametersByCategory = orderedKeys.map((k) => ({
-      key: k,
-      items: groupsMap[k],
-    }));
+    const useConstraintsValues = !!this.validateExperiment;
+    this.dynamicParametersByCategory = orderedKeys.map((k) => {
+      const originalItems = groupsMap[k];
+      const items = useConstraintsValues
+        ? originalItems.map((p) => {
+            const key = this.getConstraintKeyForParam(p);
+            if (!key) return p;
+            const v = (this.constraintsData as any)[key];
+            if (v === undefined || v === null) return p;
+            if (
+              key === 'numberOfVehicleAvailable' ||
+              key === 'vehicleOrderSizeCapacity' ||
+              key === 'maximumTravelDistance'
+            ) {
+              return { ...p, value: Number(v) };
+            } else {
+              return { ...p, value: String(v) };
+            }
+          })
+        : originalItems;
+      return {
+        key: k,
+        items,
+      };
+    });
 
     console.log(
       'dynamicParametersByCategory',
@@ -2508,5 +2544,10 @@ export class RunComponent implements OnInit, AfterViewInit {
       'this.dynamicParametersByCategory',
       this.dynamicParametersByCategory
     );
+
+    console.log('this.constraintsData', this.constraintsData);
+    console.log('this. this.validateExperiment ',  this.validateExperiment );
+
+    
   }
 }
