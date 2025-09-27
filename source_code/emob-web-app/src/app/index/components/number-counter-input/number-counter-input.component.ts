@@ -19,6 +19,7 @@ export class NumberCounterInputComponent implements ControlValueAccessor {
   @Input() minValue: number = 100;
   @Input() count: number = 1;
   @Input() inputType: string = "number";
+  @Input() errorMessage: string | null = null;
   @Output() valueChange = new EventEmitter<number>();
 
   onChange: any = () => {};
