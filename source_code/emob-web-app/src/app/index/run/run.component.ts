@@ -16,6 +16,7 @@ import {
 } from 'ol/control';
 import * as OlProj from 'ol/proj';
 import Feature from 'ol/Feature';
+import type { FeatureLike } from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import Icon from 'ol/style/Icon';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
@@ -23,6 +24,7 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Overlay from 'ol/Overlay';
 import { Coordinate } from 'ol/coordinate';
+import MapBrowserEvent from 'ol/MapBrowserEvent';
 import OSM from 'ol/source/OSM';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { MatTableDataSource } from '@angular/material/table';
@@ -39,6 +41,9 @@ import {
   ProductInfo,
   ReplaceType,
   ValidationType,
+  FileWithCategory,
+  PreOrderFileItem,
+  PreOrderFileDescriptor,
 } from 'src/app/models/pre-order.model';
 import Style from 'ol/style/Style';
 import { ConstraintService } from 'src/app/services/constraint.service';
@@ -56,6 +61,7 @@ import {
   Validate,
   Company,
   MyDepot,
+  DepotInputRequirement,
 } from 'src/app/models/experiment.model';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import {
@@ -91,12 +97,7 @@ import { TranslocoService } from '@jsverse/transloco';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
-export interface FileWithCategory extends File {
-  keyName?: string;
-  displayName?: string;
-  isFirstOfType?: boolean;
-  lastModifiedDate?: Date;
-}
+ 
 
 @Injectable()
 export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
@@ -111,11 +112,12 @@ export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
     const split = trimmed.split(':');
     const hour = parseInt(split[0] || '0', 10);
     const minute = parseInt(split[1] || '0', 10);
-    const second = split.length > 2 ? parseInt(split[2] || '0', 10) : undefined as any;
+    const second: number | undefined =
+      split.length > 2 ? parseInt(split[2] || '0', 10) : undefined;
     return {
       hour: isNaN(hour) ? 0 : hour,
       minute: isNaN(minute) ? 0 : minute,
-      second: isNaN(second as any) ? undefined as any : (second as any),
+      ...(typeof second === 'number' && !isNaN(second) ? { second } : {}),
     } as NgbTimeStruct;
   }
 
@@ -178,7 +180,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   // store data
   public experiment = <Experiment>{};
-  public preOrderFiles: { id: string; file: any }[] = [];
+  public preOrderFiles: PreOrderFileItem[] = [];
   public popupContent?: { data: Customer; isDepot: boolean } | null;
   private dataPreOrder: Array<PreOrder> = [];
   public groupedDataPreOrder: Partial<GroupedDataPreOrder> = {};
@@ -278,7 +280,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly dataService: DataService,
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService
-  ) {}
+  ) { }
 
   public generateUniqueId(): string {
     return 'f-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
@@ -480,12 +482,12 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (newData.length > 0) {
                 this.toastr.info(
                   `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                    newData.length +
-                    ` ${this.transloco.translate(
-                      'new_edited_location_data_suffix',
-                      {},
-                      'index'
-                    )}`,
+                  newData.length +
+                  ` ${this.transloco.translate(
+                    'new_edited_location_data_suffix',
+                    {},
+                    'index'
+                  )}`,
                   `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
@@ -773,10 +775,11 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   handleUploadSubmit() {
     // Transform preOrderFiles to newPayload format (send actual File object)
-    const newPayload = this.preOrderFiles.map(({ file }) => ({
-      file,
-      keyName: file.keyName || '',
-    }));
+    const newPayload = this.preOrderFiles
+      .filter((item): item is { id: string; file: FileWithCategory } =>
+        this.isFileWithCategory(item.file)
+      )
+      .map(({ file }) => ({ file, keyName: file.keyName || '' }));
 
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
@@ -988,7 +991,20 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   private loadLocationDepot(
-    incoming: Array<Partial<MyDepot> & { id?: string; name?: string }>
+    incoming: Array<{
+      depotId?: string;
+      id?: string;
+      depotName?: string;
+      name?: string;
+      latitude?: number | string;
+      longitude?: number | string;
+      columns?: string[];
+      inputdata?: DepotInputRequirement[];
+      tw_early?: string | number;
+      tw_late?: string | number;
+      createdAt?: string;
+      updatedAt?: string;
+    }>
   ) {
     // Always use the incoming depots array for default selection and display
     const normalizedIncoming: MyDepot[] = incoming.map((item) => {
@@ -996,8 +1012,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
-          ? item.name
-          : '';
+            ? item.name
+            : '';
       const mapped: MyDepot = {
         depotId: (item.depotId || item.id || '') as string,
         depotName: nameKey,
@@ -1005,8 +1021,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         longitude: Number(item.longitude),
         columns: item.columns || [],
         inputdata: item.inputdata || [],
-        tw_early: item.tw_early || '',
-        tw_late: item.tw_late || '',
+        tw_early: String(item.tw_early ?? ''),
+        tw_late: String(item.tw_late ?? ''),
         createdAt: item.createdAt || '',
         updatedAt: item.updatedAt || '',
       };
@@ -1099,7 +1115,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               });
               location.setStyle(
                 this.iconStyle[
-                  uploadDataGroupCustomers[key as keyof DataGroup].type
+                uploadDataGroupCustomers[key as keyof DataGroup].type
                 ]
               );
               this.vectorSource.addFeature(location);
@@ -1110,31 +1126,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private popupShow(evt: any, element: HTMLElement) {
-    let coordinates: Coordinate;
-    const feature = this.map.forEachFeatureAtPixel(
-      evt.pixel,
-      function (feature) {
-        return feature;
-      }
-    )!;
-    if (feature) {
-      const geometry = feature.getGeometry();
-      if (geometry instanceof SimpleGeometry) {
-        coordinates = geometry.getFlatCoordinates();
-      } else {
-        // Handle GeometryCollection or other types if needed
-        coordinates = [];
-      }
-      console.log(coordinates, feature);
-      this.popUp?.setPosition(coordinates);
-
-      this.popupContent = feature.get('data');
-      console.log(this.popupContent);
-    } else {
-      this.popUp?.setPosition(undefined);
-    }
-  }
+  
   closePopupMapShow() {
     this.popUp?.setPosition(undefined);
     const closer = document.getElementById('popup-closer');
@@ -1210,7 +1202,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     console.log(this.haveUpdateAfterValidated, this.haveValidated);
   }
 
-  private pointMove(evt: any): void {
+  private pointMove(evt: MapBrowserEvent<UIEvent>): void {
     const target = this.map.getTargetElement();
     const pixel = this.map.getEventPixel(evt.originalEvent);
     const hit = this.map.hasFeatureAtPixel(pixel);
@@ -1220,6 +1212,41 @@ export class RunComponent implements OnInit, AfterViewInit {
     } else {
       target.style.cursor = '';
     }
+  }
+
+  private popupShow(evt: MapBrowserEvent<UIEvent>, element: HTMLElement) {
+    let coordinates: Coordinate = [];
+    const feature = this.map.forEachFeatureAtPixel(
+      evt.pixel,
+      (f: FeatureLike) => f
+    );
+    if (feature) {
+      const geometry = feature.getGeometry();
+      if (geometry instanceof SimpleGeometry) {
+        // getFlatCoordinates returns number[]; interpret as [x,y] in view proj
+        const flat = geometry.getFlatCoordinates();
+        coordinates = [flat[0], flat[1]] as Coordinate;
+      } else {
+        coordinates = [];
+      }
+      this.popUp?.setPosition(coordinates);
+      if (feature instanceof Feature) {
+        const raw = feature.get('data');
+        this.popupContent = this.isPopupPayload(raw) ? raw : null;
+      } else {
+        this.popupContent = null;
+      }
+    } else {
+      this.popUp?.setPosition(undefined);
+    }
+  }
+
+  private isPopupPayload(
+    value: unknown
+  ): value is { data: Customer; isDepot: boolean } {
+    if (typeof value !== 'object' || value === null) return false;
+    const rec = value as Record<string, unknown>;
+    return 'data' in rec && 'isDepot' in rec;
   }
   private groupCustomers(customers: Array<Customer>) {
     const verify: Customer[] = [];
@@ -1519,7 +1546,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.experimentService
       .validateExperiment(
         this.experiment.runId,
-        parameterPayload as any,
+        parameterPayload,
         this.customersLocationUpdated
       )
       .subscribe({
@@ -1574,43 +1601,59 @@ export class RunComponent implements OnInit, AfterViewInit {
       for (const p of group.items) {
         const key = this.getConstraintKeyForParam(p);
         if (!key) continue;
-        if (
-          key === 'numberOfVehicleAvailable' ||
-          key === 'vehicleOrderSizeCapacity' ||
-          key === 'maximumTravelDistance'
-        ) {
-          // numeric fields
-          (payload as any)[key] = Number(p.value);
-        } else if (
-          key === 'earlyDeliveryTime' ||
-          key === 'backToDepotTime' ||
-          key === 'maximumWorkDuration' ||
-          key === 'serviceDurationTime'
-        ) {
-          // time/duration fields; default null/empty to 00:00
-          const s = String(p.value ?? '').trim();
-          (payload as any)[key] = !s || s.toLowerCase() === 'null' ? '00:00' : s;
+        switch (key) {
+          case 'numberOfVehicleAvailable':
+            payload.numberOfVehicleAvailable = Number(p.value);
+            break;
+          case 'vehicleOrderSizeCapacity':
+            payload.vehicleOrderSizeCapacity = Number(p.value);
+            break;
+          case 'maximumTravelDistance':
+            payload.maximumTravelDistance = Number(p.value);
+            break;
+          case 'earlyDeliveryTime':
+          case 'backToDepotTime':
+          case 'maximumWorkDuration':
+          case 'serviceDurationTime': {
+            const s = String(p.value ?? '').trim();
+            const normalized = !s || s.toLowerCase() === 'null' ? '00:00' : s;
+            if (key === 'earlyDeliveryTime') payload.earlyDeliveryTime = normalized;
+            else if (key === 'backToDepotTime') payload.backToDepotTime = normalized;
+            else if (key === 'maximumWorkDuration') payload.maximumWorkDuration = normalized;
+            else if (key === 'serviceDurationTime') payload.serviceDurationTime = normalized;
+            break;
+          }
         }
       }
     }
 
     // Ensure all required keys exist; fall back to current constraintsData
-    const requiredKeys: Array<keyof Constraint> = [
-      'earlyDeliveryTime',
-      'backToDepotTime',
-      'maximumWorkDuration',
-      'numberOfVehicleAvailable',
-      'vehicleOrderSizeCapacity',
-      'maximumTravelDistance',
-      'serviceDurationTime',
-    ];
-    for (const k of requiredKeys) {
-      if ((payload as any)[k] === undefined || (payload as any)[k] === null) {
-        (payload as any)[k] = (this.constraintsData as any)[k];
-      }
-    }
+    type RequiredKeys =
+      | 'earlyDeliveryTime'
+      | 'backToDepotTime'
+      | 'maximumWorkDuration'
+      | 'numberOfVehicleAvailable'
+      | 'vehicleOrderSizeCapacity'
+      | 'maximumTravelDistance'
+      | 'serviceDurationTime';
 
-    return payload as any;
+    const p = payload as Partial<Pick<Constraint, RequiredKeys>>;
+    if (p.earlyDeliveryTime == null)
+      p.earlyDeliveryTime = this.constraintsData.earlyDeliveryTime;
+    if (p.backToDepotTime == null)
+      p.backToDepotTime = this.constraintsData.backToDepotTime;
+    if (p.maximumWorkDuration == null)
+      p.maximumWorkDuration = this.constraintsData.maximumWorkDuration;
+    if (p.numberOfVehicleAvailable == null)
+      p.numberOfVehicleAvailable = this.constraintsData.numberOfVehicleAvailable;
+    if (p.vehicleOrderSizeCapacity == null)
+      p.vehicleOrderSizeCapacity = this.constraintsData.vehicleOrderSizeCapacity;
+    if (p.maximumTravelDistance == null)
+      p.maximumTravelDistance = this.constraintsData.maximumTravelDistance;
+    if (p.serviceDurationTime == null)
+      p.serviceDurationTime = this.constraintsData.serviceDurationTime;
+
+    return p as Pick<Constraint, RequiredKeys>;
   }
   showSpinner() {
     this.spinner.show('run', {
@@ -1799,7 +1842,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
     this.reInitializeDataTable();
     this.loadLocation(this.uploadDataGroupCustomers);
-    this.loadLocationDepot(depots as any);
+    this.loadLocationDepot(depots);
     this.isUpload = true;
     this.isFileSelectionStep = false;
   }
@@ -1807,8 +1850,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     return this.experiment.run === 'Original';
   }
 
-  onValueChange(newValue: number | string, property: keyof Constraint): void {
-    this.updateConstraint(this.constraintsData, property, newValue as any);
+  onValueChange<K extends keyof Constraint>(newValue: Constraint[K], property: K): void {
+    this.updateConstraint(this.constraintsData, property, newValue);
     this.haveUpdateAfterValidated = true;
   }
 
@@ -1943,11 +1986,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   updateDepot(
-    depots: Array<
-      Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'> & {
-        [key: string]: any;
-      }
-    >
+    depots: Array<Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>>
   ) {
     this.preOrderFiles = [];
     this.vectorSourceDepot.clear();
@@ -2042,7 +2081,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   handleInputDataKeyChange(
-    fileObj: { id: string; file: FileWithCategory },
+    fileObj: PreOrderFileItem,
     event: { value: string }
   ) {
     const selectedDisplayName = event.value;
@@ -2050,11 +2089,21 @@ export class RunComponent implements OnInit, AfterViewInit {
       (item) => item.displayName === selectedDisplayName
     );
     if (found) {
-      fileObj.file.keyName = found.keyName;
-      fileObj.file.displayName = found.displayName;
+      if (this.isFileWithCategory(fileObj.file)) {
+        fileObj.file.keyName = found.keyName;
+        fileObj.file.displayName = found.displayName;
+      } else {
+        (fileObj.file as PreOrderFileDescriptor).keyName = found.keyName;
+        (fileObj.file as PreOrderFileDescriptor).displayName = found.displayName;
+      }
     } else {
-      fileObj.file.keyName = '';
-      fileObj.file.displayName = '';
+      if (this.isFileWithCategory(fileObj.file)) {
+        fileObj.file.keyName = '';
+        fileObj.file.displayName = '';
+      } else {
+        (fileObj.file as PreOrderFileDescriptor).keyName = '';
+        (fileObj.file as PreOrderFileDescriptor).displayName = '';
+      }
     }
   }
 
@@ -2090,10 +2139,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.preOrderFiles = validFiles;
   }
 
-  validateFileAgainstDepotRequirements(file: {
-    id: string;
-    file: FileWithCategory;
-  }): Promise<boolean> {
+  validateFileAgainstDepotRequirements(file: PreOrderFileItem): Promise<boolean> {
     // Read the file to get column names
     return new Promise<boolean>((resolve) => {
       const reader = new FileReader();
@@ -2129,12 +2175,12 @@ export class RunComponent implements OnInit, AfterViewInit {
           const matchingInputDataItem =
             this.findMatchingInputDataItem(columnNames);
           if (matchingInputDataItem) {
-            (file.file as FileWithCategory).keyName =
-              matchingInputDataItem.keyName;
-            (file.file as FileWithCategory).displayName =
-              matchingInputDataItem.displayName;
+            if (this.isFileWithCategory(file.file)) {
+              file.file.keyName = matchingInputDataItem.keyName;
+              file.file.displayName = matchingInputDataItem.displayName;
+              file.file.isFirstOfType = false;
+            }
             // Keep existing files editable when re-validating against depot
-            (file.file as FileWithCategory).isFirstOfType = false;
             resolve(true);
           } else {
             resolve(false);
@@ -2144,8 +2190,21 @@ export class RunComponent implements OnInit, AfterViewInit {
           resolve(false);
         }
       };
-      reader.readAsArrayBuffer(file.file);
+      if (this.isFileWithCategory(file.file)) {
+        reader.readAsArrayBuffer(file.file);
+      } else {
+        // For descriptor items (loaded from server), consider them valid
+        resolve(true);
+      }
     });
+  }
+
+  isFileWithCategory(value: unknown): value is FileWithCategory {
+    return (
+      !!value &&
+      typeof value === 'object' &&
+      ('arrayBuffer' in (value as File) || value instanceof File)
+    );
   }
 
   findMatchingInputDataItem(
@@ -2292,32 +2351,46 @@ export class RunComponent implements OnInit, AfterViewInit {
     return constraint;
   }
 
-  // Value accessor for template
-  getConstraintValue(p: DynamicParameter): any {
+  getConstraintValue(p: DynamicParameter): string | number | null {
     const key = this.getConstraintKeyForParam(p);
     if (!key) return null;
-    const v = (this.constraintsData as any)[key];
+    const v = this.constraintsData[key];
     if (this.isTimeType(p)) {
       const s = String(v ?? '').trim();
       return !s || s.toLowerCase() === 'null' ? '00:00' : s;
     }
-    return v;
+    if (this.isNumberType(p)) {
+      const n = Number(v);
+      return isNaN(n) ? 0 : n;
+    }
+    return v as string | number;
   }
 
-  onParamValueChange(p: DynamicParameter, newValue: any): void {
-    // update displayed dynamic parameter value
-    p.value = (newValue == null || `${newValue}`.trim().toLowerCase() === 'null' || `${newValue}`.trim() === '')
-      ? '00:00'
-      : newValue;
+  onParamValueChange(p: DynamicParameter, newValue: string | number | null | undefined): void {
     // keep constraintsData in sync for validation and submission
     const key = this.getConstraintKeyForParam(p);
-    if (key) {
-      const coerced = (p.value == null || `${p.value}`.trim() === '') ? '00:00' : p.value;
-      this.onValueChange(coerced as any, key);
+
+    if (this.isTimeType(p)) {
+      const s = String(newValue ?? '').trim();
+      const normalized = !s || s.toLowerCase() === 'null' ? '00:00' : s;
+      p.value = normalized;
+      if (key) this.onValueChange(normalized, key);
+      return;
     }
+
+    if (this.isNumberType(p)) {
+      const n = Number(newValue);
+      const normalized = isNaN(n) ? 0 : n;
+      p.value = normalized;
+      if (key) this.onValueChange(normalized, key);
+      return;
+    }
+
+    const s = String(newValue ?? '').trim();
+    p.value = s;
+    if (key) this.onValueChange(s, key);
   }
 
-  // Build [{ id, value }] payload from current dynamic parameters UI state
   buildDynamicParametersUpdatePayload(): Array<{
     id: string;
     value: string | number;
@@ -2417,22 +2490,28 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
 
     // Normalize localized fields when backend returns JSON strings
-    const normalized = scoped.map((p) => {
-      const normalizedParam = { ...p } as any;
-      normalizedParam.displayName = this.coerceLocalizedText(
-        p.displayName
-      ) as any;
-      normalizedParam.category = this.coerceLocalizedText(p.category) as any;
-      normalizedParam.description = this.coerceLocalizedText(
-        p.description
-      ) as any;
-      return normalizedParam as DynamicParameter;
+    const defaultLocalized: LocalizedText = { th_TH: '', en_US: '' };
+    type DynamicParameterRaw = Omit<
+      DynamicParameter,
+      'category' | 'displayName' | 'description'
+    > & {
+      category: LocalizedText | string | null | undefined;
+      displayName: LocalizedText | string | null | undefined;
+      description: LocalizedText | string | null | undefined;
+    };
+    const normalized: DynamicParameter[] = scoped.map((p) => {
+      const raw = p as unknown as DynamicParameterRaw;
+      return {
+        ...raw,
+        displayName: this.coerceLocalizedText(raw.displayName) ?? defaultLocalized,
+        category: this.coerceLocalizedText(raw.category) ?? defaultLocalized,
+        description: this.coerceLocalizedText(raw.description) ?? defaultLocalized,
+      };
     });
 
     const groupsMap: Record<string, DynamicParameter[]> = {};
     for (const p of normalized) {
-      const cat = (p as any).category as LocalizedText | undefined;
-      const key = (cat?.en_US || 'Generals').trim();
+      const key = (p.category.en_US || 'Generals').trim();
       if (!groupsMap[key]) groupsMap[key] = [];
       groupsMap[key].push(p);
     }
@@ -2440,8 +2519,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     // Build category order dynamically from the incoming parameters' category sequence
     const categoryOrderFromParams: string[] = [];
     for (const p of normalized) {
-      const cat = (p as any).category as LocalizedText | undefined;
-      const k = (cat?.en_US || 'Generals').trim();
+      const k = (p.category.en_US || 'Generals').trim();
       if (!categoryOrderFromParams.includes(k)) categoryOrderFromParams.push(k);
     }
     const orderedKeys = Object.keys(groupsMap).sort((a, b) => {
@@ -2458,27 +2536,27 @@ export class RunComponent implements OnInit, AfterViewInit {
       const originalItems = groupsMap[k];
       const items = useConstraintsValues
         ? originalItems.map((p) => {
-            const key = this.getConstraintKeyForParam(p);
-            if (!key) return p;
-            const v = (this.constraintsData as any)[key];
-            if (v === undefined || v === null) {
-              // default missing times to 00:00
-              if (this.isTimeType(p)) {
-                return { ...p, value: '00:00' };
-              }
-              return p;
+          const key = this.getConstraintKeyForParam(p);
+          if (!key) return p;
+          const v = this.constraintsData[key];
+          if (v === undefined || v === null) {
+            // default missing times to 00:00
+            if (this.isTimeType(p)) {
+              return { ...p, value: '00:00' };
             }
-            if (
-              key === 'numberOfVehicleAvailable' ||
-              key === 'vehicleOrderSizeCapacity' ||
-              key === 'maximumTravelDistance'
-            ) {
-              return { ...p, value: Number(v) };
-            } else {
-              const s = String(v).trim();
-              return { ...p, value: s === '' || s.toLowerCase() === 'null' ? '00:00' : s };
-            }
-          })
+            return p;
+          }
+          if (
+            key === 'numberOfVehicleAvailable' ||
+            key === 'vehicleOrderSizeCapacity' ||
+            key === 'maximumTravelDistance'
+          ) {
+            return { ...p, value: Number(v) };
+          } else {
+            const s = String(v).trim();
+            return { ...p, value: s === '' || s.toLowerCase() === 'null' ? '00:00' : s };
+          }
+        })
         : originalItems;
       return {
         key: k,
@@ -2532,9 +2610,9 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isTimeInvalid(p: DynamicParameter): boolean {
     if (!this.isTimeType(p)) return false;
-    const v = p?.value as any;
+    const v = p.value;
     if (v === null || v === undefined) return true;
-    const s = String(v).trim().toLowerCase();
+    const s = (typeof v === 'string' ? v : String(v)).trim().toLowerCase();
     if (!s || s === 'null') return true;
     return false;
   }

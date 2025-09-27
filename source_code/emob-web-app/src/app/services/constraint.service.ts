@@ -131,7 +131,6 @@ export class ConstraintService {
       );
   }
 
-  // New bulk update mutation signature: updateDynamicParameter(updates: [...])
   updateDynamicParameter(
     updates: DynamicParameterValueUpdate[]
   ): Observable<UpdateDynamicParameterResponse> {
