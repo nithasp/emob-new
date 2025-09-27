@@ -1280,7 +1280,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    console.log('filterValue', filterValue);
     this.dataSource.filter = filterValue.trim().toLowerCase();
 
     if (this.dataSource.paginator) {
@@ -1505,8 +1504,6 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   validateExperimentPreOrder() {
-    console.log('validateExperimentPreOrder');
-    // return;
     const parameterPayload = this.buildValidateParameterFromDynamic();
     if (
       (parameterPayload.earlyDeliveryTime || '') >
@@ -1528,7 +1525,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       .subscribe({
         next: (result) => {
           this.haveUpdateAfterValidated = false;
-          console.log(result);
           this.validateExperiment = result.result?.validate || null;
           this.ngbValidationTableCollectionSize =
             this.validateExperiment?.filters.order_data.invalid_coordinate
@@ -1779,7 +1775,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       return sum + (Array.isArray(products) ? products.length : 0);
     }, 0);
     const groupedCustomer = this.groupCustomers(customers);
-    console.log('groupedCustomer', groupedCustomer);
     this.uploadDataGroupCustomers = {
       verify: {
         customers: groupedCustomer.verify,
@@ -1805,7 +1800,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.reInitializeDataTable();
     this.loadLocation(this.uploadDataGroupCustomers);
     this.loadLocationDepot(depots as any);
-    console.log(this.uploadDataGroupCustomers);
     this.isUpload = true;
     this.isFileSelectionStep = false;
   }
@@ -1815,7 +1809,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   onValueChange(newValue: number | string, property: keyof Constraint): void {
     this.updateConstraint(this.constraintsData, property, newValue as any);
-    console.log(`${property} changed to:`, newValue);
     this.haveUpdateAfterValidated = true;
   }
 
@@ -2238,13 +2231,11 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.constraintService
       .getDynamicParameters('')
       .subscribe((response: DynamicParameter[]) => {
-        console.log('Dynamic parameters response', response);
         this.allDynamicParameters = response || [];
         // Only derive constraints from dynamic params if we didn't already load from file
         if (!this.constraintsFromFileLoaded) {
           this.constraintsData =
             this.transformDynamicParametersToConstraint(response);
-          console.log('Transformed constraints data', this.constraintsData);
         }
 
         if (this.isCreateMode) {
@@ -2342,13 +2333,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     return updates;
   }
 
-  // Optional: submit all dynamic parameter updates in parallel
   updateDynamicParameters(): void {
     const payload = this.buildDynamicParametersUpdatePayload();
     if (!payload.length) return;
-
-    // console.log('payload', payload);
-    // return
     this.showSpinner();
     this.constraintService.updateDynamicParameter(payload).subscribe({
       next: (res) => {
@@ -2415,9 +2402,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       ? this.allDynamicParameters
       : [];
 
-    console.log('allDynamicParameters', base);
-    console.log('selectedDepot', selectedDepot);
-
     // Prefer parameters scoped to selected depot; fall back if none found
     let scoped = base;
     if (selectedDepot?.depotId) {
@@ -2445,9 +2429,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       return normalizedParam as DynamicParameter;
     });
 
-    console.log('normalizedDynamicParameters', normalized);
-
-    // Group by English category label to create { key, items } structure
     const groupsMap: Record<string, DynamicParameter[]> = {};
     for (const p of normalized) {
       const cat = (p as any).category as LocalizedText | undefined;
@@ -2504,11 +2485,6 @@ export class RunComponent implements OnInit, AfterViewInit {
         items,
       };
     });
-
-    console.log(
-      'dynamicParametersByCategory',
-      this.dynamicParametersByCategory
-    );
     this.cdr.detectChanges();
   }
 
@@ -2569,17 +2545,5 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isOverDistanceKey(p: DynamicParameter): boolean {
     return p.keyName === 'MaximumTravelDistance';
-  }
-
-  log() {
-    console.log(
-      'this.dynamicParametersByCategory',
-      this.dynamicParametersByCategory
-    );
-
-    console.log('this.constraintsData', this.constraintsData);
-    console.log('this. this.validateExperiment ',  this.validateExperiment );
-
-    
   }
 }
