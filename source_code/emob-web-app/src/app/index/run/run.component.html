@@ -455,8 +455,8 @@
                               <app-dynamic-popover [placement]="'bottom-start'">
                                 <button popover-trigger class="link link-primary link-opacity-75-hover">
                                   <ng-container [ngSwitch]="(p.valueType || '').toLowerCase()">
-                                    <ng-container *ngSwitchCase="'time'">{{ p.value }}</ng-container>
-                                    <ng-container *ngSwitchCase="'duration_hh:mm'">{{ ('' + p.value) | timeFormat }}</ng-container>
+                                    <ng-container *ngSwitchCase="'time'">{{ p.value || '00:00' }}</ng-container>
+                                    <ng-container *ngSwitchCase="'duration_hh:mm'">{{ ('' + (p.value || '00:00')) | timeFormat }}</ng-container>
                                     <ng-container *ngSwitchCase="'number'">{{ (+p.value) | number: '1.0-0' }}</ng-container>
                                     <ng-container *ngSwitchCase="'number_kg'">{{ (+p.value) | number: '1.0-0' }} <span class="metric">{{ 'kilogram' | transloco }}</span></ng-container>
                                     <ng-container *ngSwitchCase="'number_km'">{{ (+p.value) | number: '1.0-0' }} <span class="metric">{{ 'kilometer' | transloco }}</span></ng-container>
@@ -466,7 +466,7 @@
                                 <div popover-content>
                                   <p class="card-title">{{ getLocalized(p.displayName) }}</p>
                                   <ng-container *ngIf="isTimeType(p); else numberEditor">
-                                    <ngb-timepicker [ngModel]="('' + p.value)" (ngModelChange)="onParamValueChange(p, $event)" />
+                                    <ngb-timepicker [ngModel]="p.value || '00:00'" (ngModelChange)="onParamValueChange(p, $event)" />
                                   </ng-container>
                                   <ng-template #numberEditor>
                                     <app-number-counter-input [value]="+p.value || 0" 

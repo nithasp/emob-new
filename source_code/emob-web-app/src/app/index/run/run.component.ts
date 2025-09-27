@@ -101,15 +101,22 @@ export interface FileWithCategory extends File {
 @Injectable()
 export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
   fromModel(value: string | null): NgbTimeStruct | null {
-    if (!value) {
+    if (value == null) {
       return null;
     }
-    const split = value.split(':');
+    const trimmed = `${value}`.trim();
+    if (!trimmed || trimmed.toLowerCase() === 'null') {
+      return null;
+    }
+    const split = trimmed.split(':');
+    const hour = parseInt(split[0] || '0', 10);
+    const minute = parseInt(split[1] || '0', 10);
+    const second = split.length > 2 ? parseInt(split[2] || '0', 10) : undefined as any;
     return {
-      hour: parseInt(split[0], 10),
-      minute: parseInt(split[1], 10),
-      second: parseInt(split[2], 10),
-    };
+      hour: isNaN(hour) ? 0 : hour,
+      minute: isNaN(minute) ? 0 : minute,
+      second: isNaN(second as any) ? undefined as any : (second as any),
+    } as NgbTimeStruct;
   }
 
   toModel(time: NgbTimeStruct | null): string | null {
@@ -1584,8 +1591,9 @@ export class RunComponent implements OnInit, AfterViewInit {
           key === 'maximumWorkDuration' ||
           key === 'serviceDurationTime'
         ) {
-          // time/duration fields
-          (payload as any)[key] = String(p.value ?? '');
+          // time/duration fields; default null/empty to 00:00
+          const s = String(p.value ?? '').trim();
+          (payload as any)[key] = !s || s.toLowerCase() === 'null' ? '00:00' : s;
         }
       }
     }
@@ -2297,16 +2305,24 @@ export class RunComponent implements OnInit, AfterViewInit {
   getConstraintValue(p: DynamicParameter): any {
     const key = this.getConstraintKeyForParam(p);
     if (!key) return null;
-    return (this.constraintsData as any)[key];
+    const v = (this.constraintsData as any)[key];
+    if (this.isTimeType(p)) {
+      const s = String(v ?? '').trim();
+      return !s || s.toLowerCase() === 'null' ? '00:00' : s;
+    }
+    return v;
   }
 
   onParamValueChange(p: DynamicParameter, newValue: any): void {
     // update displayed dynamic parameter value
-    p.value = newValue;
+    p.value = (newValue == null || `${newValue}`.trim().toLowerCase() === 'null' || `${newValue}`.trim() === '')
+      ? '00:00'
+      : newValue;
     // keep constraintsData in sync for validation and submission
     const key = this.getConstraintKeyForParam(p);
     if (key) {
-      this.onValueChange(newValue as any, key);
+      const coerced = (p.value == null || `${p.value}`.trim() === '') ? '00:00' : p.value;
+      this.onValueChange(coerced as any, key);
     }
   }
 
@@ -2464,7 +2480,13 @@ export class RunComponent implements OnInit, AfterViewInit {
             const key = this.getConstraintKeyForParam(p);
             if (!key) return p;
             const v = (this.constraintsData as any)[key];
-            if (v === undefined || v === null) return p;
+            if (v === undefined || v === null) {
+              // default missing times to 00:00
+              if (this.isTimeType(p)) {
+                return { ...p, value: '00:00' };
+              }
+              return p;
+            }
             if (
               key === 'numberOfVehicleAvailable' ||
               key === 'vehicleOrderSizeCapacity' ||
@@ -2472,7 +2494,8 @@ export class RunComponent implements OnInit, AfterViewInit {
             ) {
               return { ...p, value: Number(v) };
             } else {
-              return { ...p, value: String(v) };
+              const s = String(v).trim();
+              return { ...p, value: s === '' || s.toLowerCase() === 'null' ? '00:00' : s };
             }
           })
         : originalItems;
@@ -2529,6 +2552,15 @@ export class RunComponent implements OnInit, AfterViewInit {
       default:
         return null;
     }
+  }
+
+  isTimeInvalid(p: DynamicParameter): boolean {
+    if (!this.isTimeType(p)) return false;
+    const v = p?.value as any;
+    if (v === null || v === undefined) return true;
+    const s = String(v).trim().toLowerCase();
+    if (!s || s === 'null') return true;
+    return false;
   }
 
   isOverWeightKey(p: DynamicParameter): boolean {
