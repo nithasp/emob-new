@@ -454,14 +454,12 @@
                               <span>{{ getLocalized(p.displayName) }}</span>
                               <app-dynamic-popover [placement]="'bottom-start'">
                                 <button popover-trigger class="link link-primary link-opacity-75-hover">
-                                  <ng-container [ngSwitch]="p.keyName">
-                                    <ng-container *ngSwitchCase="'MaximumWorkDuration'">{{ ('' + p.value) | timeFormat }}</ng-container>
-                                    <ng-container *ngSwitchCase="'ServiceDurationTime'">{{ ('' + p.value) | timeFormat }}</ng-container>
-                                    <ng-container *ngSwitchCase="'NumberOfVehicleAvailable'">{{ (+p.value) | number: '1.0-0' }}</ng-container>
-                                    <ng-container *ngSwitchCase="'VehicleOrderSizeCapacity'">{{ (+p.value) | number: '1.0-0' }} {{ 'kilogram' | transloco }}</ng-container>
-                                    <ng-container *ngSwitchCase="'MaximumTravelDistance'">{{ (+p.value) | number: '1.0-0' }} {{ 'kilometer' | transloco }}</ng-container>
-                                    <ng-container *ngSwitchCase="'EarlyDeliveryTime'">{{ p.value }}</ng-container>
-                                    <ng-container *ngSwitchCase="'BackToDepotTime'">{{ p.value }}</ng-container>
+                                  <ng-container [ngSwitch]="(p.valueType || '').toLowerCase()">
+                                    <ng-container *ngSwitchCase="'time'">{{ p.value }}</ng-container>
+                                    <ng-container *ngSwitchCase="'duration_hh:mm'">{{ ('' + p.value) | timeFormat }}</ng-container>
+                                    <ng-container *ngSwitchCase="'number'">{{ (+p.value) | number: '1.0-0' }}</ng-container>
+                                    <ng-container *ngSwitchCase="'number_kg'">{{ (+p.value) | number: '1.0-0' }} <span class="metric">{{ 'kilogram' | transloco }}</span></ng-container>
+                                    <ng-container *ngSwitchCase="'number_km'">{{ (+p.value) | number: '1.0-0' }} <span class="metric">{{ 'kilometer' | transloco }}</span></ng-container>
                                     <ng-container *ngSwitchDefault>{{ p.value }}</ng-container>
                                   </ng-container>
                                 </button>
