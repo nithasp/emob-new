@@ -2108,7 +2108,6 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   updateInputDataKeysFromDepot(depot: MyDepot) {
-    // Extract input data items from depot
     this.depotInputDataItems =
       depot.inputdata?.map((item) => ({
         keyName: item.keyName,
@@ -2116,10 +2115,9 @@ export class RunComponent implements OnInit, AfterViewInit {
         columnRequired: item.columnRequired || [],
       })) || [];
 
-    // Remove duplicates based on keyName and create inputDataKeys array
     const uniqueItems = this.depotInputDataItems.filter(
       (item, index, self) =>
-        index === self.findIndex((t) => t.keyName === item.keyName)
+        index === self.findIndex((existingItem) => existingItem.keyName === item.keyName)
     );
     this.inputDataKeys = uniqueItems.map((item) => item.displayName);
   }
@@ -2212,7 +2210,6 @@ export class RunComponent implements OnInit, AfterViewInit {
   ): { keyName: string; displayName: string; columnRequired: string[] } | null {
     return (
       this.depotInputDataItems.find((item) => {
-        // Check if all required columns are present in the file
         return item.columnRequired.every((requiredCol) =>
           columnNames.includes(requiredCol)
         );
@@ -2222,14 +2219,12 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   canExecuteHandleUploadSubmit(): boolean {
     if (this.preOrderFiles.length === 0) return false;
-    // Check if all depot input data types are covered by uploaded files
     const requiredDisplayNames = this.depotInputDataItems.map(
       (item) => item.displayName
     );
     const uploadedDisplayNames = this.preOrderFiles
-      .map((f) => (f.file as FileWithCategory).displayName)
-      .filter((cat) => !!cat);
-    // All required types must be covered
+      .map((preOrderFileItem) => (preOrderFileItem.file as FileWithCategory).displayName)
+      .filter((displayName) => !!displayName);
     return requiredDisplayNames.every((required) =>
       uploadedDisplayNames.includes(required)
     );
@@ -2291,7 +2286,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       .getDynamicParameters('')
       .subscribe((response: DynamicParameter[]) => {
         this.allDynamicParameters = response || [];
-        // Only derive constraints from dynamic params if we didn't already load from file
         if (!this.constraintsFromFileLoaded) {
           this.constraintsData =
             this.transformDynamicParametersToConstraint(response);
@@ -2351,44 +2345,43 @@ export class RunComponent implements OnInit, AfterViewInit {
     return constraint;
   }
 
-  getConstraintValue(p: DynamicParameter): string | number | null {
-    const key = this.getConstraintKeyForParam(p);
+  getConstraintValue(dynamicParameter: DynamicParameter): string | number | null {
+    const key = this.getConstraintKeyForParam(dynamicParameter);
     if (!key) return null;
-    const v = this.constraintsData[key];
-    if (this.isTimeType(p)) {
-      const s = String(v ?? '').trim();
-      return !s || s.toLowerCase() === 'null' ? '00:00' : s;
+    const constraintValue = this.constraintsData[key];
+    if (this.isTimeType(dynamicParameter)) {
+      const trimmedValue = String(constraintValue ?? '').trim();
+      return !trimmedValue || trimmedValue.toLowerCase() === 'null' ? '00:00' : trimmedValue;
     }
-    if (this.isNumberType(p)) {
-      const n = Number(v);
-      return isNaN(n) ? 0 : n;
+    if (this.isNumberType(dynamicParameter)) {
+      const numericValue = Number(constraintValue);
+      return isNaN(numericValue) ? 0 : numericValue;
     }
-    return v as string | number;
+    return constraintValue as string | number;
   }
 
-  onParamValueChange(p: DynamicParameter, newValue: string | number | null | undefined): void {
-    // keep constraintsData in sync for validation and submission
-    const key = this.getConstraintKeyForParam(p);
+  onParamValueChange(dynamicParameter: DynamicParameter, newValue: string | number | null | undefined): void {
+    const key = this.getConstraintKeyForParam(dynamicParameter);
 
-    if (this.isTimeType(p)) {
-      const s = String(newValue ?? '').trim();
-      const normalized = !s || s.toLowerCase() === 'null' ? '00:00' : s;
-      p.value = normalized;
+    if (this.isTimeType(dynamicParameter)) {
+      const trimmedTimeValue = String(newValue ?? '').trim();
+      const normalized = !trimmedTimeValue || trimmedTimeValue.toLowerCase() === 'null' ? '00:00' : trimmedTimeValue;
+      dynamicParameter.value = normalized;
       if (key) this.onValueChange(normalized, key);
       return;
     }
 
-    if (this.isNumberType(p)) {
-      const n = Number(newValue);
-      const normalized = isNaN(n) ? 0 : n;
-      p.value = normalized;
+    if (this.isNumberType(dynamicParameter)) {
+      const numericValue = Number(newValue);
+      const normalized = isNaN(numericValue) ? 0 : numericValue;
+      dynamicParameter.value = normalized;
       if (key) this.onValueChange(normalized, key);
       return;
     }
 
-    const s = String(newValue ?? '').trim();
-    p.value = s;
-    if (key) this.onValueChange(s, key);
+    const trimmedTextValue = String(newValue ?? '').trim();
+    dynamicParameter.value = trimmedTextValue;
+    if (key) this.onValueChange(trimmedTextValue, key);
   }
 
   buildDynamicParametersUpdatePayload(): Array<{
@@ -2397,9 +2390,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   }> {
     const updates: Array<{ id: string; value: string | number }> = [];
     for (const group of this.dynamicParametersByCategory) {
-      for (const p of group.items) {
-        if (p?.id && p.value !== undefined && p.value !== null) {
-          updates.push({ id: p.id, value: p.value });
+      for (const dynamicParameter of group.items) {
+        if (dynamicParameter?.id && dynamicParameter.value !== undefined && dynamicParameter.value !== null) {
+          updates.push({ id: dynamicParameter.id, value: dynamicParameter.value });
         }
       }
     }
@@ -2428,7 +2421,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // Helpers for dynamic parameters UI
   getBackendLocaleKey(): keyof LocalizedText {
     const active = this.transloco.getActiveLang();
     return active?.toLowerCase().startsWith('th') ? 'th_TH' : 'en_US';
@@ -2438,12 +2430,11 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (!text) return '';
     const key = this.getBackendLocaleKey();
     if (typeof text === 'string') {
-      // Handle JSON-stringified localized text
       try {
         const parsed = JSON.parse(text) as LocalizedText;
         return parsed[key] ?? '';
       } catch {
-        return text; // fallback to raw string
+        return text;
       }
     }
     return text[key] ?? '';
@@ -2457,7 +2448,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       try {
         return JSON.parse(value) as LocalizedText;
       } catch {
-        // Fallback: duplicate to both locales
         return { th_TH: value, en_US: value } as LocalizedText;
       }
     }
@@ -2466,7 +2456,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   getSelectedDepotObject(): MyDepot | undefined {
     if (!this.selectedDepotId) return undefined;
-    return this.depots.find((d) => d.depotName === this.selectedDepotId);
+    return this.depots.find((depot) => depot.depotName === this.selectedDepotId);
   }
 
   refreshDynamicParametersForSelectedDepot(): void {
@@ -2475,21 +2465,17 @@ export class RunComponent implements OnInit, AfterViewInit {
       ? this.allDynamicParameters
       : [];
 
-    // Prefer parameters scoped to selected depot; fall back if none found
     let scoped = base;
     if (selectedDepot?.depotId) {
-      scoped = base.filter((p) => p.depotId === selectedDepot.depotId);
+      scoped = base.filter((dynamicParameter) => dynamicParameter.depotId === selectedDepot.depotId);
     }
     if (!scoped.length) {
-      // fallback to parameters without depot binding
-      scoped = base.filter((p) => !p.depotId);
+      scoped = base.filter((dynamicParameter) => !dynamicParameter.depotId);
     }
     if (!scoped.length) {
-      // final fallback to all
       scoped = base;
     }
 
-    // Normalize localized fields when backend returns JSON strings
     const defaultLocalized: LocalizedText = { th_TH: '', en_US: '' };
     type DynamicParameterRaw = Omit<
       DynamicParameter,
@@ -2499,8 +2485,8 @@ export class RunComponent implements OnInit, AfterViewInit {
       displayName: LocalizedText | string | null | undefined;
       description: LocalizedText | string | null | undefined;
     };
-    const normalized: DynamicParameter[] = scoped.map((p) => {
-      const raw = p as unknown as DynamicParameterRaw;
+    const normalized: DynamicParameter[] = scoped.map((dynamicParameter) => {
+      const raw = dynamicParameter as unknown as DynamicParameterRaw;
       return {
         ...raw,
         displayName: this.coerceLocalizedText(raw.displayName) ?? defaultLocalized,
@@ -2510,74 +2496,72 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
 
     const groupsMap: Record<string, DynamicParameter[]> = {};
-    for (const p of normalized) {
-      const key = (p.category.en_US || 'Generals').trim();
-      if (!groupsMap[key]) groupsMap[key] = [];
-      groupsMap[key].push(p);
+    for (const dynamicParameter of normalized) {
+      const categoryKey = (dynamicParameter.category.en_US || 'Generals').trim();
+      if (!groupsMap[categoryKey]) groupsMap[categoryKey] = [];
+      groupsMap[categoryKey].push(dynamicParameter);
     }
-
-    // Build category order dynamically from the incoming parameters' category sequence
+    
     const categoryOrderFromParams: string[] = [];
-    for (const p of normalized) {
-      const k = (p.category.en_US || 'Generals').trim();
-      if (!categoryOrderFromParams.includes(k)) categoryOrderFromParams.push(k);
+    for (const dynamicParameter of normalized) {
+      const categoryKey = (dynamicParameter.category.en_US || 'Generals').trim();
+      if (!categoryOrderFromParams.includes(categoryKey)) categoryOrderFromParams.push(categoryKey);
     }
     const orderedKeys = Object.keys(groupsMap).sort((a, b) => {
-      const ia = categoryOrderFromParams.indexOf(a);
-      const ib = categoryOrderFromParams.indexOf(b);
-      if (ia === -1 && ib === -1) return a.localeCompare(b);
-      if (ia === -1) return 1;
-      if (ib === -1) return -1;
-      return ia - ib;
+      const indexA = categoryOrderFromParams.indexOf(a);
+      const indexB = categoryOrderFromParams.indexOf(b);
+      if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
     });
 
     const useConstraintsValues = !!this.validateExperiment;
-    this.dynamicParametersByCategory = orderedKeys.map((k) => {
-      const originalItems = groupsMap[k];
+    this.dynamicParametersByCategory = orderedKeys.map((categoryKey) => {
+      const originalItems = groupsMap[categoryKey];
       const items = useConstraintsValues
-        ? originalItems.map((p) => {
-          const key = this.getConstraintKeyForParam(p);
-          if (!key) return p;
-          const v = this.constraintsData[key];
-          if (v === undefined || v === null) {
-            // default missing times to 00:00
-            if (this.isTimeType(p)) {
-              return { ...p, value: '00:00' };
+        ? originalItems.map((dynamicParameter) => {
+          const constraintKey = this.getConstraintKeyForParam(dynamicParameter);
+          if (!constraintKey) return dynamicParameter;
+          const constraintValue = this.constraintsData[constraintKey];
+          if (constraintValue === undefined || constraintValue === null) {
+            if (this.isTimeType(dynamicParameter)) {
+              return { ...dynamicParameter, value: '00:00' };
             }
-            return p;
+            return dynamicParameter;
           }
           if (
-            key === 'numberOfVehicleAvailable' ||
-            key === 'vehicleOrderSizeCapacity' ||
-            key === 'maximumTravelDistance'
+            constraintKey === 'numberOfVehicleAvailable' ||
+            constraintKey === 'vehicleOrderSizeCapacity' ||
+            constraintKey === 'maximumTravelDistance'
           ) {
-            return { ...p, value: Number(v) };
+            return { ...dynamicParameter, value: Number(constraintValue) };
           } else {
-            const s = String(v).trim();
-            return { ...p, value: s === '' || s.toLowerCase() === 'null' ? '00:00' : s };
+            const trimmedValue = String(constraintValue).trim();
+            return { ...dynamicParameter, value: trimmedValue === '' || trimmedValue.toLowerCase() === 'null' ? '00:00' : trimmedValue };
           }
         })
         : originalItems;
       return {
-        key: k,
+        key: categoryKey,
         items,
       };
     });
     this.cdr.detectChanges();
   }
 
-  isTimeType(p: DynamicParameter): boolean {
-    const vt = (p.valueType || '').toLowerCase();
+  isTimeType(dynamicParameter: DynamicParameter): boolean {
+    const vt = (dynamicParameter.valueType || '').toLowerCase();
     return vt === 'time' || vt.includes('duration');
   }
 
-  isNumberType(p: DynamicParameter): boolean {
-    const vt = (p.valueType || '').toLowerCase();
+  isNumberType(dynamicParameter: DynamicParameter): boolean {
+    const vt = (dynamicParameter.valueType || '').toLowerCase();
     return vt.startsWith('number');
   }
 
-  getUnitKey(p: DynamicParameter): string | null {
-    switch (p.keyName) {
+  getUnitKey(dynamicParameter: DynamicParameter): string | null {
+    switch (dynamicParameter.keyName) {
       case 'VehicleOrderSizeCapacity':
         return 'kilogram';
       case 'MaximumTravelDistance':
@@ -2587,8 +2571,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
-  getConstraintKeyForParam(p: DynamicParameter): keyof Constraint | null {
-    switch (p.keyName) {
+  getConstraintKeyForParam(dynamicParameter: DynamicParameter): keyof Constraint | null {
+    switch (dynamicParameter.keyName) {
       case 'EarlyDeliveryTime':
         return 'earlyDeliveryTime';
       case 'BackToDepotTime':
@@ -2608,20 +2592,20 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
-  isTimeInvalid(p: DynamicParameter): boolean {
-    if (!this.isTimeType(p)) return false;
-    const v = p.value;
+  isTimeInvalid(dynamicParameter: DynamicParameter): boolean {
+    if (!this.isTimeType(dynamicParameter)) return false;
+    const v = dynamicParameter.value;
     if (v === null || v === undefined) return true;
     const s = (typeof v === 'string' ? v : String(v)).trim().toLowerCase();
     if (!s || s === 'null') return true;
     return false;
   }
 
-  isOverWeightKey(p: DynamicParameter): boolean {
-    return p.keyName === 'VehicleOrderSizeCapacity';
+  isOverWeightKey(dynamicParameter: DynamicParameter): boolean {
+    return dynamicParameter.keyName === 'VehicleOrderSizeCapacity';
   }
 
-  isOverDistanceKey(p: DynamicParameter): boolean {
-    return p.keyName === 'MaximumTravelDistance';
+  isOverDistanceKey(dynamicParameter: DynamicParameter): boolean {
+    return dynamicParameter.keyName === 'MaximumTravelDistance';
   }
 }
