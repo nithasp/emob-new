@@ -167,7 +167,7 @@ export class ConstraintService {
         variables: { updates },
       })
       .pipe(
-        map((result) => result.data!.updateDynamicParameter as UpdateDynamicParameterResponse),
+        map((result) => result.data!.updateDynamicParameter),
         this.errorHandlingService.handleError
       );
   }
