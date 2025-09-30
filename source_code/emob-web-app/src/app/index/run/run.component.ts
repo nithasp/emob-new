@@ -41,10 +41,26 @@ import {
   ProductInfo,
   ReplaceType,
   ValidationType,
-  FileWithCategory,
-  PreOrderFileItem,
-  PreOrderFileDescriptor,
 } from 'src/app/models/pre-order.model';
+// Local type aliases to avoid module export mismatch during build
+type PreOrderFileDescriptor = {
+  keyName: string;
+  name: string;
+  blobPath: string;
+  displayName: string;
+  type: string;
+  size: number;
+};
+type PreOrderFileItem = {
+  id: string;
+  file: FileWithCategory | PreOrderFileDescriptor;
+};
+interface FileWithCategory extends File {
+  keyName?: string;
+  displayName?: string;
+  isFirstOfType?: boolean;
+  lastModifiedDate?: Date;
+}
 import Style from 'ol/style/Style';
 import { ConstraintService } from 'src/app/services/constraint.service';
 import {
@@ -52,6 +68,7 @@ import {
   DynamicParameter,
   LocalizedText,
 } from 'src/app/models/constraint.model';
+import type { TimingAndCapacity } from 'src/app/models/constraint.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Experiment,
@@ -96,8 +113,6 @@ import Stroke from 'ol/style/Stroke';
 import { TranslocoService } from '@jsverse/transloco';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
-
- 
 
 @Injectable()
 export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
@@ -280,7 +295,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly dataService: DataService,
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService
-  ) { }
+  ) {}
 
   public generateUniqueId(): string {
     return 'f-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
@@ -482,12 +497,12 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (newData.length > 0) {
                 this.toastr.info(
                   `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                  newData.length +
-                  ` ${this.transloco.translate(
-                    'new_edited_location_data_suffix',
-                    {},
-                    'index'
-                  )}`,
+                    newData.length +
+                    ` ${this.transloco.translate(
+                      'new_edited_location_data_suffix',
+                      {},
+                      'index'
+                    )}`,
                   `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
@@ -1012,8 +1027,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
-            ? item.name
-            : '';
+          ? item.name
+          : '';
       const mapped: MyDepot = {
         depotId: (item.depotId || item.id || '') as string,
         depotName: nameKey,
@@ -1115,7 +1130,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               });
               location.setStyle(
                 this.iconStyle[
-                uploadDataGroupCustomers[key as keyof DataGroup].type
+                  uploadDataGroupCustomers[key as keyof DataGroup].type
                 ]
               );
               this.vectorSource.addFeature(location);
@@ -1126,7 +1141,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  
   closePopupMapShow() {
     this.popUp?.setPosition(undefined);
     const closer = document.getElementById('popup-closer');
@@ -1202,7 +1216,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     console.log(this.haveUpdateAfterValidated, this.haveValidated);
   }
 
-  private pointMove(evt: MapBrowserEvent<UIEvent>): void {
+  private pointMove(
+    evt: MapBrowserEvent<PointerEvent | KeyboardEvent | WheelEvent>
+  ): void {
     const target = this.map.getTargetElement();
     const pixel = this.map.getEventPixel(evt.originalEvent);
     const hit = this.map.hasFeatureAtPixel(pixel);
@@ -1214,7 +1230,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private popupShow(evt: MapBrowserEvent<UIEvent>, element: HTMLElement) {
+  private popupShow(
+    evt: MapBrowserEvent<PointerEvent | KeyboardEvent | WheelEvent>,
+    element: HTMLElement
+  ) {
     let coordinates: Coordinate = [];
     const feature = this.map.forEachFeatureAtPixel(
       evt.pixel,
@@ -1546,7 +1565,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.experimentService
       .validateExperiment(
         this.experiment.runId,
-        parameterPayload,
+        parameterPayload as unknown as Constraint,
         this.customersLocationUpdated
       )
       .subscribe({
@@ -1585,16 +1604,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   // Build validateExperiment parameter payload from dynamicParametersByCategory
-  buildValidateParameterFromDynamic(): Pick<
-    Constraint,
-    | 'earlyDeliveryTime'
-    | 'backToDepotTime'
-    | 'maximumWorkDuration'
-    | 'numberOfVehicleAvailable'
-    | 'vehicleOrderSizeCapacity'
-    | 'maximumTravelDistance'
-    | 'serviceDurationTime'
-  > {
+  buildValidateParameterFromDynamic(): TimingAndCapacity {
     const payload: Partial<Constraint> = {};
 
     for (const group of this.dynamicParametersByCategory) {
@@ -1617,10 +1627,14 @@ export class RunComponent implements OnInit, AfterViewInit {
           case 'serviceDurationTime': {
             const s = String(p.value ?? '').trim();
             const normalized = !s || s.toLowerCase() === 'null' ? '00:00' : s;
-            if (key === 'earlyDeliveryTime') payload.earlyDeliveryTime = normalized;
-            else if (key === 'backToDepotTime') payload.backToDepotTime = normalized;
-            else if (key === 'maximumWorkDuration') payload.maximumWorkDuration = normalized;
-            else if (key === 'serviceDurationTime') payload.serviceDurationTime = normalized;
+            if (key === 'earlyDeliveryTime')
+              payload.earlyDeliveryTime = normalized;
+            else if (key === 'backToDepotTime')
+              payload.backToDepotTime = normalized;
+            else if (key === 'maximumWorkDuration')
+              payload.maximumWorkDuration = normalized;
+            else if (key === 'serviceDurationTime')
+              payload.serviceDurationTime = normalized;
             break;
           }
         }
@@ -1645,15 +1659,17 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (p.maximumWorkDuration == null)
       p.maximumWorkDuration = this.constraintsData.maximumWorkDuration;
     if (p.numberOfVehicleAvailable == null)
-      p.numberOfVehicleAvailable = this.constraintsData.numberOfVehicleAvailable;
+      p.numberOfVehicleAvailable =
+        this.constraintsData.numberOfVehicleAvailable;
     if (p.vehicleOrderSizeCapacity == null)
-      p.vehicleOrderSizeCapacity = this.constraintsData.vehicleOrderSizeCapacity;
+      p.vehicleOrderSizeCapacity =
+        this.constraintsData.vehicleOrderSizeCapacity;
     if (p.maximumTravelDistance == null)
       p.maximumTravelDistance = this.constraintsData.maximumTravelDistance;
     if (p.serviceDurationTime == null)
       p.serviceDurationTime = this.constraintsData.serviceDurationTime;
 
-    return p as Pick<Constraint, RequiredKeys>;
+    return p as TimingAndCapacity;
   }
   showSpinner() {
     this.spinner.show('run', {
@@ -1850,7 +1866,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     return this.experiment.run === 'Original';
   }
 
-  onValueChange<K extends keyof Constraint>(newValue: Constraint[K], property: K): void {
+  onValueChange<K extends keyof Constraint>(
+    newValue: Constraint[K],
+    property: K
+  ): void {
     this.updateConstraint(this.constraintsData, property, newValue);
     this.haveUpdateAfterValidated = true;
   }
@@ -2094,7 +2113,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         fileObj.file.displayName = found.displayName;
       } else {
         (fileObj.file as PreOrderFileDescriptor).keyName = found.keyName;
-        (fileObj.file as PreOrderFileDescriptor).displayName = found.displayName;
+        (fileObj.file as PreOrderFileDescriptor).displayName =
+          found.displayName;
       }
     } else {
       if (this.isFileWithCategory(fileObj.file)) {
@@ -2117,7 +2137,8 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     const uniqueItems = this.depotInputDataItems.filter(
       (item, index, self) =>
-        index === self.findIndex((existingItem) => existingItem.keyName === item.keyName)
+        index ===
+        self.findIndex((existingItem) => existingItem.keyName === item.keyName)
     );
     this.inputDataKeys = uniqueItems.map((item) => item.displayName);
   }
@@ -2137,7 +2158,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.preOrderFiles = validFiles;
   }
 
-  validateFileAgainstDepotRequirements(file: PreOrderFileItem): Promise<boolean> {
+  validateFileAgainstDepotRequirements(
+    file: PreOrderFileItem
+  ): Promise<boolean> {
     // Read the file to get column names
     return new Promise<boolean>((resolve) => {
       const reader = new FileReader();
@@ -2223,7 +2246,10 @@ export class RunComponent implements OnInit, AfterViewInit {
       (item) => item.displayName
     );
     const uploadedDisplayNames = this.preOrderFiles
-      .map((preOrderFileItem) => (preOrderFileItem.file as FileWithCategory).displayName)
+      .map(
+        (preOrderFileItem) =>
+          (preOrderFileItem.file as FileWithCategory).displayName
+      )
       .filter((displayName) => !!displayName);
     return requiredDisplayNames.every((required) =>
       uploadedDisplayNames.includes(required)
@@ -2345,13 +2371,17 @@ export class RunComponent implements OnInit, AfterViewInit {
     return constraint;
   }
 
-  getConstraintValue(dynamicParameter: DynamicParameter): string | number | null {
+  getConstraintValue(
+    dynamicParameter: DynamicParameter
+  ): string | number | null {
     const key = this.getConstraintKeyForParam(dynamicParameter);
     if (!key) return null;
     const constraintValue = this.constraintsData[key];
     if (this.isTimeType(dynamicParameter)) {
       const trimmedValue = String(constraintValue ?? '').trim();
-      return !trimmedValue || trimmedValue.toLowerCase() === 'null' ? '00:00' : trimmedValue;
+      return !trimmedValue || trimmedValue.toLowerCase() === 'null'
+        ? '00:00'
+        : trimmedValue;
     }
     if (this.isNumberType(dynamicParameter)) {
       const numericValue = Number(constraintValue);
@@ -2360,12 +2390,18 @@ export class RunComponent implements OnInit, AfterViewInit {
     return constraintValue as string | number;
   }
 
-  onParamValueChange(dynamicParameter: DynamicParameter, newValue: string | number | null | undefined): void {
+  onParamValueChange(
+    dynamicParameter: DynamicParameter,
+    newValue: string | number | null | undefined
+  ): void {
     const key = this.getConstraintKeyForParam(dynamicParameter);
 
     if (this.isTimeType(dynamicParameter)) {
       const trimmedTimeValue = String(newValue ?? '').trim();
-      const normalized = !trimmedTimeValue || trimmedTimeValue.toLowerCase() === 'null' ? '00:00' : trimmedTimeValue;
+      const normalized =
+        !trimmedTimeValue || trimmedTimeValue.toLowerCase() === 'null'
+          ? '00:00'
+          : trimmedTimeValue;
       dynamicParameter.value = normalized;
       if (key) this.onValueChange(normalized, key);
       return;
@@ -2391,8 +2427,15 @@ export class RunComponent implements OnInit, AfterViewInit {
     const updates: Array<{ id: string; value: string | number }> = [];
     for (const group of this.dynamicParametersByCategory) {
       for (const dynamicParameter of group.items) {
-        if (dynamicParameter?.id && dynamicParameter.value !== undefined && dynamicParameter.value !== null) {
-          updates.push({ id: dynamicParameter.id, value: dynamicParameter.value });
+        if (
+          dynamicParameter?.id &&
+          dynamicParameter.value !== undefined &&
+          dynamicParameter.value !== null
+        ) {
+          updates.push({
+            id: dynamicParameter.id,
+            value: dynamicParameter.value,
+          });
         }
       }
     }
@@ -2456,7 +2499,9 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   getSelectedDepotObject(): MyDepot | undefined {
     if (!this.selectedDepotId) return undefined;
-    return this.depots.find((depot) => depot.depotName === this.selectedDepotId);
+    return this.depots.find(
+      (depot) => depot.depotName === this.selectedDepotId
+    );
   }
 
   refreshDynamicParametersForSelectedDepot(): void {
@@ -2467,7 +2512,9 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     let scoped = base;
     if (selectedDepot?.depotId) {
-      scoped = base.filter((dynamicParameter) => dynamicParameter.depotId === selectedDepot.depotId);
+      scoped = base.filter(
+        (dynamicParameter) => dynamicParameter.depotId === selectedDepot.depotId
+      );
     }
     if (!scoped.length) {
       scoped = base.filter((dynamicParameter) => !dynamicParameter.depotId);
@@ -2489,23 +2536,30 @@ export class RunComponent implements OnInit, AfterViewInit {
       const raw = dynamicParameter as unknown as DynamicParameterRaw;
       return {
         ...raw,
-        displayName: this.coerceLocalizedText(raw.displayName) ?? defaultLocalized,
+        displayName:
+          this.coerceLocalizedText(raw.displayName) ?? defaultLocalized,
         category: this.coerceLocalizedText(raw.category) ?? defaultLocalized,
-        description: this.coerceLocalizedText(raw.description) ?? defaultLocalized,
+        description:
+          this.coerceLocalizedText(raw.description) ?? defaultLocalized,
       };
     });
 
     const groupsMap: Record<string, DynamicParameter[]> = {};
     for (const dynamicParameter of normalized) {
-      const categoryKey = (dynamicParameter.category.en_US || 'Generals').trim();
+      const categoryKey = (
+        dynamicParameter.category.en_US || 'Generals'
+      ).trim();
       if (!groupsMap[categoryKey]) groupsMap[categoryKey] = [];
       groupsMap[categoryKey].push(dynamicParameter);
     }
-    
+
     const categoryOrderFromParams: string[] = [];
     for (const dynamicParameter of normalized) {
-      const categoryKey = (dynamicParameter.category.en_US || 'Generals').trim();
-      if (!categoryOrderFromParams.includes(categoryKey)) categoryOrderFromParams.push(categoryKey);
+      const categoryKey = (
+        dynamicParameter.category.en_US || 'Generals'
+      ).trim();
+      if (!categoryOrderFromParams.includes(categoryKey))
+        categoryOrderFromParams.push(categoryKey);
     }
     const orderedKeys = Object.keys(groupsMap).sort((a, b) => {
       const indexA = categoryOrderFromParams.indexOf(a);
@@ -2521,26 +2575,33 @@ export class RunComponent implements OnInit, AfterViewInit {
       const originalItems = groupsMap[categoryKey];
       const items = useConstraintsValues
         ? originalItems.map((dynamicParameter) => {
-          const constraintKey = this.getConstraintKeyForParam(dynamicParameter);
-          if (!constraintKey) return dynamicParameter;
-          const constraintValue = this.constraintsData[constraintKey];
-          if (constraintValue === undefined || constraintValue === null) {
-            if (this.isTimeType(dynamicParameter)) {
-              return { ...dynamicParameter, value: '00:00' };
+            const constraintKey =
+              this.getConstraintKeyForParam(dynamicParameter);
+            if (!constraintKey) return dynamicParameter;
+            const constraintValue = this.constraintsData[constraintKey];
+            if (constraintValue === undefined || constraintValue === null) {
+              if (this.isTimeType(dynamicParameter)) {
+                return { ...dynamicParameter, value: '00:00' };
+              }
+              return dynamicParameter;
             }
-            return dynamicParameter;
-          }
-          if (
-            constraintKey === 'numberOfVehicleAvailable' ||
-            constraintKey === 'vehicleOrderSizeCapacity' ||
-            constraintKey === 'maximumTravelDistance'
-          ) {
-            return { ...dynamicParameter, value: Number(constraintValue) };
-          } else {
-            const trimmedValue = String(constraintValue).trim();
-            return { ...dynamicParameter, value: trimmedValue === '' || trimmedValue.toLowerCase() === 'null' ? '00:00' : trimmedValue };
-          }
-        })
+            if (
+              constraintKey === 'numberOfVehicleAvailable' ||
+              constraintKey === 'vehicleOrderSizeCapacity' ||
+              constraintKey === 'maximumTravelDistance'
+            ) {
+              return { ...dynamicParameter, value: Number(constraintValue) };
+            } else {
+              const trimmedValue = String(constraintValue).trim();
+              return {
+                ...dynamicParameter,
+                value:
+                  trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
+                    ? '00:00'
+                    : trimmedValue,
+              };
+            }
+          })
         : originalItems;
       return {
         key: categoryKey,
@@ -2571,7 +2632,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
-  getConstraintKeyForParam(dynamicParameter: DynamicParameter): keyof Constraint | null {
+  getConstraintKeyForParam(
+    dynamicParameter: DynamicParameter
+  ): keyof Constraint | null {
     switch (dynamicParameter.keyName) {
       case 'EarlyDeliveryTime':
         return 'earlyDeliveryTime';
