@@ -37,4 +37,3 @@ export interface Error {
   timestamp: string;
   statusCode: number;
 }
-
