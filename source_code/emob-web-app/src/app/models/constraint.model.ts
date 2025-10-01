@@ -82,7 +82,7 @@ export interface DynamicParameterUpdateError {
   message: string;
 }
 
-export interface UpdateDynamicParameterResponse {
+export interface UpdateDynamicParameter {
   success: boolean;
   updatedCount: number;
   errors: DynamicParameterUpdateError[];

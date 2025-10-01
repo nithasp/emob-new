@@ -36,31 +36,16 @@ import {
   CustomerUpdated,
   DataPreOrder,
   Depot,
+  FileWithCategory,
   GroupedDataPreOrder,
   PreOrder,
+  PreOrderFileDescriptor,
+  PreOrderFileItem,
   ProductInfo,
   ReplaceType,
   ValidationType,
 } from 'src/app/models/pre-order.model';
-// Local type aliases to avoid module export mismatch during build
-type PreOrderFileDescriptor = {
-  keyName: string;
-  name: string;
-  blobPath: string;
-  displayName: string;
-  type: string;
-  size: number;
-};
-type PreOrderFileItem = {
-  id: string;
-  file: FileWithCategory | PreOrderFileDescriptor;
-};
-interface FileWithCategory extends File {
-  keyName?: string;
-  displayName?: string;
-  isFirstOfType?: boolean;
-  lastModifiedDate?: Date;
-}
+
 import Style from 'ol/style/Style';
 import { ConstraintService } from 'src/app/services/constraint.service';
 import {

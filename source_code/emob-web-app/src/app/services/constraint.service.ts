@@ -8,7 +8,7 @@ import {
   Constraint,
   DynamicParameter,
   DeleteDynamicParameter,
-  UpdateDynamicParameterResponse,
+  UpdateDynamicParameter,
   DynamicParameterValueUpdate,
 } from '../models/constraint.model';
 import { Response } from '../models/graphql.model';
@@ -133,11 +133,13 @@ export class ConstraintService {
 
   updateDynamicParameter(
     updates: DynamicParameterValueUpdate[]
-  ): Observable<UpdateDynamicParameterResponse> {
+  ): Observable<UpdateDynamicParameter> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
-          mutation updateDynamicParameter($updates: [DynamicParameterUpdateItemInput!]!) {
+          mutation updateDynamicParameter(
+            $updates: [DynamicParameterUpdateItemInput!]!
+          ) {
             updateDynamicParameter(updates: $updates) {
               success
               updatedCount
