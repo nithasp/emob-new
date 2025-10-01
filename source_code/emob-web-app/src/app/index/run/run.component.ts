@@ -97,6 +97,10 @@ import Fill from 'ol/style/Fill';
 import Stroke from 'ol/style/Stroke';
 import { TranslocoService } from '@jsverse/transloco';
 import { VehicleService } from 'src/app/services/vehicle.service';
+import {
+  VehicleType,
+  VehicleProfileTypeEnum,
+} from 'src/app/models/vehicle.model';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -265,6 +269,11 @@ export class RunComponent implements OnInit, AfterViewInit {
     key: string;
     items: DynamicParameter[];
   }> = [];
+
+  // vehicles
+  public myVehicleTypes: VehicleType[] = [];
+  public uniqueVehicleProfileTypes: VehicleProfileTypeEnum[] = [];
+  public selectedVehicleProfileTypes: VehicleProfileTypeEnum[] = [];
 
   constructor(
     private readonly spinner: NgxSpinnerService,
@@ -2662,8 +2671,34 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   getMyVehicleTypes() {
-    this.vehicleService.getMyVehicleTypes().subscribe((res) => {
-      console.log(res);
+    this.vehicleService.getMyVehicleTypes().subscribe((res: VehicleType[]) => {
+      this.myVehicleTypes = res || [];
+      const types = (this.myVehicleTypes || [])
+        .map((v) => v.vehicleProfileType)
+        .filter((t) => !!t);
+      this.uniqueVehicleProfileTypes = Array.from(
+        new Set(types)
+      ) as VehicleProfileTypeEnum[];
+      this.cdr.detectChanges();
     });
+  }
+
+  isVehicleTypeSelected(type: VehicleProfileTypeEnum): boolean {
+    return this.selectedVehicleProfileTypes.includes(type);
+  }
+
+  onVehicleTypeChecked(type: VehicleProfileTypeEnum, checked: boolean): void {
+    if (checked) {
+      if (!this.selectedVehicleProfileTypes.includes(type)) {
+        this.selectedVehicleProfileTypes = [
+          ...this.selectedVehicleProfileTypes,
+          type,
+        ];
+      }
+    } else {
+      this.selectedVehicleProfileTypes =
+        this.selectedVehicleProfileTypes.filter((t) => t !== type);
+    }
+    this.cdr.detectChanges();
   }
 }
