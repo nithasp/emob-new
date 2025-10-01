@@ -96,6 +96,7 @@ import Text from 'ol/style/Text';
 import Fill from 'ol/style/Fill';
 import Stroke from 'ol/style/Stroke';
 import { TranslocoService } from '@jsverse/transloco';
+import { VehicleService } from 'src/app/services/vehicle.service';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -279,7 +280,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly configurationService: ConfigurationService,
     private readonly dataService: DataService,
     private readonly exportService: ExportFileService,
-    private readonly transloco: TranslocoService
+    private readonly transloco: TranslocoService,
+    private readonly vehicleService: VehicleService
   ) {}
 
   public generateUniqueId(): string {
@@ -303,6 +305,8 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.spinner.show();
+
+    this.getMyVehicleTypes();
   }
   ngAfterViewInit() {
     setTimeout(() => {
@@ -2655,5 +2659,11 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isOverDistanceKey(dynamicParameter: DynamicParameter): boolean {
     return dynamicParameter.keyName === 'MaximumTravelDistance';
+  }
+
+  getMyVehicleTypes() {
+    this.vehicleService.getMyVehicleTypes().subscribe((res) => {
+      console.log(res);
+    });
   }
 }
