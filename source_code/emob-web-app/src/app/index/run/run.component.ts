@@ -1534,9 +1534,6 @@ export class RunComponent implements OnInit, AfterViewInit {
   validateExperimentPreOrder() {
     const parameterPayload = this.buildValidateParameterFromDynamic();
 
-    console.log('parameterPayload', parameterPayload);
-
-
     // proceed with validation using constructed parameterPayload
     if (
       (parameterPayload.earlyDeliveryTime || '') >
@@ -2402,9 +2399,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   updateDynamicParameters(): void {
     const payload = this.buildDynamicParametersUpdatePayload();
-
-    console.log('payload', payload);
-
     if (!payload.length) return;
     this.showSpinner();
     this.constraintService.updateDynamicParameter(payload).subscribe({
