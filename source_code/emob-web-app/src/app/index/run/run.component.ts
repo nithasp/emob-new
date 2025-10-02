@@ -89,6 +89,7 @@ import { CustomerListComponent } from '../components/customer-list/customer-list
 import { ValidateMessage } from 'src/app/models/validation-message';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { firstValueFrom, take } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import { DataService } from 'src/app/services/data.service';
 import { ExportFileService } from 'src/app/services/export-file.service';
@@ -1553,6 +1554,9 @@ export class RunComponent implements OnInit, AfterViewInit {
         parameterPayload as unknown as Constraint,
         this.customersLocationUpdated
       )
+      .pipe(finalize(() => {
+        this.hiddenSpinner();
+      }))
       .subscribe({
         next: (result) => {
           this.haveUpdateAfterValidated = false;
@@ -1565,9 +1569,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.refreshDynamicParametersForSelectedDepot();
           this.refreshValidationTable();
           this.navigateToTab(3);
-        },
-        error: console.error,
-        complete: () => {
+          // Mark validation as completed and show corresponding messages (success path)
           this.haveValidated = true;
           this.isValidateShowMessage = {
             OrderData: {
@@ -1583,7 +1585,9 @@ export class RunComponent implements OnInit, AfterViewInit {
               overWeight: true,
             },
           };
-          this.hiddenSpinner();
+        },
+        error: (err) => {
+          console.error(err);
         },
       });
   }
