@@ -1,9 +1,4 @@
 export interface Constraint {
-  MaxWorkDuration: number;
-  maxTravelDistance: number;
-  deliveryTime: string;
-  limitVehicleCapacity: number;
-  availableCar: number;
   earlyDeliveryTime: string;
   backToDepotTime: string;
   maximumWorkDuration: string;
@@ -11,6 +6,12 @@ export interface Constraint {
   vehicleOrderSizeCapacity: number;
   maximumTravelDistance: number;
   serviceDurationTime: string;
+  minimumVehicle: number;
+  MaxWorkDuration?: number;
+  maxTravelDistance?: number;
+  deliveryTime?: string;
+  limitVehicleCapacity?: number;
+  availableCar?: number;
 }
 export type TimingAndCapacity = Pick<
   Constraint,
