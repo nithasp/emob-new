@@ -858,6 +858,8 @@ export class RunComponent implements OnInit, AfterViewInit {
                       'index'
                     )}.`
                   );
+                // Fetch latest dynamic parameters for the selected depot and rebuild UI
+                this.getDynamicParameters();
                 });
             });
         }
@@ -1320,6 +1322,9 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     // Trigger change detection to refresh the table
     this.cdr.detectChanges();
+    if (page === 2) {
+      this.refreshDynamicParametersForSelectedDepot();
+    }
   }
 
   private reInitializeDataTable(): void {
@@ -1557,7 +1562,14 @@ export class RunComponent implements OnInit, AfterViewInit {
       }))
       .subscribe({
         next: (result) => {
+          console.log('result', result);
+
           this.haveUpdateAfterValidated = false;
+          // Sync constraints with the payload used for validation so UI reflects latest
+          this.constraintsData = {
+            ...this.constraintsData,
+            ...(parameterPayload as any),
+          } as Constraint;
           this.validateExperiment = result.result?.validate || null;
           this.ngbValidationTableCollectionSize =
             this.validateExperiment?.filters.order_data.invalid_coordinate
@@ -2264,8 +2276,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   getDynamicParameters() {
+    const selectedDepotId = this.getSelectedDepotObject()?.depotId || this.experiment.depots?.[0]?.depotId;
     this.constraintService
-      .getDynamicParameters(this.experiment.depots[0]?.depotId)
+      .getDynamicParameters(selectedDepotId)
       .subscribe((response: DynamicParameter[]) => {
         this.allDynamicParameters = response || [];
         if (!this.constraintsFromFileLoaded) {
@@ -2294,34 +2307,35 @@ export class RunComponent implements OnInit, AfterViewInit {
       minimumVehicle: 0,
     };
 
-    dynamicParameters.forEach((param) => {
-      switch (param.keyName) {
-        case 'EarlyDeliveryTime':
-          constraint.earlyDeliveryTime = param.value as string;
-          break;
-        case 'BackToDepotTime':
-          constraint.backToDepotTime = param.value as string;
-          break;
-        case 'MaximumWorkDuration':
-          constraint.maximumWorkDuration = param.value as string;
-          break;
-        case 'NumberOfVehicleAvailable':
-          constraint.numberOfVehicleAvailable = param.value as number;
-          break;
-        case 'VehicleOrderSizeCapacity':
-          constraint.vehicleOrderSizeCapacity = param.value as number;
-          break;
-        case 'MaximumTravelDistance':
-          constraint.maximumTravelDistance = param.value as number;
-          break;
-        case 'ServiceDurationTime':
-          constraint.serviceDurationTime = param.value as string;
-          break;
-        case 'MinimumVehicle':
-          constraint.minimumVehicle = param.value as number;
-          break;
+    const chooseTime = (value: unknown, defaultValue: unknown): string => {
+      const v = String(value ?? '').trim();
+      const d = String(defaultValue ?? '').trim();
+      const isBlank = !v || v.toLowerCase() === 'null' || v === '00:00';
+      if (isBlank) {
+        if (!!d && d.toLowerCase() !== 'null') return d;
+        return '00:00';
       }
-    });
+      return v;
+    };
+    const chooseNumber = (value: unknown, defaultValue: unknown): number => {
+      const n = Number(value);
+      const nd = Number(defaultValue);
+      if (!isNaN(n) && n > 0) return n;
+      if (!isNaN(nd) && nd > 0) return nd;
+      return 0;
+    };
+
+    for (const param of dynamicParameters) {
+      const key = this.getConstraintKeyForParam(param);
+      if (!key) continue;
+      if (this.isTimeType(param)) {
+        (constraint as any)[key] = chooseTime(param.value, (param as any).defaultValue);
+      } else if (this.isNumberType(param)) {
+        (constraint as any)[key] = chooseNumber(param.value, (param as any).defaultValue);
+      } else {
+        (constraint as any)[key] = (param.value ?? (param as any).defaultValue ?? '') as any;
+      }
+    }
 
     return constraint;
   }
@@ -2478,6 +2492,27 @@ export class RunComponent implements OnInit, AfterViewInit {
       scoped = base;
     }
 
+    // Deduplicate by keyName with preference: exact depotId > no depotId > others
+    const preferRank = (dp: DynamicParameter): number => {
+      if (dp.depotId === selectedDepot?.depotId) return 0;
+      if (!dp.depotId) return 1;
+      return 2;
+    };
+    const dedupMap: Record<string, DynamicParameter> = {};
+    for (const dp of scoped) {
+      const keyName = (dp.keyName || '').trim();
+      if (!keyName) continue;
+      const existing = dedupMap[keyName];
+      if (!existing) {
+        dedupMap[keyName] = dp;
+      } else {
+        if (preferRank(dp) < preferRank(existing)) {
+          dedupMap[keyName] = dp;
+        }
+      }
+    }
+    const scopedUnique = Object.values(dedupMap);
+
     const defaultLocalized: LocalizedText = { th_TH: '', en_US: '' };
     type DynamicParameterRaw = Omit<
       DynamicParameter,
@@ -2487,7 +2522,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       displayName: LocalizedText | string | null | undefined;
       description: LocalizedText | string | null | undefined;
     };
-    const normalized: DynamicParameter[] = scoped.map((dynamicParameter) => {
+    const normalized: DynamicParameter[] = scopedUnique.map((dynamicParameter) => {
       const raw = dynamicParameter as unknown as DynamicParameterRaw;
       return {
         ...raw,
@@ -2525,7 +2560,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       return indexA - indexB;
     });
 
-    const useConstraintsValues = !!this.validateExperiment;
+    const useConstraintsValues = this.hasMeaningfulConstraintsData();
     this.dynamicParametersByCategory = orderedKeys.map((categoryKey) => {
       const originalItems = groupsMap[categoryKey];
       const items = useConstraintsValues
@@ -2540,22 +2575,17 @@ export class RunComponent implements OnInit, AfterViewInit {
             }
             return dynamicParameter;
           }
-          if (
-            constraintKey === 'numberOfVehicleAvailable' ||
-            constraintKey === 'vehicleOrderSizeCapacity' ||
-            constraintKey === 'maximumTravelDistance'
-          ) {
+          if (this.isNumberType(dynamicParameter)) {
             return { ...dynamicParameter, value: Number(constraintValue) };
-          } else {
-            const trimmedValue = String(constraintValue).trim();
-            return {
-              ...dynamicParameter,
-              value:
-                trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
-                  ? '00:00'
-                  : trimmedValue,
-            };
           }
+          const trimmedValue = String(constraintValue).trim();
+          return {
+            ...dynamicParameter,
+            value:
+              trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
+                ? '00:00'
+                : trimmedValue,
+          };
         })
         : originalItems;
       return {
@@ -2585,6 +2615,23 @@ export class RunComponent implements OnInit, AfterViewInit {
       default:
         return null;
     }
+  }
+
+  private hasMeaningfulConstraintsData(): boolean {
+    const c = this.constraintsData || ({} as Constraint);
+    const hasTime = (
+      (c.earlyDeliveryTime && c.earlyDeliveryTime !== '00:00') ||
+      (c.backToDepotTime && c.backToDepotTime !== '00:00') ||
+      (c.maximumWorkDuration && c.maximumWorkDuration !== '00:00') ||
+      (c.serviceDurationTime && c.serviceDurationTime !== '00:00')
+    );
+    const hasNumber = (
+      (Number(c.numberOfVehicleAvailable) || 0) > 0 ||
+      (Number(c.vehicleOrderSizeCapacity) || 0) > 0 ||
+      (Number(c.maximumTravelDistance) || 0) > 0 ||
+      (Number(c.minimumVehicle) || 0) > 0
+    );
+    return !!this.validateExperiment || hasTime || hasNumber;
   }
 
   getConstraintKeyForParam(
@@ -2638,6 +2685,12 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isOverDistanceKey(dynamicParameter: DynamicParameter): boolean {
     return dynamicParameter.keyName === 'MaximumTravelDistance';
+  }
+
+  log() {
+    console.log('dynamicParametersByCategory', this.dynamicParametersByCategory);
+    console.log('constraintsData', this.constraintsData);
+    console.log('experiment', this.experiment);
   }
 }
 
