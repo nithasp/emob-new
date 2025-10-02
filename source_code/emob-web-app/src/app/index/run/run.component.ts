@@ -274,6 +274,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   public myVehicleTypes: VehicleType[] = [];
   public uniqueVehicleProfileTypes: VehicleProfileTypeEnum[] = [];
   public selectedVehicleProfileTypes: VehicleProfileTypeEnum[] = [];
+  public selectedVehicleTypeCounts: Partial<
+    Record<VehicleProfileTypeEnum, number>
+  > = {};
 
   constructor(
     private readonly spinner: NgxSpinnerService,
@@ -2694,11 +2697,41 @@ export class RunComponent implements OnInit, AfterViewInit {
           ...this.selectedVehicleProfileTypes,
           type,
         ];
+        if (this.selectedVehicleTypeCounts[type] == null) {
+          this.selectedVehicleTypeCounts[type] = 0;
+        }
       }
     } else {
       this.selectedVehicleProfileTypes =
         this.selectedVehicleProfileTypes.filter((t) => t !== type);
+      if (this.selectedVehicleTypeCounts[type] != null) {
+        delete this.selectedVehicleTypeCounts[type];
+      }
     }
+    this.cdr.detectChanges();
+  }
+
+  getVehicleTypeNamesByProfileType(
+    type: VehicleProfileTypeEnum
+  ): string[] {
+    if (!type || !Array.isArray(this.myVehicleTypes)) return [];
+    return this.myVehicleTypes
+      .filter((v) => v.vehicleProfileType === type)
+      .map((v) => v.name)
+      .filter((n) => !!n);
+  }
+
+  getVehicleTypeCount(type: VehicleProfileTypeEnum): number {
+    const value = this.selectedVehicleTypeCounts[type];
+    return typeof value === 'number' && !isNaN(value) ? value : 0;
+  }
+
+  onVehicleTypeCountChange(
+    type: VehicleProfileTypeEnum,
+    value: number
+  ): void {
+    const normalized = Number(value);
+    this.selectedVehicleTypeCounts[type] = isNaN(normalized) ? 0 : normalized;
     this.cdr.detectChanges();
   }
 }
