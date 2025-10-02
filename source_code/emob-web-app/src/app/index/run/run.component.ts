@@ -2265,7 +2265,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   getDynamicParameters() {
     this.constraintService
-      .getDynamicParameters(this.experiment.depots[0].depotId)
+      .getDynamicParameters(this.experiment.depots[0]?.depotId)
       .subscribe((response: DynamicParameter[]) => {
         this.allDynamicParameters = response || [];
         if (!this.constraintsFromFileLoaded) {
