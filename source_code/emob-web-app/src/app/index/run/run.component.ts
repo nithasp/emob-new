@@ -1626,9 +1626,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   private normalizeKeyName(rawKey: string | null | undefined): string {
-    const s = String(rawKey ?? '').trim();
-    if (!s) return '';
-    return s.charAt(0).toLowerCase() + s.slice(1);
+    const trimmedKey = String(rawKey ?? '').trim();
+    if (!trimmedKey) return '';
+    return trimmedKey.charAt(0).toLowerCase() + trimmedKey.slice(1);
   }
   showSpinner() {
     this.spinner.show('run', {
@@ -2320,6 +2320,9 @@ export class RunComponent implements OnInit, AfterViewInit {
         case 'ServiceDurationTime':
           constraint.serviceDurationTime = param.value as string;
           break;
+        case 'MinimumVehicle':
+          constraint.minimumVehicle = param.value as number;
+          break;
       }
     });
 
@@ -2570,13 +2573,13 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   isTimeType(dynamicParameter: DynamicParameter): boolean {
-    const vt = (dynamicParameter.valueType || '').toLowerCase();
-    return vt === 'time' || vt.includes('duration');
+    const normalizedValueType = (dynamicParameter.valueType || '').toLowerCase();
+    return normalizedValueType === 'time' || normalizedValueType.includes('duration');
   }
 
   isNumberType(dynamicParameter: DynamicParameter): boolean {
-    const vt = (dynamicParameter.valueType || '').toLowerCase();
-    return vt.startsWith('number');
+    const normalizedValueType = (dynamicParameter.valueType || '').toLowerCase();
+    return normalizedValueType.startsWith('number');
   }
 
   getUnitKey(dynamicParameter: DynamicParameter): string | null {
