@@ -2,17 +2,17 @@ export const environment = {
     production: true,
     msalConfig: {
         auth: {
-          clientId: '6fcc6a58-25f8-4a0e-be6c-6e4b34243951',
-          authority: 'https://testbanpu.ciamlogin.com/',
-          knownAuthorities: ['testbanpu.ciamlogin.com'],
+          clientId: '7d8613c1-d724-491a-84a1-2169706a08dd',
+          authority: 'https://bnextprodemobextportal.ciamlogin.com/',
+          knownAuthorities: ['bnextprodemobextportal.ciamlogin.com'],
         },
       },
       apiConfig: {
-        scopes: ['api://6fcc6a58-25f8-4a0e-be6c-6e4b34243951/Read'],
+        scopes: ['api://7d8613c1-d724-491a-84a1-2169706a08dd/Read'],
         uri: '/api/',
       },
       graphqlConfig: {
-        scopes: ['api://6fcc6a58-25f8-4a0e-be6c-6e4b34243951/Read'],
+        scopes: ['api://7d8613c1-d724-491a-84a1-2169706a08dd/Read'],
         uri: '/api/v1/graphql',
       },
       roles : {
