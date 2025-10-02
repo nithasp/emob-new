@@ -16,6 +16,7 @@ import {
 } from 'ol/control';
 import * as OlProj from 'ol/proj';
 import Feature from 'ol/Feature';
+import type { FeatureLike } from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import Icon from 'ol/style/Icon';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
@@ -23,6 +24,7 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Overlay from 'ol/Overlay';
 import { Coordinate } from 'ol/coordinate';
+import MapBrowserEvent from 'ol/MapBrowserEvent';
 import OSM from 'ol/source/OSM';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { MatTableDataSource } from '@angular/material/table';
@@ -34,15 +36,24 @@ import {
   CustomerUpdated,
   DataPreOrder,
   Depot,
+  FileWithCategory,
   GroupedDataPreOrder,
   PreOrder,
+  PreOrderFileDescriptor,
+  PreOrderFileItem,
   ProductInfo,
   ReplaceType,
   ValidationType,
 } from 'src/app/models/pre-order.model';
+
 import Style from 'ol/style/Style';
 import { ConstraintService } from 'src/app/services/constraint.service';
-import { Constraint } from 'src/app/models/constraint.model';
+import {
+  Constraint,
+  DynamicParameter,
+  LocalizedText,
+} from 'src/app/models/constraint.model';
+import type { TimingAndCapacity } from 'src/app/models/constraint.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Experiment,
@@ -52,6 +63,7 @@ import {
   Validate,
   Company,
   MyDepot,
+  DepotInputRequirement,
 } from 'src/app/models/experiment.model';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import {
@@ -87,25 +99,26 @@ import { TranslocoService } from '@jsverse/transloco';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
-export interface FileWithCategory extends File {
-  keyName?: string;
-  displayName?: string;
-  isFirstOfType?: boolean;
-  lastModifiedDate?: Date;
-}
-
 @Injectable()
 export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
   fromModel(value: string | null): NgbTimeStruct | null {
-    if (!value) {
+    if (value == null) {
       return null;
     }
-    const split = value.split(':');
+    const trimmed = `${value}`.trim();
+    if (!trimmed || trimmed.toLowerCase() === 'null') {
+      return null;
+    }
+    const split = trimmed.split(':');
+    const hour = parseInt(split[0] || '0', 10);
+    const minute = parseInt(split[1] || '0', 10);
+    const second: number | undefined =
+      split.length > 2 ? parseInt(split[2] || '0', 10) : undefined;
     return {
-      hour: parseInt(split[0], 10),
-      minute: parseInt(split[1], 10),
-      second: parseInt(split[2], 10),
-    };
+      hour: isNaN(hour) ? 0 : hour,
+      minute: isNaN(minute) ? 0 : minute,
+      ...(typeof second === 'number' && !isNaN(second) ? { second } : {}),
+    } as NgbTimeStruct;
   }
 
   toModel(time: NgbTimeStruct | null): string | null {
@@ -167,7 +180,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   // store data
   public experiment = <Experiment>{};
-  public preOrderFiles: { id: string; file: any }[] = [];
+  public preOrderFiles: PreOrderFileItem[] = [];
   public popupContent?: { data: Customer; isDepot: boolean } | null;
   private dataPreOrder: Array<PreOrder> = [];
   public groupedDataPreOrder: Partial<GroupedDataPreOrder> = {};
@@ -191,6 +204,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   };
   public validateExperiment: Validate | null = null;
   public companyDepotType: string = '';
+  private constraintsFromFileLoaded: boolean = false;
 
   //display table and virtualization
 
@@ -244,6 +258,12 @@ export class RunComponent implements OnInit, AfterViewInit {
   public selectedDepotId: string | null = null;
   public selectedDepotIds: string[] = [];
   public inputDataKeys: string[] = [];
+  // dynamic parameters rendering
+  public allDynamicParameters: DynamicParameter[] = [];
+  public dynamicParametersByCategory: Array<{
+    key: string;
+    items: DynamicParameter[];
+  }> = [];
 
   constructor(
     private readonly spinner: NgxSpinnerService,
@@ -260,7 +280,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly dataService: DataService,
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService
-  ) { }
+  ) {}
 
   public generateUniqueId(): string {
     return 'f-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
@@ -268,6 +288,17 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   get requiredFileTypes(): string[] {
     return this.depotInputDataItems.map((item) => item.displayName);
+  }
+
+  // trackBy helpers to keep accordion stable across change detection/language swaps
+  trackByGroup(
+    index: number,
+    group: { key: string; items: DynamicParameter[] }
+  ): string {
+    return group.key;
+  }
+  trackByParam(index: number, p: DynamicParameter): string {
+    return p.id || `${p.depotId}-${p.keyName}-${index}`;
   }
 
   ngOnInit(): void {
@@ -328,7 +359,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                         this.router.navigate(['/users/experiments']);
                       });
                     } else if (!this.experiment.preOrderBlobPath) {
-                      this.initializeDefaultParameter();
+                      this.getDynamicParameters();
                       this.isFilePreview = true;
                     } else {
                       this.initializeDataFromExperiment(
@@ -359,6 +390,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     }, 100);
     this.dataSource.paginator = this.paginator; // For pagination
     this.dataSource.sort = this.sort; // For sort
+    // react to language changes: only trigger change detection (no regroup)
+    this.transloco.langChanges$.subscribe(() => {
+      this.cdr.detectChanges();
+    });
   }
 
   async initializeDataFromExperiment(experiment: Experiment) {
@@ -369,12 +404,19 @@ export class RunComponent implements OnInit, AfterViewInit {
         (response: Constraint) => {
           console.log('Constraint', response);
           this.constraintsData = { ...response };
+          this.constraintsFromFileLoaded = true;
+          // Ensure UI reflects constraint values on init
+          if (this.allDynamicParameters?.length) {
+            this.refreshDynamicParametersForSelectedDepot();
+          }
           console.log(this.constraintsData);
         }
       );
     } else {
-      this.initializeDefaultParameter();
+      this.getDynamicParameters();
     }
+    // ensure dynamic parameter metadata for rendering is loaded too
+    this.getDynamicParameters();
 
     this.toastr.info(
       this.transloco.translate('loading_preorder_data', {}, 'index'),
@@ -440,12 +482,12 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (newData.length > 0) {
                 this.toastr.info(
                   `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                  newData.length +
-                  ` ${this.transloco.translate(
-                    'new_edited_location_data_suffix',
-                    {},
-                    'index'
-                  )}`,
+                    newData.length +
+                    ` ${this.transloco.translate(
+                      'new_edited_location_data_suffix',
+                      {},
+                      'index'
+                    )}`,
                   `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
@@ -471,6 +513,10 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.validateExperiment.filters.order_data.invalid_coordinate.length;
         this.refreshValidationTable();
         this.haveValidated = true;
+        // Rebuild dynamic parameters so values reflect constraintsData when page initializes with historical validation
+        if (this.allDynamicParameters?.length) {
+          this.refreshDynamicParametersForSelectedDepot();
+        }
         this.isValidateShowMessage = {
           OrderData: {
             invalidCoordinate: true,
@@ -729,10 +775,11 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   handleUploadSubmit() {
     // Transform preOrderFiles to newPayload format (send actual File object)
-    const newPayload = this.preOrderFiles.map(({ file }) => ({
-      file,
-      keyName: file.keyName || '',
-    }));
+    const newPayload = this.preOrderFiles
+      .filter((item): item is { id: string; file: FileWithCategory } =>
+        this.isFileWithCategory(item.file)
+      )
+      .map(({ file }) => ({ file, keyName: file.keyName || '' }));
 
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
@@ -908,27 +955,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     dialogRef.result
       .then((confirmed: boolean) => {
         if (confirmed) {
-          this.constraintService
-            .updateParameter(this.constraintsData)
-            .subscribe(
-              (response: { status_message: string | undefined }) => {
-                this.toastr.success(
-                  response.status_message,
-                  this.transloco.translate('set_default_parameter', {}, 'index')
-                );
-              },
-              (error: unknown) => {
-                this.toastr.error(
-                  this.transloco.translate(
-                    'set_default_parameter_failed',
-                    {},
-                    'index'
-                  ),
-                  this.transloco.translate('error', {}, 'index')
-                );
-                console.error('Error updating parameter:', error);
-              }
-            );
+          this.updateDynamicParameters();
         }
       })
       .catch((error) => {
@@ -963,15 +990,30 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private loadLocationDepot(incoming: Array<Partial<MyDepot> & { id?: string; name?: string }>) {
+  private loadLocationDepot(
+    incoming: Array<{
+      depotId?: string;
+      id?: string;
+      depotName?: string;
+      name?: string;
+      latitude?: number | string;
+      longitude?: number | string;
+      columns?: string[];
+      inputdata?: DepotInputRequirement[];
+      tw_early?: string | number;
+      tw_late?: string | number;
+      createdAt?: string;
+      updatedAt?: string;
+    }>
+  ) {
     // Always use the incoming depots array for default selection and display
     const normalizedIncoming: MyDepot[] = incoming.map((item) => {
       const nameKey =
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
-            ? item.name
-            : '';
+          ? item.name
+          : '';
       const mapped: MyDepot = {
         depotId: (item.depotId || item.id || '') as string,
         depotName: nameKey,
@@ -979,8 +1021,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         longitude: Number(item.longitude),
         columns: item.columns || [],
         inputdata: item.inputdata || [],
-        tw_early: item.tw_early || '',
-        tw_late: item.tw_late || '',
+        tw_early: String(item.tw_early ?? ''),
+        tw_late: String(item.tw_late ?? ''),
         createdAt: item.createdAt || '',
         updatedAt: item.updatedAt || '',
       };
@@ -1073,7 +1115,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               });
               location.setStyle(
                 this.iconStyle[
-                uploadDataGroupCustomers[key as keyof DataGroup].type
+                  uploadDataGroupCustomers[key as keyof DataGroup].type
                 ]
               );
               this.vectorSource.addFeature(location);
@@ -1084,31 +1126,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private popupShow(evt: any, element: HTMLElement) {
-    let coordinates: Coordinate;
-    const feature = this.map.forEachFeatureAtPixel(
-      evt.pixel,
-      function (feature) {
-        return feature;
-      }
-    )!;
-    if (feature) {
-      const geometry = feature.getGeometry();
-      if (geometry instanceof SimpleGeometry) {
-        coordinates = geometry.getFlatCoordinates();
-      } else {
-        // Handle GeometryCollection or other types if needed
-        coordinates = [];
-      }
-      console.log(coordinates, feature);
-      this.popUp?.setPosition(coordinates);
-
-      this.popupContent = feature.get('data');
-      console.log(this.popupContent);
-    } else {
-      this.popUp?.setPosition(undefined);
-    }
-  }
   closePopupMapShow() {
     this.popUp?.setPosition(undefined);
     const closer = document.getElementById('popup-closer');
@@ -1184,7 +1201,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     console.log(this.haveUpdateAfterValidated, this.haveValidated);
   }
 
-  private pointMove(evt: any): void {
+  private pointMove(
+    evt: MapBrowserEvent<PointerEvent | KeyboardEvent | WheelEvent>
+  ): void {
     const target = this.map.getTargetElement();
     const pixel = this.map.getEventPixel(evt.originalEvent);
     const hit = this.map.hasFeatureAtPixel(pixel);
@@ -1194,6 +1213,44 @@ export class RunComponent implements OnInit, AfterViewInit {
     } else {
       target.style.cursor = '';
     }
+  }
+
+  private popupShow(
+    evt: MapBrowserEvent<PointerEvent | KeyboardEvent | WheelEvent>,
+    element: HTMLElement
+  ) {
+    let coordinates: Coordinate = [];
+    const feature = this.map.forEachFeatureAtPixel(
+      evt.pixel,
+      (f: FeatureLike) => f
+    );
+    if (feature) {
+      const geometry = feature.getGeometry();
+      if (geometry instanceof SimpleGeometry) {
+        // getFlatCoordinates returns number[]; interpret as [x,y] in view proj
+        const flat = geometry.getFlatCoordinates();
+        coordinates = [flat[0], flat[1]] as Coordinate;
+      } else {
+        coordinates = [];
+      }
+      this.popUp?.setPosition(coordinates);
+      if (feature instanceof Feature) {
+        const raw = feature.get('data');
+        this.popupContent = this.isPopupPayload(raw) ? raw : null;
+      } else {
+        this.popupContent = null;
+      }
+    } else {
+      this.popUp?.setPosition(undefined);
+    }
+  }
+
+  private isPopupPayload(
+    value: unknown
+  ): value is { data: Customer; isDepot: boolean } {
+    if (typeof value !== 'object' || value === null) return false;
+    const rec = value as Record<string, unknown>;
+    return 'data' in rec && 'isDepot' in rec;
   }
   private groupCustomers(customers: Array<Customer>) {
     const verify: Customer[] = [];
@@ -1254,7 +1311,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    console.log('filterValue', filterValue);
     this.dataSource.filter = filterValue.trim().toLowerCase();
 
     if (this.dataSource.paginator) {
@@ -1479,9 +1535,10 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   validateExperimentPreOrder() {
+    const parameterPayload = this.buildValidateParameterFromDynamic();
     if (
-      this.constraintsData.earlyDeliveryTime >
-      this.constraintsData.backToDepotTime
+      (parameterPayload.earlyDeliveryTime || '') >
+      (parameterPayload.backToDepotTime || '')
     ) {
       this.showInvalidModal(
         'INVALID : Early Delivery Time',
@@ -1493,17 +1550,19 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.experimentService
       .validateExperiment(
         this.experiment.runId,
-        this.constraintsData,
+        parameterPayload as unknown as Constraint,
         this.customersLocationUpdated
       )
       .subscribe({
         next: (result) => {
           this.haveUpdateAfterValidated = false;
-          console.log(result);
           this.validateExperiment = result.result?.validate || null;
           this.ngbValidationTableCollectionSize =
-            this.validateExperiment?.filters.order_data.invalid_coordinate.length || 0;
+            this.validateExperiment?.filters.order_data.invalid_coordinate
+              .length || 0;
           this.dataService.clearData(this.experiment.runId);
+          // Rebuild dynamic parameters so values reflect constraintsData when validated
+          this.refreshDynamicParametersForSelectedDepot();
           this.refreshValidationTable();
           this.navigateToTab(3);
         },
@@ -1527,6 +1586,75 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.hiddenSpinner();
         },
       });
+  }
+
+  // Build validateExperiment parameter payload from dynamicParametersByCategory
+  buildValidateParameterFromDynamic(): TimingAndCapacity {
+    const payload: Partial<Constraint> = {};
+
+    for (const group of this.dynamicParametersByCategory) {
+      for (const p of group.items) {
+        const key = this.getConstraintKeyForParam(p);
+        if (!key) continue;
+        switch (key) {
+          case 'numberOfVehicleAvailable':
+            payload.numberOfVehicleAvailable = Number(p.value);
+            break;
+          case 'vehicleOrderSizeCapacity':
+            payload.vehicleOrderSizeCapacity = Number(p.value);
+            break;
+          case 'maximumTravelDistance':
+            payload.maximumTravelDistance = Number(p.value);
+            break;
+          case 'earlyDeliveryTime':
+          case 'backToDepotTime':
+          case 'maximumWorkDuration':
+          case 'serviceDurationTime': {
+            const s = String(p.value ?? '').trim();
+            const normalized = !s || s.toLowerCase() === 'null' ? '00:00' : s;
+            if (key === 'earlyDeliveryTime')
+              payload.earlyDeliveryTime = normalized;
+            else if (key === 'backToDepotTime')
+              payload.backToDepotTime = normalized;
+            else if (key === 'maximumWorkDuration')
+              payload.maximumWorkDuration = normalized;
+            else if (key === 'serviceDurationTime')
+              payload.serviceDurationTime = normalized;
+            break;
+          }
+        }
+      }
+    }
+
+    // Ensure all required keys exist; fall back to current constraintsData
+    type RequiredKeys =
+      | 'earlyDeliveryTime'
+      | 'backToDepotTime'
+      | 'maximumWorkDuration'
+      | 'numberOfVehicleAvailable'
+      | 'vehicleOrderSizeCapacity'
+      | 'maximumTravelDistance'
+      | 'serviceDurationTime';
+
+    const p = payload as Partial<Pick<Constraint, RequiredKeys>>;
+    if (p.earlyDeliveryTime == null)
+      p.earlyDeliveryTime = this.constraintsData.earlyDeliveryTime;
+    if (p.backToDepotTime == null)
+      p.backToDepotTime = this.constraintsData.backToDepotTime;
+    if (p.maximumWorkDuration == null)
+      p.maximumWorkDuration = this.constraintsData.maximumWorkDuration;
+    if (p.numberOfVehicleAvailable == null)
+      p.numberOfVehicleAvailable =
+        this.constraintsData.numberOfVehicleAvailable;
+    if (p.vehicleOrderSizeCapacity == null)
+      p.vehicleOrderSizeCapacity =
+        this.constraintsData.vehicleOrderSizeCapacity;
+    if (p.maximumTravelDistance == null)
+      p.maximumTravelDistance = this.constraintsData.maximumTravelDistance;
+    if (p.serviceDurationTime == null)
+      p.serviceDurationTime = this.constraintsData.serviceDurationTime;
+
+    return p as TimingAndCapacity;
   }
   showSpinner() {
     this.spinner.show('run', {
@@ -1691,7 +1819,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       return sum + (Array.isArray(products) ? products.length : 0);
     }, 0);
     const groupedCustomer = this.groupCustomers(customers);
-    console.log('groupedCustomer', groupedCustomer);
     this.uploadDataGroupCustomers = {
       verify: {
         customers: groupedCustomer.verify,
@@ -1716,8 +1843,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
     this.reInitializeDataTable();
     this.loadLocation(this.uploadDataGroupCustomers);
-    this.loadLocationDepot(depots as any);
-    console.log(this.uploadDataGroupCustomers);
+    this.loadLocationDepot(depots);
     this.isUpload = true;
     this.isFileSelectionStep = false;
   }
@@ -1725,9 +1851,11 @@ export class RunComponent implements OnInit, AfterViewInit {
     return this.experiment.run === 'Original';
   }
 
-  onValueChange(newValue: number | string, property: keyof Constraint): void {
-    this.updateConstraint(this.constraintsData, property, newValue as any);
-    console.log(`${property} changed to:`, newValue);
+  onValueChange<K extends keyof Constraint>(
+    newValue: Constraint[K],
+    property: K
+  ): void {
+    this.updateConstraint(this.constraintsData, property, newValue);
     this.haveUpdateAfterValidated = true;
   }
 
@@ -1740,22 +1868,24 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   exportValidationData() {
-    const files: Array<{ data: Array<Record<string, string | number>>; name: string }> = [];
+    const files: Array<{
+      data: Array<Record<string, string | number>>;
+      name: string;
+    }> = [];
     if (
       this.validateExperiment?.filters.order_data &&
       this.validateExperiment?.filters.order_data.invalid_coordinate.length > 0
     ) {
       files.push({
-        data: this.validateExperiment?.warning.zero_weight.map(
-          (customer, i) => ({
+        data:
+          this.validateExperiment?.warning.zero_weight.map((customer, i) => ({
             index: i + 1,
             ORDER_ID: customer.name,
             ADDRESS: customer.original_address.address ?? '',
             SUBDISTRICT: customer.original_address.subdistrict ?? '',
             DISTRICT: customer.original_address.district ?? '',
             PROVINCE: customer.original_address.province ?? '',
-          })
-        ) || [],
+          })) || [],
         name:
           'Remove_Order_' + this.experiment.name + '_' + this.experiment.runId,
       });
@@ -1765,14 +1895,15 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.validateExperiment?.warning.zero_weight.length > 0
     ) {
       files.push({
-        data: this.validateExperiment?.warning.zero_weight.map(
-          (customer, i) => ({
+        data:
+          this.validateExperiment?.warning.zero_weight.map((customer, i) => ({
             index: i + 1,
             ORDER_ID: customer.name,
-            PRODUCT_ID_ZERO_WEIGHT: (customer.metrics?.product_ids || []).join(',') ?? '',
-            PRODUCT_ID_MISSING: (customer.metrics?.missing_product_ids || []).join(',') ?? '',
-          })
-        ) || [],
+            PRODUCT_ID_ZERO_WEIGHT:
+              (customer.metrics?.product_ids || []).join(',') ?? '',
+            PRODUCT_ID_MISSING:
+              (customer.metrics?.missing_product_ids || []).join(',') ?? '',
+          })) || [],
         name:
           'Zero_Weight_' + this.experiment.name + '_' + this.experiment.runId,
       });
@@ -1854,10 +1985,12 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.depotInputDataItems = [];
     }
     await this.validateUploadedFilesAgainstDepot();
+    // refresh dynamic parameters render when depot changes
+    this.refreshDynamicParametersForSelectedDepot();
   }
 
   updateDepot(
-    depots: Array<Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'> & { [key: string]: any }>
+    depots: Array<Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>>
   ) {
     this.preOrderFiles = [];
     this.vectorSourceDepot.clear();
@@ -1928,6 +2061,8 @@ export class RunComponent implements OnInit, AfterViewInit {
 
           // Update input data keys from the first depot
           this.updateInputDataKeysFromDepot(this.depots[0]);
+          // refresh dynamic parameters view for selected depot
+          this.refreshDynamicParametersForSelectedDepot();
 
           if (this.selectedDepotId) {
             localStorage.setItem('selectedDepotId', this.selectedDepotId);
@@ -1950,7 +2085,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   handleInputDataKeyChange(
-    fileObj: { id: string; file: FileWithCategory },
+    fileObj: PreOrderFileItem,
     event: { value: string }
   ) {
     const selectedDisplayName = event.value;
@@ -1958,16 +2093,26 @@ export class RunComponent implements OnInit, AfterViewInit {
       (item) => item.displayName === selectedDisplayName
     );
     if (found) {
-      fileObj.file.keyName = found.keyName;
-      fileObj.file.displayName = found.displayName;
+      if (this.isFileWithCategory(fileObj.file)) {
+        fileObj.file.keyName = found.keyName;
+        fileObj.file.displayName = found.displayName;
+      } else {
+        (fileObj.file as PreOrderFileDescriptor).keyName = found.keyName;
+        (fileObj.file as PreOrderFileDescriptor).displayName =
+          found.displayName;
+      }
     } else {
-      fileObj.file.keyName = '';
-      fileObj.file.displayName = '';
+      if (this.isFileWithCategory(fileObj.file)) {
+        fileObj.file.keyName = '';
+        fileObj.file.displayName = '';
+      } else {
+        (fileObj.file as PreOrderFileDescriptor).keyName = '';
+        (fileObj.file as PreOrderFileDescriptor).displayName = '';
+      }
     }
   }
 
   updateInputDataKeysFromDepot(depot: MyDepot) {
-    // Extract input data items from depot
     this.depotInputDataItems =
       depot.inputdata?.map((item) => ({
         keyName: item.keyName,
@@ -1975,10 +2120,10 @@ export class RunComponent implements OnInit, AfterViewInit {
         columnRequired: item.columnRequired || [],
       })) || [];
 
-    // Remove duplicates based on keyName and create inputDataKeys array
     const uniqueItems = this.depotInputDataItems.filter(
       (item, index, self) =>
-        index === self.findIndex((t) => t.keyName === item.keyName)
+        index ===
+        self.findIndex((existingItem) => existingItem.keyName === item.keyName)
     );
     this.inputDataKeys = uniqueItems.map((item) => item.displayName);
   }
@@ -1998,10 +2143,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.preOrderFiles = validFiles;
   }
 
-  validateFileAgainstDepotRequirements(file: {
-    id: string;
-    file: FileWithCategory;
-  }): Promise<boolean> {
+  validateFileAgainstDepotRequirements(
+    file: PreOrderFileItem
+  ): Promise<boolean> {
     // Read the file to get column names
     return new Promise<boolean>((resolve) => {
       const reader = new FileReader();
@@ -2037,12 +2181,12 @@ export class RunComponent implements OnInit, AfterViewInit {
           const matchingInputDataItem =
             this.findMatchingInputDataItem(columnNames);
           if (matchingInputDataItem) {
-            (file.file as FileWithCategory).keyName =
-              matchingInputDataItem.keyName;
-            (file.file as FileWithCategory).displayName =
-              matchingInputDataItem.displayName;
+            if (this.isFileWithCategory(file.file)) {
+              file.file.keyName = matchingInputDataItem.keyName;
+              file.file.displayName = matchingInputDataItem.displayName;
+              file.file.isFirstOfType = false;
+            }
             // Keep existing files editable when re-validating against depot
-            (file.file as FileWithCategory).isFirstOfType = false;
             resolve(true);
           } else {
             resolve(false);
@@ -2052,8 +2196,21 @@ export class RunComponent implements OnInit, AfterViewInit {
           resolve(false);
         }
       };
-      reader.readAsArrayBuffer(file.file);
+      if (this.isFileWithCategory(file.file)) {
+        reader.readAsArrayBuffer(file.file);
+      } else {
+        // For descriptor items (loaded from server), consider them valid
+        resolve(true);
+      }
     });
+  }
+
+  isFileWithCategory(value: unknown): value is FileWithCategory {
+    return (
+      !!value &&
+      typeof value === 'object' &&
+      ('arrayBuffer' in (value as File) || value instanceof File)
+    );
   }
 
   findMatchingInputDataItem(
@@ -2061,7 +2218,6 @@ export class RunComponent implements OnInit, AfterViewInit {
   ): { keyName: string; displayName: string; columnRequired: string[] } | null {
     return (
       this.depotInputDataItems.find((item) => {
-        // Check if all required columns are present in the file
         return item.columnRequired.every((requiredCol) =>
           columnNames.includes(requiredCol)
         );
@@ -2071,14 +2227,15 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   canExecuteHandleUploadSubmit(): boolean {
     if (this.preOrderFiles.length === 0) return false;
-    // Check if all depot input data types are covered by uploaded files
     const requiredDisplayNames = this.depotInputDataItems.map(
       (item) => item.displayName
     );
     const uploadedDisplayNames = this.preOrderFiles
-      .map((f) => (f.file as FileWithCategory).displayName)
-      .filter((cat) => !!cat);
-    // All required types must be covered
+      .map(
+        (preOrderFileItem) =>
+          (preOrderFileItem.file as FileWithCategory).displayName
+      )
+      .filter((displayName) => !!displayName);
     return requiredDisplayNames.every((required) =>
       uploadedDisplayNames.includes(required)
     );
@@ -2133,5 +2290,370 @@ export class RunComponent implements OnInit, AfterViewInit {
       .catch(() => {
         // dismissed: do nothing
       });
+  }
+
+  getDynamicParameters() {
+    this.constraintService
+      .getDynamicParameters('')
+      .subscribe((response: DynamicParameter[]) => {
+        this.allDynamicParameters = response || [];
+        if (!this.constraintsFromFileLoaded) {
+          this.constraintsData =
+            this.transformDynamicParametersToConstraint(response);
+        }
+
+        if (this.isCreateMode) {
+          this.spinner.hide();
+        }
+        this.refreshDynamicParametersForSelectedDepot();
+      });
+  }
+
+  transformDynamicParametersToConstraint(
+    dynamicParameters: DynamicParameter[]
+  ): Constraint {
+    const constraint: Constraint = {
+      MaxWorkDuration: 0,
+      maxTravelDistance: 0,
+      deliveryTime: '',
+      limitVehicleCapacity: 0,
+      availableCar: 0,
+      earlyDeliveryTime: '',
+      backToDepotTime: '',
+      maximumWorkDuration: '',
+      numberOfVehicleAvailable: 0,
+      vehicleOrderSizeCapacity: 0,
+      maximumTravelDistance: 0,
+      serviceDurationTime: '',
+    };
+
+    dynamicParameters.forEach((param) => {
+      switch (param.keyName) {
+        case 'EarlyDeliveryTime':
+          constraint.earlyDeliveryTime = param.value as string;
+          break;
+        case 'BackToDepotTime':
+          constraint.backToDepotTime = param.value as string;
+          break;
+        case 'MaximumWorkDuration':
+          constraint.maximumWorkDuration = param.value as string;
+          break;
+        case 'NumberOfVehicleAvailable':
+          constraint.numberOfVehicleAvailable = param.value as number;
+          break;
+        case 'VehicleOrderSizeCapacity':
+          constraint.vehicleOrderSizeCapacity = param.value as number;
+          break;
+        case 'MaximumTravelDistance':
+          constraint.maximumTravelDistance = param.value as number;
+          break;
+        case 'ServiceDurationTime':
+          constraint.serviceDurationTime = param.value as string;
+          break;
+      }
+    });
+
+    return constraint;
+  }
+
+  getConstraintValue(
+    dynamicParameter: DynamicParameter
+  ): string | number | null {
+    const key = this.getConstraintKeyForParam(dynamicParameter);
+    if (!key) return null;
+    const constraintValue = this.constraintsData[key];
+    if (this.isTimeType(dynamicParameter)) {
+      const trimmedValue = String(constraintValue ?? '').trim();
+      return !trimmedValue || trimmedValue.toLowerCase() === 'null'
+        ? '00:00'
+        : trimmedValue;
+    }
+    if (this.isNumberType(dynamicParameter)) {
+      const numericValue = Number(constraintValue);
+      return isNaN(numericValue) ? 0 : numericValue;
+    }
+    return constraintValue as string | number;
+  }
+
+  onParamValueChange(
+    dynamicParameter: DynamicParameter,
+    newValue: string | number | null | undefined
+  ): void {
+    const key = this.getConstraintKeyForParam(dynamicParameter);
+
+    if (this.isTimeType(dynamicParameter)) {
+      const trimmedTimeValue = String(newValue ?? '').trim();
+      const normalized =
+        !trimmedTimeValue || trimmedTimeValue.toLowerCase() === 'null'
+          ? '00:00'
+          : trimmedTimeValue;
+      dynamicParameter.value = normalized;
+      if (key) this.onValueChange(normalized, key);
+      return;
+    }
+
+    if (this.isNumberType(dynamicParameter)) {
+      const numericValue = Number(newValue);
+      const normalized = isNaN(numericValue) ? 0 : numericValue;
+      dynamicParameter.value = normalized;
+      if (key) this.onValueChange(normalized, key);
+      return;
+    }
+
+    const trimmedTextValue = String(newValue ?? '').trim();
+    dynamicParameter.value = trimmedTextValue;
+    if (key) this.onValueChange(trimmedTextValue, key);
+  }
+
+  buildDynamicParametersUpdatePayload(): Array<{
+    id: string;
+    value: string | number;
+  }> {
+    const updates: Array<{ id: string; value: string | number }> = [];
+    for (const group of this.dynamicParametersByCategory) {
+      for (const dynamicParameter of group.items) {
+        if (
+          dynamicParameter?.id &&
+          dynamicParameter.value !== undefined &&
+          dynamicParameter.value !== null
+        ) {
+          updates.push({
+            id: dynamicParameter.id,
+            value: dynamicParameter.value,
+          });
+        }
+      }
+    }
+    return updates;
+  }
+
+  updateDynamicParameters(): void {
+    const payload = this.buildDynamicParametersUpdatePayload();
+    if (!payload.length) return;
+    this.showSpinner();
+    this.constraintService.updateDynamicParameter(payload).subscribe({
+      next: (res) => {
+        this.toastr.success(
+          this.transloco.translate('success', {}, 'index'),
+          this.transloco.translate('set_default_parameter', {}, 'index')
+        );
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastr.error(
+          this.transloco.translate('failed', {}, 'index'),
+          this.transloco.translate('set_default_parameter_failed', {}, 'index')
+        );
+      },
+      complete: () => this.hiddenSpinner(),
+    });
+  }
+
+  getBackendLocaleKey(): keyof LocalizedText {
+    const active = this.transloco.getActiveLang();
+    return active?.toLowerCase().startsWith('th') ? 'th_TH' : 'en_US';
+  }
+
+  getLocalized(text?: LocalizedText | string | null): string {
+    if (!text) return '';
+    const key = this.getBackendLocaleKey();
+    if (typeof text === 'string') {
+      try {
+        const parsed = JSON.parse(text) as LocalizedText;
+        return parsed[key] ?? '';
+      } catch {
+        return text;
+      }
+    }
+    return text[key] ?? '';
+  }
+
+  coerceLocalizedText(
+    value: LocalizedText | string | null | undefined
+  ): LocalizedText | null {
+    if (!value) return null;
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value) as LocalizedText;
+      } catch {
+        return { th_TH: value, en_US: value } as LocalizedText;
+      }
+    }
+    return value as LocalizedText;
+  }
+
+  getSelectedDepotObject(): MyDepot | undefined {
+    if (!this.selectedDepotId) return undefined;
+    return this.depots.find(
+      (depot) => depot.depotName === this.selectedDepotId
+    );
+  }
+
+  refreshDynamicParametersForSelectedDepot(): void {
+    const selectedDepot = this.getSelectedDepotObject();
+    const base = Array.isArray(this.allDynamicParameters)
+      ? this.allDynamicParameters
+      : [];
+
+    let scoped = base;
+    if (selectedDepot?.depotId) {
+      scoped = base.filter(
+        (dynamicParameter) => dynamicParameter.depotId === selectedDepot.depotId
+      );
+    }
+    if (!scoped.length) {
+      scoped = base.filter((dynamicParameter) => !dynamicParameter.depotId);
+    }
+    if (!scoped.length) {
+      scoped = base;
+    }
+
+    const defaultLocalized: LocalizedText = { th_TH: '', en_US: '' };
+    type DynamicParameterRaw = Omit<
+      DynamicParameter,
+      'category' | 'displayName' | 'description'
+    > & {
+      category: LocalizedText | string | null | undefined;
+      displayName: LocalizedText | string | null | undefined;
+      description: LocalizedText | string | null | undefined;
+    };
+    const normalized: DynamicParameter[] = scoped.map((dynamicParameter) => {
+      const raw = dynamicParameter as unknown as DynamicParameterRaw;
+      return {
+        ...raw,
+        displayName:
+          this.coerceLocalizedText(raw.displayName) ?? defaultLocalized,
+        category: this.coerceLocalizedText(raw.category) ?? defaultLocalized,
+        description:
+          this.coerceLocalizedText(raw.description) ?? defaultLocalized,
+      };
+    });
+
+    const groupsMap: Record<string, DynamicParameter[]> = {};
+    for (const dynamicParameter of normalized) {
+      const categoryKey = (
+        dynamicParameter.category.en_US || 'Generals'
+      ).trim();
+      if (!groupsMap[categoryKey]) groupsMap[categoryKey] = [];
+      groupsMap[categoryKey].push(dynamicParameter);
+    }
+
+    const categoryOrderFromParams: string[] = [];
+    for (const dynamicParameter of normalized) {
+      const categoryKey = (
+        dynamicParameter.category.en_US || 'Generals'
+      ).trim();
+      if (!categoryOrderFromParams.includes(categoryKey))
+        categoryOrderFromParams.push(categoryKey);
+    }
+    const orderedKeys = Object.keys(groupsMap).sort((a, b) => {
+      const indexA = categoryOrderFromParams.indexOf(a);
+      const indexB = categoryOrderFromParams.indexOf(b);
+      if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    });
+
+    const useConstraintsValues = !!this.validateExperiment;
+    this.dynamicParametersByCategory = orderedKeys.map((categoryKey) => {
+      const originalItems = groupsMap[categoryKey];
+      const items = useConstraintsValues
+        ? originalItems.map((dynamicParameter) => {
+            const constraintKey =
+              this.getConstraintKeyForParam(dynamicParameter);
+            if (!constraintKey) return dynamicParameter;
+            const constraintValue = this.constraintsData[constraintKey];
+            if (constraintValue === undefined || constraintValue === null) {
+              if (this.isTimeType(dynamicParameter)) {
+                return { ...dynamicParameter, value: '00:00' };
+              }
+              return dynamicParameter;
+            }
+            if (
+              constraintKey === 'numberOfVehicleAvailable' ||
+              constraintKey === 'vehicleOrderSizeCapacity' ||
+              constraintKey === 'maximumTravelDistance'
+            ) {
+              return { ...dynamicParameter, value: Number(constraintValue) };
+            } else {
+              const trimmedValue = String(constraintValue).trim();
+              return {
+                ...dynamicParameter,
+                value:
+                  trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
+                    ? '00:00'
+                    : trimmedValue,
+              };
+            }
+          })
+        : originalItems;
+      return {
+        key: categoryKey,
+        items,
+      };
+    });
+    this.cdr.detectChanges();
+  }
+
+  isTimeType(dynamicParameter: DynamicParameter): boolean {
+    const vt = (dynamicParameter.valueType || '').toLowerCase();
+    return vt === 'time' || vt.includes('duration');
+  }
+
+  isNumberType(dynamicParameter: DynamicParameter): boolean {
+    const vt = (dynamicParameter.valueType || '').toLowerCase();
+    return vt.startsWith('number');
+  }
+
+  getUnitKey(dynamicParameter: DynamicParameter): string | null {
+    switch (dynamicParameter.keyName) {
+      case 'VehicleOrderSizeCapacity':
+        return 'kilogram';
+      case 'MaximumTravelDistance':
+        return 'kilometer';
+      default:
+        return null;
+    }
+  }
+
+  getConstraintKeyForParam(
+    dynamicParameter: DynamicParameter
+  ): keyof Constraint | null {
+    switch (dynamicParameter.keyName) {
+      case 'EarlyDeliveryTime':
+        return 'earlyDeliveryTime';
+      case 'BackToDepotTime':
+        return 'backToDepotTime';
+      case 'MaximumWorkDuration':
+        return 'maximumWorkDuration';
+      case 'NumberOfVehicleAvailable':
+        return 'numberOfVehicleAvailable';
+      case 'VehicleOrderSizeCapacity':
+        return 'vehicleOrderSizeCapacity';
+      case 'MaximumTravelDistance':
+        return 'maximumTravelDistance';
+      case 'ServiceDurationTime':
+        return 'serviceDurationTime';
+      default:
+        return null;
+    }
+  }
+
+  isTimeInvalid(dynamicParameter: DynamicParameter): boolean {
+    if (!this.isTimeType(dynamicParameter)) return false;
+    const v = dynamicParameter.value;
+    if (v === null || v === undefined) return true;
+    const s = (typeof v === 'string' ? v : String(v)).trim().toLowerCase();
+    if (!s || s === 'null') return true;
+    return false;
+  }
+
+  isOverWeightKey(dynamicParameter: DynamicParameter): boolean {
+    return dynamicParameter.keyName === 'VehicleOrderSizeCapacity';
+  }
+
+  isOverDistanceKey(dynamicParameter: DynamicParameter): boolean {
+    return dynamicParameter.keyName === 'MaximumTravelDistance';
   }
 }

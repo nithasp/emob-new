@@ -10,7 +10,7 @@ import {
   ExperimentState,
 } from '../models/experiment.model';
 import { Company, MyDepot } from '../models/experiment.model';
-import { Constraint } from '../models/constraint.model';
+import { Constraint, TimingAndCapacity } from '../models/constraint.model';
 import { Location } from '../models/location.model';
 import { CustomerUpdated } from '../models/pre-order.model';
 import type { Error } from '../models/graphql.model';
@@ -196,7 +196,7 @@ export class ExperimentService {
 
   validateExperiment(
     runId: string,
-    parameter: Constraint,
+    parameter: TimingAndCapacity,
     locationUpdated: CustomerUpdated[]
   ): Observable<Experiment> {
     return this.apollo

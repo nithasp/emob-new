@@ -18,7 +18,7 @@
   
 </div>
 <ng-container *ngIf="value >= maxValue || value <= minValue">
-  <mat-error class="text-danger mt-2" [style]="{'font-size': '12px'}">
-    Minimum {{minValue}} and Maximum {{maxValue}}
+  <mat-error class="text-danger mt-2 d-inline-block" [style]="{'font-size': '12px'}">
+    {{ errorMessage || ('Minimum ' + minValue + ' and Maximum ' + maxValue) }}
   </mat-error>
 </ng-container>
