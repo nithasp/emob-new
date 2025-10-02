@@ -53,6 +53,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     maximumTravelDistance: 0,
     serviceDurationTime: '',
     maximumWorkDuration: '',
+    minimumVehicle: 0,
   };
   paramsConsumption: ExperimentCounts = {
     countGeocoding: 0,

@@ -16,6 +16,7 @@ export interface Constraint extends Record<string, ConstraintValue | undefined> 
   limitVehicleCapacity?: number;
   availableCar?: number;
 }
+
 export type TimingAndCapacity = Pick<
   Constraint,
   | 'earlyDeliveryTime'
@@ -26,7 +27,7 @@ export type TimingAndCapacity = Pick<
   | 'maximumTravelDistance'
   | 'serviceDurationTime'
   | 'minimumVehicle'
->;
+> & Partial<Record<string, ConstraintValue>>;
 
 export interface LocalizedText {
   th_TH: string;

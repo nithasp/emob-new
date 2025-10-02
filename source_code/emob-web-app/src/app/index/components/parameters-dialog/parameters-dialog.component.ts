@@ -15,7 +15,8 @@ export class ParametersDialogComponent implements OnInit {
     vehicleOrderSizeCapacity: 0,
     maximumTravelDistance: 0,
     serviceDurationTime: '',
-    maximumWorkDuration: ''
+    maximumWorkDuration: '',
+    minimumVehicle: 0
   };
 
   constructor(private readonly activeModal: NgbActiveModal) {
