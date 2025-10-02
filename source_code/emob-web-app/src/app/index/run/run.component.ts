@@ -52,6 +52,7 @@ import {
   Constraint,
   DynamicParameter,
   LocalizedText,
+  ConstraintValue,
 } from 'src/app/models/constraint.model';
 import type { TimingAndCapacity } from 'src/app/models/constraint.model';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -1245,11 +1246,20 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   private isPopupPayload(
-    value: unknown
+    value:
+      | {
+          data?:
+            | Customer
+            | Depot
+            | MyDepot
+            | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
+          isDepot?: boolean;
+        }
+      | null
+      | undefined
   ): value is { data: Customer; isDepot: boolean } {
-    if (typeof value !== 'object' || value === null) return false;
-    const rec = value as Record<string, unknown>;
-    return 'data' in rec && 'isDepot' in rec;
+    if (!value || typeof value !== 'object') return false;
+    return 'data' in value && 'isDepot' in value;
   }
   private groupCustomers(customers: Array<Customer>) {
     const verify: Customer[] = [];
@@ -1554,7 +1564,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.experimentService
       .validateExperiment(
         this.experiment.runId,
-        parameterPayload as unknown as Constraint,
+        parameterPayload as Constraint,
         this.customersLocationUpdated
       )
       .pipe(finalize(() => {
@@ -1564,10 +1574,11 @@ export class RunComponent implements OnInit, AfterViewInit {
         next: (result) => {
           this.haveUpdateAfterValidated = false;
           // Sync constraints with the payload used for validation so UI reflects latest
-          this.constraintsData = {
+          const mergedConstraint: Constraint = {
             ...this.constraintsData,
-            ...(parameterPayload as any),
-          } as Constraint;
+            ...(parameterPayload as Partial<Constraint>),
+          };
+          this.constraintsData = mergedConstraint;
           this.validateExperiment = result.result?.validate || null;
           this.ngbValidationTableCollectionSize =
             this.validateExperiment?.filters.order_data.invalid_coordinate
@@ -1617,19 +1628,23 @@ export class RunComponent implements OnInit, AfterViewInit {
           const s = String(param.value ?? '').trim();
           payload[mappedKey] = !s || s.toLowerCase() === 'null' ? '00:00' : s;
         } else {
-          payload[mappedKey] = (param.value as unknown as string) ?? '';
+          payload[mappedKey] = String(param.value ?? '');
         }
       }
     }
 
     // Backfill any missing keys from current constraintsData dynamically (no fixed key list)
     for (const k of Object.keys(this.constraintsData)) {
-      if ((payload as any)[k] == null && (this.constraintsData as any)[k] != null) {
-        (payload as any)[k] = (this.constraintsData as any)[k] as any;
+      const sourceValue = this.constraintsData[k as keyof Constraint];
+      if (
+        (payload as Record<string, string | number>)[k] == null &&
+        (typeof sourceValue === 'string' || typeof sourceValue === 'number')
+      ) {
+        (payload as Record<string, string | number>)[k] = sourceValue;
       }
     }
 
-    return (payload as unknown) as TimingAndCapacity;
+    return payload as TimingAndCapacity;
   }
 
   private normalizeKeyName(rawKey: string | null | undefined): string {
@@ -2186,7 +2201,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  isFileWithCategory(value: unknown): value is FileWithCategory {
+  isFileWithCategory(
+    value: File | (Partial<FileWithCategory> & object) | null | undefined
+  ): value is FileWithCategory {
     return (
       !!value &&
       typeof value === 'object' &&
@@ -2305,7 +2322,10 @@ export class RunComponent implements OnInit, AfterViewInit {
       minimumVehicle: 0,
     };
 
-    const chooseTime = (value: unknown, defaultValue: unknown): string => {
+    const chooseTime = (
+      value: string | number | null | undefined,
+      defaultValue: string | number | null | undefined
+    ): string => {
       const inputValueTrimmed = String(value ?? '').trim();
       const defaultValueTrimmed = String(defaultValue ?? '').trim();
       const isBlank =
@@ -2318,7 +2338,10 @@ export class RunComponent implements OnInit, AfterViewInit {
       }
       return inputValueTrimmed;
     };
-    const chooseNumber = (value: unknown, defaultValue: unknown): number => {
+    const chooseNumber = (
+      value: string | number | null | undefined,
+      defaultValue: string | number | null | undefined
+    ): number => {
       const numericValue = Number(value);
       const defaultNumericValue = Number(defaultValue);
       if (!isNaN(numericValue) && numericValue > 0) return numericValue;
@@ -2329,12 +2352,13 @@ export class RunComponent implements OnInit, AfterViewInit {
     for (const param of dynamicParameters) {
       const key = this.getConstraintKeyForParam(param);
       if (!key) continue;
+      const defaultValue = param.defaultValue;
       if (this.isTimeType(param)) {
-        (constraint as any)[key] = chooseTime(param.value, (param as any).defaultValue);
+        (constraint as Record<string, string | number | undefined>)[key] = chooseTime(param.value, defaultValue);
       } else if (this.isNumberType(param)) {
-        (constraint as any)[key] = chooseNumber(param.value, (param as any).defaultValue);
+        (constraint as Record<string, string | number | undefined>)[key] = chooseNumber(param.value, defaultValue);
       } else {
-        (constraint as any)[key] = (param.value ?? (param as any).defaultValue ?? '') as any;
+        (constraint as Record<string, string | number | undefined>)[key] = (param.value ?? defaultValue ?? '') as string | number;
       }
     }
 
@@ -2523,14 +2547,13 @@ export class RunComponent implements OnInit, AfterViewInit {
       description: LocalizedText | string | null | undefined;
     };
     const normalized: DynamicParameter[] = scopedUnique.map((dynamicParameter) => {
-      const raw = dynamicParameter as unknown as DynamicParameterRaw;
       return {
-        ...raw,
+        ...dynamicParameter,
         displayName:
-          this.coerceLocalizedText(raw.displayName) ?? defaultLocalized,
-        category: this.coerceLocalizedText(raw.category) ?? defaultLocalized,
+          this.coerceLocalizedText(dynamicParameter.displayName) ?? defaultLocalized,
+        category: this.coerceLocalizedText(dynamicParameter.category) ?? defaultLocalized,
         description:
-          this.coerceLocalizedText(raw.description) ?? defaultLocalized,
+          this.coerceLocalizedText(dynamicParameter.description) ?? defaultLocalized,
       };
     });
 
