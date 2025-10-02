@@ -1562,8 +1562,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       }))
       .subscribe({
         next: (result) => {
-          console.log('result', result);
-
           this.haveUpdateAfterValidated = false;
           // Sync constraints with the payload used for validation so UI reflects latest
           this.constraintsData = {
@@ -2308,20 +2306,23 @@ export class RunComponent implements OnInit, AfterViewInit {
     };
 
     const chooseTime = (value: unknown, defaultValue: unknown): string => {
-      const v = String(value ?? '').trim();
-      const d = String(defaultValue ?? '').trim();
-      const isBlank = !v || v.toLowerCase() === 'null' || v === '00:00';
+      const inputValueTrimmed = String(value ?? '').trim();
+      const defaultValueTrimmed = String(defaultValue ?? '').trim();
+      const isBlank =
+        !inputValueTrimmed ||
+        inputValueTrimmed.toLowerCase() === 'null' ||
+        inputValueTrimmed === '00:00';
       if (isBlank) {
-        if (!!d && d.toLowerCase() !== 'null') return d;
+        if (!!defaultValueTrimmed && defaultValueTrimmed.toLowerCase() !== 'null') return defaultValueTrimmed;
         return '00:00';
       }
-      return v;
+      return inputValueTrimmed;
     };
     const chooseNumber = (value: unknown, defaultValue: unknown): number => {
-      const n = Number(value);
-      const nd = Number(defaultValue);
-      if (!isNaN(n) && n > 0) return n;
-      if (!isNaN(nd) && nd > 0) return nd;
+      const numericValue = Number(value);
+      const defaultNumericValue = Number(defaultValue);
+      if (!isNaN(numericValue) && numericValue > 0) return numericValue;
+      if (!isNaN(defaultNumericValue) && defaultNumericValue > 0) return defaultNumericValue;
       return 0;
     };
 
@@ -2492,22 +2493,21 @@ export class RunComponent implements OnInit, AfterViewInit {
       scoped = base;
     }
 
-    // Deduplicate by keyName with preference: exact depotId > no depotId > others
-    const preferRank = (dp: DynamicParameter): number => {
-      if (dp.depotId === selectedDepot?.depotId) return 0;
-      if (!dp.depotId) return 1;
+    const preferRank = (dynamicParameter: DynamicParameter): number => {
+      if (dynamicParameter.depotId === selectedDepot?.depotId) return 0;
+      if (!dynamicParameter.depotId) return 1;
       return 2;
     };
     const dedupMap: Record<string, DynamicParameter> = {};
-    for (const dp of scoped) {
-      const keyName = (dp.keyName || '').trim();
+    for (const dynamicParameter of scoped) {
+      const keyName = (dynamicParameter.keyName || '').trim();
       if (!keyName) continue;
       const existing = dedupMap[keyName];
       if (!existing) {
-        dedupMap[keyName] = dp;
+        dedupMap[keyName] = dynamicParameter;
       } else {
-        if (preferRank(dp) < preferRank(existing)) {
-          dedupMap[keyName] = dp;
+        if (preferRank(dynamicParameter) < preferRank(existing)) {
+          dedupMap[keyName] = dynamicParameter;
         }
       }
     }
@@ -2617,7 +2617,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private hasMeaningfulConstraintsData(): boolean {
+  hasMeaningfulConstraintsData(): boolean {
     const c = this.constraintsData || ({} as Constraint);
     const hasTime = (
       (c.earlyDeliveryTime && c.earlyDeliveryTime !== '00:00') ||
@@ -2685,12 +2685,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isOverDistanceKey(dynamicParameter: DynamicParameter): boolean {
     return dynamicParameter.keyName === 'MaximumTravelDistance';
-  }
-
-  log() {
-    console.log('dynamicParametersByCategory', this.dynamicParametersByCategory);
-    console.log('constraintsData', this.constraintsData);
-    console.log('experiment', this.experiment);
   }
 }
 
