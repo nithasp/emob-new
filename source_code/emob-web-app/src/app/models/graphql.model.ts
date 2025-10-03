@@ -4,6 +4,7 @@ import {
   DynamicParameter,
   DeleteDynamicParameter,
   UpdateDynamicParameter,
+  Parameter,
 } from './constraint.model';
 import {
   DownloadResultFile,
@@ -18,7 +19,7 @@ export interface Response {
   status_message: string;
   errors: Error[];
   myParameter: Constraint;
-  parameter: Constraint;
+  parameter: Parameter;
   experiments: [Experiment];
   createExperiment: Experiment;
   experiment: Experiment;

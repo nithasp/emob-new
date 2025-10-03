@@ -16,49 +16,12 @@
       </button>
     </div>
     <mat-dialog-content class="ml-3">
-      <div class="generals">
-        <h3 class="mb-0">{{ t("generals") }}</h3>
-        <ul>
-          <li>
-            {{ t("early_delivery_time_is") }}:
-            {{ paramsVehicle.earlyDeliveryTime }}
-          </li>
-          <li>
-            {{ t("back_to_depot_time_is") }}:
-            {{ paramsVehicle.backToDepotTime }}
-          </li>
-          <li>
-            {{ t("maximum_work_duration_is") }}:
-            {{ paramsVehicle.maximumWorkDuration }}
-          </li>
-        </ul>
-      </div>
-      <div class="vehicle">
-        <h3 class="mb-0">{{ t("vehicle") }}</h3>
-        <ul>
-          <li>
-            {{ t("number_of_vehicle_available_is_set_to") }}:
-            {{ paramsVehicle.numberOfVehicleAvailable | number : "1.0-0" }}
-          </li>
-          <li>
-            {{ t("vehicle_order_size_capacity_is") }}:
-            {{ paramsVehicle.vehicleOrderSizeCapacity | number : "1.0-0" }}
-          </li>
-          <li>
-            {{ t("maximum_travel_distance_is") }}:
-            {{ paramsVehicle.maximumTravelDistance | number : "1.0-0" }}
-          </li>
-        </ul>
-      </div>
-      <div class="customer">
-        <h3 class="mb-0">{{ t("customer") }}</h3>
-        <ul>
-          <li>
-            {{ t("service_time_is") }}:
-            {{ paramsVehicle.serviceDurationTime | timeFormat }}
-          </li>
-        </ul>
-      </div>
+      <ul>
+        <li *ngFor="let parameter of parameterEntries">
+          <span>{{ parameter.key }}</span>
+          <span>: {{ parameter.value }}</span>
+        </li>
+      </ul>
     </mat-dialog-content>
   </div>
 </ng-container>

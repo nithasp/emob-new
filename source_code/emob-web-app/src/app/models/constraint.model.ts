@@ -1,9 +1,7 @@
-export interface Constraint {
-  MaxWorkDuration: number;
-  maxTravelDistance: number;
-  deliveryTime: string;
-  limitVehicleCapacity: number;
-  availableCar: number;
+export type ConstraintValue = string | number;
+
+// Allow future, dynamic constraint keys while keeping current keys strongly typed
+export interface Constraint extends Record<string, ConstraintValue | undefined> {
   earlyDeliveryTime: string;
   backToDepotTime: string;
   maximumWorkDuration: string;
@@ -11,7 +9,14 @@ export interface Constraint {
   vehicleOrderSizeCapacity: number;
   maximumTravelDistance: number;
   serviceDurationTime: string;
+  minimumVehicle: number;
+  MaxWorkDuration?: number;
+  maxTravelDistance?: number;
+  deliveryTime?: string;
+  limitVehicleCapacity?: number;
+  availableCar?: number;
 }
+
 export type TimingAndCapacity = Pick<
   Constraint,
   | 'earlyDeliveryTime'
@@ -21,7 +26,8 @@ export type TimingAndCapacity = Pick<
   | 'vehicleOrderSizeCapacity'
   | 'maximumTravelDistance'
   | 'serviceDurationTime'
->;
+  | 'minimumVehicle'
+> & Partial<Record<string, ConstraintValue>>;
 
 export interface LocalizedText {
   th_TH: string;
@@ -87,4 +93,9 @@ export interface UpdateDynamicParameter {
   updatedCount: number;
   errors: DynamicParameterUpdateError[];
   results: DynamicParameter[];
+}
+
+export interface Parameter {
+  companyName: string;
+  parameters: Constraint;
 }
