@@ -89,15 +89,32 @@ export class CustomerListComponent implements OnInit {
     this.selectData();
   }
   selectData() {
+    const selected = this.customersToVerify[this.selectedIndex];
+    const keyed = this.groupedDataPreOrder?.[selected?.name];
+    const fallback = keyed || {
+      ORDERID_ORG: selected?.name,
+      CHANNEL: selected?.extra?.channel || '',
+      CUSTOMER_NAME: selected?.extra?.customer_name || '',
+      TEL: selected?.extra?.tel || '',
+      ADDRESS: selected?.original_address?.address || '',
+      AUMPHER: selected?.original_address?.district || '',
+      PROVINCE: selected?.original_address?.province || '',
+      ZIPCODE: Number(selected?.original_address?.postal_code || 0),
+      details: (selected?.extra?.products_info || []).map((p) => ({
+        PRODUCTID: String(p.product_id || ''),
+        ORDER_ID: p.order_id || null,
+        PRODUCTNAME: p.product_name || '',
+        QUANTITYMAIN: Number(p.quantity_major || 0),
+        QUANTITYMINOR: Number(p.quantity_minor || 0),
+        UserConfirm: p.user_confirm || null,
+        DateConfirm: p.date_confirm || null,
+      })),
+    };
+
     this.customerSelected = {
-      dataPreOder:
-        this.groupedDataPreOrder[
-          this.customersToVerify[this.selectedIndex].name
-        ],
-      dataCustomer: this.customersToVerify[this.selectedIndex],
-      locationType: this.findLocationType(
-        this.customersToVerify[this.selectedIndex].name
-      ),
+      dataPreOder: fallback,
+      dataCustomer: selected,
+      locationType: this.findLocationType(selected.name),
     };
   }
   isUncertain(orderId: string): boolean {

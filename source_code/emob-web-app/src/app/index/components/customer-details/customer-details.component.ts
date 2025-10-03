@@ -21,7 +21,10 @@ import {
   ReplaceType,
   ValidationType,
   getDescription,
+  PreOrder,
+  ProductDetail,
 } from 'src/app/models/pre-order.model';
+import { DataPreOrder } from 'src/app/models/pre-order.model';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
@@ -54,7 +57,7 @@ import { set } from 'ol/transform';
 export class CustomerDetailsComponent
   implements OnInit, AfterViewInit, OnChanges
 {
-  @Input() dataPreOder!: DetailsPreOder;
+  @Input() dataPreOder!: DetailsPreOder | DataPreOrder;
   @Input() dataCustomer!: Customer;
   @Input() locationType: LocationType = LocationType.Verify;
   @Input() isModal: boolean = true;
@@ -253,6 +256,11 @@ export class CustomerDetailsComponent
         this.iconStyle.edit = iconLocation;
       }
     });
+  }
+  // Provide a unified iterable type for template to avoid NG2 union errors
+  get detailRows(): Array<ProductDetail | PreOrder> {
+    const details = (this.dataPreOder as DetailsPreOder | DataPreOrder)?.details || [];
+    return details as Array<ProductDetail | PreOrder>;
   }
   convertDateString(dateString: string): Date {
     const parts = dateString.split(/[\s/:]/);
