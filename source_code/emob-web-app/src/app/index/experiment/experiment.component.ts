@@ -19,7 +19,7 @@ import { ToastrService } from 'ngx-toastr';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
 import { ParametersDialogComponent } from '../components/parameters-dialog/parameters-dialog.component';
-import { TimingAndCapacity } from 'src/app/models/constraint.model';
+import { Parameter } from 'src/app/models/constraint.model';
 import { ConsumptionDialogComponent } from '../components/consumption-dialog/consumption-dialog.component';
 import { TranslocoService } from '@jsverse/transloco';
 
@@ -45,16 +45,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     { def: 'RunId', label: 'run_id', visible: false },
     { def: 'GroupId', label: 'group_id', visible: false },
   ];
-  paramsVehicle: TimingAndCapacity = {
-    backToDepotTime: '',
-    earlyDeliveryTime: '',
-    numberOfVehicleAvailable: 0,
-    vehicleOrderSizeCapacity: 0,
-    maximumTravelDistance: 0,
-    serviceDurationTime: '',
-    maximumWorkDuration: '',
-    minimumVehicle: 0,
-  };
+  paramsVehicle: Partial<Record<string, string | number>> = {};
   paramsConsumption: ExperimentCounts = {
     countGeocoding: 0,
     countReroute: 0,
@@ -184,12 +175,14 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
   getParameter(runId: string) {
     this.showSpinner();
     this.constraintService.getParameter(runId).subscribe(
-      (response) => {
-        this.paramsVehicle = response;
+      (response: Parameter) => {
+        this.paramsVehicle = (response && (response as Parameter).parameters)
+          ? (response as Parameter).parameters
+          : {};
         this.hiddenSpinner();
         this.openDetails(
           'Parameters',
-          this.objectToStringArray(response),
+          this.objectToStringArray(this.paramsVehicle),
           'lg'
         );
       },

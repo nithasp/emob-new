@@ -8,22 +8,21 @@ import { TimingAndCapacity } from 'src/app/models/constraint.model';
   styleUrl: './parameters-dialog.component.scss',
 })
 export class ParametersDialogComponent implements OnInit {
-  @Input() paramsVehicle: TimingAndCapacity = {
-    backToDepotTime: '',
-    earlyDeliveryTime: '',
-    numberOfVehicleAvailable: 0,
-    vehicleOrderSizeCapacity: 0,
-    maximumTravelDistance: 0,
-    serviceDurationTime: '',
-    maximumWorkDuration: '',
-    minimumVehicle: 0
-  };
+  @Input() paramsVehicle: Partial<Record<string, string | number>> = {};
 
-  constructor(private readonly activeModal: NgbActiveModal) {
-     
+  public parameterEntries: Array<{ key: string; value: string | number } > = [];
+
+  constructor(private readonly activeModal: NgbActiveModal) {}
+
+  ngOnInit(): void {
+    this.parameterEntries = Object.entries(this.paramsVehicle || {}).map(
+      ([key, value]) => ({ key, value: value as string | number })
+    );
   }
 
-  ngOnInit(): void {}
+  isNumeric(value: unknown): value is number {
+    return typeof value === 'number' && isFinite(value as number);
+  }
 
   onCancleClick() {
     this.activeModal.close(false);
