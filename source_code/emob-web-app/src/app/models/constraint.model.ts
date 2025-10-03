@@ -94,3 +94,8 @@ export interface UpdateDynamicParameter {
   errors: DynamicParameterUpdateError[];
   results: DynamicParameter[];
 }
+
+export interface Parameter {
+  companyName: string;
+  parameters: Constraint;
+}

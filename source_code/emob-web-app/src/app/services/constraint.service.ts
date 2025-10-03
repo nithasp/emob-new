@@ -51,13 +51,8 @@ export class ConstraintService {
         query: gql`
           query parameter($runID: String!) {
             parameter(experimentRunID: $runID) {
-              earlyDeliveryTime
-              backToDepotTime
-              maximumWorkDuration
-              numberOfVehicleAvailable
-              vehicleOrderSizeCapacity
-              maximumTravelDistance
-              serviceDurationTime
+              companyName
+              parameters
             }
           }
         `,
