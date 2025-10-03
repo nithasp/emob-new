@@ -32,6 +32,7 @@ export class ConfigurationComponent implements OnInit {
   readonly panelOpenState = signal<boolean>(false);
   //Categories
   public selectedNode: string | null = null;
+  public selectedChildId: string | null = null;
   public configurationsExplorer: ConfigurationExplorerDepot[] = [];
   public readonly configurationAllData: ConfigurationComponentData = {
     configurations: [],
@@ -158,6 +159,7 @@ export class ConfigurationComponent implements OnInit {
           (
             categoryObjForDropdown.children as ConfigurationExplorerFileTypeChildren[]
           ).push({
+            id: configuration.id,
             name: configuration.name,
             timestamp: formatDate(
               configuration.timestamp,
@@ -199,6 +201,7 @@ export class ConfigurationComponent implements OnInit {
             (
               categoryObjForTree.children as ConfigurationExplorerFileTypeChildren[]
             ).push({
+              id: configuration.id,
               name: configuration.name,
               timestamp: formatDate(
                 configuration.timestamp,
@@ -301,6 +304,7 @@ export class ConfigurationComponent implements OnInit {
     }
 
     monthNode.children.push({
+      id: configuration.id,
       name: configuration.name,
       timestamp: formatDate(
         configuration.timestamp,
@@ -337,6 +341,55 @@ export class ConfigurationComponent implements OnInit {
           );
 
         if (configuration) {
+          this.configurationService
+            .getConfiguration(configuration.id)
+            .subscribe(async (data) => {
+              if (data.fileUrl?.fileConfigurationUrl) {
+                await this.fetchAndParseExcel(
+                  data.fileUrl.fileConfigurationUrl
+                );
+              } else {
+                this.toastr.error(
+                  this.transloco.translate(
+                    'error_no_url_provided',
+                    {},
+                    'index'
+                  ),
+                  this.transloco.translate('error', {}, 'index')
+                );
+                this.hiddenSpinner();
+              }
+            });
+        }
+      }
+    } catch (error) {
+      this.hiddenSpinner();
+    }
+
+    this.currentPage = 1;
+    this.searchText = '';
+  }
+
+  onChangeFileById(id: string, type: string, blobPath: string) {
+    if (!blobPath || blobPath.trim() === '') {
+      this.toastr.error(
+        this.transloco.translate('error_no_file_path', {}, 'index') || 'No file path available',
+        this.transloco.translate('error', {}, 'index') || 'Error'
+      );
+      return;
+    }
+
+    this.showSpinner();
+    try {
+      this.selectedChildId = id;
+      if (type === 'configuration' || type === 'actualLocation') {
+        const configuration: Configuration | undefined =
+          this.configurationAllData.configurations.find(
+            (configuration) => configuration.id === id
+          );
+
+        if (configuration) {
+          this.selectedNode = configuration.name;
           this.configurationService
             .getConfiguration(configuration.id)
             .subscribe(async (data) => {
@@ -581,6 +634,45 @@ export class ConfigurationComponent implements OnInit {
       const configuration: Configuration | undefined =
         this.configurationAllData.configurations.find(
           (configuration) => configuration.name === fileName
+        );
+
+      if (configuration) {
+        this.spinner.show();
+        this.configurationService
+          .getConfiguration(configuration.id)
+          .subscribe(async (data) => {
+            if (data.fileUrl?.fileConfigurationUrl) {
+              this.downloadFile(data.fileUrl.fileConfigurationUrl, true);
+            } else {
+              this.toastr.error(
+                this.transloco.translate('error_no_url_provided', {}, 'index'),
+                this.transloco.translate('error', {}, 'index')
+              );
+              this.spinner.hide();
+            }
+          });
+      } else {
+        this.toastr.error(
+          this.transloco.translate('configuration_not_found', {}, 'index'),
+          this.transloco.translate('error', {}, 'index')
+        );
+      }
+    }
+  }
+
+  getFileUrlById(id: string, type: string, blobPath: string) {
+    if (!blobPath || blobPath.trim() === '') {
+      this.toastr.error(
+        this.transloco.translate('error_no_file_path', {}, 'index') || 'No file path available',
+        this.transloco.translate('error', {}, 'index') || 'Error'
+      );
+      return;
+    }
+
+    if (type === 'configuration' || type === 'actualLocation') {
+      const configuration: Configuration | undefined =
+        this.configurationAllData.configurations.find(
+          (configuration) => configuration.id === id
         );
 
       if (configuration) {
