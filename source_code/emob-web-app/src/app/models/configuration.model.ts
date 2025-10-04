@@ -87,6 +87,7 @@ export interface ConfigurationExplorerFileType {
 export type FileType = 'configuration' | 'actualLocation';
 
 export interface ConfigurationExplorerFileTypeChildren {
+  id: string;
   name: string;
   timestamp: string;
   type: FileType;
