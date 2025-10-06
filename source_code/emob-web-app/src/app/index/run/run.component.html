@@ -596,8 +596,8 @@
                     <ng-container
                       *ngFor="let type of selectedVehicleProfileTypes"
                     >
-                      <div class="wrapper">
-                        <span class="ms-1">{{ type }}</span>
+                      <div class="wrapper d-flex mx-auto d-flex justify-content-center align-items-center">
+                        <span class="ms-1 type-name">{{ type }}</span>
                         <app-dynamic-popover [placement]="'bottom-start'">
                           <button
                             popover-trigger
