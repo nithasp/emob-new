@@ -1,0 +1,11 @@
+<div class="modal-header">
+    <h5 class="modal-title">Vehicle Type Details</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss()"></button>
+
+</div>
+<div class="modal-body">
+    <p class="mb-0"><strong>Selected Type:</strong> {{ type }}</p>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" (click)="activeModal.close(true)">OK</button>
+</div>

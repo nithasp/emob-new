@@ -40,9 +40,11 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ParametersDialogComponent } from './components/parameters-dialog/parameters-dialog.component';
 import { ConsumptionDialogComponent } from './components/consumption-dialog/consumption-dialog.component';
 import { ErrorDialogComponent } from './components/error-dialog/error-dialog.component';
+import { VehicleProfileTypeItemDialogComponent } from './components/vehicle-profile-type-item-dialog/vehicle-profile-type-item-dialog.component';
 
 import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { DynamicPopoverComponent } from '../shared/components/dynamic-popover/dynamic-popover.component';
+import { VehicleEnumConfigs } from '../models/vehicle.model';
 
 @NgModule({
   declarations: [
@@ -70,6 +72,7 @@ import { DynamicPopoverComponent } from '../shared/components/dynamic-popover/dy
     MapDetailsDialogComponent,
     ParametersDialogComponent,
     ConsumptionDialogComponent,
+    VehicleProfileTypeItemDialogComponent,
     ErrorDialogComponent,
     FormatStringDatePipe,
   ],

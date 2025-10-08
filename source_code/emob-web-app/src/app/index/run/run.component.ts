@@ -85,6 +85,7 @@ import {
 } from 'src/app/models/location.model';
 import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
 import { DetailsDialogComponent } from '../components/details-dialog/details-dialog.component';
+import { VehicleProfileTypeItemDialogComponent } from '../components/vehicle-profile-type-item-dialog/vehicle-profile-type-item-dialog.component';
 import { CustomerListComponent } from '../components/customer-list/customer-list.component';
 import { ValidateMessage } from 'src/app/models/validation-message';
 import { UserMSGraphService } from 'src/app/services/user.service';
@@ -2711,9 +2712,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
   }
 
-  getVehicleTypeNamesByProfileType(
-    type: VehicleProfileTypeEnum
-  ): string[] {
+  getVehicleTypeNamesByProfileType(type: VehicleProfileTypeEnum): string[] {
     if (!type || !Array.isArray(this.myVehicleTypes)) return [];
     return this.myVehicleTypes
       .filter((v) => v.vehicleProfileType === type)
@@ -2726,12 +2725,21 @@ export class RunComponent implements OnInit, AfterViewInit {
     return typeof value === 'number' && !isNaN(value) ? value : 0;
   }
 
-  onVehicleTypeCountChange(
-    type: VehicleProfileTypeEnum,
-    value: number
-  ): void {
+  onVehicleTypeCountChange(type: VehicleProfileTypeEnum, value: number): void {
     const normalized = Number(value);
     this.selectedVehicleTypeCounts[type] = isNaN(normalized) ? 0 : normalized;
     this.cdr.detectChanges();
+  }
+
+  openVehicleTypeItemModal(type: any) {
+    const modalRef = this.ngbModal.open(VehicleProfileTypeItemDialogComponent, {
+      centered: true,
+      size: 'lg',
+      animation: true,
+      backdrop: 'static',
+      keyboard: false,
+    });
+    (modalRef.componentInstance as VehicleProfileTypeItemDialogComponent).type =
+      type;
   }
 }
