@@ -480,12 +480,12 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (newData.length > 0) {
                 this.toastr.info(
                   `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                    newData.length +
-                    ` ${this.transloco.translate(
-                      'new_edited_location_data_suffix',
-                      {},
-                      'index'
-                    )}`,
+                  newData.length +
+                  ` ${this.transloco.translate(
+                    'new_edited_location_data_suffix',
+                    {},
+                    'index'
+                  )}`,
                   `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
@@ -689,21 +689,28 @@ export class RunComponent implements OnInit, AfterViewInit {
           const arrayBuffer = result;
           const workbook = new ExcelJS.Workbook();
           await workbook.xlsx.load(arrayBuffer);
-          const worksheet = workbook.getWorksheet(1);
+
+          let worksheet: ExcelJS.Worksheet | undefined = workbook.getWorksheet(1);
           if (!worksheet) {
-            const validationErrors = [
-              this.transloco.translate('worksheet_not_found', {}, 'index'),
-            ];
-            this.showInvalidModal(
-              this.transloco.translate('file_invalid', {}, 'index'),
-              validationErrors
-            );
-            resolve({ isValid: false });
-            return;
+            const normalize = (name: string) =>
+              name.trim().toLowerCase().replace(/[\s_\-]/g, '');
+
+            const allSheets = workbook.worksheets.map((ws: ExcelJS.Worksheet) => ({
+              name: ws.name,
+              normalized: normalize(ws.name),
+            }));
+
+            console.log('Detected sheets:', allSheets.map((sheet) => sheet.name));
+
+            worksheet = workbook.worksheets.find(
+              (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
+            ) || workbook.worksheets[0];
           }
+
           const columnNames = (
-            worksheet.getRow(1).values as (string | undefined)[]
+            worksheet!.getRow(1).values as (string | undefined)[]
           ).filter((value) => typeof value === 'string');
+
           const matchingInputDataItem =
             this.findMatchingInputDataItem(columnNames);
           if (matchingInputDataItem) {
@@ -1012,8 +1019,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
-          ? item.name
-          : '';
+            ? item.name
+            : '';
       const mapped: MyDepot = {
         depotId: (item.depotId || item.id || '') as string,
         depotName: nameKey,
@@ -1115,7 +1122,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               });
               location.setStyle(
                 this.iconStyle[
-                  uploadDataGroupCustomers[key as keyof DataGroup].type
+                uploadDataGroupCustomers[key as keyof DataGroup].type
                 ]
               );
               this.vectorSource.addFeature(location);
@@ -1248,13 +1255,13 @@ export class RunComponent implements OnInit, AfterViewInit {
   private isPopupPayload(
     value:
       | {
-          data?:
-            | Customer
-            | Depot
-            | MyDepot
-            | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
-          isDepot?: boolean;
-        }
+        data?:
+        | Customer
+        | Depot
+        | MyDepot
+        | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
+        isDepot?: boolean;
+      }
       | null
       | undefined
   ): value is { data: Customer; isDepot: boolean } {
@@ -2148,21 +2155,25 @@ export class RunComponent implements OnInit, AfterViewInit {
           const workbook = new ExcelJS.Workbook();
           await workbook.xlsx.load(arrayBuffer);
 
-          const worksheet = workbook.getWorksheet(1);
+          let worksheet: ExcelJS.Worksheet | undefined = workbook.getWorksheet(1);
           if (!worksheet) {
-            const validationErrors = [
-              this.transloco.translate('worksheet_not_found', {}, 'index'),
-            ];
-            this.showInvalidModal(
-              this.transloco.translate('file_invalid', {}, 'index'),
-              validationErrors
-            );
-            resolve(false);
-            return;
+            const normalize = (name: string) =>
+              name.trim().toLowerCase().replace(/[\s_\-]/g, '');
+
+            const allSheets = workbook.worksheets.map((ws: ExcelJS.Worksheet) => ({
+              name: ws.name,
+              normalized: normalize(ws.name),
+            }));
+
+            console.log('Detected sheets:', allSheets.map((sheet) => sheet.name));
+
+            worksheet = workbook.worksheets.find(
+              (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
+            ) || workbook.worksheets[0];
           }
 
           const columnNames = (
-            worksheet.getRow(1).values as (string | undefined)[]
+            worksheet!.getRow(1).values as (string | undefined)[]
           ).filter((value) => typeof value === 'string');
 
           // Check if file matches any of the depot's input data requirements
@@ -2596,28 +2607,28 @@ export class RunComponent implements OnInit, AfterViewInit {
       const originalItems = groupsMap[categoryKey];
       const items = useConstraintsValues
         ? originalItems.map((dynamicParameter) => {
-            const constraintKey =
-              this.getConstraintKeyForParam(dynamicParameter);
-            if (!constraintKey) return dynamicParameter;
-            const constraintValue = this.constraintsData[constraintKey];
-            if (constraintValue === undefined || constraintValue === null) {
-              if (this.isTimeType(dynamicParameter)) {
-                return { ...dynamicParameter, value: '00:00' };
-              }
-              return dynamicParameter;
+          const constraintKey =
+            this.getConstraintKeyForParam(dynamicParameter);
+          if (!constraintKey) return dynamicParameter;
+          const constraintValue = this.constraintsData[constraintKey];
+          if (constraintValue === undefined || constraintValue === null) {
+            if (this.isTimeType(dynamicParameter)) {
+              return { ...dynamicParameter, value: '00:00' };
             }
-            if (this.isNumberType(dynamicParameter)) {
-              return { ...dynamicParameter, value: Number(constraintValue) };
-            }
-            const trimmedValue = String(constraintValue).trim();
-            return {
-              ...dynamicParameter,
-              value:
-                trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
-                  ? '00:00'
-                  : trimmedValue,
-            };
-          })
+            return dynamicParameter;
+          }
+          if (this.isNumberType(dynamicParameter)) {
+            return { ...dynamicParameter, value: Number(constraintValue) };
+          }
+          const trimmedValue = String(constraintValue).trim();
+          return {
+            ...dynamicParameter,
+            value:
+              trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
+                ? '00:00'
+                : trimmedValue,
+          };
+        })
         : originalItems;
       return {
         key: categoryKey,
