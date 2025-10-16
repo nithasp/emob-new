@@ -39,16 +39,17 @@ export class VehicleService {
       );
   }
 
-  getMyVehicles(): Observable<MyVehicles[]> {
+  getMyVehicles(depotId?: string, vehicleTypeId?: string): Observable<MyVehicles[]> {
     return this.apollo
       .query<Response>({
         query: gql`
-          query myVehicles {
-            myVehicles {
+          query myVehicles($depotId: String, $vehicleTypeId: String) {
+            myVehicles(depotId: $depotId, vehicleTypeId: $vehicleTypeId) {
               companyName
               vehicleId
               licensePlate
               startDepotId {
+                companyName
                 depotId
                 depotName
                 latitude
@@ -57,8 +58,10 @@ export class VehicleService {
                 tw_late
                 createdAt
                 updatedAt
+                inputdata
               }
               endDepotId {
+                companyName
                 depotId
                 depotName
                 latitude
@@ -67,6 +70,7 @@ export class VehicleService {
                 tw_late
                 createdAt
                 updatedAt
+                inputdata
               }
               vehicleType {
                 vehicleTypeId
@@ -85,6 +89,7 @@ export class VehicleService {
                 unitDistanceCost
                 unitDurationCost
                 vehicleProfileType
+                isVehicleAvailable
                 createdAt
                 modifiedAt
               }
@@ -94,6 +99,10 @@ export class VehicleService {
             }
           }
         `,
+        variables: {
+          depotId,
+          vehicleTypeId,
+        },
         fetchPolicy: 'network-only',
       })
       .pipe(
@@ -112,6 +121,7 @@ export class VehicleService {
               vehicleId
               licensePlate
               startDepotId {
+                companyName
                 depotId
                 depotName
                 latitude
@@ -120,8 +130,10 @@ export class VehicleService {
                 tw_late
                 createdAt
                 updatedAt
+                inputdata
               }
               endDepotId {
+                companyName
                 depotId
                 depotName
                 latitude
@@ -130,6 +142,7 @@ export class VehicleService {
                 tw_late
                 createdAt
                 updatedAt
+                inputdata
               }
               vehicleType {
                 vehicleTypeId
@@ -148,6 +161,7 @@ export class VehicleService {
                 unitDistanceCost
                 unitDurationCost
                 vehicleProfileType
+                isVehicleAvailable
                 createdAt
                 modifiedAt
               }
@@ -190,6 +204,7 @@ export class VehicleService {
               unitDistanceCost
               unitDurationCost
               vehicleProfileType
+              isVehicleAvailable
               createdAt
               modifiedAt
             }
@@ -225,6 +240,7 @@ export class VehicleService {
               unitDistanceCost
               unitDurationCost
               vehicleProfileType
+              isVehicleAvailable
               createdAt
               modifiedAt
             }
@@ -260,16 +276,7 @@ export class VehicleService {
                   tw_late
                   createdAt
                   updatedAt
-                  inputdata {
-                    companyName
-                    depotId
-                    keyName
-                    displayName
-                    columnRequired
-                    fileFormatType
-                    createdAt
-                    modifiedAt
-                  }
+                  inputdata
                 }
                 endDepotId {
                   companyName
@@ -281,16 +288,7 @@ export class VehicleService {
                   tw_late
                   createdAt
                   updatedAt
-                  inputdata {
-                    companyName
-                    depotId
-                    keyName
-                    displayName
-                    columnRequired
-                    fileFormatType
-                    createdAt
-                    modifiedAt
-                  }
+                  inputdata
                 }
                 vehicleType {
                   vehicleTypeId
@@ -405,6 +403,7 @@ export class VehicleService {
                 unitDistanceCost
                 unitDurationCost
                 vehicleProfileType
+                isVehicleAvailable
                 createdAt
                 modifiedAt
               }
@@ -490,6 +489,7 @@ export class VehicleService {
                 unitDistanceCost
                 unitDurationCost
                 vehicleProfileType
+                isVehicleAvailable
                 createdAt
                 modifiedAt
               }
@@ -531,6 +531,7 @@ export class VehicleService {
               unitDistanceCost
               unitDurationCost
               vehicleProfileType
+              isVehicleAvailable
               createdAt
               modifiedAt
             }
@@ -574,6 +575,7 @@ export class VehicleService {
               unitDistanceCost
               unitDurationCost
               vehicleProfileType
+              isVehicleAvailable
               createdAt
               modifiedAt
             }

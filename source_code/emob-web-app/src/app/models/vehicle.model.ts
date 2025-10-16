@@ -55,6 +55,7 @@ export interface VehicleType {
   unitDistanceCost: number;
   unitDurationCost: number;
   vehicleProfileType: VehicleProfileTypeEnum;
+  isVehicleAvailable?: boolean;
   createdAt: string;
   modifiedAt: string;
 }
