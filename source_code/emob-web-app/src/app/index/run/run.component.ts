@@ -273,7 +273,10 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   // vehicles
   public myVehicleTypes: VehicleType[] = [];
-  public uniqueVehicleProfileTypes: VehicleProfileTypeEnum[] = [];
+  public uniqueVehicleProfileTypes: Array<{
+    type: VehicleProfileTypeEnum;
+    isVehicleAvailable: boolean;
+  }> = [];
   public selectedVehicleProfileTypes: VehicleProfileTypeEnum[] = [];
   public selectedVehicleTypeCounts: Partial<
     Record<VehicleProfileTypeEnum, number>
@@ -2677,18 +2680,34 @@ export class RunComponent implements OnInit, AfterViewInit {
   getMyVehicleTypes() {
     this.vehicleService.getMyVehicleTypes().subscribe((res: VehicleType[]) => {
       this.myVehicleTypes = res || [];
-      const types = (this.myVehicleTypes || [])
-        .map((v) => v.vehicleProfileType)
-        .filter((t) => !!t);
-      this.uniqueVehicleProfileTypes = Array.from(
-        new Set(types)
-      ) as VehicleProfileTypeEnum[];
+      
+      const typeMap: Record<VehicleProfileTypeEnum, boolean> = {} as Record<VehicleProfileTypeEnum, boolean>;
+      
+      for (const vehicle of this.myVehicleTypes) {
+        if (vehicle.vehicleProfileType) {
+          const existingAvailability = typeMap[vehicle.vehicleProfileType] || false;
+          typeMap[vehicle.vehicleProfileType] = existingAvailability || (vehicle.isVehicleAvailable || false);
+        }
+      }
+      
+      this.uniqueVehicleProfileTypes = Object.keys(typeMap).map(
+        (key) => ({
+          type: key as VehicleProfileTypeEnum,
+          isVehicleAvailable: typeMap[key as VehicleProfileTypeEnum]
+        })
+      );
+      
       this.cdr.detectChanges();
     });
   }
 
   isVehicleTypeSelected(type: VehicleProfileTypeEnum): boolean {
     return this.selectedVehicleProfileTypes.includes(type);
+  }
+
+  isVehicleTypeAvailable(type: VehicleProfileTypeEnum): boolean {
+    const found = this.uniqueVehicleProfileTypes.find(item => item.type === type);
+    return found ? found.isVehicleAvailable : false;
   }
 
   onVehicleTypeChecked(type: VehicleProfileTypeEnum, checked: boolean): void {
@@ -2741,5 +2760,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
     (modalRef.componentInstance as VehicleProfileTypeItemDialogComponent).type =
       type;
+  }
+
+  log() {
+    console.log('this.selectedVehicleProfileTypes', this.selectedVehicleProfileTypes);
+    console.log('this.uniqueVehicleProfileTypes', this.uniqueVehicleProfileTypes);
   }
 }
