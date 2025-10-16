@@ -276,6 +276,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   public uniqueVehicleProfileTypes: Array<{
     type: VehicleProfileTypeEnum;
     isVehicleAvailable: boolean;
+    vehicleTypeIds: string;
   }> = [];
   public selectedVehicleProfileTypes: VehicleProfileTypeEnum[] = [];
   public selectedVehicleTypeCounts: Partial<
@@ -2681,19 +2682,28 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.vehicleService.getMyVehicleTypes().subscribe((res: VehicleType[]) => {
       this.myVehicleTypes = res || [];
       
-      const typeMap: Record<VehicleProfileTypeEnum, boolean> = {} as Record<VehicleProfileTypeEnum, boolean>;
+      const typeMap: Record<VehicleProfileTypeEnum, { isVehicleAvailable: boolean; vehicleTypeIds: string }> = {} as Record<VehicleProfileTypeEnum, { isVehicleAvailable: boolean; vehicleTypeIds: string }>;
       
       for (const vehicle of this.myVehicleTypes) {
         if (vehicle.vehicleProfileType) {
-          const existingAvailability = typeMap[vehicle.vehicleProfileType] || false;
-          typeMap[vehicle.vehicleProfileType] = existingAvailability || (vehicle.isVehicleAvailable || false);
+          if (!typeMap[vehicle.vehicleProfileType]) {
+            typeMap[vehicle.vehicleProfileType] = {
+              isVehicleAvailable: vehicle.isVehicleAvailable || false,
+              vehicleTypeIds: vehicle.vehicleTypeId || ''
+            };
+          } else {
+            // Only update isVehicleAvailable for subsequent items of the same type
+            const existingAvailability = typeMap[vehicle.vehicleProfileType].isVehicleAvailable;
+            typeMap[vehicle.vehicleProfileType].isVehicleAvailable = existingAvailability || (vehicle.isVehicleAvailable || false);
+          }
         }
       }
       
       this.uniqueVehicleProfileTypes = Object.keys(typeMap).map(
         (key) => ({
           type: key as VehicleProfileTypeEnum,
-          isVehicleAvailable: typeMap[key as VehicleProfileTypeEnum]
+          isVehicleAvailable: typeMap[key as VehicleProfileTypeEnum].isVehicleAvailable,
+          vehicleTypeIds: typeMap[key as VehicleProfileTypeEnum].vehicleTypeIds
         })
       );
       
@@ -2750,20 +2760,38 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
   }
 
-  openVehicleTypeItemModal(type: any) {
+  openVehicleTypeItemModal(type: string) {
+    console.log('type', type);
     const modalRef = this.ngbModal.open(VehicleProfileTypeItemDialogComponent, {
       centered: true,
-      size: 'lg',
+      size: 'xl',
       animation: true,
       backdrop: 'static',
       keyboard: false,
     });
-    (modalRef.componentInstance as VehicleProfileTypeItemDialogComponent).type =
-      type;
+    
+    // Find vehicleTypeIds from uniqueVehicleProfileTypes based on type
+    const vehicleTypeData = this.uniqueVehicleProfileTypes.find(
+      (item) => item.type === type
+    );
+    const vehicleTypeIds = vehicleTypeData?.vehicleTypeIds || '';
+    
+    // Pass values to modal component
+    const componentInstance = modalRef.componentInstance as VehicleProfileTypeItemDialogComponent;
+    componentInstance.type = type;
+    componentInstance.depotId = this.experiment.depots[0].depotId;
+    componentInstance.vehicleTypeIds = vehicleTypeIds;
   }
 
   log() {
     console.log('this.selectedVehicleProfileTypes', this.selectedVehicleProfileTypes);
     console.log('this.uniqueVehicleProfileTypes', this.uniqueVehicleProfileTypes);
+
+    console.log('this.depots', this.depots);
+    console.log('this.selectedDepotId', this.selectedDepotId);
+
+    console.log('this.experiment', this.experiment);
+
+    console.log('this.experiment.depots[0].depotId', this.experiment.depots[0].depotId);
   }
 }

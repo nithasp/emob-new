@@ -58,7 +58,16 @@ export class VehicleService {
                 tw_late
                 createdAt
                 updatedAt
-                inputdata
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  createdAt
+                  modifiedAt
+                }
               }
               endDepotId {
                 companyName
@@ -70,7 +79,16 @@ export class VehicleService {
                 tw_late
                 createdAt
                 updatedAt
-                inputdata
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  createdAt
+                  modifiedAt
+                }
               }
               vehicleType {
                 vehicleTypeId
@@ -130,7 +148,16 @@ export class VehicleService {
                 tw_late
                 createdAt
                 updatedAt
-                inputdata
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  createdAt
+                  modifiedAt
+                }
               }
               endDepotId {
                 companyName
@@ -142,7 +169,16 @@ export class VehicleService {
                 tw_late
                 createdAt
                 updatedAt
-                inputdata
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  createdAt
+                  modifiedAt
+                }
               }
               vehicleType {
                 vehicleTypeId
@@ -276,7 +312,16 @@ export class VehicleService {
                   tw_late
                   createdAt
                   updatedAt
-                  inputdata
+                  inputdata {
+                    companyName
+                    depotId
+                    keyName
+                    displayName
+                    columnRequired
+                    fileFormatType
+                    createdAt
+                    modifiedAt
+                  }
                 }
                 endDepotId {
                   companyName
@@ -288,7 +333,16 @@ export class VehicleService {
                   tw_late
                   createdAt
                   updatedAt
-                  inputdata
+                  inputdata {
+                    companyName
+                    depotId
+                    keyName
+                    displayName
+                    columnRequired
+                    fileFormatType
+                    createdAt
+                    modifiedAt
+                  }
                 }
                 vehicleType {
                   vehicleTypeId
