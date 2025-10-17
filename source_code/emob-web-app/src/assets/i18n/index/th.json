@@ -79,6 +79,7 @@
   "enter_value": "ป้อนค่า",
   "equal": "เท่ากับ",
   "error": "เกิดข้อผิดพลาด",
+  "error_loading_parameters": "เกิดข้อผิดพลาดในการโหลดพารามิเตอร์",
   "error_no_url_provided": "ไม่มีการระบุ URL สำหรับการดาวน์โหลด",
   "excel_process_failed": "ไม่สามารถประมวลผลไฟล์ Excel ได้",
   "excel_read_failed": "ไม่สามารถอ่านไฟล์ Excel ได้",
