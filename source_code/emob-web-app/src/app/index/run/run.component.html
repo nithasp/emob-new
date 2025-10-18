@@ -577,60 +577,60 @@
               <div style="min-height: 720px">
                 <div class="d-flex justify-content-center mt-5">
                   <div
-                    *ngFor="let item of uniqueVehicleProfileTypes"
+                    *ngFor="let vehicle of myVehicleTypes"
                     class="mb-2 mx-3"
                   >
                     <mat-checkbox
-                      [checked]="isVehicleTypeSelected(item.type)"
-                      (change)="onVehicleTypeChecked(item.type, $event.checked)"
+                      [checked]="isVehicleSelected(vehicle.vehicleTypeId)"
+                      (change)="onVehicleChecked(vehicle.vehicleTypeId, $event.checked)"
                     ></mat-checkbox>
-                    <span class="ms-2">{{ item.type }}</span>
+                    <span class="ms-2">{{ vehicle.name }}</span>
                   </div>
                 </div>
                 <div class="vehicle-type-list text-center mt-3">
                   <span
-                    *ngIf="selectedVehicleProfileTypes.length === 0"
+                    *ngIf="selectedVehicleIds.length === 0"
                     class="text-muted"
                     >No Item Selected</span
                   >
-                  <span *ngIf="selectedVehicleProfileTypes.length > 0">
+                  <span *ngIf="selectedVehicleIds.length > 0">
                     <ng-container
-                      *ngFor="let type of selectedVehicleProfileTypes"
+                      *ngFor="let vehicleId of selectedVehicleIds"
                     >
                       <div
                         class="wrapper mx-auto d-grid justify-content-center align-items-center"
                         style="grid-template-columns: 55px 20px 24px"
                       >
-                        <span class="ms-1 text-start">{{ type }}</span>
+                        <span class="ms-1 text-start">{{ getVehicleName(vehicleId) }}</span>
                         <app-dynamic-popover [placement]="'bottom-start'">
                           <button
                             popover-trigger
                             class="link link-primary link-opacity-75-hover"
                           >
-                            {{ getVehicleTypeCount(type) }}
+                            {{ getVehicleCount(vehicleId) }}
                           </button>
                           <div popover-content>
                             <app-number-counter-input
-                              [value]="getVehicleTypeCount(type)"
+                              [value]="getVehicleCount(vehicleId)"
                               (valueChange)="
-                                onVehicleTypeCountChange(type, $event)
+                                onVehicleCountChange(vehicleId, $event)
                               "
                               class="d-inline-block mt-0 mb-3"
                             ></app-number-counter-input>
-                            <ng-template #noTypeName>
-                              <span class="text-muted">No types found</span>
+                            <ng-template #noVehicle>
+                              <span class="text-muted">No vehicle found</span>
                             </ng-template>
                           </div>
                         </app-dynamic-popover>
                         <ng-container>
                           <mat-icon
-                            *ngIf="isVehicleTypeAvailable(type)"
+                            *ngIf="isVehicleAvailable(vehicleId)"
                             style="cursor: pointer"
                             class="ms-2"
-                            (click)="openVehicleTypeItemModal(type)"
+                            (click)="openVehicleItemModal(vehicleId)"
                             >info</mat-icon
                           >
-                          <span *ngIf="!isVehicleTypeAvailable(type)"></span>
+                          <span *ngIf="!isVehicleAvailable(vehicleId)"></span>
                         </ng-container>
                       </div>
                     </ng-container>
