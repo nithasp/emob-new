@@ -128,4 +128,8 @@ export class ParametersDialogComponent implements OnInit {
   onConfirmClick(): void {
     this.activeModal.close(true);
   }
+
+  isNumericValue(value: string): boolean {
+    return !isNaN(Number(value)) && value.trim() !== '';
+  }
 }
