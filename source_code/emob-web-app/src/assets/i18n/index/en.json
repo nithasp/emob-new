@@ -79,6 +79,7 @@
   "enter_value": "Enter Value",
   "equal": "Equal",
   "error": "Error",
+  "error_loading_parameters": "Error loading parameters",
   "error_no_url_provided": "No download URL provided",
   "excel_process_failed": "Failed to process Excel file",
   "excel_read_failed": "Failed to read Excel file",

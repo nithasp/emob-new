@@ -127,6 +127,40 @@ export class ConstraintService {
       );
   }
 
+  getDynamicParameter(experimentRunID: string): Observable<DynamicParameter[]> {
+    return this.apollo
+      .query<Response>({
+        query: gql`
+          query dynamicParameter($experimentRunID: String!) {
+            dynamicParameter(experimentRunID: $experimentRunID) {
+              companyName
+              id
+              category
+              depotId
+              keyName
+              displayName
+              valueType
+              value
+              joiConfig
+              isRequired
+              defaultValue
+              description
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: {
+          experimentRunID: experimentRunID,
+        },
+        fetchPolicy: 'network-only',
+      })
+      .pipe(
+        map((result) => result.data.dynamicParameter),
+        this.errorHandlingService.handleError
+      );
+  }
+
   updateDynamicParameter(
     updates: DynamicParameterValueUpdate[]
   ): Observable<UpdateDynamicParameter> {

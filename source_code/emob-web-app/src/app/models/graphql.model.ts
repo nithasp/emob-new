@@ -38,6 +38,7 @@ export interface Response {
   uploadActualLocation: ActualLocation;
   downloadResultFile: DownloadResultFile;
   dynamicParameters: DynamicParameter[];
+  dynamicParameter: DynamicParameter[];
   updateDynamicParameter: UpdateDynamicParameter;
   deleteDynamicParameter: DeleteDynamicParameter;
 }
