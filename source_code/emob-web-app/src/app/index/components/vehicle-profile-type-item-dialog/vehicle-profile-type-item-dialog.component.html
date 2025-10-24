@@ -1,154 +1,67 @@
 <div class="modal-header bg-light">
-    <h5 class="modal-title">
-        <mat-icon class="align-middle me-2">local_shipping</mat-icon>
-        Vehicle Type: {{ type }}
-    </h5>
-    <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss()"></button>
+  <h1 class="modal-title">
+    {{ type }}
+  </h1>
+  <button
+    type="button"
+    class="btn-close"
+    aria-label="Close"
+    (click)="activeModal.dismiss()"
+  ></button>
 </div>
 
-<div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-    <ngx-spinner name="vehicleModal" [fullScreen]="false">
-        <p class="h-3">Loading vehicles...</p>
-    </ngx-spinner>
+<div class="modal-body" style="max-height: 70vh; overflow-y: auto">
+  <ngx-spinner name="vehicleModal" [fullScreen]="false">
+    <p class="h-3">Loading vehicles...</p>
+  </ngx-spinner>
 
-    <div *ngIf="!isLoading && vehicles.length === 0" class="alert alert-info text-center">
-        <mat-icon class="d-block mx-auto mb-2" style="font-size: 48px; width: 48px; height: 48px;">info</mat-icon>
-        <p class="mb-0">No vehicles found for this type and depot.</p>
-    </div>
+  <div
+    *ngIf="!isLoading && vehicles.length === 0"
+    class="alert alert-info text-center"
+  >
+    <mat-icon
+      class="d-block mx-auto mb-2"
+      style="font-size: 48px; width: 48px; height: 48px"
+      >info</mat-icon
+    >
+    <p class="mb-0">No vehicles found for this type and depot.</p>
+  </div>
 
-    <div *ngIf="!isLoading && vehicles.length > 0">
-        <div class="alert alert-light border mb-3">
-            <div class="row">
-                <div class="col-md-12">
-                    <small class="text-muted">Total Vehicles:</small>
-                    <strong class="ms-2">{{ vehicles.length }}</strong>
-                </div>
-            </div>
+  <div *ngIf="!isLoading && vehicles.length > 0">
+    <!-- <div class="alert alert-light border mb-3">
+      <div class="row">
+        <div class="col-md-12">
+          <small class="text-muted">Total Vehicles:</small>
+          <strong class="ms-2">{{ vehicles.length }}</strong>
         </div>
+      </div>
+    </div> -->
 
-        <div class="row">
-            <div class="col-12 mb-3" *ngFor="let vehicle of vehicles; let i = index">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center" 
-                         [ngClass]="vehicle.isActive ? 'bg-success text-white' : 'bg-secondary text-white'">
-                        <div>
-                            <mat-icon class="align-middle me-2">directions_car</mat-icon>
-                            <strong>{{ vehicle.licensePlate }}</strong>
-                        </div>
-                        <span class="badge" [ngClass]="vehicle.isActive ? 'bg-light text-success' : 'bg-light text-secondary'">
-                            {{ vehicle.isActive ? 'Active' : 'Inactive' }}
-                        </span>
-                    </div>
-                    <div class="card-body">
-                        <!-- Vehicle Type Information -->
-                        <div class="mb-3 pb-3 border-bottom">
-                            <h6 class="text-primary mb-2">
-                                <mat-icon class="align-middle me-1" style="font-size: 18px;">build</mat-icon>
-                                Vehicle Specifications
-                            </h6>
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Type:</small>
-                                    <strong>{{ vehicle.vehicleType.name }}</strong>
-                                </div>
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Capacity:</small>
-                                    <strong>{{ vehicle.vehicleType.capacity }} kg</strong>
-                                </div>
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Max Distance:</small>
-                                    <strong>{{ vehicle.vehicleType.maxDistance }} km</strong>
-                                </div>
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Max Duration:</small>
-                                    <strong>{{ vehicle.vehicleType.maxDuration }} hrs</strong>
-                                </div>
-                                <div class="col-md-4">
-                                    <small class="text-muted d-block">Width:</small>
-                                    <strong>{{ vehicle.vehicleType.width }} m</strong>
-                                </div>
-                                <div class="col-md-4">
-                                    <small class="text-muted d-block">Height:</small>
-                                    <strong>{{ vehicle.vehicleType.height }} m</strong>
-                                </div>
-                                <div class="col-md-4">
-                                    <small class="text-muted d-block">Length:</small>
-                                    <strong>{{ vehicle.vehicleType.length }} m</strong>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Depot Information -->
-                        <div class="mb-3 pb-3 border-bottom">
-                            <h6 class="text-primary mb-2">
-                                <mat-icon class="align-middle me-1" style="font-size: 18px;">location_on</mat-icon>
-                                Depot Information
-                            </h6>
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <div class="p-2 bg-light rounded">
-                                        <small class="text-muted d-block mb-1">
-                                            <mat-icon class="align-middle me-1" style="font-size: 14px;">play_arrow</mat-icon>
-                                            Start Depot
-                                        </small>
-                                        <strong class="d-block">{{ vehicle.startDepotId.depotName }}</strong>
-                                        <small class="text-muted">
-                                            {{ vehicle.startDepotId.tw_early }} - {{ vehicle.startDepotId.tw_late }}
-                                        </small>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="p-2 bg-light rounded">
-                                        <small class="text-muted d-block mb-1">
-                                            <mat-icon class="align-middle me-1" style="font-size: 14px;">stop</mat-icon>
-                                            End Depot
-                                        </small>
-                                        <strong class="d-block">{{ vehicle.endDepotId.depotName }}</strong>
-                                        <small class="text-muted">
-                                            {{ vehicle.endDepotId.tw_early }} - {{ vehicle.endDepotId.tw_late }}
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Cost Information -->
-                        <div>
-                            <h6 class="text-primary mb-2">
-                                <mat-icon class="align-middle me-1" style="font-size: 18px;">payments</mat-icon>
-                                Cost Information
-                            </h6>
-                            <div class="row g-2">
-                                <div class="col-md-4">
-                                    <small class="text-muted d-block">Fixed Cost:</small>
-                                    <strong>{{ vehicle.vehicleType.fixedCost }}</strong>
-                                </div>
-                                <div class="col-md-4">
-                                    <small class="text-muted d-block">Distance Cost:</small>
-                                    <strong>{{ vehicle.vehicleType.unitDistanceCost }}</strong>
-                                </div>
-                                <div class="col-md-4">
-                                    <small class="text-muted d-block">Duration Cost:</small>
-                                    <strong>{{ vehicle.vehicleType.unitDurationCost }}</strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-light">
-                        <small class="text-muted">
-                            <mat-icon class="align-middle me-1" style="font-size: 14px;">event</mat-icon>
-                            Created: {{ vehicle.createdAt | date:'short' }}
-                        </small>
-                    </div>
-                </div>
+    <div *ngFor="let vehicle of vehicles" class="card mb-3 shadow-sm">
+      <div class="card-body">
+        <h2
+          class="card-title h5 mb-3 d-flex justify-content-between align-items-center"
+        >
+          {{ vehicle.licensePlate }}
+        </h2>
+        <hr />
+        <div class="item-details-info">
+          <div class="row">
+            <div class="col-12 col-md-6 mb-2">
+              <p class="mb-2">
+                <strong>Start Depot: </strong>
+                <span>{{ vehicle.startDepotId.depotName }}</span>
+              </p>
             </div>
+            <div class="col-12 col-md-6 mb-2">
+              <p class="mb-2">
+                <strong>End Depot: </strong>
+                <span>{{ vehicle.endDepotId.depotName }}</span>
+              </p>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
-</div>
-
-<div class="modal-footer">
-    <button class="btn btn-secondary" (click)="activeModal.dismiss()">
-        <mat-icon class="align-middle me-1">close</mat-icon>
-        Close
-    </button>
+  </div>
 </div>
