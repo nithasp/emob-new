@@ -575,66 +575,32 @@
             </button>
             <ng-template ngbNavContent>
               <div style="min-height: 720px">
-                <div class="d-flex justify-content-center mt-5">
+                <h3 class="text-center mt-4 mb-4">Please select Vehicle and Input number for car have use it</h3>
+                <div class="d-flex flex-column align-items-center mt-4">
                   <div
-                    *ngFor="let vehicle of myVehicleTypes"
-                    class="mb-2 mx-3"
+                    *ngFor="let vehicle of availableVehicleTypes"
+                    class="vehicle-card mb-3 p-3 border rounded"
+                    style="width: 50%; min-width: 300px;"
                   >
-                    <mat-checkbox
-                      [checked]="isVehicleSelected(vehicle.vehicleTypeId)"
-                      (change)="onVehicleChecked(vehicle.vehicleTypeId, $event.checked)"
-                    ></mat-checkbox>
-                    <span class="ms-2">{{ vehicle.name }}</span>
-                  </div>
-                </div>
-                <div class="vehicle-type-list text-center mt-3">
-                  <span
-                    *ngIf="selectedVehicleIds.length === 0"
-                    class="text-muted"
-                    >No Item Selected</span
-                  >
-                  <span *ngIf="selectedVehicleIds.length > 0">
-                    <ng-container
-                      *ngFor="let vehicleId of selectedVehicleIds"
-                    >
-                      <div
-                        class="wrapper mx-auto d-grid justify-content-center align-items-center"
-                        style="grid-template-columns: 55px 20px 24px"
-                      >
-                        <span class="ms-1 text-start">{{ getVehicleName(vehicleId) }}</span>
-                        <app-dynamic-popover [placement]="'bottom-start'">
-                          <button
-                            popover-trigger
-                            class="link link-primary link-opacity-75-hover"
-                          >
-                            {{ getVehicleCount(vehicleId) }}
-                          </button>
-                          <div popover-content>
-                            <app-number-counter-input
-                              [value]="getVehicleCount(vehicleId)"
-                              (valueChange)="
-                                onVehicleCountChange(vehicleId, $event)
-                              "
-                              class="d-inline-block mt-0 mb-3"
-                            ></app-number-counter-input>
-                            <ng-template #noVehicle>
-                              <span class="text-muted">No vehicle found</span>
-                            </ng-template>
-                          </div>
-                        </app-dynamic-popover>
-                        <ng-container>
-                          <mat-icon
-                            *ngIf="isVehicleAvailable(vehicleId)"
-                            style="cursor: pointer"
-                            class="ms-2"
-                            (click)="openVehicleItemModal(vehicleId)"
-                            >info</mat-icon
-                          >
-                          <span *ngIf="!isVehicleAvailable(vehicleId)"></span>
-                        </ng-container>
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div class="d-flex align-items-center">
+                        <mat-checkbox
+                          [checked]="isVehicleSelected(vehicle.vehicleTypeId)"
+                          (change)="onVehicleChecked(vehicle.vehicleTypeId, $event.checked)"
+                          class="me-2"
+                        ></mat-checkbox>
+                        <span class="fw-normal">{{ vehicle.name }}</span>
                       </div>
-                    </ng-container>
-                  </span>
+                      <mat-icon
+                        style="cursor: pointer"
+                        (click)="openVehicleItemModal(vehicle.vehicleTypeId)"
+                        >info</mat-icon
+                      >
+                    </div>
+                    <div *ngIf="isVehicleSelected(vehicle.vehicleTypeId)" class="ms-5 mt-2">
+                      <small style="font-style: italic;">number of vehicle available: 120</small>
+                    </div>
+                  </div>
                 </div>
               </div>
             </ng-template>

@@ -2678,6 +2678,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
+  get availableVehicleTypes(): VehicleType[] {
+    return this.myVehicleTypes.filter(vehicle => vehicle.isVehicleAvailable ?? false);
+  }
+
   isVehicleSelected(vehicleId: string): boolean {
     return this.selectedVehicleIds.includes(vehicleId);
   }
