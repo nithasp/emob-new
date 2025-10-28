@@ -10,6 +10,7 @@ import {
   DeleteDynamicParameter,
   UpdateDynamicParameter,
   DynamicParameterValueUpdate,
+  Parameter,
 } from '../models/constraint.model';
 import { Response } from '../models/graphql.model';
 import { ErrorHandlingService } from './handle-error.service';
@@ -45,19 +46,14 @@ export class ConstraintService {
       );
   }
 
-  getParameter(runID: string): Observable<Constraint> {
+  getParameter(runID: string): Observable<Parameter> {
     return this.apollo
       .query<Response>({
         query: gql`
           query parameter($runID: String!) {
             parameter(experimentRunID: $runID) {
-              earlyDeliveryTime
-              backToDepotTime
-              maximumWorkDuration
-              numberOfVehicleAvailable
-              vehicleOrderSizeCapacity
-              maximumTravelDistance
-              serviceDurationTime
+              companyName
+              parameters
             }
           }
         `,
@@ -127,6 +123,40 @@ export class ConstraintService {
       })
       .pipe(
         map((result) => result.data.dynamicParameters),
+        this.errorHandlingService.handleError
+      );
+  }
+
+  getDynamicParameter(experimentRunID: string): Observable<DynamicParameter[]> {
+    return this.apollo
+      .query<Response>({
+        query: gql`
+          query dynamicParameter($experimentRunID: String!) {
+            dynamicParameter(experimentRunID: $experimentRunID) {
+              companyName
+              id
+              category
+              depotId
+              keyName
+              displayName
+              valueType
+              value
+              joiConfig
+              isRequired
+              defaultValue
+              description
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+        variables: {
+          experimentRunID: experimentRunID,
+        },
+        fetchPolicy: 'network-only',
+      })
+      .pipe(
+        map((result) => result.data.dynamicParameter),
         this.errorHandlingService.handleError
       );
   }

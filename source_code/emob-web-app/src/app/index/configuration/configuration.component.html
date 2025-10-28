@@ -3,7 +3,6 @@
     <p class="h-3">{{ "wait_a_moment" | transloco }} ...</p>
   </ngx-spinner>
   <div class="row mt-4 mb-4">
-
     <div class="mat-tree-top-right col-md-12 mb-3 text-right mt-4">
       <div id="upload-button-expand" class="d-inline-block" ngbDropdown [autoClose]="'outside'"
         #expandDrop="ngbDropdown">
@@ -147,8 +146,8 @@
         </mat-tree-node>
 
         <mat-tree-node *matTreeNodeDef="let child; when: isChildNode" matTreeNodePadding
-          [class.active]="child.name === selectedNode" style="cursor: pointer">
-          <div style="display: flex; align-items: center" (click)="onChangeFile(child.name, child.type, child.blobPath)"
+          [class.active]="child.id === selectedChildId" style="cursor: pointer">
+          <div style="display: flex; align-items: center" (click)="onChangeFileById(child.id, child.type, child.blobPath)"
             placement="top" [ngbTooltip]="child.timestamp">
             <button mat-icon-button disabled>
               <div style="text-align: center">
@@ -171,7 +170,7 @@
                 <mat-icon>upload_file</mat-icon>
                 {{ "update_file" | transloco }}
               </button>
-              <button ngbDropdownItem (click)="getFileUrl(child.name, child.type, child.blobPath)">
+              <button ngbDropdownItem (click)="getFileUrlById(child.id, child.type, child.blobPath)">
                 <mat-icon>download</mat-icon>
                 {{ "download" | transloco }}
               </button>
