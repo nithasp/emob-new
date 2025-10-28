@@ -1,9 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { MyVehicles, VehicleProfileTypeEnum } from 'src/app/models/vehicle.model';
+import {
+  MyVehicles,
+  VehicleProfileTypeEnum,
+} from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-vehicle-profile-type-item-dialog',
@@ -33,24 +37,22 @@ export class VehicleProfileTypeItemDialogComponent implements OnInit {
 
   loadVehicles(): void {
     this.isLoading = true;
-    this.spinner.show('vehicleModal');
-    
-    this.vehicleService.getMyVehicles(this.depotId, this.vehicleTypeIds).subscribe({
-      next: (vehicles: MyVehicles[]) => {
-        this.vehicles = vehicles || [];
-        console.log('Loaded vehicles:', this.vehicles);
-        this.isLoading = false;
-        this.spinner.hide('vehicleModal');
-      },
-      error: (error) => {
-        console.error('Error loading vehicles:', error);
-        this.toastr.error('Failed to load vehicles', 'Error');
-        this.isLoading = false;
-        this.spinner.hide('vehicleModal');
-      },
-      complete: () => {
-        this.spinner.hide('vehicleModal');
-      }
-    });
+    this.vehicleService
+      .getMyVehicles(this.depotId, this.vehicleTypeIds)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe({
+        next: (vehicles: MyVehicles[]) => {
+          this.vehicles = vehicles || [];
+          console.log('Loaded vehicles:', this.vehicles);
+        },
+        error: (error) => {
+          console.error('Error loading vehicles:', error);
+          this.toastr.error('Failed to load vehicles', 'Error');
+        },
+      });
   }
 }

@@ -2,28 +2,15 @@
   <h1 class="modal-title">
     {{ type }}
   </h1>
-  <button
-    type="button"
-    class="btn-close"
-    aria-label="Close"
-    (click)="activeModal.dismiss()"
-  ></button>
+  <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss()"></button>
 </div>
 
 <div class="modal-body" style="max-height: 70vh; overflow-y: auto">
-  <ngx-spinner name="vehicleModal" [fullScreen]="false">
-    <p class="h-3">Loading vehicles...</p>
-  </ngx-spinner>
-
-  <div
-    *ngIf="!isLoading && vehicles.length === 0"
-    class="alert alert-info text-center"
-  >
-    <mat-icon
-      class="d-block mx-auto mb-2"
-      style="font-size: 48px; width: 48px; height: 48px"
-      >info</mat-icon
-    >
+  <div *ngIf="isLoading">
+    <h3 class="text-center">Loading vehicles...</h3>
+  </div>
+  <div *ngIf="!isLoading && vehicles.length === 0" class="alert alert-info text-center">
+    <mat-icon class="d-block mx-auto mb-2" style="font-size: 48px; width: 48px; height: 48px">info</mat-icon>
     <p class="mb-0">No vehicles found for this type and depot.</p>
   </div>
 
@@ -39,9 +26,7 @@
 
     <div *ngFor="let vehicle of vehicles" class="card mb-3 shadow-sm">
       <div class="card-body">
-        <h2
-          class="card-title h5 mb-3 d-flex justify-content-between align-items-center"
-        >
+        <h2 class="card-title h5 mb-3 d-flex justify-content-between align-items-center">
           {{ vehicle.licensePlate }}
         </h2>
         <hr />
