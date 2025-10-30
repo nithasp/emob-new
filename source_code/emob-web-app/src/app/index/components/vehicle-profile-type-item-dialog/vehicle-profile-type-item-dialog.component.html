@@ -1,52 +1,82 @@
-<div class="modal-header bg-light">
-  <h1 class="modal-title">
-    {{ type }}
-  </h1>
-  <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss()"></button>
-</div>
-
-<div class="modal-body" style="max-height: 70vh; overflow-y: auto">
-  <div *ngIf="isLoading">
-    <h3 class="text-center">Loading vehicles...</h3>
-  </div>
-  <div *ngIf="!isLoading && vehicles.length === 0" class="alert alert-info text-center">
-    <mat-icon class="d-block mx-auto mb-2" style="font-size: 48px; width: 48px; height: 48px">info</mat-icon>
-    <p class="mb-0">No vehicles found for this type and depot.</p>
+<ng-container *transloco="let t; read: 'index'">
+  <div class="modal-header bg-light">
+    <h1 class="modal-title">
+      {{ vehicleTypeData?.name }}
+    </h1>
+    <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss()"></button>
   </div>
 
-  <div *ngIf="!isLoading && vehicles.length > 0">
-    <!-- <div class="alert alert-light border mb-3">
-      <div class="row">
-        <div class="col-md-12">
-          <small class="text-muted">Total Vehicles:</small>
-          <strong class="ms-2">{{ vehicles.length }}</strong>
-        </div>
-      </div>
-    </div> -->
+  <div class="modal-body" style="max-height: 70vh; overflow-y: auto">
+    <div *ngIf="!vehicleTypeData" class="alert alert-info text-center">
+      <mat-icon class="d-block mx-auto mb-2" style="font-size: 48px; width: 48px; height: 48px">info</mat-icon>
+      <p class="mb-0">{{ t("no_vehicle_type_data") }}</p>
+    </div>
 
-    <div *ngFor="let vehicle of vehicles" class="card mb-3 shadow-sm">
-      <div class="card-body">
-        <h2 class="card-title h5 mb-3 d-flex justify-content-between align-items-center">
-          {{ vehicle.licensePlate }}
-        </h2>
-        <hr />
-        <div class="item-details-info">
-          <div class="row">
-            <div class="col-12 col-md-6 mb-2">
-              <p class="mb-2">
-                <strong>Start Depot: </strong>
-                <span>{{ vehicle.startDepotId.depotName }}</span>
-              </p>
-            </div>
-            <div class="col-12 col-md-6 mb-2">
-              <p class="mb-2">
-                <strong>End Depot: </strong>
-                <span>{{ vehicle.endDepotId.depotName }}</span>
-              </p>
+    <div *ngIf="vehicleTypeData">
+      <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+          <!-- <h2 class="card-title h5 mb-3">
+            <strong>{{ vehicleTypeData.name }}</strong>
+          </h2>
+          <hr /> -->
+          <div class="item-details-info d-grid align-items-center">
+            <div class="row">
+              <div class="col-12 col-md-6 mb-3 mb-md-0">
+                <p>
+                  <strong>{{ t("dimensions") }}: </strong>
+                  <span>{{ vehicleTypeData.width }}</span
+                  ><span>{{ "m" | transloco }}</span> x
+                  <span>{{ vehicleTypeData.height }}</span
+                  ><span>{{ "m" | transloco }}</span> x
+                  <span>{{ vehicleTypeData.length }}</span
+                  ><span>{{ "m" | transloco }}</span>
+                </p>
+                <p>
+                  <strong>{{ t("capacity") }}: </strong>
+                  <span>{{ vehicleTypeData.capacity | number }}</span>
+                  <span>{{ "kg" | transloco }}</span>
+                </p>
+                <p>
+                  <strong>{{ t("volume") }}: </strong>
+                  <span>{{ vehicleTypeData.volume | number }}</span>
+                  <span>{{ "m3" | transloco }}</span>
+                </p>
+                <p>
+                  <strong>{{ t("access_points") }}: </strong>
+                  <span>{{ vehicleTypeData.access.join(", ") }}</span>
+                </p>
+              </div>
+              <div class="col-12 col-md-6">
+                <p>
+                  <strong>{{ t("max_distance") }}: </strong>
+                  <span>{{ vehicleTypeData.maxDistance | number }}</span>
+                  <span>{{ "km" | transloco }}</span>
+                </p>
+                <p>
+                  <strong>{{ t("max_duration") }}: </strong>
+                  <span>{{ vehicleTypeData.maxDuration | number }}</span>
+                  <span>{{ "min" | transloco }}</span>
+                </p>
+                <p>
+                  <strong>{{ t("fixed_cost") }}: </strong>
+                  <span>{{
+                    vehicleTypeData.fixedCost
+                      | currency : "USD" : "symbol" : "1.2-2"
+                  }}</span>
+                </p>
+                <p>
+                  <strong>{{ t("unit_distance_cost") }}: </strong>
+                  <span>{{
+                    vehicleTypeData.unitDistanceCost
+                      | currency : "USD" : "symbol" : "1.2-2"
+                  }}</span>
+                  <span>/ {{ "km" | transloco }}</span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</ng-container>

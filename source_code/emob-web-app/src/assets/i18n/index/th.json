@@ -285,5 +285,14 @@
   "you_are_not_the_creator_of_this_experiment": "คุณไม่ใช่ผู้สร้างการวางแผนเส้นทางนี้",
   "zero_weight_description": "โปรดตรวจสอบสินค้าคงคลัง หากคุณได้ทำการอัปเดตสินค้าคงคลังแล้ว",
   "zero_weight_warning": "คำเตือนน้ำหนักเป็นศูนย์",
-  "zone": "โซน"
+  "zone": "โซน",
+
+  "dimensions": "ขนาด",
+  "capacity": "ความจุ",
+  "volume": "ปริมาตร",
+  "access_points": "จุดเข้าถึง",
+  "max_distance": "ระยะทางสูงสุด",
+  "max_duration": "ระยะเวลาสูงสุด",
+  "fixed_cost": "ต้นทุนคงที่",
+  "unit_distance_cost": "ต้นทุนต่อระยะทาง"
 }

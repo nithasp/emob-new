@@ -2815,13 +2815,13 @@ export class RunComponent implements OnInit, AfterViewInit {
       keyboard: false,
     });
     
-    const vehicle = this.myVehicleTypes.find(v => v.vehicleTypeId === vehicleId);
+    const vehicleType = this.myVehicleTypes.find(v => v.vehicleTypeId === vehicleId);
     
-    // Pass values to modal component
+    // Pass vehicle type data to modal component
     const componentInstance = modalRef.componentInstance as VehicleProfileTypeItemDialogComponent;
-    componentInstance.type = vehicle?.name || '';
-    componentInstance.depotId = this.experiment.depots[0]?.depotId || '';
-    componentInstance.vehicleTypeIds = vehicleId;
+    if (vehicleType) {
+      componentInstance.vehicleTypeData = vehicleType;
+    }
   }
 
   log() {

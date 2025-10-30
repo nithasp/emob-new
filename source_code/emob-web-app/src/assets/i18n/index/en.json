@@ -285,5 +285,14 @@
   "you_are_not_the_creator_of_this_experiment": "You are not the creator of this route planning",
   "zero_weight_description": "Please check the inventories. If you have updated inventories",
   "zero_weight_warning": "Zero weight Warning",
-  "zone": "Zone"
+  "zone": "Zone",
+
+  "dimensions": "Dimensions",
+  "capacity": "Capacity",
+  "volume": "Volume",
+  "access_points": "Access Points",
+  "max_distance": "Maximum Distance",
+  "max_duration": "Maximum Duration",
+  "fixed_cost": "Fixed Cost",
+  "unit_distance_cost": "Unit Distance Cost"
 }
