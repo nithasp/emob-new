@@ -1,6 +1,16 @@
 import { ActualLocation, Configuration } from './configuration.model';
-import { Constraint } from './constraint.model';
-import { DownloadResultFile, Experiment, ExperimentState } from './experiment.model';
+import {
+  Constraint,
+  DynamicParameter,
+  DeleteDynamicParameter,
+  UpdateDynamicParameter,
+  Parameter,
+} from './constraint.model';
+import {
+  DownloadResultFile,
+  Experiment,
+  ExperimentState,
+} from './experiment.model';
 
 export interface Response {
   myDepots: any;
@@ -9,7 +19,7 @@ export interface Response {
   status_message: string;
   errors: Error[];
   myParameter: Constraint;
-  parameter: Constraint;
+  parameter: Parameter;
   experiments: [Experiment];
   createExperiment: Experiment;
   experiment: Experiment;
@@ -27,6 +37,10 @@ export interface Response {
   actualLocation: ActualLocation;
   uploadActualLocation: ActualLocation;
   downloadResultFile: DownloadResultFile;
+  dynamicParameters: DynamicParameter[];
+  dynamicParameter: DynamicParameter[];
+  updateDynamicParameter: UpdateDynamicParameter;
+  deleteDynamicParameter: DeleteDynamicParameter;
 }
 
 export interface Error {
@@ -34,4 +48,3 @@ export interface Error {
   timestamp: string;
   statusCode: number;
 }
-

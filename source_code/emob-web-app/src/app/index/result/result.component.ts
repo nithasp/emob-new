@@ -342,11 +342,26 @@ export class ResultComponent implements OnInit, AfterViewInit {
     await this.fetchAndParseExcel(arrayBuffer, 1);
     await this.fetchAndParseExcel(arrayBuffer, 3);
   }
+  
   calculateDuration(start: string | Date | number, end: string | Date | number): number {
     if (!start || !end) return 0;
     const startTime = new Date(start).getTime();
     const endTime = new Date(end).getTime();
     return endTime - startTime;
+  }
+
+  toSnakeCaseHeader(raw: string): string {
+    if (!raw) return '';
+    return raw
+      .toString()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .replace(/["']/g, '')
+      .replace(/[^A-Za-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .replace(/_+/g, '_')
+      .toLowerCase();
   }
 
   async fetchAndParseExcel(
@@ -359,11 +374,17 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const worksheet = workbook.worksheets[sheetIndex];
     if (!worksheet) throw new Error(`Worksheet ${sheetIndex} not found`);
 
-    const headers: string[] = [];
+    let headers: string[] = [];
     worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell, col) => {
       headers[col - 1] =
         cell.value != null ? String(cell.value).trim() : `Column ${col}`;
     });
+
+    for (let i = 0; i < headers.length; i++) {
+      const original = headers[i] ?? `Column ${i + 1}`;
+      const snake = this.toSnakeCaseHeader(original);
+      headers[i] = snake || `column_${i + 1}`;
+    }
     if (!isPlanDetail && sheetIndex === 0) {
       this.headersReport = headers;
     }

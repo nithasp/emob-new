@@ -8,7 +8,7 @@
     <ngx-spinner name="detailUser"> </ngx-spinner>
     <h2 class="text-center mb-4">{{ t("customer_information") }}</h2>
 
-    <div class="row" *ngIf="dataPreOder !== null">
+    <div class="row" *ngIf="dataPreOder">
       <div class="col-md-6">
         <div class="col-sm-12" *ngIf="dataPreOder.ORDERID_ORG">
           <div class="input-group input-group-sm mb-3">
@@ -222,7 +222,7 @@
 
     <h3 mat-dialog-title class="text-center">{{ t("order_details") }}</h3>
     <div mat-dialog-content>
-      <div class="modal-body" *ngIf="dataPreOder.details.length > 0">
+      <div class="modal-body" *ngIf="(dataPreOder?.details?.length || 0) > 0">
         <div class="table-responsive">
           <table class="table table-striped">
             <thead>
@@ -238,7 +238,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let order of dataPreOder.details; let i = index">
+              <tr *ngFor="let order of detailRows; let i = index">
                 <th scope="row">{{ i + 1 }}</th>
                 <td>{{ order.PRODUCTID }}</td>
                 <td>{{ order.ORDER_ID }}</td>

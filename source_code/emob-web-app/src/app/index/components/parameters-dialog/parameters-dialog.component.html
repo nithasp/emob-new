@@ -16,48 +16,26 @@
       </button>
     </div>
     <mat-dialog-content class="ml-3">
-      <div class="generals">
-        <h3 class="mb-0">{{ t("generals") }}</h3>
+      <div *ngIf="isLegacyFormat">
+        <!-- Data set 1: Old Data Format no translations -->
         <ul>
-          <li>
-            {{ t("early_delivery_time_is") }}:
-            {{ paramsVehicle.earlyDeliveryTime }}
-          </li>
-          <li>
-            {{ t("back_to_depot_time_is") }}:
-            {{ paramsVehicle.backToDepotTime }}
-          </li>
-          <li>
-            {{ t("maximum_work_duration_is") }}:
-            {{ paramsVehicle.maximumWorkDuration }}
+          <li *ngFor="let item of groupedParameters[0]?.items">
+            <span>{{ item.displayName }}</span>
+            <span>: {{ isNumericValue(item.formattedValue) ? (item.formattedValue | number : "1.0-0") : item.formattedValue }}</span>
           </li>
         </ul>
       </div>
-      <div class="vehicle">
-        <h3 class="mb-0">{{ t("vehicle") }}</h3>
-        <ul>
-          <li>
-            {{ t("number_of_vehicle_available_is_set_to") }}:
-            {{ paramsVehicle.numberOfVehicleAvailable | number : "1.0-0" }}
-          </li>
-          <li>
-            {{ t("vehicle_order_size_capacity_is") }}:
-            {{ paramsVehicle.vehicleOrderSizeCapacity | number : "1.0-0" }}
-          </li>
-          <li>
-            {{ t("maximum_travel_distance_is") }}:
-            {{ paramsVehicle.maximumTravelDistance | number : "1.0-0" }}
-          </li>
-        </ul>
-      </div>
-      <div class="customer">
-        <h3 class="mb-0">{{ t("customer") }}</h3>
-        <ul>
-          <li>
-            {{ t("service_time_is") }}:
-            {{ paramsVehicle.serviceDurationTime | timeFormat }}
-          </li>
-        </ul>
+      <div *ngIf="!isLegacyFormat">
+        <!-- Data set 2: New Data Format Grouped by category with translations -->
+        <div *ngFor="let group of groupedParameters" class="mb-3">
+          <h3  >{{ group.category }}</h3>
+          <ul>
+            <li *ngFor="let item of group.items">
+              <span>{{ item.displayName }}</span>
+              <span>: {{ isNumericValue(item.formattedValue) ? (item.formattedValue | number : "1.0-0") : item.formattedValue }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </mat-dialog-content>
   </div>

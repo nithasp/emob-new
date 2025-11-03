@@ -238,3 +238,24 @@ export enum LocationType {
   Edit = 'edit',
   View = 'view',
 }
+
+export interface FileWithCategory extends File {
+  keyName?: string;
+  displayName?: string;
+  isFirstOfType?: boolean;
+  lastModifiedDate?: Date;
+}
+
+export type PreOrderFileDescriptor = {
+  keyName: string;
+  name: string;
+  blobPath: string;
+  displayName: string;
+  type: string;
+  size: number;
+};
+
+export type PreOrderFileItem = {
+  id: string;
+  file: FileWithCategory | PreOrderFileDescriptor;
+};
