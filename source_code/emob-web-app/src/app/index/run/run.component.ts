@@ -29,6 +29,7 @@ import OSM from 'ol/source/OSM';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatDialog } from '@angular/material/dialog';
 
 import * as ExcelJS from 'exceljs';
 import {
@@ -87,6 +88,7 @@ import {
 import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
 import { DetailsDialogComponent } from '../components/details-dialog/details-dialog.component';
 import { VehicleProfileTypeItemDialogComponent } from '../components/vehicle-profile-type-item-dialog/vehicle-profile-type-item-dialog.component';
+import { VehicleTypeDialogComponent } from '../components/vehicle-type-dialog/vehicle-type-dialog.component';
 import { CustomerListComponent } from '../components/customer-list/customer-list.component';
 import { ValidateMessage } from 'src/app/models/validation-message';
 import { UserMSGraphService } from 'src/app/services/user.service';
@@ -287,7 +289,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly dataService: DataService,
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService,
-    private readonly vehicleService: VehicleService
+    private readonly vehicleService: VehicleService,
+    private readonly matDialog: MatDialog
   ) {}
 
   public generateUniqueId(): string {
@@ -2842,24 +2845,27 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   openVehicleItemModal(vehicleId: string) {
-    const modalRef = this.ngbModal.open(VehicleProfileTypeItemDialogComponent, {
-      centered: true,
-      size: 'xl',
-      animation: true,
-      backdrop: 'static',
-      keyboard: false,
-    });
-
     const vehicleType = this.myVehicleTypes.find(
       (v) => v.vehicleTypeId === vehicleId
     );
 
-    // Pass vehicle type data to modal component
-    const componentInstance =
-      modalRef.componentInstance as VehicleProfileTypeItemDialogComponent;
-    if (vehicleType) {
-      componentInstance.vehicleTypeData = vehicleType;
+    if (!vehicleType) {
+      this.toastr.warning(
+        this.transloco.translate('vehicle_not_found', {}, 'index')
+      );
+      return;
     }
+
+    this.matDialog.open(VehicleTypeDialogComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      disableClose: true,
+      data: {
+        mode: 'view',
+        vehicleType: vehicleType,
+      },
+    });
   }
 
   log() {
