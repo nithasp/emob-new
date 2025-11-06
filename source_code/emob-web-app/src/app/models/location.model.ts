@@ -1,5 +1,6 @@
 import type MapBrowserEvent from 'ol/MapBrowserEvent';
 import Style from 'ol/style/Style';
+import { FeatureLike } from 'ol/Feature';
 import { Customer } from './pre-order.model';
 
 export enum LocationType {
@@ -74,11 +75,24 @@ export interface RouteInfo {
 
 export interface FeatureProperties {
   route_index?: number;
+  route_order?: number;
+  route_label?: number;
   start_depot_id?: number;
   end_depot_id?: number;
   depot_id?: number;
   node_index?: number;
   name?: string;
+  weight?: number;
+  color?: string;
+  is_depot?: boolean;
+  features?: FeatureLike[];
+  num_customers?: number;
+  distance?: number;
+  duration?: number;
+  zone?: string | string[];
+  customers?: string[];
+  service_duration?: number;
+  travel_duration?: number;
   extra?: {
     channel?: string;
     customer_name?: string;
