@@ -41,21 +41,26 @@ export class UploadFileComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  onFileSelected(files: any) {
+  onFileSelected(files: FileList | Event): void {
     console.log('onFileSelected', files);
-    let file: File;
+    let file: File | undefined;
+    let fileCount = 0;
+
     if (files instanceof FileList) {
       file = files[0];
-      if (files.length > 1) {
-        this.toastr.warning('Cannot use multiple files');
-      }
+      fileCount = files.length;
     } else {
-      file = files.target.files[0];
-      const target: DataTransfer = <DataTransfer>files.target;
-      if (target.files.length > 1) {
-        this.toastr.warning('Cannot use multiple files');
+      const target = files.target as HTMLInputElement;
+      if (target?.files) {
+        file = target.files[0];
+        fileCount = target.files.length;
       }
     }
+
+    if (fileCount > 1) {
+      this.toastr.warning('Cannot use multiple files');
+    }
+
     if (file) {
       if (!this.validTypes.includes(file.type)) {
         this.alertInvalidation(
@@ -69,8 +74,11 @@ export class UploadFileComponent implements OnInit {
     }
   }
 
-  resetFileInput(event: any): void {
-    event.target.value = null;
+  resetFileInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (target) {
+      target.value = '';
+    }
   }
 
   /**
@@ -92,10 +100,11 @@ export class UploadFileComponent implements OnInit {
     const normalize = (s: string) =>
       s.trim().toLowerCase().replace(/\s+/g, '_');
 
-    const rawActual: string[] = (worksheet.getRow(1).values as any[])
+    const headerRow = worksheet.getRow(1);
+    const rawActual: string[] = (Array.isArray(headerRow.values) ? headerRow.values : [])
       .slice(1)
-      .map((h) => (h ?? '').toString())
-      .filter((cell) => cell.trim() !== '' && cell !== 'Unnamed: 0');
+      .map((cell) => (cell ?? '').toString())
+      .filter((cellValue) => cellValue.trim() !== '' && cellValue !== 'Unnamed: 0');
 
     const rawExpected: string[] = [...this.headersColumns];
 
