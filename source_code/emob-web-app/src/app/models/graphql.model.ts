@@ -10,10 +10,11 @@ import {
   DownloadResultFile,
   Experiment,
   ExperimentState,
+  MyDepot,
 } from './experiment.model';
 
 export interface Response {
-  myDepots: any;
+  myDepots: MyDepot[];
   timestamp: string;
   status_code: number;
   status_message: string;
