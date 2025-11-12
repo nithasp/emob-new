@@ -92,7 +92,9 @@ export class MarkLocationDialogComponent implements OnInit, AfterViewInit {
       ]),
     });
   }
-  async markerMap(event: MapBrowserEvent<UIEvent>): Promise<void> {
+  async markerMap(
+    event: MapBrowserEvent<PointerEvent | KeyboardEvent | WheelEvent>
+  ): Promise<void> {
     const coords: number[] = OlProj.toLonLat(event.coordinate);
     const lat: number = coords[1];
     const lon: number = coords[0];
