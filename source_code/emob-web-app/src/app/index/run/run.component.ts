@@ -637,22 +637,38 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (index !== -1) {
       // Show confirmation dialog before replacing
       const currentDisplayName = this.preOrderFiles[index].file.displayName;
-      const confirmDialog = this.openConfirmDialog(
-        this.transloco.translate('replace_data_confirmation', {}, 'index'),
-        '',
-        `${this.transloco.translate(
-          'want_to_replace_data_type',
-          {},
-          'index'
-        )} ${currentDisplayName} ${this.transloco.translate(
-          'with_the_new_data',
-          {},
-          'index'
-        )}?`,
-        this.transloco.translate('confirm', {}, 'index'),
-        false
+      const focusedElement = document.activeElement as HTMLElement;
+      if (focusedElement) {
+        focusedElement.blur();
+      }
+      const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+        centered: true,
+        animation: true,
+      });
+      dialogRef.componentInstance.title = this.transloco.translate(
+        'replace_data_confirmation',
+        {},
+        'index'
       );
-      confirmDialog.result.then((confirmed: boolean) => {
+      dialogRef.componentInstance.question = `${this.transloco.translate(
+        'want_to_replace_data_type',
+        {},
+        'index'
+      )} ${currentDisplayName} ${this.transloco.translate(
+        'with_the_new_data',
+        {},
+        'index'
+      )}?`;
+      dialogRef.componentInstance.message = '';
+      dialogRef.componentInstance.acceptButton = this.transloco.translate(
+        'confirm',
+        {},
+        'index'
+      );
+      dialogRef.componentInstance.disableCancelButton = false;
+      dialogRef.componentInstance.showRadioOptions = true;
+
+      dialogRef.result.then((confirmed: boolean) => {
         if (confirmed) {
           file.keyName = keyName;
           file.displayName = displayName;
@@ -661,6 +677,8 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.isFilePreview = true;
         }
         // If not confirmed, do nothing
+      }).catch(() => {
+        // Dialog dismissed
       });
     } else {
       file.keyName = keyName;
@@ -2737,5 +2755,10 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isOverDistanceKey(dynamicParameter: DynamicParameter): boolean {
     return dynamicParameter.keyName === 'MaximumTravelDistance';
+  }
+
+  log() {
+    console.log('this.preOrderFiles', this.preOrderFiles);
+    console.log('this.depotInputDataItems', this.depotInputDataItems);
   }
 }

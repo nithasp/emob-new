@@ -49,5 +49,7 @@
   "uploading": "Uploading",
   "wait_a_moment": "Wait a moment",
   "warning": "Warning",
-  "zipcode": "ZIPCODE"
+  "zipcode": "ZIPCODE",
+  "yes": "Yes",
+  "no": "No"
 }

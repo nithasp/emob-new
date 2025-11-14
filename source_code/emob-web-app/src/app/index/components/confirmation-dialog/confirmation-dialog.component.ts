@@ -12,6 +12,9 @@ export class ConfirmationDialogComponent implements OnInit {
   @Input() question?: string;
   @Input() acceptButton: string = 'Confirm';
   @Input() disableCancelButton: boolean = false;
+  @Input() showRadioOptions: boolean = false;
+
+  selectedRadioOption: string | null = null;
 
   constructor(
     private activeModal: NgbActiveModal
@@ -24,5 +27,14 @@ export class ConfirmationDialogComponent implements OnInit {
   }
   onConfirmClick(): void {
     this.activeModal.close(true);
+  }
+  onRadioChange(value: string): void {
+    this.selectedRadioOption = value;
+  }
+  isConfirmDisabled(): boolean {
+    if (!this.showRadioOptions) {
+      return false;
+    }
+    return this.selectedRadioOption !== 'yes';
   }
 }
