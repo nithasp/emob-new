@@ -73,6 +73,7 @@ import {
   NgbModal,
 } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDepotUploadFileDialogComponent } from '../components/confirmation-depot-upload-file-dialog/confirmation-depot-upload-file-dialog.component';
 import { ToastrService } from 'ngx-toastr';
 import { PreOrderService } from 'src/app/services/pre-order.service';
 import { ChangeDetectorRef } from '@angular/core';
@@ -641,7 +642,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       if (focusedElement) {
         focusedElement.blur();
       }
-      const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      const dialogRef = this.ngbModal.open(ConfirmationDepotUploadFileDialogComponent, {
         centered: true,
         animation: true,
       });

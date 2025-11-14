@@ -10,46 +10,12 @@
   <p>
     {{ message }}
   </p>
-  <div *ngIf="showRadioOptions" class="mt-3">
-    <div class="form-check">
-      <input 
-        class="form-check-input" 
-        type="radio" 
-        name="confirmReplacement" 
-        id="radioYes" 
-        value="yes"
-        (change)="onRadioChange('yes')"
-        [checked]="selectedRadioOption === 'yes'">
-      <label class="form-check-label" for="radioYes">
-        {{ "yes" | transloco }}
-      </label>
-    </div>
-    <div class="form-check">
-      <input 
-        class="form-check-input" 
-        type="radio" 
-        name="confirmReplacement" 
-        id="radioNo" 
-        value="no"
-        (change)="onRadioChange('no')"
-        [checked]="selectedRadioOption === 'no'">
-      <label class="form-check-label" for="radioNo">
-        {{ "no" | transloco }}
-      </label>
-    </div>
-  </div>
 </div>
 <div class="modal-footer">
   <button type="button" class="btn btn-outline-secondary" (click)="onCancleClick()" [hidden]="disableCancelButton">
     {{ "cancel" | transloco }}
   </button>
-  <button 
-    type="button" 
-    ngbAutofocus 
-    mat-raised-button 
-    class="bg-custom-primary" 
-    (click)="onConfirmClick()"
-    [disabled]="isConfirmDisabled()">
+  <button type="button" ngbAutofocus mat-raised-button class="bg-custom-primary" (click)="onConfirmClick()">
     {{ ("confirm" | transloco) || acceptButton }}
   </button>
 </div>

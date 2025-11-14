@@ -16,6 +16,7 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDepotUploadFileDialogComponent } from './components/confirmation-depot-upload-file-dialog/confirmation-depot-upload-file-dialog.component';
 import { PopoverModule } from '@ngx-popovers/popover';
 import { Arrow } from '@ngx-popovers/core';
 import { DropzoneDirective } from '../directives/dropzone.directive';
@@ -53,6 +54,7 @@ import { DynamicPopoverComponent } from '../shared/components/dynamic-popover/dy
     ConfigurationComponent,
     NavbarComponent,
     ConfirmationDialogComponent,
+    ConfirmationDepotUploadFileDialogComponent,
     DropzoneDirective,
     TruncatePipe,
     NumberCounterInputComponent,
