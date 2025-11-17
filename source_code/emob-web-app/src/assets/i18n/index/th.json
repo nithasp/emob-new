@@ -285,5 +285,9 @@
   "you_are_not_the_creator_of_this_experiment": "คุณไม่ใช่ผู้สร้างการวางแผนเส้นทางนี้",
   "zero_weight_description": "โปรดตรวจสอบสินค้าคงคลัง หากคุณได้ทำการอัปเดตสินค้าคงคลังแล้ว",
   "zero_weight_warning": "คำเตือนน้ำหนักเป็นศูนย์",
-  "zone": "โซน"
+  "zone": "โซน",
+
+  "select_category_and_add_as_new_file": "เลือกประเภทและเพิ่มเป็นไฟล์ใหม่",
+  "select_category": "เลือกประเภท",
+  "a_file_with_this_category_is_already_added": "ข้อมูลประเภทนี้ถูกเพิ่มเข้ามาแล้ว"
 }

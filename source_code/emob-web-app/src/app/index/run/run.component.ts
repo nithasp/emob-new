@@ -668,16 +668,41 @@ export class RunComponent implements OnInit, AfterViewInit {
       );
       dialogRef.componentInstance.disableCancelButton = false;
       dialogRef.componentInstance.showRadioOptions = true;
+      dialogRef.componentInstance.inputDataKeys = this.inputDataKeys;
+      dialogRef.componentInstance.preOrderFiles = this.preOrderFiles;
 
-      dialogRef.result.then((confirmed: boolean) => {
-        if (confirmed) {
-          file.keyName = keyName;
-          file.displayName = displayName;
-          file.isFirstOfType = true;
-          this.preOrderFiles[index] = { id, file };
-          this.isFilePreview = true;
+      dialogRef.result.then((result: { replace: boolean; category?: string } | boolean) => {
+        // Handle both old boolean format and new object format for backwards compatibility
+        if (typeof result === 'boolean') {
+          if (result) {
+            file.keyName = keyName;
+            file.displayName = displayName;
+            file.isFirstOfType = true;
+            this.preOrderFiles[index] = { id, file };
+            this.isFilePreview = true;
+          }
+        } else if (result && typeof result === 'object') {
+          if (result.replace) {
+            // Replace existing file
+            file.keyName = keyName;
+            file.displayName = displayName;
+            file.isFirstOfType = true;
+            this.preOrderFiles[index] = { id, file };
+            this.isFilePreview = true;
+          } else if (result.category) {
+            // Add as new file with selected category
+            const selectedItem = this.depotInputDataItems.find(
+              (item) => item.displayName === result.category
+            );
+            if (selectedItem) {
+              file.keyName = selectedItem.keyName;
+              file.displayName = selectedItem.displayName;
+              file.isFirstOfType = true;
+              this.preOrderFiles.push({ id, file });
+              this.isFilePreview = true;
+            }
+          }
         }
-        // If not confirmed, do nothing
       }).catch(() => {
         // Dialog dismissed
       });
@@ -2761,5 +2786,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   log() {
     console.log('this.preOrderFiles', this.preOrderFiles);
     console.log('this.depotInputDataItems', this.depotInputDataItems);
+
+    console.log('this.inputDataKeys', this.inputDataKeys);
   }
 }

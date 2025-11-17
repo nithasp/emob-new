@@ -285,5 +285,9 @@
   "you_are_not_the_creator_of_this_experiment": "You are not the creator of this route planning",
   "zero_weight_description": "Please check the inventories. If you have updated inventories",
   "zero_weight_warning": "Zero weight Warning",
-  "zone": "Zone"
+  "zone": "Zone",
+  
+  "select_category_and_add_as_new_file": "Select category and add as new file",
+  "select_category": "Select category",
+  "a_file_with_this_category_is_already_added": "A file with this category is already added"
 }
