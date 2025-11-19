@@ -481,12 +481,12 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (newData.length > 0) {
                 this.toastr.info(
                   `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                  newData.length +
-                  ` ${this.transloco.translate(
-                    'new_edited_location_data_suffix',
-                    {},
-                    'index'
-                  )}`,
+                    newData.length +
+                    ` ${this.transloco.translate(
+                      'new_edited_location_data_suffix',
+                      {},
+                      'index'
+                    )}`,
                   `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
@@ -630,22 +630,65 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     if (!isValid || !keyName || !displayName) return;
 
-    // Find if a file of this type already exists
+    // Find the matched item for the new file
+    const matchedItem = this.depotInputDataItems.find(
+      (item) => item.keyName === keyName
+    );
+
+    // Find if a file of this type already exists (by keyName)
     const index = this.preOrderFiles.findIndex(
       (f) => f.file.keyName === keyName
     );
 
-    if (index !== -1) {
+    // Also check if any existing file has the same columnRequired
+    const existingFileWithSameColumns = matchedItem
+      ? this.preOrderFiles.find((fileItem) => {
+          const existingKeyName = this.isFileWithCategory(fileItem.file)
+            ? fileItem.file.keyName
+            : (fileItem.file as PreOrderFileDescriptor).keyName;
+          const existingItem = this.depotInputDataItems.find(
+            (item) => item.keyName === existingKeyName
+          );
+          if (!existingItem) return false;
+          return (
+            existingItem.columnRequired.length ===
+              matchedItem.columnRequired.length &&
+            existingItem.columnRequired.every((col) =>
+              matchedItem.columnRequired.includes(col)
+            )
+          );
+        })
+      : undefined;
+
+    if (index !== -1 || existingFileWithSameColumns) {
+      // duplicate file logic here (either same keyName OR same columnRequired)
+
+      console.log('duplicate file or duplicate columnRequired', file);
+
+      // Determine which file is being duplicated
+      const duplicatedFileIndex =
+        index !== -1
+          ? index
+          : this.preOrderFiles.findIndex(
+              (f) => f.id === existingFileWithSameColumns?.id
+            );
+      const currentDisplayName =
+        duplicatedFileIndex !== -1
+          ? this.preOrderFiles[duplicatedFileIndex].file.displayName
+          : displayName;
+
       // Show confirmation dialog before replacing
-      const currentDisplayName = this.preOrderFiles[index].file.displayName;
       const focusedElement = document.activeElement as HTMLElement;
       if (focusedElement) {
         focusedElement.blur();
       }
-      const dialogRef = this.ngbModal.open(ConfirmationDepotUploadFileDialogComponent, {
-        centered: true,
-        animation: true,
-      });
+      const dialogRef = this.ngbModal.open(
+        ConfirmationDepotUploadFileDialogComponent,
+        {
+          centered: true,
+          animation: true,
+        }
+      );
       dialogRef.componentInstance.title = this.transloco.translate(
         'replace_data_confirmation',
         {},
@@ -671,42 +714,128 @@ export class RunComponent implements OnInit, AfterViewInit {
       dialogRef.componentInstance.inputDataKeys = this.inputDataKeys;
       dialogRef.componentInstance.preOrderFiles = this.preOrderFiles;
 
-      dialogRef.result.then((result: { replace: boolean; category?: string } | boolean) => {
-        // Handle both old boolean format and new object format for backwards compatibility
-        if (typeof result === 'boolean') {
-          if (result) {
-            file.keyName = keyName;
-            file.displayName = displayName;
-            file.isFirstOfType = true;
-            this.preOrderFiles[index] = { id, file };
-            this.isFilePreview = true;
-          }
-        } else if (result && typeof result === 'object') {
-          if (result.replace) {
-            // Replace existing file
-            file.keyName = keyName;
-            file.displayName = displayName;
-            file.isFirstOfType = true;
-            this.preOrderFiles[index] = { id, file };
-            this.isFilePreview = true;
-          } else if (result.category) {
-            // Add as new file with selected category
-            const selectedItem = this.depotInputDataItems.find(
-              (item) => item.displayName === result.category
-            );
-            if (selectedItem) {
-              file.keyName = selectedItem.keyName;
-              file.displayName = selectedItem.displayName;
+      dialogRef.result
+        .then((result: { replace: boolean; category?: string } | boolean) => {
+          // Handle both old boolean format and new object format for backwards compatibility
+          if (typeof result === 'boolean') {
+            if (result && duplicatedFileIndex !== -1) {
+              file.keyName = keyName;
+              file.displayName = displayName;
               file.isFirstOfType = true;
-              this.preOrderFiles.push({ id, file });
+              this.preOrderFiles[duplicatedFileIndex] = { id, file };
               this.isFilePreview = true;
             }
+          } else if (result && typeof result === 'object') {
+            if (result.replace && duplicatedFileIndex !== -1) {
+              // Replace existing file
+              file.keyName = keyName;
+              file.displayName = displayName;
+              file.isFirstOfType = true;
+              this.preOrderFiles[duplicatedFileIndex] = { id, file };
+              this.isFilePreview = true;
+            } else if (result.category) {
+              // Add as new file with selected category
+              const selectedItem = this.depotInputDataItems.find(
+                (item) => item.displayName === result.category
+              );
+              if (selectedItem) {
+                file.keyName = selectedItem.keyName;
+                file.displayName = selectedItem.displayName;
+                file.isFirstOfType = true;
+                this.preOrderFiles.push({ id, file });
+                this.isFilePreview = true;
+              }
+            }
+          }
+        })
+        .catch(() => {
+          // Dialog dismissed
+        });
+    } else {
+      // no duplicate file logic here
+      // Check if columnRequired is duplicated AND none of the duplicate files are in preOrderFiles yet
+
+      console.log('no duplicate file', file);
+
+      // Find the matched item for the current file
+      const matchedItemForNew = this.depotInputDataItems.find(
+        (item) => item.keyName === keyName
+      );
+
+      if (matchedItemForNew) {
+        // Check if there are other items with the same columnRequired
+        const itemsWithSameColumns = this.depotInputDataItems.filter((item) => {
+          return (
+            item.columnRequired.length ===
+              matchedItemForNew.columnRequired.length &&
+            item.columnRequired.every((col) =>
+              matchedItemForNew.columnRequired.includes(col)
+            )
+          );
+        });
+
+        if (itemsWithSameColumns.length > 1) {
+          // Duplicate columnRequired found - now check if ANY of them are already in preOrderFiles
+          const anyDuplicateInPreOrderFiles = itemsWithSameColumns.some(
+            (item) => {
+              return this.preOrderFiles.some((fileItem) => {
+                const existingKeyName = this.isFileWithCategory(fileItem.file)
+                  ? fileItem.file.keyName
+                  : (fileItem.file as PreOrderFileDescriptor).keyName;
+                return existingKeyName === item.keyName;
+              });
+            }
+          );
+
+          if (!anyDuplicateInPreOrderFiles) {
+            // None of the duplicate columnRequired files are in preOrderFiles yet - show dialog
+            const focusedElement = document.activeElement as HTMLElement;
+            if (focusedElement) {
+              focusedElement.blur();
+            }
+            const dialogRef = this.ngbModal.open(
+              ConfirmationDepotUploadFileDialogComponent,
+              {
+                centered: true,
+                animation: true,
+              }
+            );
+            dialogRef.componentInstance.title = this.transloco.translate(
+              'select_category',
+              {},
+              'index'
+            );
+            dialogRef.componentInstance.showRadioOptions = false;
+            dialogRef.componentInstance.showCategorySelectOnly = true;
+            dialogRef.componentInstance.inputDataKeys =
+              itemsWithSameColumns.map((item) => item.displayName);
+            dialogRef.componentInstance.preOrderFiles = this.preOrderFiles;
+
+            dialogRef.result
+              .then((result: { category?: string } | boolean) => {
+                if (result && typeof result === 'object' && result.category) {
+                  const selectedItem = this.depotInputDataItems.find(
+                    (item) => item.displayName === result.category
+                  );
+                  if (selectedItem) {
+                    file.keyName = selectedItem.keyName;
+                    file.displayName = selectedItem.displayName;
+                    file.isFirstOfType = true;
+                    this.preOrderFiles.push({ id, file });
+                    this.isFilePreview = true;
+                  }
+                }
+              })
+              .catch(() => {
+                // Dialog dismissed
+              });
+            return; // Exit early to prevent default behavior
           }
         }
-      }).catch(() => {
-        // Dialog dismissed
-      });
-    } else {
+      }
+
+      // Default behavior: no duplicate columnRequired OR at least one duplicate is already in preOrderFiles
+      // Just add the file normally
       file.keyName = keyName;
       file.displayName = displayName;
       file.isFirstOfType = true;
@@ -734,21 +863,31 @@ export class RunComponent implements OnInit, AfterViewInit {
           const workbook = new ExcelJS.Workbook();
           await workbook.xlsx.load(arrayBuffer);
 
-          let worksheet: ExcelJS.Worksheet | undefined = workbook.getWorksheet(1);
+          let worksheet: ExcelJS.Worksheet | undefined =
+            workbook.getWorksheet(1);
           if (!worksheet) {
             const normalize = (name: string) =>
-              name.trim().toLowerCase().replace(/[\s_\-]/g, '');
+              name
+                .trim()
+                .toLowerCase()
+                .replace(/[\s_\-]/g, '');
 
-            const allSheets = workbook.worksheets.map((ws: ExcelJS.Worksheet) => ({
-              name: ws.name,
-              normalized: normalize(ws.name),
-            }));
+            const allSheets = workbook.worksheets.map(
+              (ws: ExcelJS.Worksheet) => ({
+                name: ws.name,
+                normalized: normalize(ws.name),
+              })
+            );
 
-            console.log('Detected sheets:', allSheets.map((sheet) => sheet.name));
+            console.log(
+              'Detected sheets:',
+              allSheets.map((sheet) => sheet.name)
+            );
 
-            worksheet = workbook.worksheets.find(
-              (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
-            ) || workbook.worksheets[0];
+            worksheet =
+              workbook.worksheets.find(
+                (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
+              ) || workbook.worksheets[0];
           }
 
           const columnNames = (
@@ -1063,8 +1202,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
-            ? item.name
-            : '';
+          ? item.name
+          : '';
       const mapped: MyDepot = {
         depotId: (item.depotId || item.id || '') as string,
         depotName: nameKey,
@@ -1166,7 +1305,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               });
               location.setStyle(
                 this.iconStyle[
-                uploadDataGroupCustomers[key as keyof DataGroup].type
+                  uploadDataGroupCustomers[key as keyof DataGroup].type
                 ]
               );
               this.vectorSource.addFeature(location);
@@ -1299,13 +1438,13 @@ export class RunComponent implements OnInit, AfterViewInit {
   private isPopupPayload(
     value:
       | {
-        data?:
-        | Customer
-        | Depot
-        | MyDepot
-        | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
-        isDepot?: boolean;
-      }
+          data?:
+            | Customer
+            | Depot
+            | MyDepot
+            | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
+          isDepot?: boolean;
+        }
       | null
       | undefined
   ): value is { data: Customer; isDepot: boolean } {
@@ -2199,21 +2338,31 @@ export class RunComponent implements OnInit, AfterViewInit {
           const workbook = new ExcelJS.Workbook();
           await workbook.xlsx.load(arrayBuffer);
 
-          let worksheet: ExcelJS.Worksheet | undefined = workbook.getWorksheet(1);
+          let worksheet: ExcelJS.Worksheet | undefined =
+            workbook.getWorksheet(1);
           if (!worksheet) {
             const normalize = (name: string) =>
-              name.trim().toLowerCase().replace(/[\s_\-]/g, '');
+              name
+                .trim()
+                .toLowerCase()
+                .replace(/[\s_\-]/g, '');
 
-            const allSheets = workbook.worksheets.map((ws: ExcelJS.Worksheet) => ({
-              name: ws.name,
-              normalized: normalize(ws.name),
-            }));
+            const allSheets = workbook.worksheets.map(
+              (ws: ExcelJS.Worksheet) => ({
+                name: ws.name,
+                normalized: normalize(ws.name),
+              })
+            );
 
-            console.log('Detected sheets:', allSheets.map((sheet) => sheet.name));
+            console.log(
+              'Detected sheets:',
+              allSheets.map((sheet) => sheet.name)
+            );
 
-            worksheet = workbook.worksheets.find(
-              (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
-            ) || workbook.worksheets[0];
+            worksheet =
+              workbook.worksheets.find(
+                (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
+              ) || workbook.worksheets[0];
           }
 
           const columnNames = (
@@ -2651,28 +2800,28 @@ export class RunComponent implements OnInit, AfterViewInit {
       const originalItems = groupsMap[categoryKey];
       const items = useConstraintsValues
         ? originalItems.map((dynamicParameter) => {
-          const constraintKey =
-            this.getConstraintKeyForParam(dynamicParameter);
-          if (!constraintKey) return dynamicParameter;
-          const constraintValue = this.constraintsData[constraintKey];
-          if (constraintValue === undefined || constraintValue === null) {
-            if (this.isTimeType(dynamicParameter)) {
-              return { ...dynamicParameter, value: '00:00' };
+            const constraintKey =
+              this.getConstraintKeyForParam(dynamicParameter);
+            if (!constraintKey) return dynamicParameter;
+            const constraintValue = this.constraintsData[constraintKey];
+            if (constraintValue === undefined || constraintValue === null) {
+              if (this.isTimeType(dynamicParameter)) {
+                return { ...dynamicParameter, value: '00:00' };
+              }
+              return dynamicParameter;
             }
-            return dynamicParameter;
-          }
-          if (this.isNumberType(dynamicParameter)) {
-            return { ...dynamicParameter, value: Number(constraintValue) };
-          }
-          const trimmedValue = String(constraintValue).trim();
-          return {
-            ...dynamicParameter,
-            value:
-              trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
-                ? '00:00'
-                : trimmedValue,
-          };
-        })
+            if (this.isNumberType(dynamicParameter)) {
+              return { ...dynamicParameter, value: Number(constraintValue) };
+            }
+            const trimmedValue = String(constraintValue).trim();
+            return {
+              ...dynamicParameter,
+              value:
+                trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
+                  ? '00:00'
+                  : trimmedValue,
+            };
+          })
         : originalItems;
       return {
         key: categoryKey,

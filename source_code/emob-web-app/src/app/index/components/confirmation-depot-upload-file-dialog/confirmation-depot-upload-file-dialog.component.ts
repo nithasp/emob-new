@@ -6,15 +6,16 @@ import { TranslocoService } from '@jsverse/transloco';
 @Component({
   selector: 'app-confirmation-depot-upload-file-dialog',
   templateUrl: './confirmation-depot-upload-file-dialog.component.html',
-  styleUrls: ['./confirmation-depot-upload-file-dialog.component.scss']
+  styleUrls: ['./confirmation-depot-upload-file-dialog.component.scss'],
 })
 export class ConfirmationDepotUploadFileDialogComponent implements OnInit {
-  @Input() title: string = "Confirm Action";
+  @Input() title: string = 'Confirm Action';
   @Input() message?: string;
   @Input() question?: string;
   @Input() acceptButton: string = 'Confirm';
   @Input() disableCancelButton: boolean = false;
   @Input() showRadioOptions: boolean = false;
+  @Input() showCategorySelectOnly: boolean = false;
   @Input() inputDataKeys: string[] = [];
   @Input() preOrderFiles: any[] = [];
 
@@ -26,18 +27,24 @@ export class ConfirmationDepotUploadFileDialogComponent implements OnInit {
     private activeModal: NgbActiveModal,
     private toastr: ToastrService,
     private transloco: TranslocoService
-  ) {
-  }
-  ngOnInit() {
-  }
+  ) {}
+  ngOnInit() {}
   onCancleClick() {
     this.activeModal.close(false);
   }
   onConfirmClick(): void {
-    if (this.selectedRadioOption === 'yes') {
+    if (this.showCategorySelectOnly) {
+      // For columnRequired duplicate case, only return category
+      if (this.selectedCategory) {
+        this.activeModal.close({ category: this.selectedCategory });
+      }
+    } else if (this.selectedRadioOption === 'yes') {
       this.activeModal.close({ replace: true });
     } else if (this.selectedRadioOption === 'no' && this.selectedCategory) {
-      this.activeModal.close({ replace: false, category: this.selectedCategory });
+      this.activeModal.close({
+        replace: false,
+        category: this.selectedCategory,
+      });
     }
   }
   onRadioChange(value: string): void {
@@ -61,7 +68,11 @@ export class ConfirmationDepotUploadFileDialogComponent implements OnInit {
 
       if (exists) {
         this.toastr.warning(
-          this.transloco.translate('a_file_with_this_category_is_already_added', {}, 'index')
+          this.transloco.translate(
+            'a_file_with_this_category_is_already_added',
+            {},
+            'index'
+          )
         );
       }
     } else {
@@ -69,6 +80,11 @@ export class ConfirmationDepotUploadFileDialogComponent implements OnInit {
     }
   }
   isConfirmDisabled(): boolean {
+    if (this.showCategorySelectOnly) {
+      // For columnRequired duplicate case, only check if category is selected
+      return !this.selectedCategory || this.categoryAlreadyExists;
+    }
+
     if (!this.showRadioOptions) {
       return false;
     }
@@ -84,4 +100,3 @@ export class ConfirmationDepotUploadFileDialogComponent implements OnInit {
     return true;
   }
 }
-
