@@ -137,44 +137,53 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr *ngFor="let fileObj of preOrderFiles; let i = index">
-                          <td scope="row" class="ps-3">{{ i + 1 }}</td>
-                          <td style="
-                              word-wrap: break-word;
-                              min-width: 160px;
-                              max-width: 400px;
-                            ">
-                            {{ fileObj.file.name }}
-                          </td>
-                          <td>
-                            <mat-select class="step1" *ngIf="isFileSelectionStep" [(value)]="fileObj.file.displayName"
-                              (selectionChange)="handleInputDataKeyChange(fileObj, $event)">
-                              <mat-option *ngFor="let inputDataKey of inputDataKeys" [value]="inputDataKey">
-                                {{ inputDataKey }}
-                              </mat-option>
-                            </mat-select>
-                            <span class="step2" *ngIf="!isFileSelectionStep"> {{ fileObj.file.displayName }} </span>
-                          </td>
-                          <td>
-                            <span class="step1" *ngIf="isFileSelectionStep"> {{ fileObj.file.size / 1000000 | number : "1.2-2" }} MB </span>
-                            <span class="step2" *ngIf="!isFileSelectionStep"> {{ fileObj.file.size }} MB</span>
-                          </td>
-                          <td>
-                            <span class="step1" *ngIf="isFileSelectionStep">{{
-                              (validTypes.includes(fileObj.file.type)
-                              ? "xlsx"
-                              : fileObj.file.type
-                              ) | slice : 0 : 10
-                              }}
-                            </span>
-                            <span class="step2" *ngIf="!isFileSelectionStep"> {{ fileObj.file.type }} </span>
-                          </td>
-                          <td>
-                            <button *ngIf="isFileSelectionStep" class="btn" (click)="deleteFileInList(i)" [hidden]="!isOriginalExperiment()">
-                              <mat-icon>delete</mat-icon>
-                            </button>
-                          </td>
-                        </tr>
+                        <ng-container *ngFor="let fileObj of preOrderFiles; let i = index">
+                          <tr [ngClass]="{'table-danger': hasDuplicateCategory(fileObj)}" [style.outline]="hasDuplicateCategory(fileObj) ? '2px solid #dc3545' : null" [style.outline-offset]="hasDuplicateCategory(fileObj) ? '-2px' : null">
+                            <td scope="row" class="ps-3">{{ i + 1 }}</td>
+                            <td style="
+                                word-wrap: break-word;
+                                min-width: 160px;
+                                max-width: 400px;
+                              ">
+                              {{ fileObj.file.name }}
+                            </td>
+                            <td>
+                              <mat-select class="step1" *ngIf="isFileSelectionStep" [(value)]="fileObj.file.displayName"
+                                (selectionChange)="handleInputDataKeyChange(fileObj, $event)">
+                                <mat-option *ngFor="let inputDataKey of inputDataKeys" [value]="inputDataKey">
+                                  {{ inputDataKey }}
+                                </mat-option>
+                              </mat-select>
+                              <span class="step2" *ngIf="!isFileSelectionStep"> {{ fileObj.file.displayName }} </span>
+                            </td>
+                            <td>
+                              <span class="step1" *ngIf="isFileSelectionStep"> {{ fileObj.file.size / 1000000 | number : "1.2-2" }} MB </span>
+                              <span class="step2" *ngIf="!isFileSelectionStep"> {{ fileObj.file.size }} MB</span>
+                            </td>
+                            <td>
+                              <span class="step1" *ngIf="isFileSelectionStep">{{
+                                (validTypes.includes(fileObj.file.type)
+                                ? "xlsx"
+                                : fileObj.file.type
+                                ) | slice : 0 : 10
+                                }}
+                              </span>
+                              <span class="step2" *ngIf="!isFileSelectionStep"> {{ fileObj.file.type }} </span>
+                            </td>
+                            <td>
+                              <button *ngIf="isFileSelectionStep" class="btn" (click)="deleteFileInList(i)" [hidden]="!isOriginalExperiment()">
+                                <mat-icon>delete</mat-icon>
+                              </button>
+                            </td>
+                          </tr>
+                          <tr *ngIf="hasDuplicateCategory(fileObj)" class="">
+                            <td colspan="6" class="text-left">
+                              <small class="text-danger">
+                                <strong>{{ t("a_file_with_this_category_is_already_added") }}</strong>
+                              </small>
+                            </td>
+                          </tr>
+                        </ng-container>
                         <tr class="text-center" *ngIf="preOrderFiles.length === 0">
                           <td colspan="4">
                             <strong>{{ t("no_files_uploaded") }}</strong>

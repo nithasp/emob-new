@@ -2266,7 +2266,26 @@ export class RunComponent implements OnInit, AfterViewInit {
     fileObj: PreOrderFileItem,
     event: { value: string }
   ) {
+    console.log('handleInputDataKeyChange', fileObj, event);
     const selectedDisplayName = event.value;
+
+    if (selectedDisplayName) {
+      // Check if this category already exists in other files (excluding the current file)
+      const exists = this.preOrderFiles.some(
+        (item) => item.id !== fileObj.id && item.file.displayName === selectedDisplayName
+      );
+
+      if (exists) {
+        this.toastr.error(
+          this.transloco.translate(
+            'a_file_with_this_category_is_already_added',
+            {},
+            'index'
+          )
+        );
+      }
+    }
+
     const found = this.depotInputDataItems.find(
       (item) => item.displayName === selectedDisplayName
     );
@@ -2288,6 +2307,18 @@ export class RunComponent implements OnInit, AfterViewInit {
         (fileObj.file as PreOrderFileDescriptor).displayName = '';
       }
     }
+  }
+
+  hasDuplicateCategory(fileObj: PreOrderFileItem): boolean {
+    if (!fileObj.file.displayName) return false;
+    
+    // Count how many files have the same displayName
+    const count = this.preOrderFiles.filter(
+      (item) => item.file.displayName === fileObj.file.displayName
+    ).length;
+    
+    // If count > 1, this category is duplicated
+    return count > 1;
   }
 
   updateInputDataKeysFromDepot(depot: MyDepot) {
