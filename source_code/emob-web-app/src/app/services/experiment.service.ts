@@ -90,7 +90,15 @@ export class ExperimentService {
               status
               run
               groupId
-              inputdata
+              inputdata {
+                keyName
+                filename
+                blobPath
+                displayName
+                fileFormatType
+                fileSize
+                fileUrl
+              }
               depots {
                 companyName
                 depotId
@@ -101,6 +109,17 @@ export class ExperimentService {
                 tw_late
                 createdAt
                 updatedAt
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  required
+                  createdAt
+                  modifiedAt
+                }
               }
               fileUrl {
                 parameterUrl
