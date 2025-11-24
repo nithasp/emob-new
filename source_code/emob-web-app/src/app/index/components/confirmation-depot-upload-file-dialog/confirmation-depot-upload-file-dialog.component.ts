@@ -1,14 +1,15 @@
-import { Component, OnInit, Inject, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
+import { PreOrderFileItem } from 'src/app/models/pre-order.model';
 
 @Component({
   selector: 'app-confirmation-depot-upload-file-dialog',
   templateUrl: './confirmation-depot-upload-file-dialog.component.html',
   styleUrls: ['./confirmation-depot-upload-file-dialog.component.scss'],
 })
-export class ConfirmationDepotUploadFileDialogComponent implements OnInit {
+export class ConfirmationDepotUploadFileDialogComponent {
   @Input() title: string = 'Confirm Action';
   @Input() message?: string;
   @Input() question?: string;
@@ -17,86 +18,67 @@ export class ConfirmationDepotUploadFileDialogComponent implements OnInit {
   @Input() showRadioOptions: boolean = false;
   @Input() showCategorySelectOnly: boolean = false;
   @Input() inputDataKeys: string[] = [];
-  @Input() preOrderFiles: any[] = [];
+  @Input() preOrderFiles: PreOrderFileItem[] = [];
 
-  selectedRadioOption: string | null = null;
+  selectedRadioOption: 'yes' | 'no' | null = null;
   selectedCategory: string = '';
-  categoryAlreadyExists: boolean = false;
 
   constructor(
     private activeModal: NgbActiveModal,
     private toastr: ToastrService,
     private transloco: TranslocoService
   ) {}
-  ngOnInit() {}
-  onCancleClick() {
+
+  get categoryAlreadyExists(): boolean {
+    return !!this.selectedCategory && this.preOrderFiles.some(
+      (item) => item.file.displayName === this.selectedCategory
+    );
+  }
+
+  get showCategorySelect(): boolean {
+    return this.showCategorySelectOnly || this.selectedRadioOption === 'no';
+  }
+
+  get isConfirmDisabled(): boolean {
+    if (this.showCategorySelectOnly) {
+      return !this.selectedCategory || this.categoryAlreadyExists;
+    }
+    if (!this.showRadioOptions) return false;
+    if (this.selectedRadioOption === 'yes') return false;
+    return this.selectedRadioOption !== 'no' || !this.selectedCategory;
+  }
+
+  onCancel(): void {
     this.activeModal.close(false);
   }
-  onConfirmClick(): void {
-    if (this.showCategorySelectOnly) {
-      // For columnRequired duplicate case, only return category
-      if (this.selectedCategory) {
-        this.activeModal.close({ category: this.selectedCategory });
-      }
-    } else if (this.selectedRadioOption === 'yes') {
-      this.activeModal.close({ replace: true });
-    } else if (this.selectedRadioOption === 'no' && this.selectedCategory) {
+
+  onConfirm(): void {
+    if (this.showCategorySelectOnly || this.selectedRadioOption === 'no') {
       this.activeModal.close({
         replace: false,
         category: this.selectedCategory,
       });
+    } else if (this.selectedRadioOption === 'yes') {
+      this.activeModal.close({ replace: true });
     }
   }
-  onRadioChange(value: string): void {
+
+  onRadioChange(value: 'yes' | 'no'): void {
     this.selectedRadioOption = value;
-    // Reset category selection when switching radio options
     if (value === 'yes') {
       this.selectedCategory = '';
-      this.categoryAlreadyExists = false;
     }
   }
-  onCategoryChange(displayName: string): void {
-    this.selectedCategory = displayName;
 
-    if (displayName) {
-      // Check if this category already exists in preOrderFiles
-      const exists = this.preOrderFiles.some(
-        (item) => item.file.displayName === displayName
+  onCategoryChange(): void {
+    if (this.categoryAlreadyExists) {
+      this.toastr.warning(
+        this.transloco.translate(
+          'a_file_with_this_category_is_already_added',
+          {},
+          'index'
+        )
       );
-
-      this.categoryAlreadyExists = exists;
-
-      if (exists) {
-        this.toastr.warning(
-          this.transloco.translate(
-            'a_file_with_this_category_is_already_added',
-            {},
-            'index'
-          )
-        );
-      }
-    } else {
-      this.categoryAlreadyExists = false;
     }
-  }
-  isConfirmDisabled(): boolean {
-    if (this.showCategorySelectOnly) {
-      // For columnRequired duplicate case, only check if category is selected
-      return !this.selectedCategory || this.categoryAlreadyExists;
-    }
-
-    if (!this.showRadioOptions) {
-      return false;
-    }
-
-    if (this.selectedRadioOption === 'yes') {
-      return false;
-    }
-
-    if (this.selectedRadioOption === 'no' && this.selectedCategory) {
-      return false;
-    }
-
-    return true;
   }
 }

@@ -6,84 +6,59 @@
       class="btn-close"
       aria-label="Close button"
       aria-describedby="modal-title"
-      (click)="onCancleClick()"
+      (click)="onCancel()"
     ></button>
   </div>
+  
   <div class="modal-body">
-    <!-- Show question and message only when not in showCategorySelectOnly mode -->
-    <p *ngIf="!showCategorySelectOnly">
-      <strong>{{ question }}</strong>
-    </p>
-    <p *ngIf="!showCategorySelectOnly">
-      {{ message }}
-    </p>
+    <ng-container *ngIf="!showCategorySelectOnly">
+      <p *ngIf="question"><strong>{{ question }}</strong></p>
+      <p *ngIf="message">{{ message }}</p>
 
-    <!-- Show radio options only when showRadioOptions is true and not in showCategorySelectOnly mode -->
-    <div *ngIf="showRadioOptions && !showCategorySelectOnly" class="mt-3">
-      <div class="d-flex gap-2">
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="confirmReplacement"
-            id="radioYes"
-            value="yes"
-            (change)="onRadioChange('yes')"
-            [checked]="selectedRadioOption === 'yes'"
-          />
-          <label class="form-check-label" for="radioYes">
-            {{ "yes" | transloco }}
-          </label>
-        </div>
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="confirmReplacement"
-            id="radioNo"
-            value="no"
-            (change)="onRadioChange('no')"
-            [checked]="selectedRadioOption === 'no'"
-          />
-          <label class="form-check-label" for="radioNo">
-            {{ "no" | transloco }}
-          </label>
+      <div *ngIf="showRadioOptions" class="mt-3">
+        <div class="d-flex gap-2">
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="confirmReplacement"
+              id="radioYes"
+              value="yes"
+              (change)="onRadioChange('yes')"
+              [checked]="selectedRadioOption === 'yes'"
+            />
+            <label class="form-check-label" for="radioYes">
+              {{ "yes" | transloco }}
+            </label>
+          </div>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="confirmReplacement"
+              id="radioNo"
+              value="no"
+              (change)="onRadioChange('no')"
+              [checked]="selectedRadioOption === 'no'"
+            />
+            <label class="form-check-label" for="radioNo">
+              {{ "no" | transloco }}
+            </label>
+          </div>
         </div>
       </div>
+    </ng-container>
 
-      <div *ngIf="selectedRadioOption === 'no'" class="mt-3">
-        <label for="categorySelect" class="form-label">
-          {{ t("select_category_and_add_as_new_file") }}:
-        </label>
-        <select
-          id="categorySelect"
-          class="form-select"
-          [class.is-invalid]="categoryAlreadyExists"
-          [(ngModel)]="selectedCategory"
-          (change)="onCategoryChange(selectedCategory)"
-        >
-          <option value="">{{ t("select_category") }}</option>
-          <option *ngFor="let category of inputDataKeys" [value]="category">
-            {{ category }}
-          </option>
-        </select>
-        <div *ngIf="categoryAlreadyExists" class="invalid-feedback d-block">
-          <small>{{ t("a_file_with_this_category_is_already_added") }}</small>
-        </div>
-      </div>
-    </div>
-
-    <!-- Show category select only when in showCategorySelectOnly mode -->
-    <div *ngIf="showCategorySelectOnly" class="mt-3">
-      <label for="categorySelectOnly" class="form-label">
+    <div *ngIf="showCategorySelect" class="mt-3">
+      <label for="categorySelect" class="form-label">
         {{ t("select_category_and_add_as_new_file") }}:
       </label>
       <select
-        id="categorySelectOnly"
+        id="categorySelect"
         class="form-select"
         [class.is-invalid]="categoryAlreadyExists"
         [(ngModel)]="selectedCategory"
-        (change)="onCategoryChange(selectedCategory)"
+        (change)="onCategoryChange()"
       >
         <option value="">{{ t("select_category") }}</option>
         <option *ngFor="let category of inputDataKeys" [value]="category">
@@ -95,11 +70,12 @@
       </div>
     </div>
   </div>
+  
   <div class="modal-footer">
     <button
       type="button"
       class="btn btn-outline-secondary"
-      (click)="onCancleClick()"
+      (click)="onCancel()"
       [hidden]="disableCancelButton"
     >
       {{ "cancel" | transloco }}
@@ -109,8 +85,8 @@
       ngbAutofocus
       mat-raised-button
       class="bg-custom-primary"
-      (click)="onConfirmClick()"
-      [disabled]="isConfirmDisabled()"
+      (click)="onConfirm()"
+      [disabled]="isConfirmDisabled"
     >
       {{ ("confirm" | transloco) || acceptButton }}
     </button>

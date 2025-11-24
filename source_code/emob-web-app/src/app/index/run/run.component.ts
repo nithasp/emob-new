@@ -663,8 +663,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (index !== -1 || existingFileWithSameColumns) {
       // duplicate file logic here (either same keyName OR same columnRequired)
 
-      console.log('duplicate file or duplicate columnRequired', file);
-
       // Determine which file is being duplicated
       const duplicatedFileIndex =
         index !== -1
@@ -754,9 +752,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     } else {
       // no duplicate file logic here
       // Check if columnRequired is duplicated AND none of the duplicate files are in preOrderFiles yet
-
-      console.log('no duplicate file', file);
-
       // Find the matched item for the current file
       const matchedItemForNew = this.depotInputDataItems.find(
         (item) => item.keyName === keyName
