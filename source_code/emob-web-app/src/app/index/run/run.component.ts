@@ -2470,18 +2470,30 @@ export class RunComponent implements OnInit, AfterViewInit {
     // Check for duplicate categories
     if (this.hasAnyDuplicateCategories()) return false;
 
-    const requiredDisplayNames = this.depotInputDataItems.map(
-      (item) => item.displayName
-    );
+    // Get only required file types (where required === true)
+    const requiredDisplayNames = this.depotInputDataItems
+      .filter((item) => item.required === true)
+      .map((item) => item.displayName);
+
     const uploadedDisplayNames = this.preOrderFiles
       .map(
         (preOrderFileItem) =>
           (preOrderFileItem.file as FileWithCategory).displayName
       )
       .filter((displayName) => !!displayName);
-    return requiredDisplayNames.every((required) =>
+
+    console.log('requiredDisplayNames', requiredDisplayNames);
+    console.log('uploadedDisplayNames', uploadedDisplayNames);
+
+    // Check if all required files are uploaded
+    // If no files are required, every() returns true (allowing optional-only uploads)
+    const allRequiredUploaded = requiredDisplayNames.every((required) =>
       uploadedDisplayNames.includes(required)
     );
+
+    console.log('allRequiredUploaded', allRequiredUploaded);
+
+    return allRequiredUploaded;
   }
 
   backToStep1() {
@@ -2991,5 +3003,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     console.log('this.requiredFileTypes', this.requiredFileTypes);
 
     console.log('this.depots ', this.depots);
+
+    console.log(
+      'this.canExecuteHandleUploadSubmit()',
+      this.canExecuteHandleUploadSubmit()
+    );
   }
 }
