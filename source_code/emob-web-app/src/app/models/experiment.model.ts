@@ -120,6 +120,7 @@ export interface DepotInputRequirement {
   displayName: string;
   columnRequired: string[];
   fileFormatType: string;
+  required: boolean;
   createdAt: string;
   modifiedAt: string;
 }

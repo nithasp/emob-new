@@ -384,6 +384,7 @@ export class ExperimentService {
                 displayName
                 columnRequired
                 fileFormatType
+                required
                 createdAt
                 modifiedAt
               }
