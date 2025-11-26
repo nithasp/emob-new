@@ -43,7 +43,7 @@
 
                 <div class="card p-3 mb-4">
                   <h4>
-                    <mat-icon>location_on</mat-icon> 
+                    <mat-icon>location_on</mat-icon>
                     <span *ngIf="isFileSelectionStep">{{ t('manage_depots') }}</span>
                     <span *ngIf="!isFileSelectionStep">{{ t('depots') }}</span>
                   </h4>
@@ -51,14 +51,14 @@
                     <mat-label>
                       {{ t('single_depot_selection') }}
                     </mat-label>
-                      <mat-select *ngIf="isFileSelectionStep" [(value)]="selectedDepotId" (selectionChange)="onDepotSelectionChange()"
-                        [disabled]="!isFilePreview">
-                        <mat-option *ngFor="let depot of depots" [value]="depot.depotName">
-                          {{ depot.depotName }}
-                        </mat-option>
-                      </mat-select>
-                      
-                      <mat-select *ngIf="!isFileSelectionStep" [(value)]="selectedDepotId" disabled>
+                    <mat-select *ngIf="isFileSelectionStep" [(value)]="selectedDepotId"
+                      (selectionChange)="onDepotSelectionChange()" [disabled]="!isFilePreview">
+                      <mat-option *ngFor="let depot of depots" [value]="depot.depotName">
+                        {{ depot.depotName }}
+                      </mat-option>
+                    </mat-select>
+
+                    <mat-select *ngIf="!isFileSelectionStep" [(value)]="selectedDepotId" disabled>
                       <mat-option *ngFor="let depot of experiment.depots" [value]="depot.depotName">
                         {{ depot.depotName }}
                       </mat-option>
@@ -94,7 +94,8 @@
                     </div>
                     <input type="text" class="form-control" [(ngModel)]="experiment.name" disabled="true" />
                   </div>
-                  <button *ngIf="!isFileSelectionStep" class="btn" [hidden]="!isOriginalExperiment()" (click)="backToStep1()">
+                  <button *ngIf="!isFileSelectionStep" class="btn" [hidden]="!isOriginalExperiment()"
+                    (click)="backToStep1()">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </div>
@@ -138,7 +139,9 @@
                       </thead>
                       <tbody>
                         <ng-container *ngFor="let fileObj of preOrderFiles; let i = index">
-                          <tr [ngClass]="{'table-danger': hasDuplicateCategory(fileObj)}" [style.outline]="hasDuplicateCategory(fileObj) ? '2px solid #dc3545' : null" [style.outline-offset]="hasDuplicateCategory(fileObj) ? '-2px' : null">
+                          <tr [ngClass]="{'table-danger': hasDuplicateCategory(fileObj)}"
+                            [style.outline]="hasDuplicateCategory(fileObj) ? '2px solid #dc3545' : null"
+                            [style.outline-offset]="hasDuplicateCategory(fileObj) ? '-2px' : null">
                             <td scope="row" class="ps-3">{{ i + 1 }}</td>
                             <td style="
                                 word-wrap: break-word;
@@ -157,7 +160,8 @@
                               <span class="step2" *ngIf="!isFileSelectionStep"> {{ fileObj.file.displayName }} </span>
                             </td>
                             <td>
-                              <span class="step1" *ngIf="isFileSelectionStep"> {{ fileObj.file.size / 1000000 | number : "1.2-2" }} MB </span>
+                              <span class="step1" *ngIf="isFileSelectionStep"> {{ fileObj.file.size / 1000000 | number :
+                                "1.2-2" }} MB </span>
                               <span class="step2" *ngIf="!isFileSelectionStep"> {{ fileObj.file.size }} MB</span>
                             </td>
                             <td>
@@ -171,7 +175,8 @@
                               <span class="step2" *ngIf="!isFileSelectionStep"> {{ fileObj.file.type }} </span>
                             </td>
                             <td>
-                              <button *ngIf="isFileSelectionStep" class="btn" (click)="deleteFileInList(i)" [hidden]="!isOriginalExperiment()">
+                              <button *ngIf="isFileSelectionStep" class="btn" (click)="deleteFileInList(i)"
+                                [hidden]="!isOriginalExperiment()">
                                 <mat-icon>delete</mat-icon>
                               </button>
                             </td>
@@ -197,7 +202,8 @@
 
                 <div class="text-end p-0">
                   <button *ngIf="isFilePreview" mat-raised-button
-                    class="upload-submit-button bg-custom-primary mt-3 mr-0" (click)="handleUploadSubmit()">
+                    class="upload-submit-button bg-custom-primary mt-3 mr-0"
+                    [disabled]="!canExecuteHandleUploadSubmit()" (click)="handleUploadSubmit()">
                     {{ "confirm" | transloco }}
                   </button>
                 </div>
@@ -441,7 +447,8 @@
                 </ngb-alert>
                 }
                 <mat-accordion [multi]="true">
-                  <mat-expansion-panel [expanded]="true" *ngFor="let group of dynamicParametersByCategory; trackBy: trackByGroup">
+                  <mat-expansion-panel [expanded]="true"
+                    *ngFor="let group of dynamicParametersByCategory; trackBy: trackByGroup">
                     <mat-expansion-panel-header>
                       <mat-panel-title>
                         {{ getLocalized(group.items[0].category) || group.key }}
@@ -464,23 +471,30 @@
                                 <button popover-trigger class="link link-primary link-opacity-75-hover">
                                   <ng-container [ngSwitch]="(param.valueType || '').toLowerCase()">
                                     <ng-container *ngSwitchCase="'time'">{{ param.value || '00:00' }}</ng-container>
-                                    <ng-container *ngSwitchCase="'duration_hh:mm'">{{ ('' + (param.value || '00:00')) | timeFormat }}</ng-container>
-                                    <ng-container *ngSwitchCase="'number'">{{ (+param.value) | number: '1.0-0' }}</ng-container>
-                                    <ng-container *ngSwitchCase="'number_kg'">{{ (+param.value) | number: '1.0-0' }} <span class="metric">{{ 'kilogram' | transloco }}</span></ng-container>
-                                    <ng-container *ngSwitchCase="'number_km'">{{ (+param.value) | number: '1.0-0' }} <span class="metric">{{ 'kilometer' | transloco }}</span></ng-container>
+                                    <ng-container *ngSwitchCase="'duration_hh:mm'">{{ ('' + (param.value || '00:00')) |
+                                      timeFormat }}</ng-container>
+                                    <ng-container *ngSwitchCase="'number'">{{ (+param.value) | number: '1.0-0'
+                                      }}</ng-container>
+                                    <ng-container *ngSwitchCase="'number_kg'">{{ (+param.value) | number: '1.0-0' }}
+                                      <span class="metric">{{ 'kilogram' | transloco }}</span></ng-container>
+                                    <ng-container *ngSwitchCase="'number_km'">{{ (+param.value) | number: '1.0-0' }}
+                                      <span class="metric">{{ 'kilometer' | transloco }}</span></ng-container>
                                     <ng-container *ngSwitchDefault>{{ param.value }}</ng-container>
                                   </ng-container>
                                 </button>
                                 <div popover-content>
                                   <p class="card-title">{{ getLocalized(param.displayName) }}</p>
                                   <ng-container *ngIf="isTimeType(param); else numberEditor">
-                                    <ngb-timepicker [ngModel]="param.value || '00:00'" (ngModelChange)="onParamValueChange(param, $event)" />
+                                    <ngb-timepicker [ngModel]="param.value || '00:00'"
+                                      (ngModelChange)="onParamValueChange(param, $event)" />
                                   </ng-container>
                                   <ng-template #numberEditor>
-                                    <app-number-counter-input [value]="+param.value || 0" 
-                                    (valueChange)="onParamValueChange(param, $event)" [maxValue]="param.joiConfig.max || 10000" [minValue]="param.joiConfig.min || 0" 
-                                    [count]="param.keyName === 'VehicleOrderSizeCapacity' ? 100 : 1" 
-                                    [errorMessage]="param.joiConfig.message || null" class="d-inline-block mt-0 mb-3"></app-number-counter-input>
+                                    <app-number-counter-input [value]="+param.value || 0"
+                                      (valueChange)="onParamValueChange(param, $event)"
+                                      [maxValue]="param.joiConfig.max || 10000" [minValue]="param.joiConfig.min || 0"
+                                      [count]="param.keyName === 'VehicleOrderSizeCapacity' ? 100 : 1"
+                                      [errorMessage]="param.joiConfig.message || null"
+                                      class="d-inline-block mt-0 mb-3"></app-number-counter-input>
                                   </ng-template>
                                   <div><small class="text-muted">{{ getLocalized(param.description) }}</small></div>
                                 </div>

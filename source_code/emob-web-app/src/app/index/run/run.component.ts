@@ -661,6 +661,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       : undefined;
 
     if (index !== -1 || existingFileWithSameColumns) {
+      console.log('duplicate file');
       // duplicate file logic here (either same keyName OR same columnRequired)
 
       // Determine which file is being duplicated
@@ -2267,7 +2268,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (selectedDisplayName) {
       // Check if this category already exists in other files (excluding the current file)
       const exists = this.preOrderFiles.some(
-        (item) => item.id !== fileObj.id && item.file.displayName === selectedDisplayName
+        (item) =>
+          item.id !== fileObj.id &&
+          item.file.displayName === selectedDisplayName
       );
 
       if (exists) {
@@ -2306,14 +2309,21 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   hasDuplicateCategory(fileObj: PreOrderFileItem): boolean {
     if (!fileObj.file.displayName) return false;
-    
+
     // Count how many files have the same displayName
     const count = this.preOrderFiles.filter(
       (item) => item.file.displayName === fileObj.file.displayName
     ).length;
-    
+
     // If count > 1, this category is duplicated
     return count > 1;
+  }
+
+  hasAnyDuplicateCategories(): boolean {
+    // Check if any file in preOrderFiles has a duplicate category
+    return this.preOrderFiles.some((fileObj) =>
+      this.hasDuplicateCategory(fileObj)
+    );
   }
 
   updateInputDataKeysFromDepot(depot: MyDepot) {
@@ -2447,6 +2457,10 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   canExecuteHandleUploadSubmit(): boolean {
     if (this.preOrderFiles.length === 0) return false;
+
+    // Check for duplicate categories
+    if (this.hasAnyDuplicateCategories()) return false;
+
     const requiredDisplayNames = this.depotInputDataItems.map(
       (item) => item.displayName
     );
