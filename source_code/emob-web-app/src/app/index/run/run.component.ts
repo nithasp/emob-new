@@ -151,6 +151,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     keyName: string;
     displayName: string;
     columnRequired: string[];
+    required?: boolean;
   }> = [];
 
   public haveUpdateAfterValidated: boolean = false;
@@ -287,6 +288,13 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   get requiredFileTypes(): string[] {
     return this.depotInputDataItems.map((item) => item.displayName);
+  }
+
+  isFileTypeRequired(displayName: string): boolean {
+    const item = this.depotInputDataItems.find(
+      (item) => item.displayName === displayName
+    );
+    return item?.required === true;
   }
 
   // trackBy helpers to keep accordion stable across change detection/language swaps
@@ -2332,6 +2340,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         keyName: item.keyName,
         displayName: item.displayName,
         columnRequired: item.columnRequired || [],
+        required: item.required,
       })) || [];
 
     const uniqueItems = this.depotInputDataItems.filter(
@@ -2977,5 +2986,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     console.log('this.depotInputDataItems', this.depotInputDataItems);
 
     console.log('this.inputDataKeys', this.inputDataKeys);
+
+    console.log('this.depotInputDataItems', this.depotInputDataItems);
+    console.log('this.requiredFileTypes', this.requiredFileTypes);
+
+    console.log('this.depots ', this.depots);
   }
 }

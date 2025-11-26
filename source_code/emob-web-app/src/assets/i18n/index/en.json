@@ -286,8 +286,10 @@
   "zero_weight_description": "Please check the inventories. If you have updated inventories",
   "zero_weight_warning": "Zero weight Warning",
   "zone": "Zone",
-  
+
   "select_category_and_add_as_new_file": "Select category and add as new file",
   "select_category": "Select category",
-  "a_file_with_this_category_is_already_added": "A file with this category is already added"
+  "a_file_with_this_category_is_already_added": "A file with this category is already added",
+  "required": "Required",
+  "optional": "Optional"
 }

@@ -289,5 +289,7 @@
 
   "select_category_and_add_as_new_file": "เลือกประเภทและเพิ่มเป็นไฟล์ใหม่",
   "select_category": "เลือกประเภท",
-  "a_file_with_this_category_is_already_added": "ข้อมูลประเภทนี้ถูกเพิ่มเข้ามาแล้ว"
+  "a_file_with_this_category_is_already_added": "ข้อมูลประเภทนี้ถูกเพิ่มเข้ามาแล้ว",
+  "required": "จำเป็น",
+  "optional": "ไม่จำเป็น"
 }

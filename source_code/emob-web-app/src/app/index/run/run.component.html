@@ -68,12 +68,25 @@
                   <h4 *ngIf="isFileSelectionStep" class="file-type-required">
                     <span>{{ t('file_type_to_upload') }}: </span>
                     <ng-container *ngIf="requiredFileTypes.length > 0; else noDepot">
-                      <ng-container *ngIf="requiredFileTypes.length === 1; else multipleTypes">
-                        <span>{{ requiredFileTypes[0] }}</span>
+                      <ng-container #singleTypes *ngIf="requiredFileTypes.length === 1; else multipleTypes">
+                        <span>{{ requiredFileTypes[0] }} - </span>
+                        <span [ngClass]="isFileTypeRequired(requiredFileTypes[0]) ? 'text-danger' : 'text-muted'">
+                          {{ isFileTypeRequired(requiredFileTypes[0])
+                          ? t("required")
+                          : t("optional") }}
+                        </span>
                       </ng-container>
                       <ng-template #multipleTypes>
                         <ul style="margin-bottom: 0;">
-                          <li *ngFor="let type of requiredFileTypes">{{ type }}</li>
+                          <li *ngFor="let type of requiredFileTypes">
+                            {{ type }} -
+                            <span [ngClass]="isFileTypeRequired(type) ? 'text-danger' : 'text-muted'">
+                              {{ isFileTypeRequired(type)
+                              ? t("required")
+                              : t("optional")
+                              }}
+                            </span>
+                          </li>
                         </ul>
                       </ng-template>
                     </ng-container>
