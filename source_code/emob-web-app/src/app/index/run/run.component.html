@@ -70,22 +70,38 @@
                     <ng-container *ngIf="requiredFileTypes.length > 0; else noDepot">
                       <ng-container #singleTypes *ngIf="requiredFileTypes.length === 1; else multipleTypes">
                         <span>{{ requiredFileTypes[0] }} - </span>
-                        <span [ngClass]="isFileTypeRequired(requiredFileTypes[0]) ? 'text-danger' : 'text-muted'">
-                          {{ isFileTypeRequired(requiredFileTypes[0])
-                          ? t("required")
-                          : t("optional") }}
-                        </span>
+                        <ng-container *ngIf="isFileTypeAlreadyAdded(requiredFileTypes[0]); else showStatus">
+                          <span class="text-success">
+                            {{ t("this_file_category_has_already_been_added") }}
+                            <mat-icon>check_circle</mat-icon>
+                          </span>
+                        </ng-container>
+                        <ng-template #showStatus>
+                          <span [ngClass]="isFileTypeRequired(requiredFileTypes[0]) ? 'text-danger' : 'text-muted'">
+                            {{ isFileTypeRequired(requiredFileTypes[0])
+                            ? t("required")
+                            : t("optional") }}
+                          </span>
+                        </ng-template>
                       </ng-container>
                       <ng-template #multipleTypes>
                         <ul style="margin-bottom: 0;">
                           <li *ngFor="let type of requiredFileTypes">
                             {{ type }} -
-                            <span [ngClass]="isFileTypeRequired(type) ? 'text-danger' : 'text-muted'">
-                              {{ isFileTypeRequired(type)
-                              ? t("required")
-                              : t("optional")
-                              }}
-                            </span>
+                            <ng-container *ngIf="isFileTypeAlreadyAdded(type); else showStatusMultiple">
+                              <span class="text-success">
+                                {{ t("this_file_category_has_already_been_added") }}
+                                <mat-icon>check_circle</mat-icon>
+                              </span>
+                            </ng-container>
+                            <ng-template #showStatusMultiple>
+                              <span [ngClass]="isFileTypeRequired(type) ? 'text-danger' : 'text-muted'">
+                                {{ isFileTypeRequired(type)
+                                ? t("required")
+                                : t("optional")
+                                }}
+                              </span>
+                            </ng-template>
                           </li>
                         </ul>
                       </ng-template>
@@ -96,6 +112,7 @@
                       </span>
                     </ng-template>
                   </h4>
+                  
                 </div>
 
                 <div class="col-md-12 mb-3 d-flex" *ngIf="isUpload">

@@ -297,6 +297,12 @@ export class RunComponent implements OnInit, AfterViewInit {
     return item?.required === true;
   }
 
+  isFileTypeAlreadyAdded(displayName: string): boolean {
+    return this.preOrderFiles.some(
+      (fileItem) => fileItem.file.displayName === displayName
+    );
+  }
+
   // trackBy helpers to keep accordion stable across change detection/language swaps
   trackByGroup(
     index: number,

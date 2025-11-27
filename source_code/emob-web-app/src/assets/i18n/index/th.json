@@ -291,5 +291,6 @@
   "select_category": "เลือกประเภท",
   "a_file_with_this_category_is_already_added": "ข้อมูลประเภทนี้ถูกเพิ่มเข้ามาแล้ว",
   "required": "จำเป็น",
-  "optional": "ไม่จำเป็น"
+  "optional": "ไม่จำเป็น",
+  "this_file_category_has_already_been_added": "หมวดหมู่ไฟล์นี้ถูกเพิ่มแล้ว"
 }

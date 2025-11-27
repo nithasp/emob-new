@@ -291,5 +291,6 @@
   "select_category": "Select category",
   "a_file_with_this_category_is_already_added": "A file with this category is already added",
   "required": "Required",
-  "optional": "Optional"
+  "optional": "Optional",
+  "this_file_category_has_already_been_added": "This file category has already been added"
 }
