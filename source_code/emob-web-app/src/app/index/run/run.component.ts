@@ -291,10 +291,10 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   isFileTypeRequired(displayName: string): boolean {
-    const item = this.depotInputDataItems.find(
-      (item) => item.displayName === displayName
+    return (
+      this.depotInputDataItems.find((item) => item.displayName === displayName)
+        ?.required ?? false
     );
-    return item?.required === true;
   }
 
   isFileTypeAlreadyAdded(displayName: string): boolean {
@@ -675,7 +675,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       : undefined;
 
     if (index !== -1 || existingFileWithSameColumns) {
-      console.log('duplicate file');
       // duplicate file logic here (either same keyName OR same columnRequired)
 
       // Determine which file is being duplicated
@@ -2276,7 +2275,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     fileObj: PreOrderFileItem,
     event: { value: string }
   ) {
-    console.log('handleInputDataKeyChange', fileObj, event);
     const selectedDisplayName = event.value;
 
     if (selectedDisplayName) {
@@ -2471,6 +2469,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   canExecuteHandleUploadSubmit(): boolean {
+    console.log('canExecuteHandleUploadSubmit');
     if (this.preOrderFiles.length === 0) return false;
 
     // Check for duplicate categories
@@ -2488,16 +2487,11 @@ export class RunComponent implements OnInit, AfterViewInit {
       )
       .filter((displayName) => !!displayName);
 
-    console.log('requiredDisplayNames', requiredDisplayNames);
-    console.log('uploadedDisplayNames', uploadedDisplayNames);
-
     // Check if all required files are uploaded
     // If no files are required, every() returns true (allowing optional-only uploads)
     const allRequiredUploaded = requiredDisplayNames.every((required) =>
       uploadedDisplayNames.includes(required)
     );
-
-    console.log('allRequiredUploaded', allRequiredUploaded);
 
     return allRequiredUploaded;
   }
@@ -2997,22 +2991,5 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isOverDistanceKey(dynamicParameter: DynamicParameter): boolean {
     return dynamicParameter.keyName === 'MaximumTravelDistance';
-  }
-
-  log() {
-    console.log('this.preOrderFiles', this.preOrderFiles);
-    console.log('this.depotInputDataItems', this.depotInputDataItems);
-
-    console.log('this.inputDataKeys', this.inputDataKeys);
-
-    console.log('this.depotInputDataItems', this.depotInputDataItems);
-    console.log('this.requiredFileTypes', this.requiredFileTypes);
-
-    console.log('this.depots ', this.depots);
-
-    console.log(
-      'this.canExecuteHandleUploadSubmit()',
-      this.canExecuteHandleUploadSubmit()
-    );
   }
 }
