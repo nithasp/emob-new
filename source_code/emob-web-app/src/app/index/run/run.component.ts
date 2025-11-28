@@ -265,6 +265,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     items: DynamicParameter[];
   }> = [];
 
+  public canUpload: boolean = false;
+
   constructor(
     private readonly spinner: NgxSpinnerService,
     private readonly constraintService: ConstraintService,
@@ -453,6 +455,9 @@ export class RunComponent implements OnInit, AfterViewInit {
         };
       }
     );
+
+    // Update upload button state after loading files
+    this.updateCanUploadState();
 
     this.toastr.info(
       this.transloco.translate('loading_geo_location_data', {}, 'index'),
@@ -736,6 +741,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               file.isFirstOfType = true;
               this.preOrderFiles[duplicatedFileIndex] = { id, file };
               this.isFilePreview = true;
+              this.updateCanUploadState();
             }
           } else if (result && typeof result === 'object') {
             if (result.replace && duplicatedFileIndex !== -1) {
@@ -745,6 +751,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               file.isFirstOfType = true;
               this.preOrderFiles[duplicatedFileIndex] = { id, file };
               this.isFilePreview = true;
+              this.updateCanUploadState();
             } else if (result.category) {
               // Add as new file with selected category
               const selectedItem = this.depotInputDataItems.find(
@@ -756,6 +763,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                 file.isFirstOfType = true;
                 this.preOrderFiles.push({ id, file });
                 this.isFilePreview = true;
+                this.updateCanUploadState();
               }
             }
           }
@@ -832,6 +840,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                     file.isFirstOfType = true;
                     this.preOrderFiles.push({ id, file });
                     this.isFilePreview = true;
+                    this.updateCanUploadState();
                   }
                 }
               })
@@ -851,6 +860,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.preOrderFiles.push({ id, file });
       this.isFilePreview = true;
     }
+
+    // Update upload button state after file changes
+    this.updateCanUploadState();
   }
 
   async validateSingleFileAgainstDepot(file: FileWithCategory): Promise<{
@@ -1060,6 +1072,9 @@ export class RunComponent implements OnInit, AfterViewInit {
                   );
                   // Fetch latest dynamic parameters for the selected depot and rebuild UI
                   this.getDynamicParameters();
+
+                  // Update upload button state after successful upload
+                  this.updateCanUploadState();
                 });
             });
         }
@@ -1115,6 +1130,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.spinner.hide();
     }, 1000);
     this.resetComponentValue();
+
+    // Update upload button state after file deletion
+    this.updateCanUploadState();
   }
   private resetComponentValue() {
     this.popupContent = null;
@@ -2174,6 +2192,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     await this.validateUploadedFilesAgainstDepot();
     // refresh dynamic parameters render when depot changes
     this.refreshDynamicParametersForSelectedDepot();
+
+    // Update upload button state after depot change
+    this.updateCanUploadState();
   }
 
   updateDepot(
@@ -2254,6 +2275,9 @@ export class RunComponent implements OnInit, AfterViewInit {
           if (this.selectedDepotId) {
             localStorage.setItem('selectedDepotId', this.selectedDepotId);
           }
+
+          // Initialize upload button state
+          this.updateCanUploadState();
         }
       },
       error: (error) => {
@@ -2317,6 +2341,9 @@ export class RunComponent implements OnInit, AfterViewInit {
         (fileObj.file as PreOrderFileDescriptor).displayName = '';
       }
     }
+
+    // Update upload button state after category change
+    this.updateCanUploadState();
   }
 
   hasDuplicateCategory(fileObj: PreOrderFileItem): boolean {
@@ -2353,6 +2380,9 @@ export class RunComponent implements OnInit, AfterViewInit {
         self.findIndex((existingItem) => existingItem.keyName === item.keyName)
     );
     this.inputDataKeys = uniqueItems.map((item) => item.displayName);
+
+    // Update upload button state when depot requirements change
+    this.updateCanUploadState();
   }
 
   async validateUploadedFilesAgainstDepot() {
@@ -2368,6 +2398,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       }
     }
     this.preOrderFiles = validFiles;
+
+    // Update upload button state after validation
+    this.updateCanUploadState();
   }
 
   validateFileAgainstDepotRequirements(
@@ -2468,12 +2501,17 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
   }
 
-  canExecuteHandleUploadSubmit(): boolean {
-    console.log('canExecuteHandleUploadSubmit');
-    if (this.preOrderFiles.length === 0) return false;
+  updateCanUploadState(): void {
+    if (this.preOrderFiles.length === 0) {
+      this.canUpload = false;
+      return;
+    }
 
     // Check for duplicate categories
-    if (this.hasAnyDuplicateCategories()) return false;
+    if (this.hasAnyDuplicateCategories()) {
+      this.canUpload = false;
+      return;
+    }
 
     // Get only required file types (where required === true)
     const requiredDisplayNames = this.depotInputDataItems
@@ -2493,7 +2531,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       uploadedDisplayNames.includes(required)
     );
 
-    return allRequiredUploaded;
+    this.canUpload = allRequiredUploaded;
   }
 
   backToStep1() {
@@ -2541,6 +2579,9 @@ export class RunComponent implements OnInit, AfterViewInit {
 
         // Refresh depot list and input requirements from server with spinner
         this.getMyDepots(true);
+
+        // Reset upload button state
+        this.updateCanUploadState();
       })
       .catch(() => {
         // dismissed: do nothing

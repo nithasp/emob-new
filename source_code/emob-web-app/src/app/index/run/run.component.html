@@ -232,7 +232,7 @@
                 <div class="text-end p-0">
                   <button *ngIf="isFilePreview" mat-raised-button
                     class="upload-submit-button bg-custom-primary mt-3 mr-0"
-                    [disabled]="!canExecuteHandleUploadSubmit()" (click)="handleUploadSubmit()">
+                    [disabled]="!canUpload" (click)="handleUploadSubmit()">
                     {{ "confirm" | transloco }}
                   </button>
                 </div>
