@@ -1,0 +1,19 @@
+:host ::ng-deep {
+  .mat-form-field-disabled .mat-form-field-label,
+  .mat-mdc-form-field.mat-form-field-disabled .mdc-floating-label {
+    color: #374151 !important;
+  }
+
+  .mat-form-field-disabled .mat-form-field-required-marker,
+  .mat-form-field-disabled .mdc-floating-label::after,
+  .mat-mdc-form-field.mat-form-field-disabled .mdc-floating-label::after {
+    display: none !important;
+  }
+
+  .mat-form-field-disabled.mat-form-field-required
+    .mat-form-field-required-marker,
+  .mat-mdc-form-field.mat-form-field-disabled.mat-form-field-required
+    .mdc-floating-label::after {
+    display: none !important;
+  }
+}

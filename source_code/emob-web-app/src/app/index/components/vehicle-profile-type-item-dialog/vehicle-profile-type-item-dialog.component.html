@@ -1,7 +1,7 @@
 <ng-container *transloco="let t; read: 'index'">
   <div class="modal-header bg-light">
     <h1 class="modal-title">
-      {{ vehicleTypeData?.name }}
+      {{ vehicleTypeData.name }}
     </h1>
     <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss()"></button>
   </div>
@@ -24,12 +24,9 @@
               <div class="col-12 col-md-6 mb-3 mb-md-0">
                 <p>
                   <strong>{{ t("dimensions") }}: </strong>
-                  <span>{{ vehicleTypeData.width }}</span
-                  ><span>{{ "m" | transloco }}</span> x
-                  <span>{{ vehicleTypeData.height }}</span
-                  ><span>{{ "m" | transloco }}</span> x
-                  <span>{{ vehicleTypeData.length }}</span
-                  ><span>{{ "m" | transloco }}</span>
+                  <span>{{ vehicleTypeData.width }}</span><span>{{ "m" | transloco }}</span> x
+                  <span>{{ vehicleTypeData.height }}</span><span>{{ "m" | transloco }}</span> x
+                  <span>{{ vehicleTypeData.length }}</span><span>{{ "m" | transloco }}</span>
                 </p>
                 <p>
                   <strong>{{ t("capacity") }}: </strong>
@@ -61,15 +58,15 @@
                   <strong>{{ t("fixed_cost") }}: </strong>
                   <span>{{
                     vehicleTypeData.fixedCost
-                      | currency : "USD" : "symbol" : "1.2-2"
-                  }}</span>
+                    | currency : "USD" : "symbol" : "1.2-2"
+                    }}</span>
                 </p>
                 <p>
                   <strong>{{ t("unit_distance_cost") }}: </strong>
                   <span>{{
                     vehicleTypeData.unitDistanceCost
-                      | currency : "USD" : "symbol" : "1.2-2"
-                  }}</span>
+                    | currency : "USD" : "symbol" : "1.2-2"
+                    }}</span>
                   <span>/ {{ "km" | transloco }}</span>
                 </p>
               </div>

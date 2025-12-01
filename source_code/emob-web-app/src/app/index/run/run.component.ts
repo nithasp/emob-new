@@ -29,6 +29,7 @@ import OSM from 'ol/source/OSM';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatDialog } from '@angular/material/dialog';
 
 import * as ExcelJS from 'exceljs';
 import {
@@ -87,6 +88,7 @@ import {
 import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
 import { DetailsDialogComponent } from '../components/details-dialog/details-dialog.component';
 import { VehicleProfileTypeItemDialogComponent } from '../components/vehicle-profile-type-item-dialog/vehicle-profile-type-item-dialog.component';
+import { VehicleTypeDialogComponent } from '../components/vehicle-type-dialog/vehicle-type-dialog.component';
 import { CustomerListComponent } from '../components/customer-list/customer-list.component';
 import { ValidateMessage } from 'src/app/models/validation-message';
 import { UserMSGraphService } from 'src/app/services/user.service';
@@ -100,10 +102,7 @@ import Fill from 'ol/style/Fill';
 import Stroke from 'ol/style/Stroke';
 import { TranslocoService } from '@jsverse/transloco';
 import { VehicleService } from 'src/app/services/vehicle.service';
-import {
-  VehicleType,
-  VehicleProfileTypeEnum,
-} from 'src/app/models/vehicle.model';
+import { VehicleType } from 'src/app/models/vehicle.model';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -273,6 +272,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   public myVehicleTypes: VehicleType[] = [];
   public selectedVehicleIds: string[] = [];
   public selectedVehicleCounts: Record<string, number> = {};
+  private readonly defaultVehicleMaxCount = 1000;
 
   constructor(
     private readonly spinner: NgxSpinnerService,
@@ -289,7 +289,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly dataService: DataService,
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService,
-    private readonly vehicleService: VehicleService
+    private readonly vehicleService: VehicleService,
+    private readonly matDialog: MatDialog
   ) {}
 
   public generateUniqueId(): string {
@@ -494,12 +495,12 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (newData.length > 0) {
                 this.toastr.info(
                   `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                  newData.length +
-                  ` ${this.transloco.translate(
-                    'new_edited_location_data_suffix',
-                    {},
-                    'index'
-                  )}`,
+                    newData.length +
+                    ` ${this.transloco.translate(
+                      'new_edited_location_data_suffix',
+                      {},
+                      'index'
+                    )}`,
                   `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
@@ -704,21 +705,31 @@ export class RunComponent implements OnInit, AfterViewInit {
           const workbook = new ExcelJS.Workbook();
           await workbook.xlsx.load(arrayBuffer);
 
-          let worksheet: ExcelJS.Worksheet | undefined = workbook.getWorksheet(1);
+          let worksheet: ExcelJS.Worksheet | undefined =
+            workbook.getWorksheet(1);
           if (!worksheet) {
             const normalize = (name: string) =>
-              name.trim().toLowerCase().replace(/[\s_\-]/g, '');
+              name
+                .trim()
+                .toLowerCase()
+                .replace(/[\s_\-]/g, '');
 
-            const allSheets = workbook.worksheets.map((ws: ExcelJS.Worksheet) => ({
-              name: ws.name,
-              normalized: normalize(ws.name),
-            }));
+            const allSheets = workbook.worksheets.map(
+              (ws: ExcelJS.Worksheet) => ({
+                name: ws.name,
+                normalized: normalize(ws.name),
+              })
+            );
 
-            console.log('Detected sheets:', allSheets.map((sheet) => sheet.name));
+            console.log(
+              'Detected sheets:',
+              allSheets.map((sheet) => sheet.name)
+            );
 
-            worksheet = workbook.worksheets.find(
-              (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
-            ) || workbook.worksheets[0];
+            worksheet =
+              workbook.worksheets.find(
+                (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
+              ) || workbook.worksheets[0];
           }
 
           const columnNames = (
@@ -1033,8 +1044,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
-            ? item.name
-            : '';
+          ? item.name
+          : '';
       const mapped: MyDepot = {
         depotId: (item.depotId || item.id || '') as string,
         depotName: nameKey,
@@ -1136,7 +1147,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               });
               location.setStyle(
                 this.iconStyle[
-                uploadDataGroupCustomers[key as keyof DataGroup].type
+                  uploadDataGroupCustomers[key as keyof DataGroup].type
                 ]
               );
               this.vectorSource.addFeature(location);
@@ -1269,13 +1280,13 @@ export class RunComponent implements OnInit, AfterViewInit {
   private isPopupPayload(
     value:
       | {
-        data?:
-        | Customer
-        | Depot
-        | MyDepot
-        | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
-        isDepot?: boolean;
-      }
+          data?:
+            | Customer
+            | Depot
+            | MyDepot
+            | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
+          isDepot?: boolean;
+        }
       | null
       | undefined
   ): value is { data: Customer; isDepot: boolean } {
@@ -2169,21 +2180,31 @@ export class RunComponent implements OnInit, AfterViewInit {
           const workbook = new ExcelJS.Workbook();
           await workbook.xlsx.load(arrayBuffer);
 
-          let worksheet: ExcelJS.Worksheet | undefined = workbook.getWorksheet(1);
+          let worksheet: ExcelJS.Worksheet | undefined =
+            workbook.getWorksheet(1);
           if (!worksheet) {
             const normalize = (name: string) =>
-              name.trim().toLowerCase().replace(/[\s_\-]/g, '');
+              name
+                .trim()
+                .toLowerCase()
+                .replace(/[\s_\-]/g, '');
 
-            const allSheets = workbook.worksheets.map((ws: ExcelJS.Worksheet) => ({
-              name: ws.name,
-              normalized: normalize(ws.name),
-            }));
+            const allSheets = workbook.worksheets.map(
+              (ws: ExcelJS.Worksheet) => ({
+                name: ws.name,
+                normalized: normalize(ws.name),
+              })
+            );
 
-            console.log('Detected sheets:', allSheets.map((sheet) => sheet.name));
+            console.log(
+              'Detected sheets:',
+              allSheets.map((sheet) => sheet.name)
+            );
 
-            worksheet = workbook.worksheets.find(
-              (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
-            ) || workbook.worksheets[0];
+            worksheet =
+              workbook.worksheets.find(
+                (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
+              ) || workbook.worksheets[0];
           }
 
           const columnNames = (
@@ -2621,28 +2642,28 @@ export class RunComponent implements OnInit, AfterViewInit {
       const originalItems = groupsMap[categoryKey];
       const items = useConstraintsValues
         ? originalItems.map((dynamicParameter) => {
-          const constraintKey =
-            this.getConstraintKeyForParam(dynamicParameter);
-          if (!constraintKey) return dynamicParameter;
-          const constraintValue = this.constraintsData[constraintKey];
-          if (constraintValue === undefined || constraintValue === null) {
-            if (this.isTimeType(dynamicParameter)) {
-              return { ...dynamicParameter, value: '00:00' };
+            const constraintKey =
+              this.getConstraintKeyForParam(dynamicParameter);
+            if (!constraintKey) return dynamicParameter;
+            const constraintValue = this.constraintsData[constraintKey];
+            if (constraintValue === undefined || constraintValue === null) {
+              if (this.isTimeType(dynamicParameter)) {
+                return { ...dynamicParameter, value: '00:00' };
+              }
+              return dynamicParameter;
             }
-            return dynamicParameter;
-          }
-          if (this.isNumberType(dynamicParameter)) {
-            return { ...dynamicParameter, value: Number(constraintValue) };
-          }
-          const trimmedValue = String(constraintValue).trim();
-          return {
-            ...dynamicParameter,
-            value:
-              trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
-                ? '00:00'
-                : trimmedValue,
-          };
-        })
+            if (this.isNumberType(dynamicParameter)) {
+              return { ...dynamicParameter, value: Number(constraintValue) };
+            }
+            const trimmedValue = String(constraintValue).trim();
+            return {
+              ...dynamicParameter,
+              value:
+                trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
+                  ? '00:00'
+                  : trimmedValue,
+            };
+          })
         : originalItems;
       return {
         key: categoryKey,
@@ -2761,7 +2782,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   get availableVehicleTypes(): VehicleType[] {
-    return this.myVehicleTypes.filter(vehicle => vehicle.isVehicleAvailable ?? false);
+    return this.myVehicleTypes.filter(
+      (vehicle) => vehicle.isVehicleAvailable ?? false
+    );
   }
 
   isVehicleSelected(vehicleId: string): boolean {
@@ -2769,8 +2792,10 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   isVehicleAvailable(vehicleId: string): boolean {
-    const vehicle = this.myVehicleTypes.find(v => v.vehicleTypeId === vehicleId);
-    return vehicle ? (vehicle.isVehicleAvailable ?? false) : false;
+    const vehicle = this.myVehicleTypes.find(
+      (v) => v.vehicleTypeId === vehicleId
+    );
+    return vehicle ? vehicle.isVehicleAvailable ?? false : false;
   }
 
   onVehicleChecked(vehicleId: string, checked: boolean): void {
@@ -2778,11 +2803,13 @@ export class RunComponent implements OnInit, AfterViewInit {
       if (!this.selectedVehicleIds.includes(vehicleId)) {
         this.selectedVehicleIds = [...this.selectedVehicleIds, vehicleId];
         if (this.selectedVehicleCounts[vehicleId] == null) {
-          this.selectedVehicleCounts[vehicleId] = 0;
+          this.selectedVehicleCounts[vehicleId] = 1;
         }
       }
     } else {
-      this.selectedVehicleIds = this.selectedVehicleIds.filter((id) => id !== vehicleId);
+      this.selectedVehicleIds = this.selectedVehicleIds.filter(
+        (id) => id !== vehicleId
+      );
       if (this.selectedVehicleCounts[vehicleId] != null) {
         delete this.selectedVehicleCounts[vehicleId];
       }
@@ -2791,37 +2818,54 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   getVehicleName(vehicleId: string): string {
-    const vehicle = this.myVehicleTypes.find(v => v.vehicleTypeId === vehicleId);
+    const vehicle = this.myVehicleTypes.find(
+      (v) => v.vehicleTypeId === vehicleId
+    );
     return vehicle ? vehicle.name : '';
   }
 
   getVehicleCount(vehicleId: string): number {
     const value = this.selectedVehicleCounts[vehicleId];
-    return typeof value === 'number' && !isNaN(value) ? value : 0;
+    return typeof value === 'number' && !isNaN(value) ? value : 1;
   }
 
   onVehicleCountChange(vehicleId: string, value: number): void {
     const normalized = Number(value);
-    this.selectedVehicleCounts[vehicleId] = isNaN(normalized) ? 0 : normalized;
+    const min = this.getVehicleMinCount();
+    const max = this.getVehicleMaxCount(vehicleId);
+    let clamped = isNaN(normalized) ? min : Math.trunc(normalized);
+    if (clamped < min) {
+      clamped = min;
+    } else if (clamped > max) {
+      clamped = max;
+    }
+
+    this.selectedVehicleCounts[vehicleId] = clamped;
     this.cdr.detectChanges();
   }
 
   openVehicleItemModal(vehicleId: string) {
-    const modalRef = this.ngbModal.open(VehicleProfileTypeItemDialogComponent, {
-      centered: true,
-      size: 'xl',
-      animation: true,
-      backdrop: 'static',
-      keyboard: false,
-    });
-    
-    const vehicleType = this.myVehicleTypes.find(v => v.vehicleTypeId === vehicleId);
-    
-    // Pass vehicle type data to modal component
-    const componentInstance = modalRef.componentInstance as VehicleProfileTypeItemDialogComponent;
-    if (vehicleType) {
-      componentInstance.vehicleTypeData = vehicleType;
+    const vehicleType = this.myVehicleTypes.find(
+      (v) => v.vehicleTypeId === vehicleId
+    );
+
+    if (!vehicleType) {
+      this.toastr.warning(
+        this.transloco.translate('vehicle_not_found', {}, 'index')
+      );
+      return;
     }
+
+    this.matDialog.open(VehicleTypeDialogComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      disableClose: true,
+      data: {
+        mode: 'view',
+        vehicleType: vehicleType,
+      },
+    });
   }
 
   log() {
@@ -2834,6 +2878,25 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     console.log('this.experiment', this.experiment);
 
-    console.log('this.experiment.depots[0].depotId', this.experiment.depots[0]?.depotId);
+    console.log(
+      'this.experiment.depots[0].depotId',
+      this.experiment.depots[0]?.depotId
+    );
+
+    console.log('this.constraintsData', this.constraintsData);
+  }
+
+  getVehicleMaxCount(vehicleId: string): number {
+    const maxByConstraint = Number(
+      this.constraintsData?.numberOfVehicleAvailable
+    );
+    if (!isNaN(maxByConstraint) && maxByConstraint > 0) {
+      return maxByConstraint;
+    }
+    return this.defaultVehicleMaxCount;
+  }
+
+  getVehicleMinCount(): number {
+    return 0;
   }
 }

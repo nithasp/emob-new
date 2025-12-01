@@ -1,0 +1,32 @@
+#vehicle-type-dialog {
+  &.is-loading {
+    min-height: 710px;
+  }
+
+  .dimensions-label {
+    @media (max-width: 992px) {
+      position: static !important;
+    }
+  }
+
+  mat-dialog-actions {
+    @media (max-width: 576px) {
+      flex-direction: column;
+      button {
+        width: 100%;
+        margin: 0;
+      }
+    }
+    @media (max-width: 992px) {
+      margin: 0 0 16px 0 !important;
+    }
+  }
+
+  @media (max-width: 992px) {
+    height: 700px;
+    box-shadow: none;
+    .form-group-section2 {
+      margin-top: 0;
+    }
+  }
+}
