@@ -356,10 +356,6 @@ tr.mat-mdc-footer-row td {
   overflow: auto;
 }
 
-mat-icon {
-  vertical-align: middle;
-}
-
 .disabled {
   pointer-events: none;
   opacity: 0.5;
@@ -374,4 +370,14 @@ mat-icon {
 .upload-submit-button {
   max-width: 80px;
   width: 100%;
+}
+
+mat-icon {
+  vertical-align: middle;
+}
+
+::ng-deep mat-radio-button {
+  .mdc-label {
+    margin: 0;
+  }
 }

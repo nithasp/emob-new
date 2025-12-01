@@ -423,7 +423,7 @@
               <div style="min-height: 720px">
                 <h3 class="text-center mt-4 mb-4">Please select Vehicle and Input number for car have use it</h3>
                 <div class="d-flex flex-column align-items-center mt-4">
-                  <div *ngFor="let vehicle of availableVehicleTypes" class="vehicle-card mb-3 p-3 border rounded"
+                  <div *ngFor="let vehicle of availableVehicleTypes; let i = index" class="vehicle-card mb-3 p-3 border rounded"
                     style="width: 50%; min-width: 300px;">
                     <div class="d-flex align-items-center justify-content-between">
                       <div class="d-flex align-items-center">
@@ -436,24 +436,41 @@
                         (click)="openVehicleItemModal(vehicle.vehicleTypeId)">info</mat-icon>
                     </div>
                     <div *ngIf="isVehicleSelected(vehicle.vehicleTypeId)" class="ms-5 mt-2">
-                      <div style="font-style: italic;" class="number-of-vehicle-available">
-                        <span>
-                          {{ t("number_of_vehicle_available") }}:
-                        </span>
-                        <app-dynamic-popover [placement]="'bottom-start'">
-                          <button type="button"
-                            class="number-of-vehicle-available-value btn btn-link p-0 align-baseline" popover-trigger>
-                            {{ getVehicleCount(vehicle.vehicleTypeId) }}
-                          </button>
-                          <div popover-content>
-                            <app-number-counter-input [value]="getVehicleCount(vehicle.vehicleTypeId)"
-                              [minValue]="getVehicleMinCount()" [maxValue]="getVehicleMaxCount(vehicle.vehicleTypeId)"
-                              [count]="1"
-                              [errorMessage]="null"
-                              (valueChange)="onVehicleCountChange(vehicle.vehicleTypeId, $event)"></app-number-counter-input>
+                      <mat-radio-group 
+                        [value]="getVehicleSelectionMode(vehicle.vehicleTypeId)"
+                        (change)="onVehicleSelectionModeChange(vehicle.vehicleTypeId, $event.value)"
+                        class="d-flex flex-column">
+                        <mat-radio-button value="count" class="mb-2">
+                          <div class="number-of-vehicle-available">
+                            <span>
+                              {{ t("number_of_vehicle_available") }}:
+                            </span>
+                            <app-dynamic-popover [placement]="'bottom-start'">
+                              <button type="button"
+                                class="number-of-vehicle-available-value btn btn-link p-0 align-baseline" 
+                                popover-trigger
+                                [disabled]="getVehicleSelectionMode(vehicle.vehicleTypeId) !== 'count'">
+                                {{ getVehicleCount(vehicle.vehicleTypeId) }}
+                              </button>
+                              <div popover-content>
+                                <app-number-counter-input [value]="getVehicleCount(vehicle.vehicleTypeId)"
+                                  [minValue]="getVehicleMinCount()" [maxValue]="getVehicleMaxCount(vehicle.vehicleTypeId)"
+                                  [count]="1"
+                                  [errorMessage]="null"
+                                  (valueChange)="onVehicleCountChange(vehicle.vehicleTypeId, $event)"></app-number-counter-input>
+                              </div>
+                            </app-dynamic-popover>
                           </div>
-                        </app-dynamic-popover>
-                      </div>
+                        </mat-radio-button>
+                        <mat-radio-button value="license-plate">
+                          <div class="license-plate-selection d-flex align-items-center gap-2">
+                            <span>License Plate Selection</span>
+                            <button mat-raised-button class="bg-custom-primary p-0">
+                              Select
+                            </button>
+                          </div>
+                        </mat-radio-button>
+                      </mat-radio-group>
                     </div>
                   </div>
                 </div>

@@ -272,6 +272,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   public myVehicleTypes: VehicleType[] = [];
   public selectedVehicleIds: string[] = [];
   public selectedVehicleCounts: Record<string, number> = {};
+  public vehicleSelectionMode: Record<string, 'count' | 'license-plate'> = {};
   private readonly defaultVehicleMaxCount = 1000;
 
   constructor(
@@ -2805,6 +2806,10 @@ export class RunComponent implements OnInit, AfterViewInit {
         if (this.selectedVehicleCounts[vehicleId] == null) {
           this.selectedVehicleCounts[vehicleId] = 1;
         }
+        // Set default selection mode to 'count'
+        if (this.vehicleSelectionMode[vehicleId] == null) {
+          this.vehicleSelectionMode[vehicleId] = 'count';
+        }
       }
     } else {
       this.selectedVehicleIds = this.selectedVehicleIds.filter(
@@ -2812,6 +2817,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       );
       if (this.selectedVehicleCounts[vehicleId] != null) {
         delete this.selectedVehicleCounts[vehicleId];
+      }
+      if (this.vehicleSelectionMode[vehicleId] != null) {
+        delete this.vehicleSelectionMode[vehicleId];
       }
     }
     this.cdr.detectChanges();
@@ -2898,5 +2906,14 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   getVehicleMinCount(): number {
     return 0;
+  }
+
+  getVehicleSelectionMode(vehicleId: string): 'count' | 'license-plate' {
+    return this.vehicleSelectionMode[vehicleId] || 'count';
+  }
+
+  onVehicleSelectionModeChange(vehicleId: string, mode: 'count' | 'license-plate'): void {
+    this.vehicleSelectionMode[vehicleId] = mode;
+    this.cdr.detectChanges();
   }
 }
