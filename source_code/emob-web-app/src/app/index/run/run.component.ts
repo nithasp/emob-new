@@ -90,6 +90,7 @@ import { DetailsDialogComponent } from '../components/details-dialog/details-dia
 import { VehicleProfileTypeItemDialogComponent } from '../components/vehicle-profile-type-item-dialog/vehicle-profile-type-item-dialog.component';
 import { VehicleTypeDialogComponent } from '../components/vehicle-type-dialog/vehicle-type-dialog.component';
 import { CustomerListComponent } from '../components/customer-list/customer-list.component';
+import { LicensePlateSelectionDialogComponent } from '../components/license-plate-selection-dialog/license-plate-selection-dialog.component';
 import { ValidateMessage } from 'src/app/models/validation-message';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { firstValueFrom, take } from 'rxjs';
@@ -2915,5 +2916,40 @@ export class RunComponent implements OnInit, AfterViewInit {
   onVehicleSelectionModeChange(vehicleId: string, mode: 'count' | 'license-plate'): void {
     this.vehicleSelectionMode[vehicleId] = mode;
     this.cdr.detectChanges();
+  }
+
+  openLicensePlateSelectionDialog(event: Event, vehicleId: string): void {
+    // Prevent the radio button from being triggered
+    event.stopPropagation();
+
+    const vehicleType = this.myVehicleTypes.find(
+      (v) => v.vehicleTypeId === vehicleId
+    );
+
+    if (!vehicleType) {
+      this.toastr.warning(
+        this.transloco.translate('vehicle_not_found', {}, 'index')
+      );
+      return;
+    }
+
+    const dialogRef = this.matDialog.open(LicensePlateSelectionDialogComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      disableClose: true,
+      data: {
+        vehicleType: vehicleType,
+        vehicleId: vehicleId,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        console.log('License plate selection result:', result);
+        // Handle the license plate selection result here
+        // You can store the selected license plates or perform other actions
+      }
+    });
   }
 }

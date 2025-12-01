@@ -465,7 +465,10 @@
                         <mat-radio-button value="license-plate">
                           <div class="license-plate-selection d-flex align-items-center gap-2">
                             <span>License Plate Selection</span>
-                            <button mat-raised-button class="bg-custom-primary p-0">
+                            <button mat-raised-button 
+                              class="bg-custom-primary p-0"
+                              (click)="openLicensePlateSelectionDialog($event, vehicle.vehicleTypeId)"
+                              [disabled]="getVehicleSelectionMode(vehicle.vehicleTypeId) !== 'license-plate'">
                               Select
                             </button>
                           </div>
