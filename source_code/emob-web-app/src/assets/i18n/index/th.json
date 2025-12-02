@@ -287,7 +287,6 @@
   "zero_weight_warning": "คำเตือนน้ำหนักเป็นศูนย์",
   "zone": "โซน",
 
-  
   "add_vehicle": "เพิ่มรถ",
   "add_vehicle_type": "เพิ่มประเภทยานพาหนะ",
   "access_points": "จุดเข้าถึง",
@@ -355,5 +354,14 @@
   "confirm_delete": "ยืนยันการลบ",
   "are_you_sure_create_vehicle": "คุณแน่ใจหรือไม่ว่าต้องการสร้างยานพาหนะนี้?",
   "are_you_sure_update_vehicle": "คุณแน่ใจหรือไม่ว่าต้องการอัปเดตยานพาหนะนี้?",
-  "are_you_sure_delete_vehicle": "คุณแน่ใจหรือไม่ว่าต้องการลบยานพาหนะนี้?"
+  "are_you_sure_delete_vehicle": "คุณแน่ใจหรือไม่ว่าต้องการลบยานพาหนะนี้?",
+
+  
+  "license_plate_selection": "เลือกป้ายทะเบียน",
+  "license_plates_selected": "ป้ายทะเบียนที่เลือก",
+  "no_license_plates_selected": "ยังไม่ได้เลือกป้ายทะเบียน",
+  "no_vehicles_found": "ไม่พบยานพาหนะสำหรับประเภทนี้",
+  "select_all": "เลือกทั้งหมด",
+  "selected": "ที่เลือก",
+  "loading": "กำลังโหลด"
 }

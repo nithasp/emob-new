@@ -274,6 +274,8 @@ export class RunComponent implements OnInit, AfterViewInit {
   public selectedVehicleIds: string[] = [];
   public selectedVehicleCounts: Record<string, number> = {};
   public vehicleSelectionMode: Record<string, 'count' | 'license-plate'> = {};
+  public selectedLicensePlates: Record<string, string[]> = {};
+  public selectedVehicleIdsByLicensePlate: Record<string, string[]> = {};
   private readonly defaultVehicleMaxCount = 1000;
 
   constructor(
@@ -2822,6 +2824,13 @@ export class RunComponent implements OnInit, AfterViewInit {
       if (this.vehicleSelectionMode[vehicleId] != null) {
         delete this.vehicleSelectionMode[vehicleId];
       }
+      // Clear selected license plates when vehicle is unchecked
+      if (this.selectedLicensePlates[vehicleId] != null) {
+        delete this.selectedLicensePlates[vehicleId];
+      }
+      if (this.selectedVehicleIdsByLicensePlate[vehicleId] != null) {
+        delete this.selectedVehicleIdsByLicensePlate[vehicleId];
+      }
     }
     this.cdr.detectChanges();
   }
@@ -2913,8 +2922,35 @@ export class RunComponent implements OnInit, AfterViewInit {
     return this.vehicleSelectionMode[vehicleId] || 'count';
   }
 
-  onVehicleSelectionModeChange(vehicleId: string, mode: 'count' | 'license-plate'): void {
+  onVehicleSelectionModeChange(
+    vehicleId: string,
+    mode: 'count' | 'license-plate'
+  ): void {
+    const previousMode = this.vehicleSelectionMode[vehicleId];
     this.vehicleSelectionMode[vehicleId] = mode;
+
+    // Reset values when switching modes
+    if (previousMode !== mode) {
+      if (mode === 'count') {
+        // Switching to count mode - reset license plate selections
+        if (this.selectedLicensePlates[vehicleId]) {
+          delete this.selectedLicensePlates[vehicleId];
+        }
+        if (this.selectedVehicleIdsByLicensePlate[vehicleId]) {
+          delete this.selectedVehicleIdsByLicensePlate[vehicleId];
+        }
+        // Reset count to default 1 if not set
+        if (this.selectedVehicleCounts[vehicleId] == null) {
+          this.selectedVehicleCounts[vehicleId] = 1;
+        }
+      } else {
+        // Switching to license-plate mode - update count based on selected plates
+        const selectedPlatesCount =
+          this.selectedLicensePlates[vehicleId]?.length || 0;
+        this.selectedVehicleCounts[vehicleId] = selectedPlatesCount;
+      }
+    }
+
     this.cdr.detectChanges();
   }
 
@@ -2933,23 +2969,67 @@ export class RunComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const dialogRef = this.matDialog.open(LicensePlateSelectionDialogComponent, {
-      width: '900px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      disableClose: true,
-      data: {
-        vehicleType: vehicleType,
-        vehicleId: vehicleId,
-      },
-    });
+    // Get the depot ID from the selected depot or experiment depots
+    const depotId =
+      this.getSelectedDepotObject()?.depotId ||
+      this.experiment.depots?.[0]?.depotId;
+
+    const dialogRef = this.matDialog.open(
+      LicensePlateSelectionDialogComponent,
+      {
+        width: '600px',
+        maxWidth: '95vw',
+        maxHeight: '90vh',
+        disableClose: true,
+        data: {
+          vehicleType: vehicleType,
+          vehicleId: vehicleId,
+          depotId: depotId,
+          preSelectedLicensePlates: this.selectedLicensePlates[vehicleId] || [],
+        },
+      }
+    );
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        console.log('License plate selection result:', result);
-        // Handle the license plate selection result here
-        // You can store the selected license plates or perform other actions
+        // Store the selected license plates for this vehicle type
+        this.selectedLicensePlates[vehicleId] = result.selectedLicensePlates;
+        this.selectedVehicleIdsByLicensePlate[vehicleId] =
+          result.selectedVehicleIds;
+
+        // Update the vehicle count based on selected license plates
+        this.selectedVehicleCounts[vehicleId] =
+          result.selectedLicensePlates.length;
+
+        this.toastr.success(
+          `${result.selectedLicensePlates.length} ${this.transloco.translate(
+            'license_plates_selected',
+            {},
+            'index'
+          )}`
+        );
+
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  getSelectedLicensePlatesCount(vehicleId: string): number {
+    return this.selectedLicensePlates[vehicleId]?.length || 0;
+  }
+
+  getSelectedLicensePlatesDisplay(vehicleId: string): string {
+    const plates = this.selectedLicensePlates[vehicleId];
+    if (!plates || plates.length === 0) {
+      return this.transloco.translate(
+        'no_license_plates_selected',
+        {},
+        'index'
+      );
+    }
+    if (plates.length <= 3) {
+      return plates.join(', ');
+    }
+    return `${plates.slice(0, 3).join(', ')} +${plates.length - 3}`;
   }
 }

@@ -1,12 +1,72 @@
-<div class="dialog-container">
-  <div class="dialog-header">
-    <h2 class="dialog-title">License Plate Selection</h2>
-    <button mat-icon-button class="close-button" (click)="close()" aria-label="Close dialog">
-      <mat-icon>close</mat-icon>
-    </button>
+<ng-container *transloco="let t; read: 'index'">
+  <div class="dialog-container">
+    <div class="dialog-header">
+      <h2 class="dialog-title">
+        {{ t('license_plate_selection') || 'License Plate Selection' }}
+        <span class="vehicle-type-badge" *ngIf="vehicleTypeName">{{ vehicleTypeName }}</span>
+      </h2>
+      <button mat-icon-button class="close-button" (click)="close()" aria-label="Close dialog">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="dialog-content">
+      <!-- Loading state -->
+      <div class="loading-container" *ngIf="isLoading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>{{ t('loading') || 'Loading' }}...</p>
+      </div>
+
+      <!-- Content when loaded -->
+      <ng-container *ngIf="!isLoading">
+        <!-- Summary section -->
+        <div class="selection-summary">
+          <div class="summary-info">
+            <span class="summary-label">{{ t('selected') || 'Selected' }}:</span>
+            <span class="summary-count">{{ selectedCount }} / {{ totalCount }}</span>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" *ngIf="licensePlates.length === 0">
+          <mat-icon class="empty-icon">directions_car</mat-icon>
+          <p>{{ t('no_vehicles_found') || 'No vehicles found for this vehicle type' }}</p>
+        </div>
+
+        <!-- License plates list -->
+        <div class="license-plates-container" *ngIf="licensePlates.length > 0">
+          <!-- Select all option -->
+          <div class="select-all-row" (click)="onSelectAllChange()">
+            <mat-checkbox [checked]="selectAll" (click)="$event.stopPropagation()">
+            </mat-checkbox>
+            <span class="select-all-label">{{ t('select_all') || 'Select All' }}</span>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- License plate items -->
+          <div class="license-plate-list row">
+            <div class="license-plate-item col-6" *ngFor="let item of licensePlates; let i = index"
+              [class.selected]="item.isSelected" (click)="onLicensePlateToggle(item)">
+              <mat-checkbox [checked]="item.isSelected" (click)="$event.stopPropagation()">
+              </mat-checkbox>
+              <div class="license-plate-info">
+                <span class="license-plate-number">{{ item.licensePlate }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="dialog-actions">
+      <button mat-stroked-button (click)="close()">
+        {{ t('cancel') || 'Cancel' }}
+      </button>
+      <button mat-raised-button class="bg-custom-primary" (click)="confirm()"
+        [disabled]="isLoading || selectedCount === 0">
+        {{ t('confirm') || 'Confirm' }} ({{ selectedCount }})
+      </button>
+    </div>
   </div>
-  
-  <div class="dialog-content">
-    <p>license-plate-selection-dialog works!</p>
-  </div>
-</div>
+</ng-container>

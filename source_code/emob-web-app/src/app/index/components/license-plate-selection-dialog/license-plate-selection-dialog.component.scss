@@ -3,6 +3,8 @@
   flex-direction: column;
   height: 100%;
   padding: 0;
+  min-height: 400px;
+  max-height: 80vh;
 }
 
 .dialog-header {
@@ -19,6 +21,18 @@
   font-size: 20px;
   font-weight: 500;
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vehicle-type-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-radius: 16px;
 }
 
 .close-button {
@@ -26,7 +40,7 @@
   top: 8px;
   right: 8px;
   color: #666;
-  
+
   &:hover {
     color: #333;
     background-color: rgba(0, 0, 0, 0.04);
@@ -37,4 +51,190 @@
   padding: 24px;
   flex: 1;
   overflow-y: auto;
+  min-height: 300px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  gap: 16px;
+
+  p {
+    color: #666;
+    margin: 0;
+  }
+}
+
+.selection-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.summary-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.summary-count {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #999;
+
+  .empty-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.license-plates-container {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.select-all-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: #fafafa;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+}
+
+.select-all-label {
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+}
+
+.divider {
+  height: 1px;
+  background-color: #e0e0e0;
+}
+
+.license-plate-list {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.license-plate-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+
+  &.selected {
+    background-color: #e3f2fd;
+
+    &:hover {
+      background-color: #bbdefb;
+    }
+  }
+}
+
+.license-plate-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.license-plate-number {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.depot-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #666;
+}
+
+.depot-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.depot-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: #999;
+}
+
+.arrow-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: #ccc;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #e0e0e0;
+  background-color: #fafafa;
+}
+
+.bg-custom-primary {
+  background-color: #1976d2;
+  color: white;
+
+  &:disabled {
+    background-color: #ccc;
+    color: #999;
+  }
 }

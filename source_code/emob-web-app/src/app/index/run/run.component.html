@@ -423,8 +423,8 @@
               <div style="min-height: 720px">
                 <h3 class="text-center mt-4 mb-4">Please select Vehicle and Input number for car have use it</h3>
                 <div class="d-flex flex-column align-items-center mt-4">
-                  <div *ngFor="let vehicle of availableVehicleTypes; let i = index" class="vehicle-card mb-3 p-3 border rounded"
-                    style="width: 50%; min-width: 300px;">
+                  <div *ngFor="let vehicle of availableVehicleTypes; let i = index"
+                    class="vehicle-card mb-3 p-3 border rounded" style="width: 50%; min-width: 300px;">
                     <div class="d-flex align-items-center justify-content-between">
                       <div class="d-flex align-items-center">
                         <mat-checkbox [checked]="isVehicleSelected(vehicle.vehicleTypeId)"
@@ -436,8 +436,7 @@
                         (click)="openVehicleItemModal(vehicle.vehicleTypeId)">info</mat-icon>
                     </div>
                     <div *ngIf="isVehicleSelected(vehicle.vehicleTypeId)" class="ms-5 mt-2">
-                      <mat-radio-group 
-                        [value]="getVehicleSelectionMode(vehicle.vehicleTypeId)"
+                      <mat-radio-group [value]="getVehicleSelectionMode(vehicle.vehicleTypeId)"
                         (change)="onVehicleSelectionModeChange(vehicle.vehicleTypeId, $event.value)"
                         class="d-flex flex-column">
                         <mat-radio-button value="count" class="mb-2">
@@ -447,15 +446,14 @@
                             </span>
                             <app-dynamic-popover [placement]="'bottom-start'">
                               <button type="button"
-                                class="number-of-vehicle-available-value btn btn-link p-0 align-baseline" 
-                                popover-trigger
-                                [disabled]="getVehicleSelectionMode(vehicle.vehicleTypeId) !== 'count'">
+                                class="number-of-vehicle-available-value btn btn-link p-0 align-baseline"
+                                popover-trigger [disabled]="getVehicleSelectionMode(vehicle.vehicleTypeId) !== 'count'">
                                 {{ getVehicleCount(vehicle.vehicleTypeId) }}
                               </button>
                               <div popover-content>
                                 <app-number-counter-input [value]="getVehicleCount(vehicle.vehicleTypeId)"
-                                  [minValue]="getVehicleMinCount()" [maxValue]="getVehicleMaxCount(vehicle.vehicleTypeId)"
-                                  [count]="1"
+                                  [minValue]="getVehicleMinCount()"
+                                  [maxValue]="getVehicleMaxCount(vehicle.vehicleTypeId)" [count]="1"
                                   [errorMessage]="null"
                                   (valueChange)="onVehicleCountChange(vehicle.vehicleTypeId, $event)"></app-number-counter-input>
                               </div>
@@ -464,15 +462,26 @@
                         </mat-radio-button>
                         <mat-radio-button value="license-plate">
                           <div class="license-plate-selection d-flex align-items-center gap-2">
-                            <span>License Plate Selection</span>
-                            <button mat-raised-button 
-                              class="bg-custom-primary p-0"
+                            <span>{{ t('license_plate_selection') || 'License Plate Selection' }}</span>
+                            <button mat-raised-button class="bg-custom-primary p-0"
                               (click)="openLicensePlateSelectionDialog($event, vehicle.vehicleTypeId)"
                               [disabled]="getVehicleSelectionMode(vehicle.vehicleTypeId) !== 'license-plate'">
-                              Select
+                              {{ t('select') || 'Select' }}
                             </button>
+                            <span
+                              *ngIf="getVehicleSelectionMode(vehicle.vehicleTypeId) === 'license-plate' && getSelectedLicensePlatesCount(vehicle.vehicleTypeId) > 0"
+                              class="badge bg-primary ms-2">
+                              {{ getSelectedLicensePlatesCount(vehicle.vehicleTypeId) }} {{ t('selected') || 'selected'
+                              }}
+                            </span>
                           </div>
                         </mat-radio-button>
+                        <!-- Display selected license plates -->
+                        <div
+                          *ngIf="getVehicleSelectionMode(vehicle.vehicleTypeId) === 'license-plate' && getSelectedLicensePlatesCount(vehicle.vehicleTypeId) > 0"
+                          class="selected-plates-display mt-2 ms-4">
+                          <small class="text-muted">{{ getSelectedLicensePlatesDisplay(vehicle.vehicleTypeId) }}</small>
+                        </div>
                       </mat-radio-group>
                     </div>
                   </div>

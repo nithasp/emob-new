@@ -287,7 +287,6 @@
   "zero_weight_warning": "Zero weight Warning",
   "zone": "Zone",
 
- 
   "add_vehicle": "Add Vehicle",
   "add_vehicle_type": "Add Vehicle Type",
   "access_points": "Access Points",
@@ -355,5 +354,14 @@
   "confirm_delete": "Confirm delete",
   "are_you_sure_create_vehicle": "Are you sure you want to create this vehicle?",
   "are_you_sure_update_vehicle": "Are you sure you want to update this vehicle?",
-  "are_you_sure_delete_vehicle": "Are you sure you want to delete this vehicle?"
+  "are_you_sure_delete_vehicle": "Are you sure you want to delete this vehicle?",
+
+  
+  "license_plate_selection": "License Plate Selection",
+  "license_plates_selected": "license plates selected",
+  "no_license_plates_selected": "No license plates selected",
+  "no_vehicles_found": "No vehicles found for this vehicle type",
+  "select_all": "Select All",
+  "selected": "Selected",
+  "loading": "Loading"
 }
