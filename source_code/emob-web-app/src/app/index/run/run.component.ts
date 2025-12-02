@@ -185,6 +185,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   // store data
   public experiment = <Experiment>{};
   public preOrderFiles: PreOrderFileItem[] = [];
+  private fileDisplayNameBeforeChange: { [fileId: string]: string } = {};
+  // Store file columns when first uploaded for later validation
+  private fileColumnsCache: { [fileId: string]: string[] } = {};
   public popupContent?: { data: Customer; isDepot: boolean } | null;
   private dataPreOrder: Array<PreOrder> = [];
   public groupedDataPreOrder: Partial<GroupedDataPreOrder> = {};
@@ -644,10 +647,15 @@ export class RunComponent implements OnInit, AfterViewInit {
   async uploadFile(file: FileWithCategory) {
     const id = this.generateUniqueId();
 
-    const { isValid, keyName, displayName } =
-      await this.validateSingleFileAgainstDepot(file);
+    const { isValid, keyName, displayName, columnNames } =
+      await this.validateSingleFileAgainstDepot(file, id);
 
     if (!isValid || !keyName || !displayName) return;
+
+    if (columnNames) {
+      this.fileColumnsCache[id] = columnNames;
+      console.log('Columns cached for file:', id, columnNames);
+    }
 
     // Find the matched item for the new file
     const matchedItem = this.depotInputDataItems.find(
@@ -865,11 +873,15 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.updateCanUploadState();
   }
 
-  async validateSingleFileAgainstDepot(file: FileWithCategory): Promise<{
+  async validateSingleFileAgainstDepot(
+    file: FileWithCategory,
+    fileId?: string
+  ): Promise<{
     isValid: boolean;
     keyName?: string;
     displayName?: string;
     isFirstOfType?: boolean;
+    columnNames?: string[];
   }> {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -913,7 +925,13 @@ export class RunComponent implements OnInit, AfterViewInit {
 
           const columnNames = (
             worksheet!.getRow(1).values as (string | undefined)[]
-          ).filter((value) => typeof value === 'string');
+          ).filter((value) => typeof value === 'string') as string[];
+
+          // Cache column names for later validation if fileId is provided
+          if (fileId) {
+            this.fileColumnsCache[fileId] = columnNames;
+            console.log('Cached columns for file:', fileId, columnNames);
+          }
 
           const matchingInputDataItem =
             this.findMatchingInputDataItem(columnNames);
@@ -923,6 +941,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               keyName: matchingInputDataItem.keyName,
               displayName: matchingInputDataItem.displayName,
               isFirstOfType: true,
+              columnNames: columnNames,
             });
           } else {
             // Show missing columns for each required input data type
@@ -963,6 +982,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                 );
               }
             }
+            console.log('column_name_mismatch_template 1');
             this.showInvalidModal(
               `${this.transloco.translate(
                 'column_name_mismatch_template',
@@ -971,7 +991,8 @@ export class RunComponent implements OnInit, AfterViewInit {
               )}`,
               validationErrors
             );
-            resolve({ isValid: false });
+            resolve({ isValid: false, columnNames: columnNames });
+            console.log('column_name_mismatch_template 2');
           }
         } catch (error) {
           console.error('Error validating file:', error);
@@ -1507,32 +1528,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
 
     return { verify, uncertain, unverify };
-  }
-  private validateData(columnNames: Array<string>): boolean {
-    const missingColumns = this.requiredColumns.filter(
-      (col) => !columnNames.includes(col)
-    );
-
-    if (missingColumns.length > 0) {
-      this.showInvalidModal(
-        `${this.transloco.translate(
-          'column_name_mismatch_template',
-          {},
-          'index'
-        )}`,
-        missingColumns
-      );
-      this.toastr.error(
-        `${this.transloco.translate(
-          'column_name_mismatch_template',
-          {},
-          'index'
-        )}`,
-        missingColumns.join(',')
-      );
-      return false;
-    }
-    return true;
   }
 
   applyFilter(event: Event) {
@@ -2295,22 +2290,77 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  handleInputDataKeyChange(
+  onCategoryDropdownOpened(fileObj: PreOrderFileItem, isOpened: boolean): void {
+    console.log('=== onCategoryDropdownOpened ===', {
+      isOpened,
+      fileId: fileObj.id,
+      fileName: fileObj.file.name,
+    });
+
+    if (isOpened) {
+      // Capture current displayName before user makes a selection
+      const currentDisplayName = this.isFileWithCategory(fileObj.file)
+        ? fileObj.file.displayName || ''
+        : (fileObj.file as PreOrderFileDescriptor).displayName || '';
+      this.fileDisplayNameBeforeChange[fileObj.id] = currentDisplayName;
+
+      console.log('Captured current displayName:', currentDisplayName);
+      console.log('All tracked values:', this.fileDisplayNameBeforeChange);
+    }
+  }
+
+  async handleInputDataKeyChange(
     fileObj: PreOrderFileItem,
     event: { value: string }
   ) {
+    console.log('=== handleInputDataKeyChange START ===');
+    console.log('Event value:', event.value);
+    console.log('File object:', {
+      id: fileObj.id,
+      currentDisplayName: fileObj.file.displayName,
+      fileName: fileObj.file.name,
+      isFile: this.isFileWithCategory(fileObj.file),
+    });
+
     const selectedDisplayName = event.value;
 
+    // Get the previous displayName from our tracked object
+    const previousDisplayName =
+      this.fileDisplayNameBeforeChange[fileObj.id] || '';
+
+    console.log('Previous displayName from tracking:', previousDisplayName);
+
     if (selectedDisplayName) {
-      // Check if this category already exists in other files (excluding the current file)
-      const exists = this.preOrderFiles.some(
+      // First: Validate if file columns match the new category requirements
+      console.log('Starting column validation...');
+      const isValid = await this.validateFileColumnsForCategory(
+        fileObj,
+        selectedDisplayName
+      );
+      console.log('Validation result:', isValid);
+
+      if (!isValid) {
+        // Validation failed, modal already shown, revert to previous value
+        console.log('Validation failed, reverting...');
+        this.revertFileDisplayName(fileObj, previousDisplayName);
+        console.log('=== handleInputDataKeyChange END (validation failed) ===');
+        return;
+      }
+
+      // Second: Check if this category already exists in other files (for warning only)
+      const isDuplicate = this.preOrderFiles.some(
         (item) =>
           item.id !== fileObj.id &&
           item.file.displayName === selectedDisplayName
       );
 
-      if (exists) {
-        this.toastr.error(
+      if (isDuplicate) {
+        console.log(
+          'Category already exists in another file, showing warning...'
+        );
+        // Show warning toast but allow the change
+        // hasDuplicateCategory will show red border (2px solid #dc3545)
+        this.toastr.warning(
           this.transloco.translate(
             'a_file_with_this_category_is_already_added',
             {},
@@ -2320,10 +2370,13 @@ export class RunComponent implements OnInit, AfterViewInit {
       }
     }
 
+    console.log('Validation passed, updating file properties...');
     const found = this.depotInputDataItems.find(
       (item) => item.displayName === selectedDisplayName
     );
+
     if (found) {
+      console.log('Found matching depot item:', found.keyName);
       if (this.isFileWithCategory(fileObj.file)) {
         fileObj.file.keyName = found.keyName;
         fileObj.file.displayName = found.displayName;
@@ -2333,6 +2386,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           found.displayName;
       }
     } else {
+      console.log('No matching depot item found, clearing values');
       if (this.isFileWithCategory(fileObj.file)) {
         fileObj.file.keyName = '';
         fileObj.file.displayName = '';
@@ -2342,8 +2396,13 @@ export class RunComponent implements OnInit, AfterViewInit {
       }
     }
 
+    // Update our tracked object with the new confirmed value
+    this.fileDisplayNameBeforeChange[fileObj.id] = selectedDisplayName;
+    console.log('Updated tracking with new value:', selectedDisplayName);
+
     // Update upload button state after category change
     this.updateCanUploadState();
+    console.log('=== handleInputDataKeyChange END (success) ===');
   }
 
   hasDuplicateCategory(fileObj: PreOrderFileItem): boolean {
@@ -2356,6 +2415,233 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     // If count > 1, this category is duplicated
     return count > 1;
+  }
+
+  async validateFileColumnsForCategory(
+    fileObj: PreOrderFileItem,
+    selectedDisplayName: string
+  ): Promise<boolean> {
+    console.log('validateFileColumnsForCategory called', {
+      fileId: fileObj.id,
+      selectedDisplayName,
+      isFileWithCategory: this.isFileWithCategory(fileObj.file),
+      fileName: fileObj.file.name,
+      hasCachedColumns: !!this.fileColumnsCache[fileObj.id],
+    });
+
+    // Find the required columns for the selected category
+    const targetItem = this.depotInputDataItems.find(
+      (item) => item.displayName === selectedDisplayName
+    );
+
+    if (!targetItem) {
+      console.error(
+        'Target item not found for displayName:',
+        selectedDisplayName
+      );
+      return false;
+    }
+
+    console.log('Target item found:', {
+      keyName: targetItem.keyName,
+      displayName: targetItem.displayName,
+      columnRequired: targetItem.columnRequired,
+    });
+
+    // First, try to use cached columns (from when file was first uploaded)
+    const cachedColumns = this.fileColumnsCache[fileObj.id];
+    if (cachedColumns && cachedColumns.length > 0) {
+      console.log('Using cached columns for validation:', cachedColumns);
+      return this.validateColumnsAgainstCategory(
+        cachedColumns,
+        targetItem,
+        fileObj.file.name
+      );
+    }
+
+    // If this is a PreOrderFileDescriptor (loaded from server), we cannot validate actual file columns
+    // In this case, we'll assume it's valid
+    if (!this.isFileWithCategory(fileObj.file)) {
+      console.log(
+        'File is PreOrderFileDescriptor and no cached columns, skipping validation'
+      );
+      return true;
+    }
+
+    // Check if the file is a valid File object
+    const file = fileObj.file as FileWithCategory;
+    if (!file || !(file instanceof File)) {
+      console.error('File is not a valid File object:', file);
+      this.toastr.error(
+        this.transloco.translate('error_reading_file', {}, 'index')
+      );
+      return false;
+    }
+
+    console.log('Starting file read for validation:', file.name);
+
+    // Read the file and get its columns
+    return new Promise<boolean>((resolve) => {
+      const reader = new FileReader();
+
+      reader.onerror = () => {
+        console.error('FileReader error:', reader.error);
+        this.toastr.error(
+          this.transloco.translate('error_reading_file', {}, 'index')
+        );
+        resolve(false);
+      };
+
+      reader.onload = async (e: ProgressEvent<FileReader>) => {
+        try {
+          const result = e.target?.result;
+          if (!(result instanceof ArrayBuffer)) {
+            console.error('Result is not ArrayBuffer');
+            resolve(false);
+            return;
+          }
+
+          console.log('File loaded, parsing Excel...');
+          const arrayBuffer = result;
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.load(arrayBuffer);
+
+          let worksheet: ExcelJS.Worksheet | undefined =
+            workbook.getWorksheet(1);
+          if (!worksheet) {
+            worksheet =
+              workbook.worksheets.find(
+                (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
+              ) || workbook.worksheets[0];
+          }
+
+          const columnNames = (
+            worksheet!.getRow(1).values as (string | undefined)[]
+          ).filter((value) => typeof value === 'string') as string[];
+
+          // Cache these columns for future validations
+          this.fileColumnsCache[fileObj.id] = columnNames;
+          console.log('Cached columns for future use:', columnNames);
+
+          const isValid = this.validateColumnsAgainstCategory(
+            columnNames,
+            targetItem,
+            fileObj.file.name
+          );
+          resolve(isValid);
+        } catch (error) {
+          console.error('Error validating file columns:', error);
+          this.toastr.error(
+            this.transloco.translate('error_reading_file', {}, 'index')
+          );
+          resolve(false);
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  private validateColumnsAgainstCategory(
+    columnNames: string[],
+    targetItem: {
+      keyName: string;
+      displayName: string;
+      columnRequired: string[];
+    },
+    fileName: string
+  ): boolean {
+    console.log('validateColumnsAgainstCategory:', {
+      fileName,
+      targetDisplayName: targetItem.displayName,
+      fileColumns: columnNames,
+      requiredColumns: targetItem.columnRequired,
+    });
+
+    // Check if all required columns are present
+    const missingColumns = targetItem.columnRequired.filter(
+      (col) => !columnNames.includes(col)
+    );
+
+    console.log('Missing columns:', missingColumns);
+
+    if (missingColumns.length > 0) {
+      // Show error modal with missing columns
+      const validationError = `<strong>${this.transloco.translate(
+        'file_for',
+        {},
+        'index'
+      )} "${targetItem.displayName}" ${this.transloco.translate(
+        'missing_columns_as_follows',
+        {},
+        'index'
+      )}</strong><span>:</span> <br/><ul>${missingColumns
+        .map((col) => `<li>${col}</li>`)
+        .join('')}</ul>`;
+
+      this.showInvalidModal(
+        `${this.transloco.translate(
+          'column_name_mismatch_template',
+          {},
+          'index'
+        )}`,
+        [validationError]
+      );
+      console.log('Validation FAILED - missing columns');
+      return false; // Validation failed - missing columns
+    } else {
+      // All required columns are present
+      console.log('Validation PASSED - all columns present');
+      return true; // Validation passed
+    }
+  }
+
+  revertFileDisplayName(
+    fileObj: PreOrderFileItem,
+    previousDisplayName: string
+  ): void {
+    console.log('Reverting file displayName', {
+      fileId: fileObj.id,
+      currentDisplayName: fileObj.file.displayName,
+      previousDisplayName,
+    });
+
+    const previousItem = this.depotInputDataItems.find(
+      (item) => item.displayName === previousDisplayName
+    );
+
+    if (this.isFileWithCategory(fileObj.file)) {
+      fileObj.file.displayName = previousDisplayName;
+      if (previousItem) {
+        fileObj.file.keyName = previousItem.keyName;
+      } else {
+        fileObj.file.keyName = '';
+      }
+    } else {
+      (fileObj.file as PreOrderFileDescriptor).displayName =
+        previousDisplayName;
+      if (previousItem) {
+        (fileObj.file as PreOrderFileDescriptor).keyName = previousItem.keyName;
+      } else {
+        (fileObj.file as PreOrderFileDescriptor).keyName = '';
+      }
+    }
+
+    // Force update the specific file in the array to trigger change detection
+    const index = this.preOrderFiles.findIndex((f) => f.id === fileObj.id);
+    if (index !== -1) {
+      this.preOrderFiles[index] = { ...fileObj };
+    }
+
+    // Trigger change detection to update the UI
+    this.cdr.detectChanges();
+
+    console.log('File reverted successfully', {
+      newDisplayName: fileObj.file.displayName,
+      newKeyName: this.isFileWithCategory(fileObj.file)
+        ? fileObj.file.keyName
+        : (fileObj.file as PreOrderFileDescriptor).keyName,
+    });
   }
 
   hasAnyDuplicateCategories(): boolean {
@@ -2844,16 +3130,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       }
     }
     const scopedUnique = Object.values(dedupMap);
-
     const defaultLocalized: LocalizedText = { th_TH: '', en_US: '' };
-    type DynamicParameterRaw = Omit<
-      DynamicParameter,
-      'category' | 'displayName' | 'description'
-    > & {
-      category: LocalizedText | string | null | undefined;
-      displayName: LocalizedText | string | null | undefined;
-      description: LocalizedText | string | null | undefined;
-    };
     const normalized: DynamicParameter[] = scopedUnique.map(
       (dynamicParameter) => {
         return {
@@ -3032,5 +3309,16 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isOverDistanceKey(dynamicParameter: DynamicParameter): boolean {
     return dynamicParameter.keyName === 'MaximumTravelDistance';
+  }
+
+  log() {
+    console.log('log');
+    console.log('this.depotInputDataItems', this.depotInputDataItems);
+    console.log('this.preOrderFiles', this.preOrderFiles);
+    console.log('this.fileColumnsCache', this.fileColumnsCache);
+    console.log(
+      'this.fileDisplayNameBeforeChange',
+      this.fileDisplayNameBeforeChange
+    );
   }
 }

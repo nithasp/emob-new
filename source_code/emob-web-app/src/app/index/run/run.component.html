@@ -1,4 +1,5 @@
 <ng-container *transloco="let t; read: 'index'">
+  <h1 (click)="log()">log</h1>
   <div class="card mt-2 container-fluid" style="min-height: 100vh">
     <ngx-spinner name="run">
       <p class="h-3">{{ t("wait_a_moment") }} ...</p>
@@ -111,7 +112,6 @@
                       </span>
                     </ng-template>
                   </h4>
-                  
                 </div>
 
                 <div class="col-md-12 mb-3 d-flex" *ngIf="isUpload">
@@ -181,6 +181,7 @@
                             </td>
                             <td>
                               <mat-select class="step1" *ngIf="isFileSelectionStep" [(value)]="fileObj.file.displayName"
+                                (openedChange)="onCategoryDropdownOpened(fileObj, $event)"
                                 (selectionChange)="handleInputDataKeyChange(fileObj, $event)">
                                 <mat-option *ngFor="let inputDataKey of inputDataKeys" [value]="inputDataKey">
                                   {{ inputDataKey }}
@@ -231,8 +232,8 @@
 
                 <div class="text-end p-0">
                   <button *ngIf="isFilePreview" mat-raised-button
-                    class="upload-submit-button bg-custom-primary mt-3 mr-0"
-                    [disabled]="!canUpload" (click)="handleUploadSubmit()">
+                    class="upload-submit-button bg-custom-primary mt-3 mr-0" [disabled]="!canUpload"
+                    (click)="handleUploadSubmit()">
                     {{ "confirm" | transloco }}
                   </button>
                 </div>
