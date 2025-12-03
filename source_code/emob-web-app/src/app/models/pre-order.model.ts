@@ -153,7 +153,7 @@ export function getDescription(
   return enumDescriptions[enumValue] || 'No description available';
 }
 export interface Depot {
-  id: string
+  id: string;
   delivery: number;
   index: number;
   is_depot: boolean;
@@ -259,3 +259,16 @@ export type PreOrderFileItem = {
   id: string;
   file: FileWithCategory | PreOrderFileDescriptor;
 };
+
+export interface DepotInputDataItem {
+  keyName: string;
+  displayName: string;
+  columnRequired: string[];
+  required?: boolean;
+}
+
+export interface CategoryValidationResult {
+  isValid: boolean;
+  missingColumns: string[];
+  targetDisplayName?: string;
+}

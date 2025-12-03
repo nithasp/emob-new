@@ -36,6 +36,7 @@ import {
   CustomerUpdated,
   DataPreOrder,
   Depot,
+  DepotInputDataItem,
   FileWithCategory,
   GroupedDataPreOrder,
   PreOrder,
@@ -147,12 +148,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   ];
 
   private requiredColumns: Array<string> = [];
-  private depotInputDataItems: Array<{
-    keyName: string;
-    displayName: string;
-    columnRequired: string[];
-    required?: boolean;
-  }> = [];
+  private depotInputDataItems: DepotInputDataItem[] = [];
 
   public haveUpdateAfterValidated: boolean = false;
   haveValidated = false;
@@ -738,44 +734,92 @@ export class RunComponent implements OnInit, AfterViewInit {
       dialogRef.componentInstance.showRadioOptions = true;
       dialogRef.componentInstance.inputDataKeys = this.inputDataKeys;
       dialogRef.componentInstance.preOrderFiles = this.preOrderFiles;
+      // Pass data for column validation
+      dialogRef.componentInstance.depotInputDataItems =
+        this.depotInputDataItems;
+      dialogRef.componentInstance.fileColumns = columnNames || [];
 
       dialogRef.result
-        .then((result: { replace: boolean; category?: string } | boolean) => {
-          // Handle both old boolean format and new object format for backwards compatibility
-          if (typeof result === 'boolean') {
-            if (result && duplicatedFileIndex !== -1) {
-              file.keyName = keyName;
-              file.displayName = displayName;
-              file.isFirstOfType = true;
-              this.preOrderFiles[duplicatedFileIndex] = { id, file };
-              this.isFilePreview = true;
-              this.updateCanUploadState();
-            }
-          } else if (result && typeof result === 'object') {
-            if (result.replace && duplicatedFileIndex !== -1) {
-              // Replace existing file
-              file.keyName = keyName;
-              file.displayName = displayName;
-              file.isFirstOfType = true;
-              this.preOrderFiles[duplicatedFileIndex] = { id, file };
-              this.isFilePreview = true;
-              this.updateCanUploadState();
-            } else if (result.category) {
-              // Add as new file with selected category
-              const selectedItem = this.depotInputDataItems.find(
-                (item) => item.displayName === result.category
-              );
-              if (selectedItem) {
-                file.keyName = selectedItem.keyName;
-                file.displayName = selectedItem.displayName;
+        .then(
+          (
+            result:
+              | {
+                  replace: boolean;
+                  category?: string;
+                  validationFailed?: boolean;
+                  missingColumns?: string[];
+                  targetDisplayName?: string;
+                }
+              | boolean
+          ) => {
+            // Handle both old boolean format and new object format for backwards compatibility
+            if (typeof result === 'boolean') {
+              if (result && duplicatedFileIndex !== -1) {
+                file.keyName = keyName;
+                file.displayName = displayName;
                 file.isFirstOfType = true;
-                this.preOrderFiles.push({ id, file });
+                this.preOrderFiles[duplicatedFileIndex] = { id, file };
                 this.isFilePreview = true;
                 this.updateCanUploadState();
               }
+            } else if (result && typeof result === 'object') {
+              // Check if validation failed - show invalid modal and don't add file
+              if (
+                result.validationFailed &&
+                result.missingColumns &&
+                result.missingColumns.length > 0
+              ) {
+                const validationError = `<strong>${this.transloco.translate(
+                  'file_for',
+                  {},
+                  'index'
+                )} "${
+                  result.targetDisplayName || result.category
+                }" ${this.transloco.translate(
+                  'missing_columns_as_follows',
+                  {},
+                  'index'
+                )}</strong><span>:</span> <br/><ul>${result.missingColumns
+                  .map((col) => `<li>${col}</li>`)
+                  .join('')}</ul>`;
+
+                this.showInvalidModal(
+                  `${this.transloco.translate(
+                    'column_name_mismatch_template',
+                    {},
+                    'index'
+                  )}`,
+                  [validationError]
+                );
+                console.log('Validation FAILED from dialog - missing columns');
+                return; // Don't add the file
+              }
+
+              if (result.replace && duplicatedFileIndex !== -1) {
+                // Replace existing file
+                file.keyName = keyName;
+                file.displayName = displayName;
+                file.isFirstOfType = true;
+                this.preOrderFiles[duplicatedFileIndex] = { id, file };
+                this.isFilePreview = true;
+                this.updateCanUploadState();
+              } else if (result.category) {
+                // Add as new file with selected category
+                const selectedItem = this.depotInputDataItems.find(
+                  (item) => item.displayName === result.category
+                );
+                if (selectedItem) {
+                  file.keyName = selectedItem.keyName;
+                  file.displayName = selectedItem.displayName;
+                  file.isFirstOfType = true;
+                  this.preOrderFiles.push({ id, file });
+                  this.isFilePreview = true;
+                  this.updateCanUploadState();
+                }
+              }
             }
           }
-        })
+        )
         .catch(() => {
           // Dialog dismissed
         });
@@ -835,23 +879,74 @@ export class RunComponent implements OnInit, AfterViewInit {
             dialogRef.componentInstance.inputDataKeys =
               itemsWithSameColumns.map((item) => item.displayName);
             dialogRef.componentInstance.preOrderFiles = this.preOrderFiles;
+            // Pass data for column validation
+            dialogRef.componentInstance.depotInputDataItems =
+              this.depotInputDataItems;
+            dialogRef.componentInstance.fileColumns = columnNames || [];
 
             dialogRef.result
-              .then((result: { category?: string } | boolean) => {
-                if (result && typeof result === 'object' && result.category) {
-                  const selectedItem = this.depotInputDataItems.find(
-                    (item) => item.displayName === result.category
-                  );
-                  if (selectedItem) {
-                    file.keyName = selectedItem.keyName;
-                    file.displayName = selectedItem.displayName;
-                    file.isFirstOfType = true;
-                    this.preOrderFiles.push({ id, file });
-                    this.isFilePreview = true;
-                    this.updateCanUploadState();
+              .then(
+                (
+                  result:
+                    | {
+                        category?: string;
+                        validationFailed?: boolean;
+                        missingColumns?: string[];
+                        targetDisplayName?: string;
+                      }
+                    | boolean
+                ) => {
+                  if (result && typeof result === 'object') {
+                    // Check if validation failed - show invalid modal and don't add file
+                    if (
+                      result.validationFailed &&
+                      result.missingColumns &&
+                      result.missingColumns.length > 0
+                    ) {
+                      const validationError = `<strong>${this.transloco.translate(
+                        'file_for',
+                        {},
+                        'index'
+                      )} "${
+                        result.targetDisplayName || result.category
+                      }" ${this.transloco.translate(
+                        'missing_columns_as_follows',
+                        {},
+                        'index'
+                      )}</strong><span>:</span> <br/><ul>${result.missingColumns
+                        .map((col) => `<li>${col}</li>`)
+                        .join('')}</ul>`;
+
+                      this.showInvalidModal(
+                        `${this.transloco.translate(
+                          'column_name_mismatch_template',
+                          {},
+                          'index'
+                        )}`,
+                        [validationError]
+                      );
+                      console.log(
+                        'Validation FAILED from dialog - missing columns'
+                      );
+                      return; // Don't add the file
+                    }
+
+                    if (result.category) {
+                      const selectedItem = this.depotInputDataItems.find(
+                        (item) => item.displayName === result.category
+                      );
+                      if (selectedItem) {
+                        file.keyName = selectedItem.keyName;
+                        file.displayName = selectedItem.displayName;
+                        file.isFirstOfType = true;
+                        this.preOrderFiles.push({ id, file });
+                        this.isFilePreview = true;
+                        this.updateCanUploadState();
+                      }
+                    }
                   }
                 }
-              })
+              )
               .catch(() => {
                 // Dialog dismissed
               });
