@@ -214,17 +214,11 @@
                               </button>
                             </td>
                           </tr>
-                          <tr *ngIf="isFilePreview && hasFileWarning(fileObj)" class="">
-                            <td colspan="6" class="text-left">
-                              <small class="text-warning">
-                                <strong>{{ getFileWarningMessage(fileObj) }}</strong>
-                              </small>
-                            </td>
-                          </tr>
-                          <tr *ngIf="hasDuplicateCategory(fileObj)" class="">
+                          <tr *ngIf="(isFilePreview && hasFileWarning(fileObj)) || hasDuplicateCategory(fileObj)" 
+                            [style.--bs-table-bg]="'#e9ecef'">
                             <td colspan="6" class="text-left">
                               <small class="text-danger">
-                                <strong>{{ t("a_file_with_this_category_is_already_added") }}</strong>
+                                <strong>{{ getAllErrorMessages(fileObj) }}</strong>
                               </small>
                             </td>
                           </tr>
