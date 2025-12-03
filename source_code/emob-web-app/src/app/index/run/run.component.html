@@ -168,9 +168,12 @@
                       </thead>
                       <tbody>
                         <ng-container *ngFor="let fileObj of preOrderFiles; let i = index">
-                          <tr [ngClass]="{'table-danger': hasDuplicateCategory(fileObj)}"
-                            [style.outline]="hasDuplicateCategory(fileObj) ? '2px solid #dc3545' : null"
-                            [style.outline-offset]="hasDuplicateCategory(fileObj) ? '-2px' : null">
+                          <tr [ngClass]="{
+                              'table-danger': hasDuplicateCategory(fileObj),
+                              'table-warning': isFilePreview && hasFileWarning(fileObj) && !hasDuplicateCategory(fileObj)
+                            }"
+                            [style.outline]="hasDuplicateCategory(fileObj) ? '2px solid #dc3545' : (isFilePreview && hasFileWarning(fileObj) ? '2px solid #d39e00' : null)"
+                            [style.outline-offset]="(hasDuplicateCategory(fileObj) || (isFilePreview && hasFileWarning(fileObj))) ? '-2px' : null">
                             <td scope="row" class="ps-3">{{ i + 1 }}</td>
                             <td style="
                                 word-wrap: break-word;
@@ -209,6 +212,13 @@
                                 [hidden]="!isOriginalExperiment()">
                                 <mat-icon>delete</mat-icon>
                               </button>
+                            </td>
+                          </tr>
+                          <tr *ngIf="isFilePreview && hasFileWarning(fileObj)" class="">
+                            <td colspan="6" class="text-left">
+                              <small class="text-warning">
+                                <strong>{{ getFileWarningMessage(fileObj) }}</strong>
+                              </small>
                             </td>
                           </tr>
                           <tr *ngIf="hasDuplicateCategory(fileObj)" class="">

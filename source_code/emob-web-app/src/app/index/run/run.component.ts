@@ -643,6 +643,27 @@ export class RunComponent implements OnInit, AfterViewInit {
   async uploadFile(file: FileWithCategory) {
     const id = this.generateUniqueId();
 
+    // Check for duplicate file size and name before proceeding
+    const warningMessages: string[] = [];
+
+    const hasDuplicateFileSize = this.preOrderFiles.some(
+      (existingFile) => existingFile.file.size === file.size
+    );
+    if (hasDuplicateFileSize) {
+      warningMessages.push('ไฟล์มีขนาดเท่ากัน');
+    }
+
+    const hasDuplicateFileName = this.preOrderFiles.some(
+      (existingFile) => existingFile.file.name === file.name
+    );
+    if (hasDuplicateFileName) {
+      warningMessages.push('ชื่อไฟล์ซ้ำกัน');
+    }
+
+    if (warningMessages.length > 0) {
+      this.toastr.warning(warningMessages.join(', '));
+    }
+
     const { isValid, keyName, displayName, columnNames } =
       await this.validateSingleFileAgainstDepot(file, id);
 
@@ -2512,6 +2533,68 @@ export class RunComponent implements OnInit, AfterViewInit {
     return count > 1;
   }
 
+  hasDuplicateFileName(fileObj: PreOrderFileItem): boolean {
+    if (!fileObj.file.name) return false;
+
+    // Count how many files have the same file name
+    const count = this.preOrderFiles.filter(
+      (item) => item.file.name === fileObj.file.name
+    ).length;
+
+    // If count > 1, this file name is duplicated
+    return count > 1;
+  }
+
+  hasAnyDuplicateFileNames(): boolean {
+    // Check if any file in preOrderFiles has a duplicate file name
+    return this.preOrderFiles.some((fileObj) =>
+      this.hasDuplicateFileName(fileObj)
+    );
+  }
+
+  hasDuplicateFileSize(fileObj: PreOrderFileItem): boolean {
+    if (!fileObj.file.size) return false;
+
+    // Count how many files have the same file size
+    const count = this.preOrderFiles.filter(
+      (item) => item.file.size === fileObj.file.size
+    ).length;
+
+    // If count > 1, this file size is duplicated
+    return count > 1;
+  }
+
+  hasAnyDuplicateFileSizes(): boolean {
+    // Check if any file in preOrderFiles has a duplicate file size
+    return this.preOrderFiles.some((fileObj) =>
+      this.hasDuplicateFileSize(fileObj)
+    );
+  }
+
+  getFileWarningMessages(fileObj: PreOrderFileItem): string[] {
+    const messages: string[] = [];
+
+    if (this.hasDuplicateFileSize(fileObj)) {
+      messages.push('ไฟล์มีขนาดเท่ากัน');
+    }
+
+    if (this.hasDuplicateFileName(fileObj)) {
+      messages.push('ชื่อไฟล์ซ้ำกัน');
+    }
+
+    return messages;
+  }
+
+  getFileWarningMessage(fileObj: PreOrderFileItem): string {
+    return this.getFileWarningMessages(fileObj).join(', ');
+  }
+
+  hasFileWarning(fileObj: PreOrderFileItem): boolean {
+    return (
+      this.hasDuplicateFileName(fileObj) || this.hasDuplicateFileSize(fileObj)
+    );
+  }
+
   async validateFileColumnsForCategory(
     fileObj: PreOrderFileItem,
     selectedDisplayName: string
@@ -2893,6 +2976,8 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.canUpload = false;
       return;
     }
+
+    // Note: Duplicate file names and file sizes only show warnings but don't disable submit
 
     // Get only required file types (where required === true)
     const requiredDisplayNames = this.depotInputDataItems
