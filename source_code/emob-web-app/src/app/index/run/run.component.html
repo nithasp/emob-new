@@ -179,8 +179,12 @@
                                 word-wrap: break-word;
                                 min-width: 160px;
                                 max-width: 400px;
-                              ">
-                              {{ fileObj.file.name }}
+                              "
+                              [ngClass]="{'pb-0': (isFilePreview && hasFileWarning(fileObj)) || hasDuplicateCategory(fileObj)}">
+                              <span>{{ fileObj.file.name }}</span>
+                              <p #warningErrorMessage *ngIf="(isFilePreview && hasFileWarning(fileObj)) || hasDuplicateCategory(fileObj)">
+                                <small class="text-danger font-weight-bold">{{ getAllErrorMessages(fileObj) }}</small>
+                              </p>  
                             </td>
                             <td>
                               <mat-select class="step1" *ngIf="isFileSelectionStep" [(value)]="fileObj.file.displayName"
@@ -212,14 +216,6 @@
                                 [hidden]="!isOriginalExperiment()">
                                 <mat-icon>delete</mat-icon>
                               </button>
-                            </td>
-                          </tr>
-                          <tr *ngIf="(isFilePreview && hasFileWarning(fileObj)) || hasDuplicateCategory(fileObj)" 
-                            [style.--bs-table-bg]="'#e9ecef'">
-                            <td colspan="6" class="text-left">
-                              <small class="text-danger">
-                                <strong>{{ getAllErrorMessages(fileObj) }}</strong>
-                              </small>
                             </td>
                           </tr>
                         </ng-container>
