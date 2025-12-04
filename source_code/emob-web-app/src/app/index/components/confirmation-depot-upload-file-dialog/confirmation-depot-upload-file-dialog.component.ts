@@ -81,7 +81,6 @@ export class ConfirmationDepotUploadFileDialogComponent {
 
     // If no file columns provided, skip validation (backwards compatibility)
     if (!this.fileColumns || this.fileColumns.length === 0) {
-      console.log('No file columns provided, skipping validation');
       return { isValid: true, missingColumns: [] };
     }
 
@@ -114,10 +113,6 @@ export class ConfirmationDepotUploadFileDialogComponent {
 
       if (!validation.isValid && validation.missingColumns.length > 0) {
         // Return validation failure result to parent component
-        console.log(
-          'Validation FAILED - missing columns:',
-          validation.missingColumns
-        );
         this.activeModal.close({
           replace: false,
           category: this.selectedCategory,
@@ -128,8 +123,6 @@ export class ConfirmationDepotUploadFileDialogComponent {
         return;
       }
 
-      // Validation passed - proceed normally
-      console.log('Validation PASSED');
       this.activeModal.close({
         replace: false,
         category: this.selectedCategory,
@@ -157,12 +150,5 @@ export class ConfirmationDepotUploadFileDialogComponent {
         )
       );
     }
-  }
-
-  log(message: string = ''): void {
-    console.log('inputDataKeys', this.inputDataKeys);
-    console.log('depotInputDataItems', this.depotInputDataItems);
-    console.log('fileColumns', this.fileColumns);
-    console.log('selectedCategory', this.selectedCategory);
   }
 }
