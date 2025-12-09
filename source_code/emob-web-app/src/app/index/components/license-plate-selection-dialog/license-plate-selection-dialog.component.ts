@@ -98,10 +98,6 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
     return this.licensePlates.length;
   }
 
-  get vehicleTypeName(): string {
-    return this.data.vehicleType?.name ?? '';
-  }
-
   onLicensePlateToggle(item: LicensePlateItem): void {
     item.isSelected = !item.isSelected;
     this.updateSelectAllState();

@@ -7,46 +7,6 @@
   max-height: 80vh;
 }
 
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 24px;
-  border-bottom: 1px solid #e0e0e0;
-  position: relative;
-}
-
-.dialog-title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 500;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.vehicle-type-badge {
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 12px;
-  background-color: #e3f2fd;
-  color: #1976d2;
-  border-radius: 16px;
-}
-
-.close-button {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  color: #666;
-
-  &:hover {
-    color: #333;
-    background-color: rgba(0, 0, 0, 0.04);
-  }
-}
-
 .dialog-content {
   padding: 24px;
   flex: 1;

@@ -1,15 +1,5 @@
 <ng-container *transloco="let t; read: 'index'">
   <div class="dialog-container">
-    <div class="dialog-header">
-      <h2 class="dialog-title">
-        {{ t('license_plate_selection') }}
-        <span class="vehicle-type-badge" *ngIf="vehicleTypeName">{{ vehicleTypeName }}</span>
-      </h2>
-      <button mat-icon-button class="close-button" (click)="close()" aria-label="Close dialog">
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
-
     <div class="dialog-content">
       <!-- Loading state -->
       <div class="loading-container" *ngIf="isLoading">
@@ -65,7 +55,7 @@
       </button>
       <button mat-raised-button class="bg-custom-primary" (click)="confirm()"
         [disabled]="isLoading || selectedCount === 0">
-        {{ "confirm" | transloco }} ({{ selectedCount }})
+        {{ "confirm" | transloco }}
       </button>
     </div>
   </div>
