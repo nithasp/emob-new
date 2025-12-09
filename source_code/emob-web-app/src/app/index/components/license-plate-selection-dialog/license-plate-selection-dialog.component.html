@@ -37,7 +37,7 @@
         <div class="license-plates-container" *ngIf="licensePlates.length > 0">
           <!-- Select all option -->
           <div class="select-all-row" (click)="onSelectAllChange()">
-            <mat-checkbox [checked]="selectAll" (click)="$event.stopPropagation()">
+            <mat-checkbox [checked]="selectAll" (change)="onSelectAllChange()" (click)="$event.stopPropagation()">
             </mat-checkbox>
             <span class="select-all-label">{{ t('select_all') }}</span>
           </div>
@@ -48,7 +48,7 @@
           <div class="license-plate-list row">
             <div class="license-plate-item col-6" *ngFor="let item of licensePlates; let i = index"
               [class.selected]="item.isSelected" (click)="onLicensePlateToggle(item)">
-              <mat-checkbox [checked]="item.isSelected" (click)="$event.stopPropagation()">
+              <mat-checkbox [checked]="item.isSelected" (change)="onLicensePlateToggle(item)" (click)="$event.stopPropagation()">
               </mat-checkbox>
               <div class="license-plate-info">
                 <span class="license-plate-number">{{ item.licensePlate }}</span>
