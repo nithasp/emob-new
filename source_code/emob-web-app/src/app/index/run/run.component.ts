@@ -295,7 +295,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly transloco: TranslocoService,
     private readonly vehicleService: VehicleService,
     private readonly matDialog: MatDialog
-  ) {}
+  ) { }
 
   public generateUniqueId(): string {
     return 'f-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
@@ -499,12 +499,12 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (newData.length > 0) {
                 this.toastr.info(
                   `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                    newData.length +
-                    ` ${this.transloco.translate(
-                      'new_edited_location_data_suffix',
-                      {},
-                      'index'
-                    )}`,
+                  newData.length +
+                  ` ${this.transloco.translate(
+                    'new_edited_location_data_suffix',
+                    {},
+                    'index'
+                  )}`,
                   `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
@@ -1048,8 +1048,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
-          ? item.name
-          : '';
+            ? item.name
+            : '';
       const mapped: MyDepot = {
         depotId: (item.depotId || item.id || '') as string,
         depotName: nameKey,
@@ -1151,7 +1151,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               });
               location.setStyle(
                 this.iconStyle[
-                  uploadDataGroupCustomers[key as keyof DataGroup].type
+                uploadDataGroupCustomers[key as keyof DataGroup].type
                 ]
               );
               this.vectorSource.addFeature(location);
@@ -1284,13 +1284,13 @@ export class RunComponent implements OnInit, AfterViewInit {
   private isPopupPayload(
     value:
       | {
-          data?:
-            | Customer
-            | Depot
-            | MyDepot
-            | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
-          isDepot?: boolean;
-        }
+        data?:
+        | Customer
+        | Depot
+        | MyDepot
+        | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
+        isDepot?: boolean;
+      }
       | null
       | undefined
   ): value is { data: Customer; isDepot: boolean } {
@@ -2646,28 +2646,28 @@ export class RunComponent implements OnInit, AfterViewInit {
       const originalItems = groupsMap[categoryKey];
       const items = useConstraintsValues
         ? originalItems.map((dynamicParameter) => {
-            const constraintKey =
-              this.getConstraintKeyForParam(dynamicParameter);
-            if (!constraintKey) return dynamicParameter;
-            const constraintValue = this.constraintsData[constraintKey];
-            if (constraintValue === undefined || constraintValue === null) {
-              if (this.isTimeType(dynamicParameter)) {
-                return { ...dynamicParameter, value: '00:00' };
-              }
-              return dynamicParameter;
+          const constraintKey =
+            this.getConstraintKeyForParam(dynamicParameter);
+          if (!constraintKey) return dynamicParameter;
+          const constraintValue = this.constraintsData[constraintKey];
+          if (constraintValue === undefined || constraintValue === null) {
+            if (this.isTimeType(dynamicParameter)) {
+              return { ...dynamicParameter, value: '00:00' };
             }
-            if (this.isNumberType(dynamicParameter)) {
-              return { ...dynamicParameter, value: Number(constraintValue) };
-            }
-            const trimmedValue = String(constraintValue).trim();
-            return {
-              ...dynamicParameter,
-              value:
-                trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
-                  ? '00:00'
-                  : trimmedValue,
-            };
-          })
+            return dynamicParameter;
+          }
+          if (this.isNumberType(dynamicParameter)) {
+            return { ...dynamicParameter, value: Number(constraintValue) };
+          }
+          const trimmedValue = String(constraintValue).trim();
+          return {
+            ...dynamicParameter,
+            value:
+              trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
+                ? '00:00'
+                : trimmedValue,
+          };
+        })
         : originalItems;
       return {
         key: categoryKey,
@@ -2977,9 +2977,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     const dialogRef = this.matDialog.open(
       LicensePlateSelectionDialogComponent,
       {
-        width: '600px',
-        maxWidth: '95vw',
-        maxHeight: '90vh',
+        maxWidth: '600px',
+        maxHeight: '600px',
+        width: '100%',
+        height: '100%',
         disableClose: true,
         data: {
           vehicleType: vehicleType,
