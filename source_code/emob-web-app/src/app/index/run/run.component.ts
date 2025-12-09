@@ -29,7 +29,6 @@ import OSM from 'ol/source/OSM';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatDialog } from '@angular/material/dialog';
 
 import * as ExcelJS from 'exceljs';
 import {
@@ -293,8 +292,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly dataService: DataService,
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService,
-    private readonly vehicleService: VehicleService,
-    private readonly matDialog: MatDialog
+    private readonly vehicleService: VehicleService
   ) { }
 
   public generateUniqueId(): string {
@@ -2874,16 +2872,15 @@ export class RunComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    this.matDialog.open(VehicleTypeDialogComponent, {
-      width: '900px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      disableClose: true,
-      data: {
-        mode: 'view',
-        vehicleType: vehicleType,
-      },
+    const modalRef = this.ngbModal.open(VehicleTypeDialogComponent, {
+      centered: true,
+      size: 'xl',
+      animation: true,
+      backdrop: 'static',
+      keyboard: false,
     });
+    modalRef.componentInstance.mode = 'view';
+    modalRef.componentInstance.vehicleType = vehicleType;
   }
 
   log() {
@@ -2974,45 +2971,50 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.getSelectedDepotObject()?.depotId ||
       this.experiment.depots?.[0]?.depotId;
 
-    const dialogRef = this.matDialog.open(
+    const modalRef = this.ngbModal.open(
       LicensePlateSelectionDialogComponent,
       {
-        maxWidth: '600px',
-        maxHeight: '600px',
-        width: '100%',
-        height: '100%',
-        disableClose: true,
-        data: {
-          vehicleType: vehicleType,
-          vehicleId: vehicleId,
-          depotId: depotId,
-          preSelectedLicensePlates: this.selectedLicensePlates[vehicleId] || [],
-        },
+        centered: true,
+        size: 'lg',
+        animation: true,
+        backdrop: 'static',
+        keyboard: false,
       }
     );
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        // Store the selected license plates for this vehicle type
-        this.selectedLicensePlates[vehicleId] = result.selectedLicensePlates;
-        this.selectedVehicleIdsByLicensePlate[vehicleId] =
-          result.selectedVehicleIds;
+    modalRef.componentInstance.vehicleType = vehicleType;
+    modalRef.componentInstance.vehicleId = vehicleId;
+    modalRef.componentInstance.depotId = depotId;
+    modalRef.componentInstance.preSelectedLicensePlates =
+      this.selectedLicensePlates[vehicleId] || [];
 
-        // Update the vehicle count based on selected license plates
-        this.selectedVehicleCounts[vehicleId] =
-          result.selectedLicensePlates.length;
+    modalRef.result.then(
+      (result) => {
+        if (result) {
+          // Store the selected license plates for this vehicle type
+          this.selectedLicensePlates[vehicleId] = result.selectedLicensePlates;
+          this.selectedVehicleIdsByLicensePlate[vehicleId] =
+            result.selectedVehicleIds;
 
-        this.toastr.success(
-          `${result.selectedLicensePlates.length} ${this.transloco.translate(
-            'license_plates_selected',
-            {},
-            'index'
-          )}`
-        );
+          // Update the vehicle count based on selected license plates
+          this.selectedVehicleCounts[vehicleId] =
+            result.selectedLicensePlates.length;
 
-        this.cdr.detectChanges();
+          this.toastr.success(
+            `${result.selectedLicensePlates.length} ${this.transloco.translate(
+              'license_plates_selected',
+              {},
+              'index'
+            )}`
+          );
+
+          this.cdr.detectChanges();
+        }
+      },
+      () => {
+        // Modal dismissed (closed without result)
       }
-    });
+    );
   }
 
   getSelectedLicensePlatesCount(vehicleId: string): number {

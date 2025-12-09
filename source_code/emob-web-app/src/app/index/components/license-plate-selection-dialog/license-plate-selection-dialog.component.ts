@@ -1,6 +1,6 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -9,13 +9,6 @@ import { FormsModule } from '@angular/forms';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import { MyVehicles, VehicleType } from 'src/app/models/vehicle.model';
 import { TranslocoModule } from '@jsverse/transloco';
-
-export interface LicensePlateSelectionDialogData {
-  vehicleType: VehicleType;
-  vehicleId: string;
-  depotId?: string;
-  preSelectedLicensePlates?: string[];
-}
 
 export interface LicensePlateItem {
   vehicleId: string;
@@ -47,13 +40,18 @@ export interface LicensePlateSelectionResult {
   styleUrl: './license-plate-selection-dialog.component.scss',
 })
 export class LicensePlateSelectionDialogComponent implements OnInit {
+  // Input properties set by parent component
+  vehicleType!: VehicleType;
+  vehicleId!: string;
+  depotId?: string;
+  preSelectedLicensePlates: string[] = [];
+
   licensePlates: LicensePlateItem[] = [];
   isLoading: boolean = true;
   selectAll: boolean = false;
 
   constructor(
-    public dialogRef: MatDialogRef<LicensePlateSelectionDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: LicensePlateSelectionDialogData,
+    public activeModal: NgbActiveModal,
     private readonly vehicleService: VehicleService
   ) {}
 
@@ -63,8 +61,8 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
 
   loadLicensePlates(): void {
     this.isLoading = true;
-    const depotId = this.data.depotId;
-    const vehicleTypeId = this.data.vehicleId;
+    const depotId = this.depotId;
+    const vehicleTypeId = this.vehicleId;
 
     this.vehicleService.getMyVehicles(depotId, vehicleTypeId).subscribe({
       next: (vehicles: MyVehicles[]) => {
@@ -74,7 +72,7 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
             vehicleId: vehicle.vehicleId,
             licensePlate: vehicle.licensePlate,
             isSelected:
-              this.data.preSelectedLicensePlates?.includes(
+              this.preSelectedLicensePlates?.includes(
                 vehicle.licensePlate
               ) ?? false,
             startDepotName: vehicle.startDepotId?.depotName ?? '-',
@@ -117,16 +115,16 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
   }
 
   close(): void {
-    this.dialogRef.close();
+    this.activeModal.dismiss();
   }
 
   confirm(): void {
     const selectedItems = this.licensePlates.filter((lp) => lp.isSelected);
     const result: LicensePlateSelectionResult = {
-      vehicleTypeId: this.data.vehicleId,
+      vehicleTypeId: this.vehicleId,
       selectedLicensePlates: selectedItems.map((lp) => lp.licensePlate),
       selectedVehicleIds: selectedItems.map((lp) => lp.vehicleId),
     };
-    this.dialogRef.close(result);
+    this.activeModal.close(result);
   }
 }
