@@ -1,5 +1,5 @@
 <ng-container *transloco="let t; read: 'index'">
-  <mat-card
+  <div
     id="vehicle-type-dialog"
     [class.is-loading]="isLoading"
     class="p-3 position-relative"
@@ -16,8 +16,8 @@
     </div>
 
     <div *ngIf="!isLoading" class="w-100 h-100">
-      <mat-card-header class="mb-4">
-        <h1 class="fw-bold h4">
+      <div class="modal-header border-0 pb-2">
+        <h1 class="fw-bold h4 modal-title">
           {{
             isViewMode
               ? t("view_vehicle_type")
@@ -26,9 +26,15 @@
               : t("add_vehicle_type")
           }}
         </h1>
-      </mat-card-header>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          (click)="cancel()"
+        ></button>
+      </div>
 
-      <mat-card-content class="pb-0">
+      <div class="modal-body pb-0">
         <form [formGroup]="formVehicleType">
           <div class="row g-4">
             <div
@@ -235,32 +241,29 @@
                 ></app-input-field>
               </div>
 
-              <div>
-                <mat-dialog-actions
-                  align="end"
-                  class="d-flex gap-2 justify-content-end mt-3 p-0 flex-wrap"
-                >
+              <div class="modal-footer border-0 pt-3">
+                <div class="d-flex gap-2 justify-content-end flex-wrap w-100">
                   <button
-                    mat-raised-button="mat-raised-button"
-                    class="bg-custom-danger"
+                    type="button"
+                    class="btn btn-danger"
                     (click)="cancel()"
                   >
                     {{ "cancel" | transloco }}
                   </button>
                   <button
                     *ngIf="!isViewMode"
-                    mat-raised-button="mat-raised-button"
-                    color="primary"
+                    type="button"
+                    class="btn btn-primary"
                     (click)="save()"
                   >
                     {{ "save" | transloco }}
                   </button>
-                </mat-dialog-actions>
+                </div>
               </div>
             </div>
           </div>
         </form>
-      </mat-card-content>
+      </div>
     </div>
-  </mat-card>
+  </div>
 </ng-container>

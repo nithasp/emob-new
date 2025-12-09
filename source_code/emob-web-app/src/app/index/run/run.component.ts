@@ -2874,7 +2874,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     const modalRef = this.ngbModal.open(VehicleTypeDialogComponent, {
       centered: true,
-      size: 'xl',
+      size: 'lg',
       animation: true,
       backdrop: 'static',
       keyboard: false,

@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -8,8 +8,7 @@ import {
 import { finalize } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { MatCheckboxChange } from '@angular/material/checkbox';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
 import {
@@ -34,6 +33,9 @@ import { TranslocoService } from '@jsverse/transloco';
   styleUrls: ['./vehicle-type-dialog.component.scss'],
 })
 export class VehicleTypeDialogComponent implements OnInit {
+  @Input() mode: 'create' | 'edit' | 'view' = 'create';
+  @Input() vehicleType: VehicleType | null = null;
+
   formVehicleType!: FormGroup<VehicleTypeFormControls>;
   isEdit: boolean = false;
   isViewMode: boolean = false;
@@ -47,12 +49,7 @@ export class VehicleTypeDialogComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<VehicleTypeDialogComponent>,
-    @Inject(MAT_DIALOG_DATA)
-    public data: {
-      mode: 'create' | 'edit' | 'view';
-      vehicleType: VehicleType | null;
-    },
+    public activeModal: NgbActiveModal,
     private ngbModal: NgbModal,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService,
@@ -60,16 +57,16 @@ export class VehicleTypeDialogComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.isEdit = this.data.mode === 'edit';
-    this.isViewMode = this.data.mode === 'view';
+    this.isEdit = this.mode === 'edit';
+    this.isViewMode = this.mode === 'view';
     this.initForm();
 
     this.getEnumValues().then(() => {
-      if ((this.isEdit || this.isViewMode) && this.data.vehicleType) {
+      if ((this.isEdit || this.isViewMode) && this.vehicleType) {
         const vehicleType = {
-          ...this.data.vehicleType,
-          twEarly: this.formatTimeForDisplay(this.data.vehicleType.twEarly),
-          twLate: this.formatTimeForDisplay(this.data.vehicleType.twLate),
+          ...this.vehicleType,
+          twEarly: this.formatTimeForDisplay(this.vehicleType.twEarly),
+          twLate: this.formatTimeForDisplay(this.vehicleType.twLate),
         };
         this.formVehicleType.patchValue(vehicleType);
         if (vehicleType.twEarly) {
@@ -133,7 +130,7 @@ export class VehicleTypeDialogComponent implements OnInit {
   }
 
   cancel(): void {
-    this.dialogRef.close();
+    this.activeModal.dismiss();
   }
 
   onAccessPointChange(event: MatCheckboxChange, accessPoint: AccessTypeEnum): void {
@@ -216,13 +213,13 @@ export class VehicleTypeDialogComponent implements OnInit {
 
     const request$ = this.isEdit
       ? this.vehicleService.updateVehicleType(
-          this.data.vehicleType!.vehicleTypeId,
+          this.vehicleType!.vehicleTypeId,
           payload as VehicleType
         )
       : this.vehicleService.createVehicleType(payload as VehicleType);
     request$.pipe(finalize(() => this.spinner.hide())).subscribe({
       next: (res) => {
-        this.dialogRef.close({ refresh: true, vehicleType: res });
+        this.activeModal.close({ refresh: true, vehicleType: res });
       },
       error: (err) => {
         console.error(
