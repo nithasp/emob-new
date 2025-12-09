@@ -21,7 +21,7 @@
       </div>
 
       <!-- License plates list -->
-      <div class="border rounded" *ngIf="licensePlates.length > 0">
+      <div class="border rounded mb-3" *ngIf="licensePlates.length > 0">
         <!-- Select all option -->
         <div class="p-3 bg-light border-bottom" (click)="onSelectAllChange()" style="cursor: pointer;">
           <mat-checkbox [checked]="selectAll" (change)="onSelectAllChange()" (click)="$event.stopPropagation()">
@@ -41,6 +41,18 @@
             </mat-checkbox>
           </div>
         </div>
+      </div>
+
+      <!-- Selected License plates list -->
+      <div class="border rounded p-3" *ngIf="selectedLicensePlates.length > 0">
+        <mat-chip-set aria-label="Selected license plates">
+          <mat-chip *ngFor="let item of selectedLicensePlates" [removable]="true" (removed)="onRemoveChip(item)">
+            {{ item.licensePlate }}
+            <button matChipRemove [attr.aria-label]="'Remove ' + item.licensePlate">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+        </mat-chip-set>
       </div>
     </ng-container>
   </div>

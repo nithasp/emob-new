@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule } from '@angular/forms';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import { MyVehicles, VehicleType } from 'src/app/models/vehicle.model';
@@ -33,6 +34,7 @@ export interface LicensePlateSelectionResult {
     MatIconModule,
     MatCheckboxModule,
     MatProgressSpinnerModule,
+    MatChipsModule,
     FormsModule,
     TranslocoModule,
   ],
@@ -89,7 +91,7 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
   }
 
   get selectedCount(): number {
-    return this.licensePlates.filter((lp) => lp.isSelected).length;
+    return this.licensePlates.filter((licensePlate) => licensePlate.isSelected).length;
   }
 
   get totalCount(): number {
@@ -103,7 +105,7 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
 
   onSelectAllChange(): void {
     this.selectAll = !this.selectAll;
-    this.licensePlates.forEach((lp) => (lp.isSelected = this.selectAll));
+    this.licensePlates.forEach((licensePlate) => (licensePlate.isSelected = this.selectAll));
   }
 
   updateSelectAllState(): void {
@@ -111,7 +113,16 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
       this.selectAll = false;
       return;
     }
-    this.selectAll = this.licensePlates.every((lp) => lp.isSelected);
+    this.selectAll = this.licensePlates.every((licensePlate) => licensePlate.isSelected);
+  }
+
+  get selectedLicensePlates(): LicensePlateItem[] {
+    return this.licensePlates.filter((licensePlate) => licensePlate.isSelected);
+  }
+
+  onRemoveChip(item: LicensePlateItem): void {
+    item.isSelected = false;
+    this.updateSelectAllState();
   }
 
   close(): void {
@@ -119,11 +130,11 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
   }
 
   confirm(): void {
-    const selectedItems = this.licensePlates.filter((lp) => lp.isSelected);
+    const selectedItems = this.licensePlates.filter((licensePlate) => licensePlate.isSelected);
     const result: LicensePlateSelectionResult = {
       vehicleTypeId: this.vehicleId,
-      selectedLicensePlates: selectedItems.map((lp) => lp.licensePlate),
-      selectedVehicleIds: selectedItems.map((lp) => lp.vehicleId),
+      selectedLicensePlates: selectedItems.map((licensePlate) => licensePlate.licensePlate),
+      selectedVehicleIds: selectedItems.map((licensePlate) => licensePlate.vehicleId),
     };
     this.activeModal.close(result);
   }
