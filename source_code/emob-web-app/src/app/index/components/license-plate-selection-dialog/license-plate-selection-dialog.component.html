@@ -8,14 +8,36 @@
 
   <ng-container #content *ngIf="!isLoading">
     <div class="modal-body">
-      <!-- Summary section -->
-      <div class="alert alert-info mb-3">
-        <span>{{ t("selected") }}:</span>
-        <strong class="ms-2">{{ selectedCount }} / {{ totalCount }}</strong>
+
+      <div class="mb-3">
+        <div class="input-group">
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="searchText"
+            [placeholder]="t('search_license_plate')"
+            (keyup.enter)="onSearch()"
+          />
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            (click)="onSearch()"
+          >
+            <mat-icon>search</mat-icon>
+          </button>
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            (click)="onClearSearch()"
+            *ngIf="activeSearchText"
+          >
+            <mat-icon>clear</mat-icon>
+          </button>
+        </div>
       </div>
 
       <!-- Empty state -->
-      <div class="text-center py-4" *ngIf="licensePlates.length === 0">
+      <div class="text-center py-4" *ngIf="filteredLicensePlates.length === 0">
         <mat-icon
           class="text-muted"
           style="font-size: 64px; width: 64px; height: 64px; opacity: 0.5"
@@ -25,7 +47,7 @@
       </div>
 
       <!-- License plates list -->
-      <div class="border rounded mb-3" *ngIf="licensePlates.length > 0">
+      <div class="border rounded mb-3" *ngIf="filteredLicensePlates.length > 0">
         <!-- Select all option -->
         <div
           class="p-3 bg-light border-bottom"
@@ -45,7 +67,7 @@
         <div class="row g-0" style="max-height: 350px; overflow-y: auto">
           <div
             class="col-6 p-3 border-bottom"
-            *ngFor="let item of licensePlates; let i = index"
+            *ngFor="let item of filteredLicensePlates; let i = index"
             [class.bg-light]="item.isSelected"
             (click)="onLicensePlateToggle(item)"
             style="cursor: pointer"

@@ -51,6 +51,8 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
   licensePlates: LicensePlateItem[] = [];
   isLoading: boolean = true;
   selectAll: boolean = false;
+  searchText: string = '';
+  activeSearchText: string = '';
 
   constructor(
     public activeModal: NgbActiveModal,
@@ -90,12 +92,27 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
     });
   }
 
+  get filteredLicensePlates(): LicensePlateItem[] {
+    if (!this.activeSearchText.trim()) {
+      return this.licensePlates;
+    }
+    const searchLower = this.activeSearchText.toLowerCase();
+    return this.licensePlates.filter((licensePlate) =>
+      licensePlate.licensePlate.toLowerCase().includes(searchLower)
+    );
+  }
+
   get selectedCount(): number {
     return this.licensePlates.filter((licensePlate) => licensePlate.isSelected).length;
   }
 
-  get totalCount(): number {
-    return this.licensePlates.length;
+  onSearch(): void {
+    this.activeSearchText = this.searchText;
+  }
+
+  onClearSearch(): void {
+    this.searchText = '';
+    this.activeSearchText = '';
   }
 
   onLicensePlateToggle(item: LicensePlateItem): void {

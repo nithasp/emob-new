@@ -26,12 +26,6 @@
               : t("add_vehicle_type")
           }}
         </h1>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          (click)="cancel()"
-        ></button>
       </div>
 
       <div class="modal-body pb-0">
@@ -241,11 +235,11 @@
                 ></app-input-field>
               </div>
 
-              <div class="modal-footer border-0 pt-3">
+              <div class="modal-footer border-0 pt-3 px-0">
                 <div class="d-flex gap-2 justify-content-end flex-wrap w-100">
                   <button
                     type="button"
-                    class="btn btn-danger"
+                    class="btn btn-outline-secondary"
                     (click)="cancel()"
                   >
                     {{ "cancel" | transloco }}
