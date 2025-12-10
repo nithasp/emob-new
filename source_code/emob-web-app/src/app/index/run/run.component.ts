@@ -2976,9 +2976,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       {
         centered: true,
         size: 'lg',
-        animation: true,
-        backdrop: 'static',
-        keyboard: false,
+        animation: true
       }
     );
 

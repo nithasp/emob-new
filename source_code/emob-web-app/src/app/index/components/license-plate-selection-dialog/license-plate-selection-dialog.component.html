@@ -1,42 +1,60 @@
 <ng-container *transloco="let t; read: 'index'">
-  <div class="modal-body">
-    <!-- Loading state -->
-    <div class="text-center py-4" *ngIf="isLoading">
+  <ng-container #loading *ngIf="isLoading">
+    <div class="text-center py-4">
       <mat-spinner diameter="40" class="mx-auto mb-3"></mat-spinner>
-      <p class="text-muted">{{ t('loading') }}...</p>
+      <p class="text-muted">{{ t("loading") }}...</p>
     </div>
+  </ng-container>
 
-    <!-- Content when loaded -->
-    <ng-container *ngIf="!isLoading">
+  <ng-container #content *ngIf="!isLoading">
+    <div class="modal-body">
       <!-- Summary section -->
       <div class="alert alert-info mb-3">
-        <span>{{ t('selected') }}:</span>
+        <span>{{ t("selected") }}:</span>
         <strong class="ms-2">{{ selectedCount }} / {{ totalCount }}</strong>
       </div>
 
       <!-- Empty state -->
       <div class="text-center py-4" *ngIf="licensePlates.length === 0">
-        <mat-icon class="text-muted" style="font-size: 64px; width: 64px; height: 64px; opacity: 0.5;">directions_car</mat-icon>
-        <p class="text-muted mt-3">{{ t('no_vehicles_found') }}</p>
+        <mat-icon
+          class="text-muted"
+          style="font-size: 64px; width: 64px; height: 64px; opacity: 0.5"
+          >directions_car</mat-icon
+        >
+        <p class="text-muted mt-3">{{ t("no_vehicles_found") }}</p>
       </div>
 
       <!-- License plates list -->
       <div class="border rounded mb-3" *ngIf="licensePlates.length > 0">
         <!-- Select all option -->
-        <div class="p-3 bg-light border-bottom" (click)="onSelectAllChange()" style="cursor: pointer;">
-          <mat-checkbox [checked]="selectAll" (change)="onSelectAllChange()" (click)="$event.stopPropagation()">
-            <span class="fw-medium">{{ t('select_all') }}</span>
+        <div
+          class="p-3 bg-light border-bottom"
+          (click)="onSelectAllChange()"
+          style="cursor: pointer"
+        >
+          <mat-checkbox
+            [checked]="selectAll"
+            (change)="onSelectAllChange()"
+            (click)="$event.stopPropagation()"
+          >
+            <span class="fw-medium">{{ t("select_all") }}</span>
           </mat-checkbox>
         </div>
 
         <!-- License plate items -->
-        <div class="row g-0" style="max-height: 350px; overflow-y: auto;">
-          <div class="col-6 p-3 border-bottom" 
-               *ngFor="let item of licensePlates; let i = index"
-               [class.bg-light]="item.isSelected" 
-               (click)="onLicensePlateToggle(item)"
-               style="cursor: pointer;">
-            <mat-checkbox [checked]="item.isSelected" (change)="onLicensePlateToggle(item)" (click)="$event.stopPropagation()">
+        <div class="row g-0" style="max-height: 350px; overflow-y: auto">
+          <div
+            class="col-6 p-3 border-bottom"
+            *ngFor="let item of licensePlates; let i = index"
+            [class.bg-light]="item.isSelected"
+            (click)="onLicensePlateToggle(item)"
+            style="cursor: pointer"
+          >
+            <mat-checkbox
+              [checked]="item.isSelected"
+              (change)="onLicensePlateToggle(item)"
+              (click)="$event.stopPropagation()"
+            >
               <strong>{{ item.licensePlate }}</strong>
             </mat-checkbox>
           </div>
@@ -46,24 +64,38 @@
       <!-- Selected License plates list -->
       <div class="border rounded p-3" *ngIf="selectedLicensePlates.length > 0">
         <mat-chip-set aria-label="Selected license plates">
-          <mat-chip *ngFor="let item of selectedLicensePlates" [removable]="true" (removed)="onRemoveChip(item)">
+          <mat-chip
+            *ngFor="let item of selectedLicensePlates"
+            highlighted
+            removable
+            (removed)="onRemoveChip(item)"
+            class="text-capitalize chip-outline"
+            color="primary"
+          >
             {{ item.licensePlate }}
-            <button matChipRemove [attr.aria-label]="'Remove ' + item.licensePlate">
-              <mat-icon>cancel</mat-icon>
-            </button>
+            <mat-icon matChipRemove class="opacity-100">cancel</mat-icon>
           </mat-chip>
         </mat-chip-set>
+        <div class="text-right">
+          <span>{{ "total" | transloco }}: {{ selectedCount }}</span>
+        </div>
       </div>
-    </ng-container>
-  </div>
+    </div>
 
-  <div class="modal-footer">
-    <button type="button" class="btn btn-outline-secondary" (click)="close()">
-      {{ "cancel" | transloco }}
-    </button>
-    <button type="button" mat-raised-button class="bg-custom-primary" (click)="confirm()"
-      [disabled]="isLoading || selectedCount === 0">
-      {{ "confirm" | transloco }}
-    </button>
-  </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="close()">
+        {{ "cancel" | transloco }}
+      </button>
+      <button
+        type="button"
+        ngbAutofocus
+        mat-raised-button
+        class="bg-custom-primary"
+        (click)="confirm()"
+        [disabled]="selectedCount === 0"
+      >
+        {{ "confirm" | transloco }}
+      </button>
+    </div>
+  </ng-container>
 </ng-container>
