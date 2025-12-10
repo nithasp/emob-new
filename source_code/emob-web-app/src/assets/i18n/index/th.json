@@ -361,7 +361,6 @@
   "license_plates_selected": "ป้ายทะเบียนที่เลือก",
   "no_license_plates_selected": "ยังไม่ได้เลือกป้ายทะเบียน",
   "no_vehicles_found": "ไม่พบยานพาหนะสำหรับประเภทนี้",
-  "select_all": "เลือกทั้งหมด",
   "selected": "ที่เลือก",
   "loading": "กำลังโหลด",
   "search_license_plate": "ค้นหาป้ายทะเบียน"

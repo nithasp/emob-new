@@ -120,11 +120,6 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
     this.updateSelectAllState();
   }
 
-  onSelectAllChange(): void {
-    this.selectAll = !this.selectAll;
-    this.licensePlates.forEach((licensePlate) => (licensePlate.isSelected = this.selectAll));
-  }
-
   updateSelectAllState(): void {
     if (this.licensePlates.length === 0) {
       this.selectAll = false;

@@ -8,7 +8,6 @@
 
   <ng-container #content *ngIf="!isLoading">
     <div class="modal-body">
-
       <div class="mb-3">
         <div class="input-group">
           <input
@@ -48,27 +47,11 @@
 
       <!-- License plates list -->
       <div class="border rounded mb-3" *ngIf="filteredLicensePlates.length > 0">
-        <!-- Select all option -->
-        <div
-          class="p-3 bg-light border-bottom"
-          (click)="onSelectAllChange()"
-          style="cursor: pointer"
-        >
-          <mat-checkbox
-            [checked]="selectAll"
-            (change)="onSelectAllChange()"
-            (click)="$event.stopPropagation()"
-          >
-            <span class="fw-medium">{{ t("select_all") }}</span>
-          </mat-checkbox>
-        </div>
-
         <!-- License plate items -->
         <div class="row g-0" style="max-height: 350px; overflow-y: auto">
           <div
-            class="col-6 p-3 border-bottom"
+            class="col-6 p-3"
             *ngFor="let item of filteredLicensePlates; let i = index"
-            [class.bg-light]="item.isSelected"
             (click)="onLicensePlateToggle(item)"
             style="cursor: pointer"
           >
