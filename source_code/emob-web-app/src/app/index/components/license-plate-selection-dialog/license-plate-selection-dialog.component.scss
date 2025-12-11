@@ -1,7 +1,5 @@
-:host {
-  ::ng-deep {
-    .mdc-label {
-      margin-bottom: 0 !important;
-    }
+:host ::ng-deep {
+  .mdc-label {
+    margin-bottom: 0 !important;
   }
 }

@@ -385,3 +385,17 @@ mat-icon {
 .license-plate-selection-count {
   margin-left: 44px;
 }
+
+.license-plate-details-button {
+  font-size: 14px;
+}
+
+.license-plate-list {
+  max-height: 120px;
+  overflow: auto;
+}
+
+::ng-deep .floating:has(.license-plate-details) {
+  max-width: 220px !important;
+  width: 100% !important;
+}

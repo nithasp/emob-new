@@ -478,10 +478,9 @@
                         <span>{{ getSelectedLicensePlatesCount(vehicle.vehicleTypeId) }}</span>
 
                         <!-- License Plate list details -->
-                         <div style="max-width: 300px; width: 100%;">
-                          <app-dynamic-popover [placement]="'bottom-start'" class="ml-3">
-                            <button type="button" popover-trigger class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-info-circle"></i> {{ 'details' | transloco }}
+                          <app-dynamic-popover [placement]="'bottom-start'" class="ml-2">
+                            <button type="button" popover-trigger class="license-plate-details-button btn btn-link p-0 align-baseline">
+                              {{ t('details') }}
                             </button>
                             <div popover-content class="license-plate-details">
                               <div class="mb-2">
@@ -491,7 +490,7 @@
                                    *ngIf="(selectedLicensePlates[vehicle.vehicleTypeId]?.length ?? 0) > 0; else noPlates">
                                 <div class="license-plate-item" 
                                      *ngFor="let plate of (selectedLicensePlates[vehicle.vehicleTypeId] ?? []).slice().sort(); let i = index">
-                                  <span class="plate-number">{{ i + 1 }}.</span>
+                                  <span class="plate-number">{{ i + 1 }}. </span>
                                   <span class="plate-text">{{ plate }}</span>
                                 </div>
                               </div>
@@ -500,9 +499,6 @@
                               </ng-template>
                             </div>
                           </app-dynamic-popover>
-                         </div>
-          
-
                       </div>
                       </mat-radio-group>
                     </div>
