@@ -468,20 +468,42 @@
                               [disabled]="getVehicleSelectionMode(vehicle.vehicleTypeId) !== 'license-plate'">
                               {{ t('select') || 'Select' }}
                             </button>
-                            <span
-                              *ngIf="getVehicleSelectionMode(vehicle.vehicleTypeId) === 'license-plate' && getSelectedLicensePlatesCount(vehicle.vehicleTypeId) > 0"
-                              class="badge bg-primary ms-2">
-                              {{ getSelectedLicensePlatesCount(vehicle.vehicleTypeId) }} {{ t('selected') || 'selected'
-                              }}
-                            </span>
+
                           </div>
                         </mat-radio-button>
-                        <!-- Display selected license plates -->
                         <div
-                          *ngIf="getVehicleSelectionMode(vehicle.vehicleTypeId) === 'license-plate' && getSelectedLicensePlatesCount(vehicle.vehicleTypeId) > 0"
-                          class="selected-plates-display mt-2 ms-4">
-                          <small class="text-muted">{{ getSelectedLicensePlatesDisplay(vehicle.vehicleTypeId) }}</small>
-                        </div>
+                        *ngIf="getVehicleSelectionMode(vehicle.vehicleTypeId) === 'license-plate' && getSelectedLicensePlatesCount(vehicle.vehicleTypeId) > 0"
+                        class="license-plate-selection-count">
+                        <span>{{ 'total' | transloco }}: </span>
+                        <span>{{ getSelectedLicensePlatesCount(vehicle.vehicleTypeId) }}</span>
+
+                        <!-- License Plate list details -->
+                         <div style="max-width: 300px; width: 100%;">
+                          <app-dynamic-popover [placement]="'bottom-start'" class="ml-3">
+                            <button type="button" popover-trigger class="btn btn-sm btn-outline-secondary">
+                              <i class="bi bi-info-circle"></i> {{ 'details' | transloco }}
+                            </button>
+                            <div popover-content class="license-plate-details">
+                              <div class="mb-2">
+                                <strong>{{ t("selected_license_plates") }}:</strong>
+                              </div>
+                              <div class="license-plate-list" 
+                                   *ngIf="(selectedLicensePlates[vehicle.vehicleTypeId]?.length ?? 0) > 0; else noPlates">
+                                <div class="license-plate-item" 
+                                     *ngFor="let plate of (selectedLicensePlates[vehicle.vehicleTypeId] ?? []).slice().sort(); let i = index">
+                                  <span class="plate-number">{{ i + 1 }}.</span>
+                                  <span class="plate-text">{{ plate }}</span>
+                                </div>
+                              </div>
+                              <ng-template #noPlates>
+                                <p class="text-muted mb-0">{{ 'no_license_plates_selected' | transloco }}</p>
+                              </ng-template>
+                            </div>
+                          </app-dynamic-popover>
+                         </div>
+          
+
+                      </div>
                       </mat-radio-group>
                     </div>
                   </div>
