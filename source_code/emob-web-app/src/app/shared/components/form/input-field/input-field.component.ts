@@ -44,6 +44,7 @@ export class InputFieldComponent
   @Input() readonly: boolean = false;
   @Input() required: boolean = false;
   @Input() value: string = '';
+  @Input() height?: string;
 
   @Input() control?: FormControl<any>;
   @Input() decimal: number = 0;

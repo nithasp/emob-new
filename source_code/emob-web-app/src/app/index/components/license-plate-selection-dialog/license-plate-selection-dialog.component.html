@@ -8,31 +8,31 @@
 
   <ng-container #content *ngIf="!isLoading">
     <div class="modal-body">
-      <div class="mb-3">
-        <div class="input-group">
-          <div class="flex-grow-1" (keyup.enter)="onSearch()">
-            <app-input-field
-              [control]="searchControl"
-              [placeholder]="t('search_license_plate')"
-              type="text"
-            ></app-input-field>
-          </div>
-          <button
-            class="btn btn-outline-secondary"
-            type="button"
-            (click)="onSearch()"
-          >
-            <mat-icon>search</mat-icon>
-          </button>
-          <button
-            class="btn btn-outline-secondary"
-            type="button"
-            (click)="onClearSearch()"
-            *ngIf="activeSearchText"
-          >
-            <mat-icon>clear</mat-icon>
-          </button>
+      <div class="mb-3 d-flex gap-2">
+        <div (keyup.enter)="onSearch()" class="flex-fill">
+          <app-input-field
+            [control]="searchControl"
+            [placeholder]="t('search_license_plate')"
+            type="text"
+            height="42px"
+          ></app-input-field>
         </div>
+        <button
+
+        class="btn btn-outline-secondary btn-search"
+          type="button"
+          (click)="onSearch()"
+        >
+          <mat-icon>search</mat-icon>
+        </button>
+        <button
+          class="btn btn-outline-secondary btn-search"
+          type="button"
+          (click)="onClearSearch()"
+          *ngIf="activeSearchText"
+        >
+          <mat-icon>clear</mat-icon>
+        </button>
       </div>
 
       <!-- Empty state -->
