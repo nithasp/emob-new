@@ -6,10 +6,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import { MyVehicles, VehicleType } from 'src/app/models/vehicle.model';
 import { TranslocoModule } from '@jsverse/transloco';
+import { InputFieldComponent } from 'src/app/shared/components/form/input-field/input-field.component';
 
 export interface LicensePlateItem {
   vehicleId: string;
@@ -36,7 +37,9 @@ export interface LicensePlateSelectionResult {
     MatProgressSpinnerModule,
     MatChipsModule,
     FormsModule,
+    ReactiveFormsModule,
     TranslocoModule,
+    InputFieldComponent,
   ],
   templateUrl: './license-plate-selection-dialog.component.html',
   styleUrl: './license-plate-selection-dialog.component.scss',
@@ -53,6 +56,7 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
   selectAll: boolean = false;
   searchText: string = '';
   activeSearchText: string = '';
+  searchControl: FormControl = new FormControl('');
 
   constructor(
     public activeModal: NgbActiveModal,
@@ -107,10 +111,12 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
   }
 
   onSearch(): void {
+    this.searchText = this.searchControl.value || '';
     this.activeSearchText = this.searchText;
   }
 
   onClearSearch(): void {
+    this.searchControl.setValue('');
     this.searchText = '';
     this.activeSearchText = '';
   }

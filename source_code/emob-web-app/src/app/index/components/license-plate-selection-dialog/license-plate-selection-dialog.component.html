@@ -10,13 +10,13 @@
     <div class="modal-body">
       <div class="mb-3">
         <div class="input-group">
-          <input
-            type="text"
-            class="form-control"
-            [(ngModel)]="searchText"
-            [placeholder]="t('search_license_plate')"
-            (keyup.enter)="onSearch()"
-          />
+          <div class="flex-grow-1" (keyup.enter)="onSearch()">
+            <app-input-field
+              [control]="searchControl"
+              [placeholder]="t('search_license_plate')"
+              type="text"
+            ></app-input-field>
+          </div>
           <button
             class="btn btn-outline-secondary"
             type="button"
