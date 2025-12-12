@@ -2998,14 +2998,6 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.selectedVehicleCounts[vehicleId] =
             result.selectedLicensePlates.length;
 
-          this.toastr.success(
-            `${result.selectedLicensePlates.length} ${this.transloco.translate(
-              'license_plates_selected',
-              {},
-              'index'
-            )}`
-          );
-
           this.cdr.detectChanges();
         }
       },
