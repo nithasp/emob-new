@@ -186,7 +186,7 @@
                                 <small 
                                   [ngClass]="{
                                     'text-danger': hasDuplicateCategory(fileObj),
-                                    'text-warning': !hasDuplicateCategory(fileObj) && hasFileWarning(fileObj)
+                                    'text-warning-intense': !hasDuplicateCategory(fileObj) && hasFileWarning(fileObj)
                                   }" 
                                   class="font-weight-bold">{{ getAllErrorMessages(fileObj) }}</small>
                               </p>
