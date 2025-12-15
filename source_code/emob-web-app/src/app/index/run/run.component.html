@@ -184,7 +184,7 @@
                               <span>{{ fileObj.file.name }}</span>
                               <p #warningErrorMessage *ngIf="(isFilePreview && hasFileWarning(fileObj)) || hasDuplicateCategory(fileObj)">
                                 <small class="text-danger font-weight-bold">{{ getAllErrorMessages(fileObj) }}</small>
-                              </p>  
+                              </p>
                             </td>
                             <td>
                               <mat-select class="step1" *ngIf="isFileSelectionStep" [(value)]="fileObj.file.displayName"

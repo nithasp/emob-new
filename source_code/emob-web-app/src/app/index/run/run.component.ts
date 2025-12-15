@@ -650,7 +650,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       (existingFile) => existingFile.file.name === file.name
     );
     if (hasDuplicateFileName) {
-      warningMessages.push('ชื่อไฟล์ซ้ำกัน');
+      warningMessages.push(
+        this.transloco.translate('duplicate_file_name', {}, 'index')
+      );
       
       const hasDuplicateFileSize = this.preOrderFiles.some(
         (existingFile) => 
@@ -658,7 +660,9 @@ export class RunComponent implements OnInit, AfterViewInit {
           existingFile.file.size === file.size
       );
       if (hasDuplicateFileSize) {
-        warningMessages.push('ไฟล์มีขนาดเท่ากัน');
+        warningMessages.push(
+          this.transloco.translate('duplicate_file_size', {}, 'index')
+        );
       }
     }
 
@@ -2579,11 +2583,15 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     // Check duplicate file name first
     if (this.hasDuplicateFileName(fileObj)) {
-      messages.push('ชื่อไฟล์ซ้ำกัน');
+      messages.push(
+        this.transloco.translate('duplicate_file_name', {}, 'index')
+      );
       
       // Only check duplicate file size if file name is also duplicated
       if (this.hasDuplicateFileSize(fileObj)) {
-        messages.push('ไฟล์มีขนาดเท่ากัน');
+        messages.push(
+          this.transloco.translate('duplicate_file_size', {}, 'index')
+        );
       }
     }
 

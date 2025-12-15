@@ -292,5 +292,7 @@
   "a_file_with_this_category_is_already_added": "A file with this category is already added",
   "required": "Required",
   "optional": "Optional",
-  "this_file_category_has_already_been_added": "This file category has already been added"
+  "this_file_category_has_already_been_added": "This file category has already been added",
+  "duplicate_file_name": "Duplicate file name",
+  "duplicate_file_size": "Files have the same size"
 }
