@@ -170,20 +170,25 @@
                         <ng-container *ngFor="let fileObj of preOrderFiles; let i = index">
                           <tr [ngClass]="{
                               'table-danger': hasDuplicateCategory(fileObj),
-                              'table-warning': isFilePreview && hasFileWarning(fileObj) && !hasDuplicateCategory(fileObj)
+                              'table-warning': hasFileWarning(fileObj) && !hasDuplicateCategory(fileObj)
                             }"
-                            [style.outline]="hasDuplicateCategory(fileObj) ? '2px solid #dc3545' : (isFilePreview && hasFileWarning(fileObj) ? '2px solid #d39e00' : null)"
-                            [style.outline-offset]="(hasDuplicateCategory(fileObj) || (isFilePreview && hasFileWarning(fileObj))) ? '-2px' : null">
+                            [style.outline]="hasDuplicateCategory(fileObj) ? '2px solid #dc3545' : (hasFileWarning(fileObj) ? '2px solid #d39e00' : null)"
+                            [style.outline-offset]="(hasDuplicateCategory(fileObj) || hasFileWarning(fileObj)) ? '-2px' : null">
                             <td scope="row" class="ps-3">{{ i + 1 }}</td>
                             <td style="
                                 word-wrap: break-word;
                                 min-width: 160px;
                                 max-width: 400px;
                               "
-                              [ngClass]="{'pb-0': (isFilePreview && hasFileWarning(fileObj)) || hasDuplicateCategory(fileObj)}">
+                              [ngClass]="{'pb-0': hasFileWarning(fileObj) || hasDuplicateCategory(fileObj)}">
                               <span>{{ fileObj.file.name }}</span>
-                              <p #warningErrorMessage *ngIf="(isFilePreview && hasFileWarning(fileObj)) || hasDuplicateCategory(fileObj)">
-                                <small class="text-danger font-weight-bold">{{ getAllErrorMessages(fileObj) }}</small>
+                              <p #warningErrorMessage *ngIf="hasFileWarning(fileObj) || hasDuplicateCategory(fileObj)">
+                                <small 
+                                  [ngClass]="{
+                                    'text-danger': hasDuplicateCategory(fileObj),
+                                    'text-warning': !hasDuplicateCategory(fileObj) && hasFileWarning(fileObj)
+                                  }" 
+                                  class="font-weight-bold">{{ getAllErrorMessages(fileObj) }}</small>
                               </p>
                             </td>
                             <td>

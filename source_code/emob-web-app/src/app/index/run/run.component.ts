@@ -2611,12 +2611,13 @@ export class RunComponent implements OnInit, AfterViewInit {
   getAllErrorMessages(fileObj: PreOrderFileItem): string {
     const messages: string[] = [];
     
-    // Add file warning messages if any
-    if (this.isFilePreview && this.hasFileWarning(fileObj)) {
-      messages.push(this.getFileWarningMessage(fileObj));
+    // Add file warning messages if any (WARNING - displayed first)
+    if (this.hasFileWarning(fileObj)) {
+      const warningMessages = this.getFileWarningMessages(fileObj);
+      messages.push(...warningMessages);
     }
     
-    // Add duplicate category message if applicable
+    // Add duplicate category message if applicable (ERROR - displayed after warnings)
     if (this.hasDuplicateCategory(fileObj)) {
       messages.push(
         this.transloco.translate(
