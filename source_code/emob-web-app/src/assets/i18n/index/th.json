@@ -364,5 +364,6 @@
   "no_vehicles_found": "ไม่พบยานพาหนะสำหรับประเภทนี้",
   "selected": "ที่เลือก",
   "loading": "กำลังโหลด",
-  "search_license_plate": "ค้นหาป้ายทะเบียน"
+  "search_license_plate": "ค้นหาป้ายทะเบียน",
+  "select_vehicle_and_input_number": "กรุณาเลือกยานพาหนะและระบุจำนวนรถที่ใช้งาน"
 }
