@@ -38,19 +38,32 @@ export interface MyVehicles {
   modifiedAt: string;
 }
 
+export interface Dimension {
+  width: number;
+  height: number;
+  depth: number;
+}
+
+export interface Break {
+  duration: string;
+  timeWindowEarly: string;
+  timeWindowLate: string;
+  name: string;
+}
+
 export interface VehicleType {
   vehicleTypeId: string;
   name: string;
-  width: number;
-  height: number;
-  length: number;
   access: AccessTypeEnum[];
-  capacity: number;
-  volume: number;
-  twEarly: number;
-  twLate: number;
-  maxDistance: number;
-  maxDuration: number;
+  allowedBreaks?: Break[];
+  dimension: Dimension;
+  maximumWeightCapacity: number;
+  maximumVolumeCapacity: number;
+  timeWindowEarly: string;
+  timeWindowLate: string;
+  maximumDistance: number;
+  maximumDuration: number;
+  vehicleGroupId?: string;
   fixedCost: number;
   unitDistanceCost: number;
   unitDurationCost: number;

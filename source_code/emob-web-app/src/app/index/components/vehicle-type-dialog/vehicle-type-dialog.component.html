@@ -70,9 +70,18 @@
                 <app-input-field
                   [placeholder]="t('capacity')"
                   type="number"
-                  [control]="formVehicleType.controls.capacity"
+                  [control]="formVehicleType.controls.maximumWeightCapacity"
                   [disabled]="isViewMode"
                   [required]="true"
+                ></app-input-field>
+              </div>
+
+              <div>
+                <app-input-field
+                  [placeholder]="t('volume')"
+                  type="number"
+                  [control]="formVehicleType.controls.maximumVolumeCapacity"
+                  [disabled]="isViewMode"
                 ></app-input-field>
               </div>
 
@@ -81,7 +90,7 @@
                   <app-input-field
                     popover-trigger="popover-trigger"
                     [placeholder]="t('start_time')"
-                    [control]="formVehicleType.controls.twEarly"
+                    [control]="formVehicleType.controls.timeWindowEarly"
                     [disabled]="isViewMode"
                     [readonly]="true"
                     suffixIcon="access_time"
@@ -91,9 +100,9 @@
                     <div class="card-body p-2">
                       <p class="card-title">{{ t("tw_early") }}</p>
                       <ngb-timepicker
-                        [(ngModel)]="twEarlyObject"
+                        [(ngModel)]="timeWindowEarlyObject"
                         [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="onTimeValueChange('twEarly', $event)"
+                        (ngModelChange)="onTimeValueChange('timeWindowEarly', $event)"
                         [readonly]="isViewMode"
                       ></ngb-timepicker>
                     </div>
@@ -106,7 +115,7 @@
                   <app-input-field
                     popover-trigger="popover-trigger"
                     [placeholder]="t('end_time')"
-                    [control]="formVehicleType.controls.twLate"
+                    [control]="formVehicleType.controls.timeWindowLate"
                     [disabled]="isViewMode"
                     [readonly]="true"
                     suffixIcon="access_time"
@@ -116,9 +125,9 @@
                     <div class="card-body p-2">
                       <p class="card-title">{{ t("tw_late") }}</p>
                       <ngb-timepicker
-                        [(ngModel)]="twLateObject"
+                        [(ngModel)]="timeWindowLateObject"
                         [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="onTimeValueChange('twLate', $event)"
+                        (ngModelChange)="onTimeValueChange('timeWindowLate', $event)"
                         [readonly]="isViewMode"
                       ></ngb-timepicker>
                     </div>
@@ -141,7 +150,7 @@
                     <app-input-field
                       [placeholder]="'width' | transloco"
                       type="number"
-                      [control]="formVehicleType.controls.width"
+                      [control]="formVehicleType.controls.dimension.controls.width"
                       [suffix]="'cm' | transloco"
                       [disabled]="isViewMode"
                       [required]="true"
@@ -152,7 +161,7 @@
                     <app-input-field
                       [placeholder]="'height' | transloco"
                       type="number"
-                      [control]="formVehicleType.controls.height"
+                      [control]="formVehicleType.controls.dimension.controls.height"
                       [suffix]="'cm' | transloco"
                       [disabled]="isViewMode"
                       [required]="true"
@@ -163,7 +172,7 @@
                     <app-input-field
                       [placeholder]="'length' | transloco"
                       type="number"
-                      [control]="formVehicleType.controls.length"
+                      [control]="formVehicleType.controls.dimension.controls.depth"
                       [suffix]="'cm' | transloco"
                       [disabled]="isViewMode"
                       [required]="true"
@@ -188,7 +197,7 @@
                   <app-input-field
                     [placeholder]="t('max_distance')"
                     type="number"
-                    [control]="formVehicleType.controls.maxDistance"
+                    [control]="formVehicleType.controls.maximumDistance"
                     [suffix]="'km' | transloco"
                     [disabled]="isViewMode"
                   ></app-input-field>
@@ -197,7 +206,7 @@
                   <app-input-field
                     [placeholder]="t('max_duration')"
                     type="number"
-                    [control]="formVehicleType.controls.maxDuration"
+                    [control]="formVehicleType.controls.maximumDuration"
                     [suffix]="'hr' | transloco"
                     [disabled]="isViewMode"
                   ></app-input-field>
@@ -234,6 +243,8 @@
                   [disabled]="isViewMode"
                 ></app-input-field>
               </div>
+
+              <div style="height: 77px"></div>
 
               <div class="modal-footer border-0 pt-3 px-0">
                 <div class="d-flex gap-2 justify-content-end flex-wrap w-100">

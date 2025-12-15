@@ -93,16 +93,25 @@ export class VehicleService {
               vehicleType {
                 vehicleTypeId
                 name
-                width
-                height
-                length
                 access
-                capacity
-                volume
-                twEarly
-                twLate
-                maxDistance
-                maxDuration
+                allowedBreaks {
+                  duration
+                  timeWindowEarly
+                  timeWindowLate
+                  name
+                }
+                dimension {
+                  width
+                  height
+                  depth
+                }
+                maximumWeightCapacity
+                maximumVolumeCapacity
+                timeWindowEarly
+                timeWindowLate
+                maximumDistance
+                maximumDuration
+                vehicleGroupId
                 fixedCost
                 unitDistanceCost
                 unitDurationCost
@@ -183,16 +192,25 @@ export class VehicleService {
               vehicleType {
                 vehicleTypeId
                 name
-                width
-                height
-                length
                 access
-                capacity
-                volume
-                twEarly
-                twLate
-                maxDistance
-                maxDuration
+                allowedBreaks {
+                  duration
+                  timeWindowEarly
+                  timeWindowLate
+                  name
+                }
+                dimension {
+                  width
+                  height
+                  depth
+                }
+                maximumWeightCapacity
+                maximumVolumeCapacity
+                timeWindowEarly
+                timeWindowLate
+                maximumDistance
+                maximumDuration
+                vehicleGroupId
                 fixedCost
                 unitDistanceCost
                 unitDurationCost
@@ -226,16 +244,25 @@ export class VehicleService {
             myVehicleTypes {
               vehicleTypeId
               name
-              width
-              height
-              length
               access
-              capacity
-              volume
-              twEarly
-              twLate
-              maxDistance
-              maxDuration
+              allowedBreaks {
+                duration
+                timeWindowEarly
+                timeWindowLate
+                name
+              }
+              dimension {
+                width
+                height
+                depth
+              }
+              maximumWeightCapacity
+              maximumVolumeCapacity
+              timeWindowEarly
+              timeWindowLate
+              maximumDistance
+              maximumDuration
+              vehicleGroupId
               fixedCost
               unitDistanceCost
               unitDurationCost
@@ -262,16 +289,25 @@ export class VehicleService {
             myVehicleType(vehicleTypeId: $vehicleTypeId) {
               vehicleTypeId
               name
-              width
-              height
-              length
               access
-              capacity
-              volume
-              twEarly
-              twLate
-              maxDistance
-              maxDuration
+              allowedBreaks {
+                duration
+                timeWindowEarly
+                timeWindowLate
+                name
+              }
+              dimension {
+                width
+                height
+                depth
+              }
+              maximumWeightCapacity
+              maximumVolumeCapacity
+              timeWindowEarly
+              timeWindowLate
+              maximumDistance
+              maximumDuration
+              vehicleGroupId
               fixedCost
               unitDistanceCost
               unitDurationCost
@@ -347,20 +383,30 @@ export class VehicleService {
                 vehicleType {
                   vehicleTypeId
                   name
-                  width
-                  height
-                  length
                   access
-                  capacity
-                  volume
-                  twEarly
-                  twLate
-                  maxDistance
-                  maxDuration
+                  allowedBreaks {
+                    duration
+                    timeWindowEarly
+                    timeWindowLate
+                    name
+                  }
+                  dimension {
+                    width
+                    height
+                    depth
+                  }
+                  maximumWeightCapacity
+                  maximumVolumeCapacity
+                  timeWindowEarly
+                  timeWindowLate
+                  maximumDistance
+                  maximumDuration
+                  vehicleGroupId
                   fixedCost
                   unitDistanceCost
                   unitDurationCost
                   vehicleProfileType
+                  isVehicleAvailable
                   createdAt
                   modifiedAt
                 }
@@ -443,16 +489,25 @@ export class VehicleService {
               vehicleType {
                 vehicleTypeId
                 name
-                width
-                height
-                length
                 access
-                capacity
-                volume
-                twEarly
-                twLate
-                maxDistance
-                maxDuration
+                allowedBreaks {
+                  duration
+                  timeWindowEarly
+                  timeWindowLate
+                  name
+                }
+                dimension {
+                  width
+                  height
+                  depth
+                }
+                maximumWeightCapacity
+                maximumVolumeCapacity
+                timeWindowEarly
+                timeWindowLate
+                maximumDistance
+                maximumDuration
+                vehicleGroupId
                 fixedCost
                 unitDistanceCost
                 unitDurationCost
@@ -529,16 +584,25 @@ export class VehicleService {
               vehicleType {
                 vehicleTypeId
                 name
-                width
-                height
-                length
                 access
-                capacity
-                volume
-                twEarly
-                twLate
-                maxDistance
-                maxDuration
+                allowedBreaks {
+                  duration
+                  timeWindowEarly
+                  timeWindowLate
+                  name
+                }
+                dimension {
+                  width
+                  height
+                  depth
+                }
+                maximumWeightCapacity
+                maximumVolumeCapacity
+                timeWindowEarly
+                timeWindowLate
+                maximumDistance
+                maximumDuration
+                vehicleGroupId
                 fixedCost
                 unitDistanceCost
                 unitDurationCost
@@ -571,16 +635,25 @@ export class VehicleService {
             createVehicleType(input: $input) {
               vehicleTypeId
               name
-              width
-              height
-              length
               access
-              capacity
-              volume
-              twEarly
-              twLate
-              maxDistance
-              maxDuration
+              allowedBreaks {
+                duration
+                timeWindowEarly
+                timeWindowLate
+                name
+              }
+              dimension {
+                width
+                height
+                depth
+              }
+              maximumWeightCapacity
+              maximumVolumeCapacity
+              timeWindowEarly
+              timeWindowLate
+              maximumDistance
+              maximumDuration
+              vehicleGroupId
               fixedCost
               unitDistanceCost
               unitDurationCost
@@ -615,16 +688,25 @@ export class VehicleService {
             updateVehicleType(vehicleTypeId: $vehicleTypeId, input: $input) {
               vehicleTypeId
               name
-              width
-              height
-              length
               access
-              capacity
-              volume
-              twEarly
-              twLate
-              maxDistance
-              maxDuration
+              allowedBreaks {
+                duration
+                timeWindowEarly
+                timeWindowLate
+                name
+              }
+              dimension {
+                width
+                height
+                depth
+              }
+              maximumWeightCapacity
+              maximumVolumeCapacity
+              timeWindowEarly
+              timeWindowLate
+              maximumDistance
+              maximumDuration
+              vehicleGroupId
               fixedCost
               unitDistanceCost
               unitDurationCost
