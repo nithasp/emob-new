@@ -102,7 +102,9 @@
                       <ngb-timepicker
                         [(ngModel)]="timeWindowEarlyObject"
                         [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="onTimeValueChange('timeWindowEarly', $event)"
+                        (ngModelChange)="
+                          onTimeValueChange('timeWindowEarly', $event)
+                        "
                         [readonly]="isViewMode"
                       ></ngb-timepicker>
                     </div>
@@ -127,7 +129,9 @@
                       <ngb-timepicker
                         [(ngModel)]="timeWindowLateObject"
                         [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="onTimeValueChange('timeWindowLate', $event)"
+                        (ngModelChange)="
+                          onTimeValueChange('timeWindowLate', $event)
+                        "
                         [readonly]="isViewMode"
                       ></ngb-timepicker>
                     </div>
@@ -150,7 +154,9 @@
                     <app-input-field
                       [placeholder]="'width' | transloco"
                       type="number"
-                      [control]="formVehicleType.controls.dimension.controls.width"
+                      [control]="
+                        formVehicleType.controls.dimension.controls.width
+                      "
                       [suffix]="'cm' | transloco"
                       [disabled]="isViewMode"
                       [required]="true"
@@ -161,7 +167,9 @@
                     <app-input-field
                       [placeholder]="'height' | transloco"
                       type="number"
-                      [control]="formVehicleType.controls.dimension.controls.height"
+                      [control]="
+                        formVehicleType.controls.dimension.controls.height
+                      "
                       [suffix]="'cm' | transloco"
                       [disabled]="isViewMode"
                       [required]="true"
@@ -172,7 +180,9 @@
                     <app-input-field
                       [placeholder]="'length' | transloco"
                       type="number"
-                      [control]="formVehicleType.controls.dimension.controls.depth"
+                      [control]="
+                        formVehicleType.controls.dimension.controls.depth
+                      "
                       [suffix]="'cm' | transloco"
                       [disabled]="isViewMode"
                       [required]="true"
@@ -244,7 +254,14 @@
                 ></app-input-field>
               </div>
 
-              <div style="height: 77px"></div>
+              <div>
+                <app-input-field
+                  [placeholder]="t('vehicle_group_id')"
+                  [control]="formVehicleType.controls.vehicleGroupId"
+                  [required]="true"
+                  [disabled]="isViewMode"
+                ></app-input-field>
+              </div>
 
               <div class="modal-footer border-0 pt-3 px-0">
                 <div class="d-flex gap-2 justify-content-end flex-wrap w-100">

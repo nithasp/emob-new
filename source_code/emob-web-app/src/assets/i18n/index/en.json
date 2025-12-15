@@ -324,6 +324,7 @@
   "vehicle_model": "Vehicle Model",
   "vehicle_name": "Vehicle Name",
   "vehicle_profile_type": "Vehicle Profile Type",
+  "vehicle_group_id": "Vehicle Group ID",
   "vehicle_type": "Vehicle Type",
   "vehicle_weight": "Vehicle Weight",
   "view_vehicle": "View Vehicle",

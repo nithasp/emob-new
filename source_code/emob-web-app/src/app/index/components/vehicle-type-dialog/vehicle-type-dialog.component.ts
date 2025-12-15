@@ -109,6 +109,7 @@ export class VehicleTypeDialogComponent implements OnInit {
         timeWindowEarly: [''],
         timeWindowLate: [''],
         vehicleProfileType: [null, Validators.required],
+        vehicleGroupId: ['', Validators.required],
         maximumDistance: [null, Validators.min(0)],
         maximumDuration: [null, Validators.min(0)],
         unitDistanceCost: [null, Validators.min(0)],

@@ -14,6 +14,7 @@ export interface VehicleTypeFormControls {
   timeWindowEarly: FormControl<string | null>;
   timeWindowLate: FormControl<string | null>;
   vehicleProfileType: FormControl<string | null>;
+  vehicleGroupId: FormControl<string | null>;
   maximumDistance: FormControl<number | null>;
   maximumDuration: FormControl<number | null>;
   unitDistanceCost: FormControl<number | null>;

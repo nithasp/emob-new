@@ -324,6 +324,7 @@
   "vehicle_model": "รุ่นรถ",
   "vehicle_name": "ชื่อรถ",
   "vehicle_profile_type": "ประเภทโปรไฟล์ยานพาหนะ",
+  "vehicle_group_id": "รหัสกลุ่มยานพาหนะ",
   "vehicle_type": "ประเภทยานพาหนะ",
   "vehicle_weight": "น้ำหนักรถ",
   "view_vehicle": "ดูรถ",
