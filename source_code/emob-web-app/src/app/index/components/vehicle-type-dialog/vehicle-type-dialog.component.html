@@ -202,6 +202,15 @@
                 ></app-input-select>
               </div>
 
+              <div>
+                <app-input-field
+                  [placeholder]="t('vehicle_group_id')"
+                  [control]="formVehicleType.controls.vehicleGroupId"
+                  [required]="true"
+                  [disabled]="isViewMode"
+                ></app-input-field>
+              </div>
+
               <div class="row g-2">
                 <div class="col-sm-6">
                   <app-input-field
@@ -250,15 +259,6 @@
                   type="number"
                   [control]="formVehicleType.controls.fixedCost"
                   [decimal]="2"
-                  [disabled]="isViewMode"
-                ></app-input-field>
-              </div>
-
-              <div>
-                <app-input-field
-                  [placeholder]="t('vehicle_group_id')"
-                  [control]="formVehicleType.controls.vehicleGroupId"
-                  [required]="true"
                   [disabled]="isViewMode"
                 ></app-input-field>
               </div>
