@@ -472,24 +472,25 @@
                           </div>
                         </mat-radio-button>
                         <div
-                        *ngIf="getVehicleSelectionMode(vehicle.vehicleTypeId) === 'license-plate' && getSelectedLicensePlatesCount(vehicle.vehicleTypeId) > 0"
-                        class="license-plate-selection-count">
-                        <span>{{ 'total' | transloco }}: </span>
-                        <span>{{ getSelectedLicensePlatesCount(vehicle.vehicleTypeId) }}</span>
+                          *ngIf="getVehicleSelectionMode(vehicle.vehicleTypeId) === 'license-plate' && getSelectedLicensePlatesCount(vehicle.vehicleTypeId) > 0"
+                          class="license-plate-selection-count">
+                          <span>{{ 'total' | transloco }}: </span>
+                          <span>{{ getSelectedLicensePlatesCount(vehicle.vehicleTypeId) }}</span>
 
-                        <!-- License Plate list details -->
+                          <!-- License Plate list details -->
                           <app-dynamic-popover [placement]="'bottom-start'" class="ml-2">
-                            <button type="button" popover-trigger class="license-plate-details-button btn btn-link p-0 align-baseline">
+                            <button type="button" popover-trigger
+                              class="license-plate-details-button btn btn-link p-0 align-baseline">
                               {{ t('details') }}
                             </button>
                             <div popover-content class="license-plate-details">
                               <div class="mb-2">
                                 <strong>{{ t("selected_license_plates") }}:</strong>
                               </div>
-                              <div class="license-plate-list" 
-                                   *ngIf="(selectedLicensePlates[vehicle.vehicleTypeId]?.length ?? 0) > 0; else noPlates">
-                                <div class="license-plate-item" 
-                                     *ngFor="let plate of (selectedLicensePlates[vehicle.vehicleTypeId] ?? []).slice().sort(); let i = index">
+                              <div class="license-plate-list"
+                                *ngIf="(selectedLicensePlates[vehicle.vehicleTypeId]?.length ?? 0) > 0; else noPlates">
+                                <div class="license-plate-item"
+                                  *ngFor="let plate of (selectedLicensePlates[vehicle.vehicleTypeId] ?? []).slice().sort(); let i = index">
                                   <span class="plate-number">{{ i + 1 }}. </span>
                                   <span class="plate-text">{{ plate }}</span>
                                 </div>
@@ -499,16 +500,37 @@
                               </ng-template>
                             </div>
                           </app-dynamic-popover>
-                      </div>
+                        </div>
                       </mat-radio-group>
                     </div>
                   </div>
+                </div>
+
+                <div class="col text-end">
+                  <button mat-raised-button color="secondary" class="btn btn-secondary pr-3" (click)="navigateToTab(1)">
+                    <mat-icon>first_page</mat-icon>
+                    {{ "back" | transloco }}
+                  </button>
+                  <button *ngIf="!hasDynamicParameters()" mat-raised-button class="bg-custom-primary pr-3"
+                    (click)="validateExperimentPreOrder()">
+                    <mat-icon>rule</mat-icon>
+                    {{
+                    haveUpdateAfterValidated && haveValidated
+                    ? t("revalidate")
+                    : t("validate")
+                    }}
+                  </button>
+                  <button *ngIf="hasDynamicParameters()" mat-raised-button class="bg-custom-primary"
+                    (click)="navigateToTab(3)">
+                    <mat-icon>last_page</mat-icon>
+                    {{ t("next") }}
+                  </button>
                 </div>
               </div>
             </ng-template>
           </li>
 
-          <li [ngbNavItem]="3" [disabled]="!isUpload">
+          <li [ngbNavItem]="3" [disabled]="!isUpload" *ngIf="hasDynamicParameters()">
             <button ngbNavLink>
               <h3>{{ t("parameters") }}</h3>
             </button>
@@ -658,7 +680,7 @@
                   </div>
                   <div class="col text-end">
                     <button mat-raised-button color="secondary" class="btn btn-secondary pr-3"
-                      (click)="navigateToTab(1)">
+                      (click)="navigateToTab(2)">
                       <mat-icon>first_page</mat-icon>
                       {{ "back" | transloco }}
                     </button>

@@ -293,7 +293,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService,
     private readonly vehicleService: VehicleService
-  ) { }
+  ) {}
 
   public generateUniqueId(): string {
     return 'f-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
@@ -497,12 +497,12 @@ export class RunComponent implements OnInit, AfterViewInit {
               if (newData.length > 0) {
                 this.toastr.info(
                   `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                  newData.length +
-                  ` ${this.transloco.translate(
-                    'new_edited_location_data_suffix',
-                    {},
-                    'index'
-                  )}`,
+                    newData.length +
+                    ` ${this.transloco.translate(
+                      'new_edited_location_data_suffix',
+                      {},
+                      'index'
+                    )}`,
                   `${this.transloco.translate('please_wait', {}, 'index')}...`
                 );
                 this.haveUpdateAfterValidated = true;
@@ -1046,8 +1046,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
-            ? item.name
-            : '';
+          ? item.name
+          : '';
       const mapped: MyDepot = {
         depotId: (item.depotId || item.id || '') as string,
         depotName: nameKey,
@@ -1149,7 +1149,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               });
               location.setStyle(
                 this.iconStyle[
-                uploadDataGroupCustomers[key as keyof DataGroup].type
+                  uploadDataGroupCustomers[key as keyof DataGroup].type
                 ]
               );
               this.vectorSource.addFeature(location);
@@ -1282,13 +1282,13 @@ export class RunComponent implements OnInit, AfterViewInit {
   private isPopupPayload(
     value:
       | {
-        data?:
-        | Customer
-        | Depot
-        | MyDepot
-        | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
-        isDepot?: boolean;
-      }
+          data?:
+            | Customer
+            | Depot
+            | MyDepot
+            | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
+          isDepot?: boolean;
+        }
       | null
       | undefined
   ): value is { data: Customer; isDepot: boolean } {
@@ -2337,7 +2337,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.constraintService
       .getDynamicParameters(selectedDepotId)
       .subscribe((response: DynamicParameter[]) => {
+        console.log('response', response);
         this.allDynamicParameters = response || [];
+        console.log('this.allDynamicParameters', this.allDynamicParameters);
         if (!this.constraintsFromFileLoaded) {
           this.constraintsData =
             this.transformDynamicParametersToConstraint(response);
@@ -2644,28 +2646,28 @@ export class RunComponent implements OnInit, AfterViewInit {
       const originalItems = groupsMap[categoryKey];
       const items = useConstraintsValues
         ? originalItems.map((dynamicParameter) => {
-          const constraintKey =
-            this.getConstraintKeyForParam(dynamicParameter);
-          if (!constraintKey) return dynamicParameter;
-          const constraintValue = this.constraintsData[constraintKey];
-          if (constraintValue === undefined || constraintValue === null) {
-            if (this.isTimeType(dynamicParameter)) {
-              return { ...dynamicParameter, value: '00:00' };
+            const constraintKey =
+              this.getConstraintKeyForParam(dynamicParameter);
+            if (!constraintKey) return dynamicParameter;
+            const constraintValue = this.constraintsData[constraintKey];
+            if (constraintValue === undefined || constraintValue === null) {
+              if (this.isTimeType(dynamicParameter)) {
+                return { ...dynamicParameter, value: '00:00' };
+              }
+              return dynamicParameter;
             }
-            return dynamicParameter;
-          }
-          if (this.isNumberType(dynamicParameter)) {
-            return { ...dynamicParameter, value: Number(constraintValue) };
-          }
-          const trimmedValue = String(constraintValue).trim();
-          return {
-            ...dynamicParameter,
-            value:
-              trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
-                ? '00:00'
-                : trimmedValue,
-          };
-        })
+            if (this.isNumberType(dynamicParameter)) {
+              return { ...dynamicParameter, value: Number(constraintValue) };
+            }
+            const trimmedValue = String(constraintValue).trim();
+            return {
+              ...dynamicParameter,
+              value:
+                trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
+                  ? '00:00'
+                  : trimmedValue,
+            };
+          })
         : originalItems;
       return {
         key: categoryKey,
@@ -2971,14 +2973,11 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.getSelectedDepotObject()?.depotId ||
       this.experiment.depots?.[0]?.depotId;
 
-    const modalRef = this.ngbModal.open(
-      LicensePlateSelectionDialogComponent,
-      {
-        centered: true,
-        size: 'lg',
-        animation: true
-      }
-    );
+    const modalRef = this.ngbModal.open(LicensePlateSelectionDialogComponent, {
+      centered: true,
+      size: 'lg',
+      animation: true,
+    });
 
     modalRef.componentInstance.vehicleType = vehicleType;
     modalRef.componentInstance.vehicleId = vehicleId;
@@ -3024,5 +3023,12 @@ export class RunComponent implements OnInit, AfterViewInit {
       return plates.join(', ');
     }
     return `${plates.slice(0, 3).join(', ')} +${plates.length - 3}`;
+  }
+
+  hasDynamicParameters(): boolean {
+    return (
+      this.dynamicParametersByCategory &&
+      this.dynamicParametersByCategory.length > 0
+    );
   }
 }
