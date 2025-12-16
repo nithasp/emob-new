@@ -102,7 +102,10 @@ import Fill from 'ol/style/Fill';
 import Stroke from 'ol/style/Stroke';
 import { TranslocoService } from '@jsverse/transloco';
 import { VehicleService } from 'src/app/services/vehicle.service';
-import { VehicleType } from 'src/app/models/vehicle.model';
+import {
+  VehicleType,
+  VehicleValidationInput,
+} from 'src/app/models/vehicle.model';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -1582,6 +1585,10 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   validateExperimentPreOrder() {
     const parameterPayload = this.buildValidateParameterFromDynamic();
+    const vehiclesPayload = this.buildVehiclesPayload();
+
+    console.log('vehiclesPayload', vehiclesPayload);
+    //return
     // proceed with validation using constructed parameterPayload
     if (
       (parameterPayload.earlyDeliveryTime || '') >
@@ -1598,7 +1605,8 @@ export class RunComponent implements OnInit, AfterViewInit {
       .validateExperiment(
         this.experiment.runId,
         parameterPayload as Constraint,
-        this.customersLocationUpdated
+        this.customersLocationUpdated,
+        vehiclesPayload
       )
       .pipe(
         finalize(() => {
@@ -1622,7 +1630,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           // Rebuild dynamic parameters so values reflect constraintsData when validated
           this.refreshDynamicParametersForSelectedDepot();
           this.refreshValidationTable();
-          this.navigateToTab(3);
+          this.navigateToTab(4);
           // Mark validation as completed and show corresponding messages (success path)
           this.haveValidated = true;
           this.isValidateShowMessage = {
@@ -1671,6 +1679,37 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
 
     return payload as TimingAndCapacity;
+  }
+
+  // Build vehicles payload for validation
+  buildVehiclesPayload(): VehicleValidationInput[] {
+    const vehiclesPayload: VehicleValidationInput[] = [];
+
+    // Loop through all selected vehicle IDs
+    for (const vehicleTypeId of this.selectedVehicleIds) {
+      const mode = this.getVehicleSelectionMode(vehicleTypeId);
+      const vehicleItem: VehicleValidationInput = {
+        vehicleTypeId: vehicleTypeId,
+      };
+
+      if (mode === 'count') {
+        // Add numberOfVehiclesAvailable for count mode
+        const count = this.getVehicleCount(vehicleTypeId);
+        if (count > 0) {
+          vehicleItem.numberOfVehiclesAvailable = count;
+        }
+      } else if (mode === 'license-plate') {
+        // Add vehicleId array for license-plate mode
+        const vehicleIds = this.selectedVehicleIdsByLicensePlate[vehicleTypeId];
+        if (vehicleIds && vehicleIds.length > 0) {
+          vehicleItem.vehicleId = vehicleIds;
+        }
+      }
+
+      vehiclesPayload.push(vehicleItem);
+    }
+
+    return vehiclesPayload;
   }
 
   private normalizeKeyName(rawKey: string | null | undefined): string {
@@ -2886,21 +2925,24 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   log() {
-    console.log('this.selectedVehicleIds', this.selectedVehicleIds);
-    console.log('this.selectedVehicleCounts', this.selectedVehicleCounts);
-    console.log('this.myVehicleTypes', this.myVehicleTypes);
+    // console.log('this.selectedVehicleIds', this.selectedVehicleIds);
+    // console.log('this.selectedVehicleCounts', this.selectedVehicleCounts);
+    // console.log('this.myVehicleTypes', this.myVehicleTypes);
 
-    console.log('this.depots', this.depots);
-    console.log('this.selectedDepotId', this.selectedDepotId);
+    // console.log('this.depots', this.depots);
+    // console.log('this.selectedDepotId', this.selectedDepotId);
 
-    console.log('this.experiment', this.experiment);
+    // console.log('this.experiment', this.experiment);
 
-    console.log(
-      'this.experiment.depots[0].depotId',
-      this.experiment.depots[0]?.depotId
-    );
+    // console.log(
+    //   'this.experiment.depots[0].depotId',
+    //   this.experiment.depots[0]?.depotId
+    // );
 
-    console.log('this.constraintsData', this.constraintsData);
+    // console.log('this.constraintsData', this.constraintsData);
+
+    console.log('this.availableVehicleTypes', this.availableVehicleTypes);
+    console.log('this.selectedLicensePlates', this.selectedLicensePlates);
   }
 
   getVehicleMaxCount(vehicleId: string): number {
@@ -2928,25 +2970,27 @@ export class RunComponent implements OnInit, AfterViewInit {
     const previousMode = this.vehicleSelectionMode[vehicleId];
     this.vehicleSelectionMode[vehicleId] = mode;
 
-    // Reset values when switching modes
+    // Only update mode, preserve existing count values
     if (previousMode !== mode) {
       if (mode === 'count') {
-        // Switching to count mode - reset license plate selections
-        if (this.selectedLicensePlates[vehicleId]) {
-          delete this.selectedLicensePlates[vehicleId];
-        }
-        if (this.selectedVehicleIdsByLicensePlate[vehicleId]) {
-          delete this.selectedVehicleIdsByLicensePlate[vehicleId];
-        }
-        // Reset count to default 1 if not set
-        if (this.selectedVehicleCounts[vehicleId] == null) {
+        // Switching to count mode - keep existing count, ensure it has a minimum value of 1
+        if (
+          this.selectedVehicleCounts[vehicleId] == null ||
+          this.selectedVehicleCounts[vehicleId] === 0
+        ) {
           this.selectedVehicleCounts[vehicleId] = 1;
         }
+        // Note: We don't delete selectedLicensePlates or selectedVehicleIdsByLicensePlate
+        // so user can switch back without losing their selection
       } else {
-        // Switching to license-plate mode - update count based on selected plates
-        const selectedPlatesCount =
-          this.selectedLicensePlates[vehicleId]?.length || 0;
-        this.selectedVehicleCounts[vehicleId] = selectedPlatesCount;
+        // Switching to license-plate mode - preserve existing count value
+        // Count will only update when user actually selects/deselects license plates
+        if (
+          this.selectedVehicleCounts[vehicleId] == null ||
+          this.selectedVehicleCounts[vehicleId] === 0
+        ) {
+          this.selectedVehicleCounts[vehicleId] = 1;
+        }
       }
     }
 
