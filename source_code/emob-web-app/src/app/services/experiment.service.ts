@@ -13,6 +13,7 @@ import { Company, MyDepot } from '../models/experiment.model';
 import { Constraint, TimingAndCapacity } from '../models/constraint.model';
 import { Location } from '../models/location.model';
 import { CustomerUpdated } from '../models/pre-order.model';
+import { VehicleValidationInput } from '../models/vehicle.model';
 import type { Error } from '../models/graphql.model';
 import { ToastrService } from 'ngx-toastr';
 import { ErrorHandlingService } from './handle-error.service';
@@ -210,7 +211,8 @@ export class ExperimentService {
   validateExperiment(
     runId: string,
     parameter: TimingAndCapacity,
-    locationUpdated: CustomerUpdated[]
+    locationUpdated: CustomerUpdated[],
+    vehicles?: VehicleValidationInput[]
   ): Observable<Experiment> {
     return this.apollo
       .mutate<Response>({
@@ -230,6 +232,7 @@ export class ExperimentService {
             updateLocation: {
               customers: locationUpdated,
             },
+            ...(vehicles && vehicles.length > 0 ? { vehicles } : {}),
           },
         },
       })

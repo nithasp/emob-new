@@ -88,16 +88,16 @@ export enum VehicleProfileTypeEnum {
 }
 
 export const VehicleEnumConfigs = [
-  { 
-    type: 'VehicleProfileTypeEnum', 
-    property: 'vehicleProfileTypeOptions',
-    errorMessage: 'Failed to fetch vehicle profile types'
+  {
+    type: "VehicleProfileTypeEnum",
+    property: "vehicleProfileTypeOptions",
+    errorMessage: "Failed to fetch vehicle profile types",
   },
-  { 
-    type: 'AccessTypeEnum', 
-    property: 'accessPointOptions',
-    errorMessage: 'Failed to fetch access types'
-  }
+  {
+    type: "AccessTypeEnum",
+    property: "accessPointOptions",
+    errorMessage: "Failed to fetch access types",
+  },
 ];
 
 export interface VehicleInput {
@@ -129,4 +129,10 @@ export interface VehicleEnumOption {
 export interface TimeObject {
   hour: number;
   minute: number;
+}
+
+export interface VehicleValidationInput {
+  vehicleTypeId: string;
+  vehicleId?: string[];
+  numberOfVehiclesAvailable?: number;
 }
