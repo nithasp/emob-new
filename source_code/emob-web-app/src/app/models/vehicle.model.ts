@@ -136,3 +136,10 @@ export interface VehicleValidationInput {
   vehicleId?: string[];
   numberOfVehiclesAvailable?: number;
 }
+
+export interface VehicleBreak {
+  name: string;
+  duration: string;
+  earliestStart: string;
+  latestStart: string;
+}

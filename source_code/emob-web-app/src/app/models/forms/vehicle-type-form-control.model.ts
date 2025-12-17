@@ -1,4 +1,4 @@
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, FormArray } from '@angular/forms';
 import { AccessTypeEnum } from '../vehicle.model';
 
 export interface VehicleTypeFormControls {
@@ -20,4 +20,12 @@ export interface VehicleTypeFormControls {
   unitDistanceCost: FormControl<number | null>;
   unitDurationCost: FormControl<number | null>;
   fixedCost: FormControl<number | null>;
+  breaks: FormArray<
+    FormGroup<{
+      name: FormControl<string | null>;
+      duration: FormControl<string | null>;
+      earliestStart: FormControl<string | null>;
+      latestStart: FormControl<string | null>;
+    }>
+  >;
 }

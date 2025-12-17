@@ -3,6 +3,7 @@ import {
   FormBuilder,
   FormControl,
   FormGroup,
+  FormArray,
   Validators,
 } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
@@ -26,6 +27,7 @@ import {
 import { VehicleTypeFormControls } from 'src/app/models/forms/vehicle-type-form-control.model';
 import { compareTimeValidator } from 'src/app/shared/validators/time-range.validator';
 import { TranslocoService } from '@jsverse/transloco';
+import { VehicleBreak } from 'src/app/models/vehicle.model';
 
 @Component({
   selector: 'app-vehicle-type-dialog',
@@ -47,6 +49,16 @@ export class VehicleTypeDialogComponent implements OnInit {
   timeWindowEarlyObject: TimeObject = { hour: 0, minute: 0 };
   timeWindowLateObject: TimeObject = { hour: 0, minute: 0 };
 
+  // Allowed Breaks
+  breaks!: FormArray;
+  breakTimeObjects: {
+    [key: number]: {
+      duration: TimeObject;
+      earliestStart: TimeObject;
+      latestStart: TimeObject;
+    };
+  } = {};
+
   constructor(
     private fb: FormBuilder,
     public activeModal: NgbActiveModal,
@@ -65,17 +77,55 @@ export class VehicleTypeDialogComponent implements OnInit {
       if ((this.isEdit || this.isViewMode) && this.vehicleType) {
         const vehicleType = {
           ...this.vehicleType,
-          timeWindowEarly: this.formatTimeForDisplay((this.vehicleType as any).timeWindowEarly),
-          timeWindowLate: this.formatTimeForDisplay((this.vehicleType as any).timeWindowLate),
+          timeWindowEarly: this.formatTimeForDisplay(
+            (this.vehicleType as any).timeWindowEarly
+          ),
+          timeWindowLate: this.formatTimeForDisplay(
+            (this.vehicleType as any).timeWindowLate
+          ),
         };
         this.formVehicleType.patchValue(vehicleType as any);
         if (vehicleType.timeWindowEarly) {
-          const [hour, minute] = vehicleType.timeWindowEarly.split(':').map(Number);
+          const [hour, minute] = vehicleType.timeWindowEarly
+            .split(':')
+            .map(Number);
           this.timeWindowEarlyObject = { hour: hour || 0, minute: minute || 0 };
         }
         if (vehicleType.timeWindowLate) {
-          const [hour, minute] = vehicleType.timeWindowLate.split(':').map(Number);
+          const [hour, minute] = vehicleType.timeWindowLate
+            .split(':')
+            .map(Number);
           this.timeWindowLateObject = { hour: hour || 0, minute: minute || 0 };
+        }
+
+        // Load breaks if exists (handle both 'breaks' and 'allowedBreaks' properties)
+        const breaksData =
+          (this.vehicleType as any).allowedBreaks ||
+          (this.vehicleType as any).breaks;
+        if (breaksData && Array.isArray(breaksData)) {
+          this.breaks.clear();
+          this.breakTimeObjects = {};
+          breaksData.forEach((breakData: any, index: number) => {
+            // Map API field names to form field names
+            const mappedBreakData: VehicleBreak = {
+              name: breakData.name || '',
+              duration: breakData.duration || '',
+              earliestStart:
+                breakData.timeWindowEarly || breakData.earliestStart || '',
+              latestStart:
+                breakData.timeWindowLate || breakData.latestStart || '',
+            };
+            this.breaks.push(this.createBreakFormGroup(mappedBreakData));
+
+            // Initialize time objects for each break
+            this.breakTimeObjects[index] = {
+              duration: this.parseTimeString(mappedBreakData.duration),
+              earliestStart: this.parseTimeString(
+                mappedBreakData.earliestStart
+              ),
+              latestStart: this.parseTimeString(mappedBreakData.latestStart),
+            };
+          });
         }
       }
       if (this.isViewMode) {
@@ -95,6 +145,8 @@ export class VehicleTypeDialogComponent implements OnInit {
   }
 
   initForm(): void {
+    this.breaks = this.fb.array([]);
+
     this.formVehicleType = this.fb.group(
       {
         name: ['', Validators.required],
@@ -115,6 +167,7 @@ export class VehicleTypeDialogComponent implements OnInit {
         unitDistanceCost: [null, Validators.min(0)],
         unitDurationCost: [null, Validators.min(0)],
         fixedCost: [null, Validators.min(0)],
+        breaks: this.breaks,
       },
       {
         validators: compareTimeValidator(
@@ -137,7 +190,10 @@ export class VehicleTypeDialogComponent implements OnInit {
     this.activeModal.dismiss();
   }
 
-  onAccessPointChange(event: MatCheckboxChange, accessPoint: AccessTypeEnum): void {
+  onAccessPointChange(
+    event: MatCheckboxChange,
+    accessPoint: AccessTypeEnum
+  ): void {
     const accessPoints = this.formVehicleType.get('access') as FormControl<
       AccessTypeEnum[] | null
     >;
@@ -196,14 +252,38 @@ export class VehicleTypeDialogComponent implements OnInit {
   handleSubmit(): void {
     this.spinner.show();
     const formValue = this.formVehicleType.getRawValue();
-    const timeWindowEarlyMinutes = timeStringToMinutes((formValue as any).timeWindowEarly);
-    const timeWindowLateMinutes = timeStringToMinutes((formValue as any).timeWindowLate);
+    const timeWindowEarlyMinutes = timeStringToMinutes(
+      (formValue as any).timeWindowEarly
+    );
+    const timeWindowLateMinutes = timeStringToMinutes(
+      (formValue as any).timeWindowLate
+    );
+
+    // Map breaks form data to API format (allowedBreaks)
+    let allowedBreaks: any[] | undefined;
+    const breaksValue = this.breaks.getRawValue();
+    if (breaksValue && breaksValue.length > 0) {
+      allowedBreaks = breaksValue.map((breakItem: any) => ({
+        name: breakItem.name,
+        duration: breakItem.duration,
+        timeWindowEarly: breakItem.earliestStart,
+        timeWindowLate: breakItem.latestStart,
+      }));
+    }
+
     const payload: Partial<VehicleType> = Object.entries({
       ...formValue,
       timeWindowEarly: timeWindowEarlyMinutes,
       timeWindowLate: timeWindowLateMinutes,
+      allowedBreaks: allowedBreaks,
+      breaks: undefined, // Remove the breaks field, use allowedBreaks instead
     }).reduce((acc: Record<string, unknown>, [key, value]) => {
-      if (value !== null && value !== '') {
+      if (
+        value !== null &&
+        value !== '' &&
+        value !== undefined &&
+        key !== 'breaks'
+      ) {
         acc[key] =
           typeof value === 'string' &&
           !isNaN(Number(value)) &&
@@ -234,7 +314,10 @@ export class VehicleTypeDialogComponent implements OnInit {
     });
   }
 
-  onTimeValueChange(key: 'timeWindowEarly' | 'timeWindowLate', event: TimeObject): void {
+  onTimeValueChange(
+    key: 'timeWindowEarly' | 'timeWindowLate',
+    event: TimeObject
+  ): void {
     if (key === 'timeWindowEarly') {
       this.timeWindowEarlyObject = event;
     } else {
@@ -284,5 +367,96 @@ export class VehicleTypeDialogComponent implements OnInit {
           },
         });
     });
+  }
+
+  // Allowed Breaks Methods
+  createBreakFormGroup(breakData?: VehicleBreak): FormGroup {
+    return this.fb.group({
+      name: [breakData?.name || '', Validators.required],
+      duration: [breakData?.duration || '', Validators.required],
+      earliestStart: [breakData?.earliestStart || '', Validators.required],
+      latestStart: [breakData?.latestStart || '', Validators.required],
+    });
+  }
+
+  addBreak(): void {
+    const newIndex = this.breaks.length;
+    this.breaks.push(this.createBreakFormGroup());
+
+    // Initialize time objects for the new break
+    this.breakTimeObjects[newIndex] = {
+      duration: { hour: 0, minute: 0 },
+      earliestStart: { hour: 0, minute: 0 },
+      latestStart: { hour: 0, minute: 0 },
+    };
+  }
+
+  removeBreak(index: number): void {
+    this.breaks.removeAt(index);
+
+    // Remove time object and re-index
+    delete this.breakTimeObjects[index];
+    const newTimeObjects: typeof this.breakTimeObjects = {};
+    Object.keys(this.breakTimeObjects).forEach((key) => {
+      const numKey = parseInt(key);
+      if (numKey > index) {
+        newTimeObjects[numKey - 1] = this.breakTimeObjects[numKey];
+      } else if (numKey < index) {
+        newTimeObjects[numKey] = this.breakTimeObjects[numKey];
+      }
+    });
+    this.breakTimeObjects = newTimeObjects;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  getBreakControls(): FormGroup[] {
+    return this.breaks.controls as FormGroup[];
+  }
+
+  parseTimeString(timeStr: string): TimeObject {
+    if (!timeStr) {
+      return { hour: 0, minute: 0 };
+    }
+    const parts = timeStr.split(':');
+    return {
+      hour: parseInt(parts[0]) || 0,
+      minute: parseInt(parts[1]) || 0,
+    };
+  }
+
+  onBreakTimeValueChange(
+    breakIndex: number,
+    field: 'duration' | 'earliestStart' | 'latestStart',
+    event: TimeObject
+  ): void {
+    if (!this.breakTimeObjects[breakIndex]) {
+      this.breakTimeObjects[breakIndex] = {
+        duration: { hour: 0, minute: 0 },
+        earliestStart: { hour: 0, minute: 0 },
+        latestStart: { hour: 0, minute: 0 },
+      };
+    }
+
+    this.breakTimeObjects[breakIndex][field] = event;
+
+    if (event && event.hour !== undefined && event.minute !== undefined) {
+      const hour = String(event.hour).padStart(2, '0');
+      const minute = String(event.minute).padStart(2, '0');
+      const breakControl = this.breaks.at(breakIndex) as FormGroup;
+      breakControl.get(field)?.setValue(`${hour}:${minute}`);
+    } else {
+      const breakControl = this.breaks.at(breakIndex) as FormGroup;
+      breakControl.get(field)?.setValue('');
+    }
+  }
+
+  getBreakTimeObject(
+    breakIndex: number,
+    field: 'duration' | 'earliestStart' | 'latestStart'
+  ): TimeObject {
+    return this.breakTimeObjects[breakIndex]?.[field] || { hour: 0, minute: 0 };
   }
 }
