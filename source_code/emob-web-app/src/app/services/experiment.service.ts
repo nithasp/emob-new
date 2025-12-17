@@ -77,27 +77,62 @@ export class ExperimentService {
         query: gql`
           query experiment($Id: RunIdInput!) {
             experiment(input: $Id) {
+              companyName
               runId
               name
               timestamp
-              preOrderBlobPath
-              locationBlobPath
-              locationUpdateBlobPath
-              validatedBlobPath
-              parameterBlobPath
-              outputRouteOptimizationBlobPath
-              triggeredBy
-              timeEnd
+              configurations
+              inputdata {
+                keyName
+                filename
+                blobPath
+                displayName
+                fileFormatType
+                fileSize
+                fileUrl
+              }
+              depots {
+                companyName
+                depotId
+                depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                createdAt
+                updatedAt
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  required
+                  createdAt
+                  modifiedAt
+                }
+              }
               timeStart
+              timeEnd
+              timeDuration
+              triggeredBy
+              triggeredByName
               status
               run
               groupId
+              countGeocoding
+              countReroute
               fileUrl {
                 parameterUrl
                 preOrderUrl
                 LocationBlobPathUrl
                 locationUpdateBlobPathUrl
                 validatedBlobPathUrl
+                outputGeoJsonUrl
+                outputReportUrl
+                outputPlanDetailUrl
+                vehiclesBlobPathUrl
               }
             }
           }
@@ -121,28 +156,62 @@ export class ExperimentService {
         query: gql`
           query experiment($Id: RunIdInput!) {
             experiment(input: $Id) {
+              companyName
               runId
               name
               timestamp
-              preOrderBlobPath
-              locationBlobPath
-              locationUpdateBlobPath
-              validatedBlobPath
-              parameterBlobPath
-              outputRouteOptimizationBlobPath
-              triggeredBy
-              timeEnd
+              configurations
+              inputdata {
+                keyName
+                filename
+                blobPath
+                displayName
+                fileFormatType
+                fileSize
+                fileUrl
+              }
+              depots {
+                companyName
+                depotId
+                depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                createdAt
+                updatedAt
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  required
+                  createdAt
+                  modifiedAt
+                }
+              }
               timeStart
+              timeEnd
               timeDuration
+              triggeredBy
+              triggeredByName
               status
               run
               groupId
+              countGeocoding
+              countReroute
               fileUrl {
                 parameterUrl
+                preOrderUrl
+                LocationBlobPathUrl
+                locationUpdateBlobPathUrl
+                validatedBlobPathUrl
                 outputGeoJsonUrl
                 outputReportUrl
                 outputPlanDetailUrl
-                preOrderUrl
+                vehiclesBlobPathUrl
               }
             }
           }
