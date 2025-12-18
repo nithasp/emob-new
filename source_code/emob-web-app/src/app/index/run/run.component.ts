@@ -436,6 +436,20 @@ export class RunComponent implements OnInit, AfterViewInit {
     // ensure dynamic parameter metadata for rendering is loaded too
     this.getDynamicParameters();
 
+    // Load Vehicles data
+    if (experiment.fileUrl.vehiclesBlobPathUrl) {
+      this.toastr.info(
+        this.transloco.translate('loading_vehicle_data', {}, 'index'),
+        `${this.transloco.translate('please_wait', {}, 'index')} ...`
+      );
+      await this.dataFromFileUrlToJson(experiment.fileUrl.vehiclesBlobPathUrl).then(
+        (response: any) => {
+          console.log('Vehicles Data from vehiclesBlobPathUrl:', response);
+          this.loadVehicleDataFromBlob(response);
+        }
+      );
+    }
+
     this.toastr.info(
       this.transloco.translate('loading_preorder_data', {}, 'index'),
       `${this.transloco.translate('please_wait', {}, 'index')} ...`
@@ -552,6 +566,111 @@ export class RunComponent implements OnInit, AfterViewInit {
       });
     }
   }
+
+  async loadVehicleDataFromBlob(vehiclesData: any[]): Promise<void> {
+    if (!Array.isArray(vehiclesData)) {
+      console.warn('Invalid vehicles data format:', vehiclesData);
+      return;
+    }
+
+    for (const vehicle of vehiclesData) {
+      const vehicleTypeId = vehicle.vehicleTypeId;
+      if (!vehicleTypeId) continue;
+
+      // Check if this vehicle type exists in myVehicleTypes
+      const vehicleTypeExists = this.myVehicleTypes.some(
+        (v) => v.vehicleTypeId === vehicleTypeId
+      );
+      if (!vehicleTypeExists) {
+        console.warn(`Vehicle type ${vehicleTypeId} not found in myVehicleTypes`);
+        continue;
+      }
+
+      // Determine selection mode based on data
+      const hasCount = vehicle.numberOfVehiclesAvailable && vehicle.numberOfVehiclesAvailable > 0;
+      const hasSpecificVehicles = vehicle.specificVehicleIds && Array.isArray(vehicle.specificVehicleIds) && vehicle.specificVehicleIds.length > 0;
+
+      if (hasCount || hasSpecificVehicles) {
+        // Mark vehicle as selected
+        if (!this.selectedVehicleIds.includes(vehicleTypeId)) {
+          this.selectedVehicleIds.push(vehicleTypeId);
+        }
+
+        if (hasSpecificVehicles) {
+          // Set to license-plate mode
+          this.vehicleSelectionMode[vehicleTypeId] = 'license-plate';
+          
+          // Load license plates for these vehicle IDs
+          // Pass the numberOfVehiclesAvailable to use for count display
+          await this.loadLicensePlatesForVehicleIds(
+            vehicleTypeId,
+            vehicle.specificVehicleIds,
+            vehicle.numberOfVehiclesAvailable
+          );
+        } else if (hasCount) {
+          // Set to count mode
+          this.vehicleSelectionMode[vehicleTypeId] = 'count';
+          this.selectedVehicleCounts[vehicleTypeId] = vehicle.numberOfVehiclesAvailable;
+        }
+      }
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  async loadLicensePlatesForVehicleIds(
+    vehicleTypeId: string,
+    vehicleIds: string[],
+    numberOfVehiclesAvailable?: number
+  ): Promise<void> {
+    try {
+      const depotId =
+        this.getSelectedDepotObject()?.depotId ||
+        this.experiment.depots?.[0]?.depotId;
+
+      // Fetch all vehicles for this vehicle type
+      const vehicles = await firstValueFrom(
+        this.vehicleService.getMyVehicles(depotId, vehicleTypeId)
+      );
+
+      // Filter to only the specific vehicle IDs
+      const selectedVehicles = vehicles.filter((v) =>
+        vehicleIds.includes(v.vehicleId)
+      );
+
+      // Extract license plates
+      const licensePlates = selectedVehicles
+        .filter((v) => v.licensePlate)
+        .map((v) => v.licensePlate);
+
+      // Update the component state
+      this.selectedLicensePlates[vehicleTypeId] = licensePlates;
+      this.selectedVehicleIdsByLicensePlate[vehicleTypeId] = vehicleIds;
+      
+      // Use numberOfVehiclesAvailable from blob if provided
+      // If it's 0 or not provided, default to 1
+      if (numberOfVehiclesAvailable !== undefined && numberOfVehiclesAvailable !== null) {
+        this.selectedVehicleCounts[vehicleTypeId] = numberOfVehiclesAvailable || 1;
+      } else {
+        this.selectedVehicleCounts[vehicleTypeId] = licensePlates.length || 1;
+      }
+    } catch (error) {
+      console.error(
+        `Error loading license plates for vehicle type ${vehicleTypeId}:`,
+        error
+      );
+      // Fallback: just store the vehicle IDs
+      this.selectedVehicleIdsByLicensePlate[vehicleTypeId] = vehicleIds;
+      
+      // Use numberOfVehiclesAvailable if provided, otherwise default to 1
+      if (numberOfVehiclesAvailable !== undefined && numberOfVehiclesAvailable !== null) {
+        this.selectedVehicleCounts[vehicleTypeId] = numberOfVehiclesAvailable || 1;
+      } else {
+        this.selectedVehicleCounts[vehicleTypeId] = vehicleIds.length || 1;
+      }
+    }
+  }
+
   initializeDefaultParameter() {
     this.constraintService
       .getMyParameter()

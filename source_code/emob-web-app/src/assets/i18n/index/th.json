@@ -306,7 +306,7 @@
   "fixed_cost": "ต้นทุนคงที่",
   "is_active": "สถานะใช้งาน",
   "license_plate": "ป้ายทะเบียน",
-  "loading_vehicle_data": "กำลังโหลดข้อมูลยานพาหนะ...",
+  "loading_vehicle_data": "กำลังโหลดข้อมูลยานพาหนะ",
   "loading_vehicle_types_and_depots": "กำลังโหลดประเภทยานพาหนะและคลังสินค้า...",
   "loading_vehicle_type_data": "กำลังโหลดข้อมูลประเภทยานพาหนะ...",
   "max_distance": "ระยะทางสูงสุด",
