@@ -9,7 +9,7 @@
     }
   }
 
-  mat-dialog-actions {
+  .modal-footer {
     @media (max-width: 576px) {
       flex-direction: column;
       button {

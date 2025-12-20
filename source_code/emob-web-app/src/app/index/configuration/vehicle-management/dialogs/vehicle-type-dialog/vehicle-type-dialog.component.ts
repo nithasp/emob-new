@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -8,8 +8,7 @@ import {
 import { finalize } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { MatCheckboxChange } from '@angular/material/checkbox';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
 import {
@@ -26,7 +25,10 @@ import {
   minutesToTimeString,
 } from 'src/app/directives/time-string-to-minutes.pipe';
 import { VehicleTypeFormControls } from 'src/app/models/forms/vehicle-type-form-control.model';
-import { compareTimeValidator, createTimeRangeValidator } from 'src/app/shared/validators/time-range.validator';
+import {
+  compareTimeValidator,
+  createTimeRangeValidator,
+} from 'src/app/shared/validators/time-range.validator';
 import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
@@ -35,6 +37,9 @@ import { TranslocoService } from '@jsverse/transloco';
   styleUrls: ['./vehicle-type-dialog.component.scss'],
 })
 export class VehicleTypeDialogComponent implements OnInit {
+  @Input() mode: 'create' | 'edit' | 'view' = 'create';
+  @Input() vehicleType: VehicleType | null = null;
+
   formVehicleType!: FormGroup<VehicleTypeFormControls>;
   isEdit: boolean = false;
   isViewMode: boolean = false;
@@ -48,12 +53,7 @@ export class VehicleTypeDialogComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<VehicleTypeDialogComponent>,
-    @Inject(MAT_DIALOG_DATA)
-    public data: {
-      mode: 'create' | 'edit' | 'view';
-      vehicleType: VehicleType | null;
-    },
+    public activeModal: NgbActiveModal,
     private ngbModal: NgbModal,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService,
@@ -61,13 +61,13 @@ export class VehicleTypeDialogComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.isEdit = this.data.mode === 'edit';
-    this.isViewMode = this.data.mode === 'view';
+    this.isEdit = this.mode === 'edit';
+    this.isViewMode = this.mode === 'view';
     this.initForm();
 
     this.getEnumValues().then(() => {
-      if ((this.isEdit || this.isViewMode) && this.data.vehicleType) {
-        const vehicleTypeData = this.data.vehicleType;
+      if ((this.isEdit || this.isViewMode) && this.vehicleType) {
+        const vehicleTypeData = this.vehicleType;
         const vehicleType = {
           name: vehicleTypeData.name,
           access: vehicleTypeData.access,
@@ -75,24 +75,32 @@ export class VehicleTypeDialogComponent implements OnInit {
           unitDistanceCost: vehicleTypeData.unitDistanceCost,
           unitDurationCost: vehicleTypeData.unitDurationCost,
           fixedCost: vehicleTypeData.fixedCost,
-          timeWindowEarly: this.formatTimeForDisplay(vehicleTypeData.timeWindowEarly || vehicleTypeData.twEarly),
-          timeWindowLate: this.formatTimeForDisplay(vehicleTypeData.timeWindowLate || vehicleTypeData.twLate),
-          maximumWeightCapacity: vehicleTypeData.maximumWeightCapacity || vehicleTypeData.capacity,
-          maximumDistance: vehicleTypeData.maximumDistance || vehicleTypeData.maxDistance,
-          maximumDuration: vehicleTypeData.maximumDuration || vehicleTypeData.maxDuration,
+          timeWindowEarly: this.formatTimeForDisplay(
+            vehicleTypeData.timeWindowEarly
+          ),
+          timeWindowLate: this.formatTimeForDisplay(
+            vehicleTypeData.timeWindowLate
+          ),
+          maximumWeightCapacity: vehicleTypeData.maximumWeightCapacity,
+          maximumDistance: vehicleTypeData.maximumDistance,
+          maximumDuration: vehicleTypeData.maximumDuration,
           dimension: {
-            width: vehicleTypeData.dimension?.width || vehicleTypeData.width,
-            height: vehicleTypeData.dimension?.height || vehicleTypeData.height,
-            depth: vehicleTypeData.dimension?.depth || vehicleTypeData.length,
-          }
+            width: vehicleTypeData.dimension?.width,
+            height: vehicleTypeData.dimension?.height,
+            depth: vehicleTypeData.dimension?.depth,
+          },
         };
         this.formVehicleType.patchValue(vehicleType);
         if (vehicleType.timeWindowEarly) {
-          const [hour, minute] = vehicleType.timeWindowEarly.split(':').map(Number);
+          const [hour, minute] = vehicleType.timeWindowEarly
+            .split(':')
+            .map(Number);
           this.twEarlyObject = { hour: hour || 0, minute: minute || 0 };
         }
         if (vehicleType.timeWindowLate) {
-          const [hour, minute] = vehicleType.timeWindowLate.split(':').map(Number);
+          const [hour, minute] = vehicleType.timeWindowLate
+            .split(':')
+            .map(Number);
           this.twLateObject = { hour: hour || 0, minute: minute || 0 };
         }
       }
@@ -117,13 +125,25 @@ export class VehicleTypeDialogComponent implements OnInit {
       {
         name: ['', Validators.required],
         access: [[] as AccessTypeEnum[]],
-        maximumWeightCapacity: [null as number | null, [Validators.required, Validators.min(0)]],
+        maximumWeightCapacity: [
+          null as number | null,
+          [Validators.required, Validators.min(0)],
+        ],
         timeWindowEarly: [''],
         timeWindowLate: [''],
         dimension: this.fb.group({
-          width: [null as number | null, [Validators.required, Validators.min(0)]],
-          height: [null as number | null, [Validators.required, Validators.min(0)]],
-          depth: [null as number | null, [Validators.required, Validators.min(0)]],
+          width: [
+            null as number | null,
+            [Validators.required, Validators.min(0)],
+          ],
+          height: [
+            null as number | null,
+            [Validators.required, Validators.min(0)],
+          ],
+          depth: [
+            null as number | null,
+            [Validators.required, Validators.min(0)],
+          ],
         }),
         vehicleProfileType: [null as string | null, Validators.required],
         maximumDistance: [null as number | null, Validators.min(0)],
@@ -136,12 +156,17 @@ export class VehicleTypeDialogComponent implements OnInit {
         validators: createTimeRangeValidator({
           startTimeField: 'timeWindowEarly',
           endTimeField: 'timeWindowLate',
-          startTimeErrorMessage: this.transloco.translate('form.error.start_time_invalid'),
-          endTimeErrorMessage: this.transloco.translate('form.error.end_time_invalid'),
+          startTimeErrorMessage: this.transloco.translate(
+            'form.error.start_time_invalid'
+          ),
+          endTimeErrorMessage: this.transloco.translate(
+            'form.error.end_time_invalid'
+          ),
         }),
       }
     );
-    this.formVehicleType = formGroup as any as FormGroup<VehicleTypeFormControls>;
+    this.formVehicleType =
+      formGroup as any as FormGroup<VehicleTypeFormControls>;
   }
 
   save(): void {
@@ -153,10 +178,13 @@ export class VehicleTypeDialogComponent implements OnInit {
   }
 
   cancel(): void {
-    this.dialogRef.close();
+    this.activeModal.dismiss();
   }
 
-  onAccessPointChange(event: MatCheckboxChange, accessPoint: AccessTypeEnum): void {
+  onAccessPointChange(
+    event: MatCheckboxChange,
+    accessPoint: AccessTypeEnum
+  ): void {
     const accessPoints = this.formVehicleType.get('access') as FormControl<
       AccessTypeEnum[] | null
     >;
@@ -215,16 +243,21 @@ export class VehicleTypeDialogComponent implements OnInit {
   handleSubmit(): void {
     this.spinner.show();
     const formValue = this.formVehicleType.getRawValue() as any;
-    const timeWindowEarlyMinutes = timeStringToMinutes(formValue.timeWindowEarly);
+    const timeWindowEarlyMinutes = timeStringToMinutes(
+      formValue.timeWindowEarly
+    );
     const timeWindowLateMinutes = timeStringToMinutes(formValue.timeWindowLate);
-    
+
     const payload: Partial<VehicleType> = {
       name: formValue.name || '',
       access: formValue.access || [],
-      vehicleProfileType: formValue.vehicleProfileType as VehicleProfileTypeEnum,
+      vehicleProfileType:
+        formValue.vehicleProfileType as VehicleProfileTypeEnum,
       maximumWeightCapacity: formValue.maximumWeightCapacity || 0,
-      timeWindowEarly: timeWindowEarlyMinutes !== null ? String(timeWindowEarlyMinutes) : '0',
-      timeWindowLate: timeWindowLateMinutes !== null ? String(timeWindowLateMinutes) : '0',
+      timeWindowEarly:
+        timeWindowEarlyMinutes !== null ? String(timeWindowEarlyMinutes) : '0',
+      timeWindowLate:
+        timeWindowLateMinutes !== null ? String(timeWindowLateMinutes) : '0',
       dimension: {
         width: formValue.dimension?.width || 0,
         height: formValue.dimension?.height || 0,
@@ -238,7 +271,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     };
 
     // Remove undefined values
-    Object.keys(payload).forEach(key => {
+    Object.keys(payload).forEach((key) => {
       if (payload[key as keyof typeof payload] === undefined) {
         delete payload[key as keyof typeof payload];
       }
@@ -246,13 +279,13 @@ export class VehicleTypeDialogComponent implements OnInit {
 
     const request$ = this.isEdit
       ? this.vehicleService.updateVehicleType(
-          this.data.vehicleType!.vehicleTypeId,
+          this.vehicleType!.vehicleTypeId,
           payload as VehicleType
         )
       : this.vehicleService.createVehicleType(payload as VehicleType);
     request$.pipe(finalize(() => this.spinner.hide())).subscribe({
       next: (res) => {
-        this.dialogRef.close({ refresh: true, vehicleType: res });
+        this.activeModal.close({ refresh: true, vehicleType: res });
       },
       error: (err) => {
         console.error(
@@ -263,7 +296,10 @@ export class VehicleTypeDialogComponent implements OnInit {
     });
   }
 
-  onTimeValueChange(key: 'timeWindowEarly' | 'timeWindowLate', event: TimeObject): void {
+  onTimeValueChange(
+    key: 'timeWindowEarly' | 'timeWindowLate',
+    event: TimeObject
+  ): void {
     if (key === 'timeWindowEarly') {
       this.twEarlyObject = event;
     } else {

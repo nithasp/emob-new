@@ -1,5 +1,5 @@
 <ng-container *transloco="let t; read: 'vehicleManagement'">
-  <mat-card
+  <div
     id="vehicle-type-dialog"
     [class.is-loading]="isLoading"
     class="p-3 position-relative"
@@ -15,9 +15,9 @@
       </p>
     </div>
 
-    <div *ngIf="!isLoading" class="w-100 h-100">
-      <mat-card-header class="mb-4">
-        <h1 class="fw-bold h4">
+    <div *ngIf="!isLoading" class="w-100 h-100 overflow-auto">
+      <div class="modal-header border-0 pb-2">
+        <h1 class="fw-bold h4 modal-title">
           {{
             isViewMode
               ? t("view_vehicle_type")
@@ -26,9 +26,9 @@
               : t("add_vehicle_type")
           }}
         </h1>
-      </mat-card-header>
+      </div>
 
-      <mat-card-content class="pb-0">
+      <div class="modal-body pb-0">
         <form [formGroup]="formVehicleType">
           <div class="row g-4">
             <div
@@ -93,7 +93,9 @@
                       <ngb-timepicker
                         [(ngModel)]="twEarlyObject"
                         [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="onTimeValueChange('timeWindowEarly', $event)"
+                        (ngModelChange)="
+                          onTimeValueChange('timeWindowEarly', $event)
+                        "
                         [readonly]="isViewMode"
                       ></ngb-timepicker>
                     </div>
@@ -118,7 +120,9 @@
                       <ngb-timepicker
                         [(ngModel)]="twLateObject"
                         [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="onTimeValueChange('timeWindowLate', $event)"
+                        (ngModelChange)="
+                          onTimeValueChange('timeWindowLate', $event)
+                        "
                         [readonly]="isViewMode"
                       ></ngb-timepicker>
                     </div>
@@ -141,7 +145,9 @@
                     <app-input-field
                       [placeholder]="'width' | transloco"
                       type="number"
-                      [control]="formVehicleType.controls.dimension.controls.width"
+                      [control]="
+                        formVehicleType.controls.dimension.controls.width
+                      "
                       [suffix]="'cm' | transloco"
                       [disabled]="isViewMode"
                       [required]="true"
@@ -152,7 +158,9 @@
                     <app-input-field
                       [placeholder]="'height' | transloco"
                       type="number"
-                      [control]="formVehicleType.controls.dimension.controls.height"
+                      [control]="
+                        formVehicleType.controls.dimension.controls.height
+                      "
                       [suffix]="'cm' | transloco"
                       [disabled]="isViewMode"
                       [required]="true"
@@ -163,7 +171,9 @@
                     <app-input-field
                       [placeholder]="'depth' | transloco"
                       type="number"
-                      [control]="formVehicleType.controls.dimension.controls.depth"
+                      [control]="
+                        formVehicleType.controls.dimension.controls.depth
+                      "
                       [suffix]="'cm' | transloco"
                       [disabled]="isViewMode"
                       [required]="true"
@@ -234,33 +244,32 @@
                   [disabled]="isViewMode"
                 ></app-input-field>
               </div>
+            </div>
 
-              <div>
-                <mat-dialog-actions
-                  align="end"
-                  class="d-flex gap-2 justify-content-end mt-3 p-0 flex-wrap"
-                >
+            <div class="col-12">
+              <div class="modal-footer border-0 pt-3 px-0">
+                <div class="d-flex gap-2 justify-content-end flex-wrap w-100">
                   <button
-                    mat-raised-button="mat-raised-button"
-                    class="bg-custom-danger"
+                    type="button"
+                    class="btn btn-outline-secondary"
                     (click)="cancel()"
                   >
                     {{ "cancel" | transloco }}
                   </button>
                   <button
                     *ngIf="!isViewMode"
-                    mat-raised-button="mat-raised-button"
-                    color="primary"
+                    type="button"
+                    class="btn btn-primary"
                     (click)="save()"
                   >
                     {{ "save" | transloco }}
                   </button>
-                </mat-dialog-actions>
+                </div>
               </div>
             </div>
           </div>
         </form>
-      </mat-card-content>
+      </div>
     </div>
-  </mat-card>
+  </div>
 </ng-container>
