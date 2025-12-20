@@ -1,4 +1,4 @@
-<ng-container *transloco="let t; read: 'vehicleManagement'">
+<ng-container *transloco="let t; read: 'index'">
   <div id="vehicle-type-dialog" [class.is-loading]="isLoading" class="p-3 position-relative">
     <div *ngIf="isLoading"
       class="d-flex flex-column align-items-center justify-content-center position-absolute top-0 start-0 w-100 h-100 bg-white"
@@ -56,6 +56,11 @@
               </div>
 
               <div>
+                <app-input-field [placeholder]="t('volume')" type="number"
+                  [control]="formVehicleType.controls.maximumVolumeCapacity" [disabled]="isViewMode"></app-input-field>
+              </div>
+
+              <div>
                 <app-dynamic-popover [placement]="'bottom-start'">
                   <app-input-field popover-trigger="popover-trigger" [placeholder]="t('start_time')"
                     [control]="formVehicleType.controls.timeWindowEarly" [disabled]="isViewMode" [readonly]="true"
@@ -64,7 +69,7 @@
                   <div popover-content="popover-content">
                     <div class="card-body p-2">
                       <p class="card-title">{{ t("tw_early") }}</p>
-                      <ngb-timepicker [(ngModel)]="twEarlyObject" [ngModelOptions]="{ standalone: true }"
+                      <ngb-timepicker [(ngModel)]="timeWindowEarlyObject" [ngModelOptions]="{ standalone: true }"
                         (ngModelChange)="
                           onTimeValueChange('timeWindowEarly', $event)
                         " [readonly]="isViewMode"></ngb-timepicker>
@@ -82,7 +87,7 @@
                   <div popover-content="popover-content">
                     <div class="card-body p-2">
                       <p class="card-title">{{ t("tw_late") }}</p>
-                      <ngb-timepicker [(ngModel)]="twLateObject" [ngModelOptions]="{ standalone: true }"
+                      <ngb-timepicker [(ngModel)]="timeWindowLateObject" [ngModelOptions]="{ standalone: true }"
                         (ngModelChange)="
                           onTimeValueChange('timeWindowLate', $event)
                         " [readonly]="isViewMode"></ngb-timepicker>
@@ -110,7 +115,7 @@
                       [decimal]="3"></app-input-field>
                   </div>
                   <div class="col-sm-4">
-                    <app-input-field [placeholder]="'depth' | transloco" type="number" [control]="
+                    <app-input-field [placeholder]="'length' | transloco" type="number" [control]="
                         formVehicleType.controls.dimension.controls.depth
                       " [suffix]="'cm' | transloco" [disabled]="isViewMode" [required]="true"
                       [decimal]="3"></app-input-field>
@@ -122,6 +127,12 @@
                 <app-input-select [placeholder]="t('vehicle_profile_type')" [options]="vehicleProfileTypeOptions"
                   [control]="formVehicleType.controls.vehicleProfileType" [disabled]="isViewMode"
                   idAttribute="key"></app-input-select>
+              </div>
+
+              <div>
+                <app-input-field [placeholder]="t('vehicle_group_id')"
+                  [control]="formVehicleType.controls.vehicleGroupId" [required]="true"
+                  [disabled]="isViewMode"></app-input-field>
               </div>
 
               <div class="row g-2">
@@ -154,6 +165,110 @@
                 <app-input-field [placeholder]="t('fixed_cost')" type="number"
                   [control]="formVehicleType.controls.fixedCost" [decimal]="2"
                   [disabled]="isViewMode"></app-input-field>
+              </div>
+            </div>
+
+            <!-- Allowed Breaks Section -->
+            <div class="col-12 mt-4">
+              <h2 class="mb-3">
+                {{ t("allowed_breaks") }}
+              </h2>
+
+              <div class="row mb-2 text-muted small">
+                <div class="col-md-3">{{ t("name") }}</div>
+                <div class="col-md-3">{{ t("duration") }} (HH:MM)</div>
+                <div class="col-md-3">{{ t("earliest_start") }}</div>
+                <div class="col-md-3">{{ t("latest_start") }}</div>
+                <div class="col-md-2"></div>
+              </div>
+
+              <div *ngIf="breaks.length === 0" class="text-center text-secondary py-4">
+                {{ t("no_breaks_added") }}
+              </div>
+
+              <div *ngFor="
+                  let breakControl of getBreakControls();
+                  let i = index;
+                  trackBy: trackByIndex
+                " [formGroup]="breakControl" class="row g-2 mb-3 align-items-center">
+
+                <!-- Name Field -->
+                <div class="col-md-3">
+                  <app-input-field placeholder="" [control]="$any(breakControl.get('name'))"
+                    [disabled]="isViewMode" [required]="true"></app-input-field>
+                </div>
+
+                <!-- Duration Field with Time Picker -->
+                <div class="col-md-3">
+                  <app-dynamic-popover [placement]="'bottom-start'">
+                    <app-input-field popover-trigger="popover-trigger" placeholder=""
+                      [control]="$any(breakControl.get('duration'))" [disabled]="isViewMode" [readonly]="true"
+                      suffixIcon="access_time"></app-input-field>
+
+                    <div popover-content="popover-content">
+                      <div class="card-body p-2">
+                        <p class="card-title">{{ t("duration") }}</p>
+                        <ngb-timepicker [(ngModel)]="breakTimeObjects[i].duration"
+                          [ngModelOptions]="{ standalone: true }"
+                          (ngModelChange)="onBreakTimeValueChange(i, 'duration', $event)"
+                          [readonly]="isViewMode"></ngb-timepicker>
+                      </div>
+                    </div>
+                  </app-dynamic-popover>
+                </div>
+
+                <!-- Earliest Start Field with Time Picker -->
+                <div class="col-md-3">
+                  <app-dynamic-popover [placement]="'bottom-start'">
+                    <app-input-field popover-trigger="popover-trigger" placeholder=""
+                      [control]="$any(breakControl.get('earliestStart'))" [disabled]="isViewMode" [readonly]="true"
+                      suffixIcon="access_time"></app-input-field>
+
+                    <div popover-content="popover-content">
+                      <div class="card-body p-2">
+                        <p class="card-title">{{ t("earliest_start") }}</p>
+                        <ngb-timepicker [(ngModel)]="breakTimeObjects[i].earliestStart"
+                          [ngModelOptions]="{ standalone: true }"
+                          (ngModelChange)="onBreakTimeValueChange(i, 'earliestStart', $event)"
+                          [readonly]="isViewMode"></ngb-timepicker>
+                      </div>
+                    </div>
+                  </app-dynamic-popover>
+                </div>
+
+                <!-- Latest Start Field with Time Picker -->
+                <div class="col-md-3">
+                  <app-dynamic-popover [placement]="'bottom-start'">
+                    <app-input-field popover-trigger="popover-trigger" placeholder=""
+                      [control]="$any(breakControl.get('latestStart'))" [disabled]="isViewMode" [readonly]="true"
+                      suffixIcon="access_time"></app-input-field>
+
+                    <div popover-content="popover-content">
+                      <div class="card-body p-2">
+                        <p class="card-title">{{ t("latest_start") }}</p>
+                        <ngb-timepicker [(ngModel)]="breakTimeObjects[i].latestStart"
+                          [ngModelOptions]="{ standalone: true }"
+                          (ngModelChange)="onBreakTimeValueChange(i, 'latestStart', $event)"
+                          [readonly]="isViewMode"></ngb-timepicker>
+                      </div>
+                    </div>
+                  </app-dynamic-popover>
+                </div>
+
+                <!-- Delete Button -->
+                <div class="col-md-2 text-end">
+                  <button type="button" class="btn btn-link text-secondary p-0" (click)="removeBreak(i)"
+                    [disabled]="isViewMode" *ngIf="!isViewMode">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <button type="button" class="btn btn-link text-success p-0" (click)="addBreak()" *ngIf="!isViewMode">
+                  <mat-icon class="align-middle">add</mat-icon>
+                  {{ t("add_new_break") }}
+                </button>
               </div>
             </div>
 

@@ -1,5 +1,3 @@
-::ng-deep {
-  .floating {
-    z-index: 1000 !important;
-  }
+::ng-deep .floating {
+  z-index: 9999 !important;
 }

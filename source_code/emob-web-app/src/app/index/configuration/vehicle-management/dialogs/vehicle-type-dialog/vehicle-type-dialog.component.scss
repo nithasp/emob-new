@@ -1,4 +1,5 @@
 #vehicle-type-dialog {
+  height: 700px;
   &.is-loading {
     min-height: 710px;
   }
@@ -9,7 +10,7 @@
     }
   }
 
-  .modal-footer {
+  mat-dialog-actions {
     @media (max-width: 576px) {
       flex-direction: column;
       button {
@@ -23,7 +24,6 @@
   }
 
   @media (max-width: 992px) {
-    height: 700px;
     box-shadow: none;
     .form-group-section2 {
       margin-top: 0;
