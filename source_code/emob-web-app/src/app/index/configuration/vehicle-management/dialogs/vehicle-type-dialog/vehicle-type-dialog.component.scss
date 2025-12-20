@@ -23,6 +23,16 @@
     }
   }
 
+  .table-header {
+    display: grid;
+    grid-template-columns: repeat(4, 175px) auto;
+  }
+
+  .table-body {
+    display: grid;
+    grid-template-columns: repeat(4, 165px) auto;
+  }
+
   @media (max-width: 992px) {
     box-shadow: none;
     .form-group-section2 {

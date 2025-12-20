@@ -311,9 +311,9 @@ export class VehicleTypeDialogComponent implements OnInit {
     if (breaksValue && breaksValue.length > 0) {
       allowedBreaks = breaksValue.map((breakItem: any) => ({
         name: breakItem.name,
-        duration: timeStringToMinutes(breakItem.duration),
-        timeWindowEarly: timeStringToMinutes(breakItem.earliestStart),
-        timeWindowLate: timeStringToMinutes(breakItem.latestStart),
+        duration: breakItem.duration,
+        timeWindowEarly: breakItem.earliestStart,
+        timeWindowLate: breakItem.latestStart,
       }));
     }
 

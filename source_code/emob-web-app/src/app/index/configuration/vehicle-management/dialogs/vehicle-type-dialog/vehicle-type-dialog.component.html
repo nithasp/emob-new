@@ -174,12 +174,14 @@
                 {{ t("allowed_breaks") }}
               </h2>
 
-              <div class="row mb-2 text-muted small">
-                <div class="col-md-3">{{ t("name") }}</div>
-                <div class="col-md-3">{{ t("duration") }} (HH:MM)</div>
-                <div class="col-md-3">{{ t("earliest_start") }}</div>
-                <div class="col-md-3">{{ t("latest_start") }}</div>
-                <div class="col-md-2"></div>
+              <div class="table-header row mb-2 text-muted small">
+                <div class="">{{ t("name") }}</div>
+                <div class="">{{ t("duration") }} (HH:MM)</div>
+                <div class="">{{ t("earliest_start") }}</div>
+                <div class="">{{ t("latest_start") }}</div>
+                <div class="" *ngIf="!isViewMode">
+                  <!-- Trash Icon (Delete Button) -->
+                </div>
               </div>
 
               <div *ngIf="breaks.length === 0" class="text-center text-secondary py-4">
@@ -190,19 +192,21 @@
                   let breakControl of getBreakControls();
                   let i = index;
                   trackBy: trackByIndex
-                " [formGroup]="breakControl" class="row g-2 mb-3 align-items-center">
+                " [formGroup]="breakControl" 
+                class="table-body gap-2 align-items-center">
 
                 <!-- Name Field -->
-                <div class="col-md-3">
+                <div>
                   <app-input-field placeholder="" [control]="$any(breakControl.get('name'))"
-                    [disabled]="isViewMode" [required]="true"></app-input-field>
+                    [disabled]="isViewMode"></app-input-field>
                 </div>
 
                 <!-- Duration Field with Time Picker -->
-                <div class="col-md-3">
+                <div>
                   <app-dynamic-popover [placement]="'bottom-start'">
                     <app-input-field popover-trigger="popover-trigger" placeholder=""
-                      [control]="$any(breakControl.get('duration'))" [disabled]="isViewMode" [readonly]="true"
+                      [control]="$any(breakControl.get('duration'))" 
+                      [disabled]="isViewMode" [readonly]="true"
                       suffixIcon="access_time"></app-input-field>
 
                     <div popover-content="popover-content">
@@ -218,7 +222,7 @@
                 </div>
 
                 <!-- Earliest Start Field with Time Picker -->
-                <div class="col-md-3">
+                <div>
                   <app-dynamic-popover [placement]="'bottom-start'">
                     <app-input-field popover-trigger="popover-trigger" placeholder=""
                       [control]="$any(breakControl.get('earliestStart'))" [disabled]="isViewMode" [readonly]="true"
@@ -237,7 +241,7 @@
                 </div>
 
                 <!-- Latest Start Field with Time Picker -->
-                <div class="col-md-3">
+                <div>
                   <app-dynamic-popover [placement]="'bottom-start'">
                     <app-input-field popover-trigger="popover-trigger" placeholder=""
                       [control]="$any(breakControl.get('latestStart'))" [disabled]="isViewMode" [readonly]="true"
@@ -256,16 +260,16 @@
                 </div>
 
                 <!-- Delete Button -->
-                <div class="col-md-2 text-end">
-                  <button type="button" class="btn btn-link text-secondary p-0" (click)="removeBreak(i)"
-                    [disabled]="isViewMode" *ngIf="!isViewMode">
+                <div *ngIf="!isViewMode">
+                  <button type="button" class="btn btn-link text-secondary p-0 mb-3 ms-1
+                  " (click)="removeBreak(i)">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </div>
               </div>
 
               <div class="mt-3">
-                <button type="button" class="btn btn-link text-success p-0" (click)="addBreak()" *ngIf="!isViewMode">
+                <button type="button" class="btn btn-link text-primary p-0" (click)="addBreak()" *ngIf="!isViewMode">
                   <mat-icon class="align-middle">add</mat-icon>
                   {{ t("add_new_break") }}
                 </button>
