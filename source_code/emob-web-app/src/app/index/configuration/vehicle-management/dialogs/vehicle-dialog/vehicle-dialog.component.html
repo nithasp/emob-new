@@ -44,7 +44,7 @@
           <div *ngIf="isEditMode || isViewMode" class="row">
             <div class="col-12">
               <app-input-field class="w-100" [placeholder]="t('license_plate')" [control]="form.controls.licensePlate"
-                [required]="true" [disabled]="isViewMode || isEditMode">
+                [required]="true" [disabled]="isViewMode">
               </app-input-field>
             </div>
           </div>
@@ -53,7 +53,7 @@
             <div class="row g-2 align-items-stretch">
               <div class="col-12 col-sm flex-grow-1 mb-2 mb-sm-0">
                 <app-input-field [placeholder]="t('license_plate')" [control]="form.controls.licensePlate"
-                  class="w-100">
+                  [required]="true" class="w-100">
                 </app-input-field>
               </div>
               <div class="col-12 col-sm-auto flex-grow-1 flex-sm-grow-0">
