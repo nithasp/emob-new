@@ -1,6 +1,6 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import {
@@ -19,7 +19,6 @@ import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 import { licensePlateDuplicateValidator } from 'src/app/shared/validators/license-plate.validator';
 import { VehicleFormControls } from 'src/app/models/forms/vehicle-form-control.model';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
@@ -28,6 +27,9 @@ import { ConfirmationDialogComponent } from 'src/app/index/components/confirmati
   styleUrls: ['./vehicle-dialog.component.scss'],
 })
 export class VehicleDialogComponent implements OnInit {
+  @Input() mode: 'create' | 'edit' | 'view' = 'create';
+  @Input() vehicle: MyVehicles | null = null;
+
   form!: FormGroup<VehicleFormControls>;
   licensePlates: string[] = [];
   isLoading: boolean = true;
@@ -41,23 +43,18 @@ export class VehicleDialogComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<VehicleDialogComponent>,
+    public activeModal: NgbActiveModal,
     private experimentService: ExperimentService,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
     private transloco: TranslocoService,
-    private ngbModal: NgbModal,
-    @Inject(MAT_DIALOG_DATA)
-    public data: {
-      mode: 'create' | 'edit' | 'view';
-      vehicle: MyVehicles | null;
-    }
+    private ngbModal: NgbModal
   ) {}
 
   ngOnInit(): void {
-    this.isEditMode = this.data.mode === 'edit';
-    this.isViewMode = this.data.mode === 'view';
+    this.isEditMode = this.mode === 'edit';
+    this.isViewMode = this.mode === 'view';
     this.initializeForm();
     this.loadData();
   }
@@ -120,10 +117,7 @@ export class VehicleDialogComponent implements OnInit {
           this.vehicleTypeOptions = data.vehicleTypes;
           this.startDepotOptions = data.depots;
           this.endDepotOptions = data.depots;
-          if (
-            (this.isEditMode || this.isViewMode) &&
-            this.data.vehicle?.vehicleId
-          ) {
+          if ((this.isEditMode || this.isViewMode) && this.vehicle?.vehicleId) {
             this.fetchAndPatchVehicleData();
           }
         },
@@ -137,11 +131,11 @@ export class VehicleDialogComponent implements OnInit {
   }
 
   fetchAndPatchVehicleData(): void {
-    if (!this.data.vehicle?.vehicleId) {
+    if (!this.vehicle?.vehicleId) {
       return;
     }
 
-    this.vehicleService.getMyVehicle(this.data.vehicle.vehicleId).subscribe({
+    this.vehicleService.getMyVehicle(this.vehicle.vehicleId).subscribe({
       next: (vehicleData: MyVehicles) => {
         this.form.patchValue({
           vehicleType: vehicleData.vehicleType?.vehicleTypeId,
@@ -277,7 +271,7 @@ export class VehicleDialogComponent implements OnInit {
               ),
               this.transloco.translate('success')
             );
-            this.dialogRef.close({
+            this.activeModal.close({
               success: true,
               operation: 'create',
               vehicle: newVehicle,
@@ -324,7 +318,7 @@ export class VehicleDialogComponent implements OnInit {
     };
     this.spinner.show();
     this.vehicleService
-      .updateVehicle(this.data.vehicle!.vehicleId, payload)
+      .updateVehicle(this.vehicle!.vehicleId, payload)
       .pipe(finalize(() => this.spinner.hide()))
       .subscribe({
         next: (updatedVehicle: MyVehicles) => {
@@ -335,7 +329,7 @@ export class VehicleDialogComponent implements OnInit {
             ),
             this.transloco.translate('success')
           );
-          this.dialogRef.close({
+          this.activeModal.close({
             success: true,
             operation: 'update',
             vehicle: updatedVehicle,
@@ -355,11 +349,11 @@ export class VehicleDialogComponent implements OnInit {
   }
 
   handleDeleteVehicle(): void {
-    if (this.data.vehicle && this.data.vehicle.vehicleId) {
+    if (this.vehicle && this.vehicle.vehicleId) {
       this.isSaving = true;
       this.spinner.show();
       this.vehicleService
-        .deleteVehicle(this.data.vehicle.vehicleId)
+        .deleteVehicle(this.vehicle.vehicleId)
         .pipe(finalize(() => this.spinner.hide()))
         .subscribe({
           next: (result: boolean) => {
@@ -371,10 +365,10 @@ export class VehicleDialogComponent implements OnInit {
                 ),
                 this.transloco.translate('success')
               );
-              this.dialogRef.close({
+              this.activeModal.close({
                 success: true,
                 operation: 'delete',
-                vehicleId: this.data.vehicle!.vehicleId,
+                vehicleId: this.vehicle!.vehicleId,
               });
             }
           },
@@ -393,6 +387,6 @@ export class VehicleDialogComponent implements OnInit {
   }
 
   cancel(): void {
-    this.dialogRef.close();
+    this.activeModal.dismiss();
   }
 }

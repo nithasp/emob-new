@@ -2,15 +2,26 @@
   &.is-loading {
     min-height: 450px;
   }
+
   .btn-add-license-plate {
     height: 58px;
     @media (max-width: 576px) {
       height: 36px;
     }
   }
-  @media (max-width: 576px) {
-    .btn-action {
-      padding: 0;
+
+  .modal-footer {
+    @media (max-width: 576px) {
+      .btn-action {
+        padding: 0;
+      }
     }
   }
 }
+
+// Global styles for overwrite z-index of mat-select panels in ngbModal
+::ng-deep .cdk-overlay-container {
+  z-index: 2000 !important;
+}
+
+

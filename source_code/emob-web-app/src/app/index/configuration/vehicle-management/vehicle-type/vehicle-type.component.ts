@@ -73,6 +73,8 @@ export class VehicleTypeComponent implements OnInit {
       animation: true,
       backdrop: 'static',
       keyboard: false,
+      scrollable: true,
+      windowClass: 'vehicle-type-modal-window',
     });
     modalRef.componentInstance.mode = mode;
     modalRef.componentInstance.vehicleType = vehicleType ?? null;

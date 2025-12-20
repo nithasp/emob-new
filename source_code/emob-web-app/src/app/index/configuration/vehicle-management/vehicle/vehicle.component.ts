@@ -1,5 +1,4 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -33,8 +32,7 @@ export class VehicleComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
-    private dialog: MatDialog,
-    private modalSvc: NgbModal,
+    private ngbModal: NgbModal,
     private vehicleService: VehicleService,
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
@@ -65,23 +63,34 @@ export class VehicleComponent implements OnInit {
     vehicle?: MyVehicles,
     mode: 'create' | 'edit' | 'view' = 'create'
   ): void {
-    const dialogRef = this.dialog.open(VehicleDialogComponent, {
-      width: '600px',
-      data: {
-        mode: mode,
-        vehicle: vehicle ? { ...vehicle } : null,
-      },
+    const modalRef = this.ngbModal.open(VehicleDialogComponent, {
+      centered: true,
+      size: 'lg',
+      animation: true,
+      backdrop: 'static',
+      keyboard: false,
+      scrollable: true,
+      windowClass: 'vehicle-modal-window',
     });
+    modalRef.componentInstance.mode = mode;
+    modalRef.componentInstance.vehicle = vehicle ? { ...vehicle } : null;
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.getMyVehicles();
+    modalRef.result.then(
+      (result) => {
+        if (result) {
+          this.getMyVehicles();
+        }
+      },
+      () => {
+        // Modal dismissed
       }
-    });
+    );
   }
 
   deleteVehicle(vehicle: MyVehicles): void {
-    const modalRef = this.modalSvc.open(ConfirmationDialogComponent);
+    const modalRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      centered: true,
+    });
     modalRef.componentInstance.title = this.transloco.translate(
       'vehicleManagement.delete_vehicle_title'
     );
@@ -94,33 +103,38 @@ export class VehicleComponent implements OnInit {
     modalRef.componentInstance.acceptButton =
       this.transloco.translate('delete');
 
-    modalRef.result.then((confirmed: boolean) => {
-      if (confirmed) {
-        this.spinner.show();
-        this.vehicleService
-          .deleteVehicle(vehicle.vehicleId)
-          .pipe(finalize(() => this.spinner.hide()))
-          .subscribe({
-            next: () => {
-              this.toastr.success(
-                this.transloco.translate(
-                  'vehicleManagement.vehicle_deleted_successfully'
-                ),
-                this.transloco.translate('success')
-              );
-              this.getMyVehicles();
-            },
-            error: (err) => {
-              console.error(err);
-              this.toastr.error(
-                this.transloco.translate(
-                  'vehicleManagement.failed_to_delete_vehicle'
-                ),
-                this.transloco.translate('error')
-              );
-            },
-          });
+    modalRef.result.then(
+      (confirmed: boolean) => {
+        if (confirmed) {
+          this.spinner.show();
+          this.vehicleService
+            .deleteVehicle(vehicle.vehicleId)
+            .pipe(finalize(() => this.spinner.hide()))
+            .subscribe({
+              next: () => {
+                this.toastr.success(
+                  this.transloco.translate(
+                    'vehicleManagement.vehicle_deleted_successfully'
+                  ),
+                  this.transloco.translate('success')
+                );
+                this.getMyVehicles();
+              },
+              error: (err) => {
+                console.error(err);
+                this.toastr.error(
+                  this.transloco.translate(
+                    'vehicleManagement.failed_to_delete_vehicle'
+                  ),
+                  this.transloco.translate('error')
+                );
+              },
+            });
+        }
+      },
+      () => {
+        // Modal dismissed
       }
-    });
+    );
   }
 }

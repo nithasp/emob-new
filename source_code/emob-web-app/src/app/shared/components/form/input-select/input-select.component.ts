@@ -37,6 +37,7 @@ export class InputSelectComponent implements OnInit, OnDestroy, OnChanges {
   @Input() idAttribute: string = 'id';
   @Input() valueAttribute: string = 'value';
   @Input() multiple: boolean = false;
+  @Input() panelClass: string = '';
   @Output() valueChange: EventEmitter<any> = new EventEmitter<any>();
 
   private controlSubscription?: Subscription;
