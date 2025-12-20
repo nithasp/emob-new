@@ -70,7 +70,7 @@
                 <app-input-field
                   [placeholder]="t('capacity')"
                   type="number"
-                  [control]="formVehicleType.controls.capacity"
+                  [control]="formVehicleType.controls.maximumWeightCapacity"
                   [disabled]="isViewMode"
                   [required]="true"
                 ></app-input-field>
@@ -81,7 +81,7 @@
                   <app-input-field
                     popover-trigger="popover-trigger"
                     [placeholder]="t('start_time')"
-                    [control]="formVehicleType.controls.twEarly"
+                    [control]="formVehicleType.controls.timeWindowEarly"
                     [disabled]="isViewMode"
                     [readonly]="true"
                     suffixIcon="access_time"
@@ -93,7 +93,7 @@
                       <ngb-timepicker
                         [(ngModel)]="twEarlyObject"
                         [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="onTimeValueChange('twEarly', $event)"
+                        (ngModelChange)="onTimeValueChange('timeWindowEarly', $event)"
                         [readonly]="isViewMode"
                       ></ngb-timepicker>
                     </div>
@@ -106,7 +106,7 @@
                   <app-input-field
                     popover-trigger="popover-trigger"
                     [placeholder]="t('end_time')"
-                    [control]="formVehicleType.controls.twLate"
+                    [control]="formVehicleType.controls.timeWindowLate"
                     [disabled]="isViewMode"
                     [readonly]="true"
                     suffixIcon="access_time"
@@ -118,7 +118,7 @@
                       <ngb-timepicker
                         [(ngModel)]="twLateObject"
                         [ngModelOptions]="{ standalone: true }"
-                        (ngModelChange)="onTimeValueChange('twLate', $event)"
+                        (ngModelChange)="onTimeValueChange('timeWindowLate', $event)"
                         [readonly]="isViewMode"
                       ></ngb-timepicker>
                     </div>
@@ -141,7 +141,7 @@
                     <app-input-field
                       [placeholder]="'width' | transloco"
                       type="number"
-                      [control]="formVehicleType.controls.width"
+                      [control]="formVehicleType.controls.dimension.controls.width"
                       [suffix]="'cm' | transloco"
                       [disabled]="isViewMode"
                       [required]="true"
@@ -152,7 +152,7 @@
                     <app-input-field
                       [placeholder]="'height' | transloco"
                       type="number"
-                      [control]="formVehicleType.controls.height"
+                      [control]="formVehicleType.controls.dimension.controls.height"
                       [suffix]="'cm' | transloco"
                       [disabled]="isViewMode"
                       [required]="true"
@@ -161,9 +161,9 @@
                   </div>
                   <div class="col-sm-4">
                     <app-input-field
-                      [placeholder]="'length' | transloco"
+                      [placeholder]="'depth' | transloco"
                       type="number"
-                      [control]="formVehicleType.controls.length"
+                      [control]="formVehicleType.controls.dimension.controls.depth"
                       [suffix]="'cm' | transloco"
                       [disabled]="isViewMode"
                       [required]="true"
@@ -188,7 +188,7 @@
                   <app-input-field
                     [placeholder]="t('max_distance')"
                     type="number"
-                    [control]="formVehicleType.controls.maxDistance"
+                    [control]="formVehicleType.controls.maximumDistance"
                     [suffix]="'km' | transloco"
                     [disabled]="isViewMode"
                   ></app-input-field>
@@ -197,7 +197,7 @@
                   <app-input-field
                     [placeholder]="t('max_duration')"
                     type="number"
-                    [control]="formVehicleType.controls.maxDuration"
+                    [control]="formVehicleType.controls.maximumDuration"
                     [suffix]="'hr' | transloco"
                     [disabled]="isViewMode"
                   ></app-input-field>
