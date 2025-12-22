@@ -427,12 +427,26 @@ export class VehicleTypeDialogComponent implements OnInit {
 
   // Allowed Breaks Methods
   createBreakFormGroup(breakData?: VehicleBreak): FormGroup {
-    return this.fb.group({
-      name: [breakData?.name || '', Validators.required],
-      duration: [breakData?.duration || '', Validators.required],
-      earliestStart: [breakData?.earliestStart || '', Validators.required],
-      latestStart: [breakData?.latestStart || '', Validators.required],
-    });
+    return this.fb.group(
+      {
+        name: [breakData?.name || '', Validators.required],
+        duration: [breakData?.duration || '', Validators.required],
+        earliestStart: [breakData?.earliestStart || '', Validators.required],
+        latestStart: [breakData?.latestStart || '', Validators.required],
+      },
+      {
+        validators: createTimeRangeValidator({
+          startTimeField: 'earliestStart',
+          endTimeField: 'latestStart',
+          startTimeErrorMessage: this.transloco.translate(
+            'form.error.start_time_invalid'
+          ),
+          endTimeErrorMessage: this.transloco.translate(
+            'form.error.end_time_invalid'
+          ),
+        }),
+      }
+    );
   }
 
   addBreak(): void {
@@ -498,15 +512,20 @@ export class VehicleTypeDialogComponent implements OnInit {
 
     this.breakTimeObjects[breakIndex][field] = event;
 
+    const breakControl = this.breaks.at(breakIndex) as FormGroup;
+    
     if (event && event.hour !== undefined && event.minute !== undefined) {
       const hour = String(event.hour).padStart(2, '0');
       const minute = String(event.minute).padStart(2, '0');
-      const breakControl = this.breaks.at(breakIndex) as FormGroup;
       breakControl.get(field)?.setValue(`${hour}:${minute}`);
     } else {
-      const breakControl = this.breaks.at(breakIndex) as FormGroup;
       breakControl.get(field)?.setValue('');
     }
+
+    // Trigger validation for time range
+    breakControl.updateValueAndValidity();
+    breakControl.get('earliestStart')?.markAsTouched();
+    breakControl.get('latestStart')?.markAsTouched();
   }
 
   getBreakTimeObject(
