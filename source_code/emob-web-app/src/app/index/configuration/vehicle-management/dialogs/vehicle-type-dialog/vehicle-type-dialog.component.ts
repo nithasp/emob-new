@@ -300,10 +300,6 @@ export class VehicleTypeDialogComponent implements OnInit {
   handleSubmit(): void {
     this.spinner.show();
     const formValue = this.formVehicleType.getRawValue() as any;
-    const timeWindowEarlyMinutes = timeStringToMinutes(
-      formValue.timeWindowEarly
-    );
-    const timeWindowLateMinutes = timeStringToMinutes(formValue.timeWindowLate);
 
     // Map breaks form data to API format (allowedBreaks)
     let allowedBreaks: any[] | undefined;
@@ -322,26 +318,24 @@ export class VehicleTypeDialogComponent implements OnInit {
       access: formValue.access || [],
       vehicleProfileType:
         formValue.vehicleProfileType as VehicleProfileTypeEnum,
-      maximumWeightCapacity: formValue.maximumWeightCapacity || 0,
-      timeWindowEarly:
-        timeWindowEarlyMinutes !== null ? String(timeWindowEarlyMinutes) : '0',
-      timeWindowLate:
-        timeWindowLateMinutes !== null ? String(timeWindowLateMinutes) : '0',
+      maximumWeightCapacity: Number(formValue.maximumWeightCapacity) || 0,
+      timeWindowEarly: formValue.timeWindowEarly || '00:00',
+      timeWindowLate: formValue.timeWindowLate || '00:00',
       dimension: {
-        width: formValue.dimension?.width || 0,
-        height: formValue.dimension?.height || 0,
-        depth: formValue.dimension?.depth || 0,
+        width: Number(formValue.dimension?.width) || 0,
+        height: Number(formValue.dimension?.height) || 0,
+        depth: Number(formValue.dimension?.depth) || 0,
       },
-      maximumDistance: formValue.maximumDistance || undefined,
-      maximumDuration: formValue.maximumDuration || undefined,
-      unitDistanceCost: formValue.unitDistanceCost || 0,
-      unitDurationCost: formValue.unitDurationCost || 0,
-      fixedCost: formValue.fixedCost || 0,
+      maximumDistance: formValue.maximumDistance ? Number(formValue.maximumDistance) : undefined,
+      maximumDuration: formValue.maximumDuration ? Number(formValue.maximumDuration) : undefined,
+      unitDistanceCost: Number(formValue.unitDistanceCost) || 0,
+      unitDurationCost: Number(formValue.unitDurationCost) || 0,
+      fixedCost: Number(formValue.fixedCost) || 0,
     };
 
     // Add new fields
     if (formValue.maximumVolumeCapacity !== null && formValue.maximumVolumeCapacity !== undefined) {
-      (payload as any).maximumVolumeCapacity = formValue.maximumVolumeCapacity;
+      (payload as any).maximumVolumeCapacity = Number(formValue.maximumVolumeCapacity);
     }
     if (formValue.vehicleGroupId) {
       (payload as any).vehicleGroupId = formValue.vehicleGroupId;
