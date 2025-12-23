@@ -10,6 +10,10 @@
     }
   }
 
+  .form-container {
+    height: 560px;
+  }
+
   mat-dialog-actions {
     @media (max-width: 576px) {
       flex-direction: column;
