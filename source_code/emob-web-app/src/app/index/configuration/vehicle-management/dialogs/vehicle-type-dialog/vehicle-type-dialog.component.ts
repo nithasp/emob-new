@@ -229,6 +229,10 @@ export class VehicleTypeDialogComponent implements OnInit {
   save(): void {
     if (this.formVehicleType.invalid) {
       this.formVehicleType.markAllAsTouched();
+      // Mark all break controls as touched to show validation errors
+      this.breaks.controls.forEach((control) => {
+        control.markAsTouched();
+      });
       return;
     }
     this.openDialogConfirm();
@@ -526,6 +530,7 @@ export class VehicleTypeDialogComponent implements OnInit {
     breakControl.updateValueAndValidity();
     breakControl.get('earliestStart')?.markAsTouched();
     breakControl.get('latestStart')?.markAsTouched();
+    breakControl.markAsTouched();
   }
 
   getBreakTimeObject(
@@ -533,5 +538,15 @@ export class VehicleTypeDialogComponent implements OnInit {
     field: 'duration' | 'earliestStart' | 'latestStart'
   ): TimeObject {
     return this.breakTimeObjects[breakIndex]?.[field] || { hour: 0, minute: 0 };
+  }
+
+  hasBreakTimeRangeError(breakControl: FormGroup): boolean {
+    const earliestStart = breakControl.get('earliestStart');
+    const latestStart = breakControl.get('latestStart');
+    
+    return !!(
+      (earliestStart?.hasError('timeRangeInvalid') && earliestStart?.touched) ||
+      (latestStart?.hasError('timeRangeInvalid') && latestStart?.touched)
+    );
   }
 }

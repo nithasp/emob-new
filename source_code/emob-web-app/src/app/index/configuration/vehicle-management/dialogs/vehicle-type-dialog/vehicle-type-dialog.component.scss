@@ -31,6 +31,10 @@
   .table-body {
     display: grid;
     grid-template-columns: repeat(4, 165px) auto;
+
+    &.has-long-message-error {
+      margin-bottom: 30px;
+    }
   }
 
   @media (max-width: 992px) {

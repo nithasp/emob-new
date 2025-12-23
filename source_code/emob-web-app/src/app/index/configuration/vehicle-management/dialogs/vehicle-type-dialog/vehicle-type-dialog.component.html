@@ -192,79 +192,82 @@
                   let breakControl of getBreakControls();
                   let i = index;
                   trackBy: trackByIndex
-                " [formGroup]="breakControl" 
-                class="table-body gap-2 align-items-center">
+                ">
+                <div [formGroup]="breakControl" 
+                  [class.has-long-message-error]="hasBreakTimeRangeError(breakControl)"
+                  class="table-body gap-2 align-items-center">
 
-                <!-- Name Field -->
-                <div>
-                  <app-input-field placeholder="" [control]="$any(breakControl.get('name'))"
-                    [disabled]="isViewMode"></app-input-field>
-                </div>
+                  <!-- Name Field -->
+                  <div>
+                    <app-input-field placeholder="" [control]="$any(breakControl.get('name'))"
+                      [disabled]="isViewMode"></app-input-field>
+                  </div>
 
-                <!-- Duration Field with Time Picker -->
-                <div>
-                  <app-dynamic-popover [placement]="'bottom-start'">
-                    <app-input-field popover-trigger="popover-trigger" placeholder=""
-                      [control]="$any(breakControl.get('duration'))" 
-                      [disabled]="isViewMode" [readonly]="true"
-                      suffixIcon="access_time"></app-input-field>
+                  <!-- Duration Field with Time Picker -->
+                  <div>
+                    <app-dynamic-popover [placement]="'bottom-start'">
+                      <app-input-field popover-trigger="popover-trigger" placeholder=""
+                        [control]="$any(breakControl.get('duration'))" 
+                        [disabled]="isViewMode" [readonly]="true"
+                        suffixIcon="access_time"></app-input-field>
 
-                    <div popover-content="popover-content">
-                      <div class="card-body p-2">
-                        <p class="card-title">{{ t("duration") }}</p>
-                        <ngb-timepicker [(ngModel)]="breakTimeObjects[i].duration"
-                          [ngModelOptions]="{ standalone: true }"
-                          (ngModelChange)="onBreakTimeValueChange(i, 'duration', $event)"
-                          [readonly]="isViewMode"></ngb-timepicker>
+                      <div popover-content="popover-content">
+                        <div class="card-body p-2">
+                          <p class="card-title">{{ t("duration") }}</p>
+                          <ngb-timepicker [(ngModel)]="breakTimeObjects[i].duration"
+                            [ngModelOptions]="{ standalone: true }"
+                            (ngModelChange)="onBreakTimeValueChange(i, 'duration', $event)"
+                            [readonly]="isViewMode"></ngb-timepicker>
+                        </div>
                       </div>
-                    </div>
-                  </app-dynamic-popover>
-                </div>
+                    </app-dynamic-popover>
+                  </div>
 
-                <!-- Earliest Start Field with Time Picker -->
-                <div>
-                  <app-dynamic-popover [placement]="'bottom-start'">
-                    <app-input-field popover-trigger="popover-trigger" placeholder=""
-                      [control]="$any(breakControl.get('earliestStart'))" [disabled]="isViewMode" [readonly]="true"
-                      suffixIcon="access_time"></app-input-field>
+                  <!-- Earliest Start Field with Time Picker -->
+                  <div>
+                    <app-dynamic-popover [placement]="'bottom-start'">
+                      <app-input-field popover-trigger="popover-trigger" placeholder=""
+                        [control]="$any(breakControl.get('earliestStart'))" [disabled]="isViewMode" [readonly]="true"
+                        suffixIcon="access_time"></app-input-field>
 
-                    <div popover-content="popover-content">
-                      <div class="card-body p-2">
-                        <p class="card-title">{{ t("earliest_start") }}</p>
-                        <ngb-timepicker [(ngModel)]="breakTimeObjects[i].earliestStart"
-                          [ngModelOptions]="{ standalone: true }"
-                          (ngModelChange)="onBreakTimeValueChange(i, 'earliestStart', $event)"
-                          [readonly]="isViewMode"></ngb-timepicker>
+                      <div popover-content="popover-content">
+                        <div class="card-body p-2">
+                          <p class="card-title">{{ t("earliest_start") }}</p>
+                          <ngb-timepicker [(ngModel)]="breakTimeObjects[i].earliestStart"
+                            [ngModelOptions]="{ standalone: true }"
+                            (ngModelChange)="onBreakTimeValueChange(i, 'earliestStart', $event)"
+                            [readonly]="isViewMode"></ngb-timepicker>
+                        </div>
                       </div>
-                    </div>
-                  </app-dynamic-popover>
-                </div>
+                    </app-dynamic-popover>
+                  </div>
 
-                <!-- Latest Start Field with Time Picker -->
-                <div>
-                  <app-dynamic-popover [placement]="'bottom-start'">
-                    <app-input-field popover-trigger="popover-trigger" placeholder=""
-                      [control]="$any(breakControl.get('latestStart'))" [disabled]="isViewMode" [readonly]="true"
-                      suffixIcon="access_time"></app-input-field>
+                  <!-- Latest Start Field with Time Picker -->
+                  <div>
+                    <app-dynamic-popover [placement]="'bottom-start'">
+                      <app-input-field popover-trigger="popover-trigger" placeholder=""
+                        [control]="$any(breakControl.get('latestStart'))" [disabled]="isViewMode" [readonly]="true"
+                        suffixIcon="access_time"></app-input-field>
 
-                    <div popover-content="popover-content">
-                      <div class="card-body p-2">
-                        <p class="card-title">{{ t("latest_start") }}</p>
-                        <ngb-timepicker [(ngModel)]="breakTimeObjects[i].latestStart"
-                          [ngModelOptions]="{ standalone: true }"
-                          (ngModelChange)="onBreakTimeValueChange(i, 'latestStart', $event)"
-                          [readonly]="isViewMode"></ngb-timepicker>
+                      <div popover-content="popover-content">
+                        <div class="card-body p-2">
+                          <p class="card-title">{{ t("latest_start") }}</p>
+                          <ngb-timepicker [(ngModel)]="breakTimeObjects[i].latestStart"
+                            [ngModelOptions]="{ standalone: true }"
+                            (ngModelChange)="onBreakTimeValueChange(i, 'latestStart', $event)"
+                            [readonly]="isViewMode"></ngb-timepicker>
+                        </div>
                       </div>
-                    </div>
-                  </app-dynamic-popover>
-                </div>
+                    </app-dynamic-popover>
+                  </div>
 
-                <!-- Delete Button -->
-                <div *ngIf="!isViewMode">
-                  <button type="button" class="btn btn-link text-secondary p-0 mb-3 ms-1
-                  " (click)="removeBreak(i)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
+                  <!-- Delete Button -->
+                  <div *ngIf="!isViewMode">
+                    <button type="button" class="btn btn-link text-secondary p-0 mb-3 ms-1
+                    " (click)="removeBreak(i)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
                 </div>
               </div>
 
