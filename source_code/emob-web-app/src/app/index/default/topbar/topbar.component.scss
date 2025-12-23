@@ -110,7 +110,7 @@
   .dropdown-item {
     font-size: 14px;
     &.active {
-      background-color: #0e145f;
+      background-color: #0e145f !important;
       color: white;
     }
     &:hover,

@@ -83,4 +83,58 @@
       pointer-events: none !important;
     }
   }
+
+  // Custom height handling
+  .mat-mdc-form-field.custom-height {
+    .mat-mdc-text-field-wrapper {
+      height: calc(100% - 1.5em) !important;
+      padding: 0 !important;
+      .mat-mdc-form-field-flex {
+        height: 100% !important;
+        align-items: center !important;
+        position: relative;
+        
+        .mat-mdc-form-field-infix {
+          height: 100% !important;
+          padding-top: 0 !important;
+          padding-bottom: 0 !important;
+          min-height: auto !important;
+          display: flex;
+          align-items: center;
+          
+          input {
+            height: 100% !important;
+            padding: 0 12px !important;
+          }
+        }
+        
+        // Center the floating label dynamically
+        .mat-mdc-floating-label {
+          top: 50% !important;
+          transform: translateY(-50%) !important;
+          transition: all 0.2s ease;
+          
+          // When label is floating (has value or focused)
+          &.mdc-floating-label--float-above {
+            top: -8px !important;
+            transform: translateY(0) scale(0.75) !important;
+            transform-origin: left top !important;
+          }
+        }
+      }
+      
+      // Adjust notch for outline appearance
+      .mdc-notched-outline {
+        .mdc-notched-outline__notch {
+          padding-top: 0 !important;
+        }
+      }
+    }
+    
+    // Position the subscript wrapper (error message area) below
+    .mat-mdc-form-field-subscript-wrapper {
+      position: absolute;
+      bottom: -1.5em;
+    }
+  }
 }
