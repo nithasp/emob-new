@@ -114,12 +114,6 @@ export class VehicleTypeComponent implements OnInit {
     modalRef.componentInstance.question = this.transloco.translate(
       'vehicleManagement.delete_vehicle_type_question'
     );
-    modalRef.componentInstance.message = this.transloco.translate(
-      'vehicleManagement.this_action_cannot_be_undone'
-    );
-    modalRef.componentInstance.message = this.transloco.translate(
-      'vehicleManagement.delete_vehicle_type_question'
-    );
 
     modalRef.result.then((confirmed) => {
       if (confirmed) {
