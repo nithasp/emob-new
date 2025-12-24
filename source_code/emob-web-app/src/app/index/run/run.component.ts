@@ -3526,15 +3526,4 @@ export class RunComponent implements OnInit, AfterViewInit {
   isOverDistanceKey(dynamicParameter: DynamicParameter): boolean {
     return dynamicParameter.keyName === 'MaximumTravelDistance';
   }
-
-  log() {
-    console.log('log');
-    console.log('this.depotInputDataItems', this.depotInputDataItems);
-    console.log('this.preOrderFiles', this.preOrderFiles);
-    console.log('this.fileColumnsCache', this.fileColumnsCache);
-    console.log(
-      'this.fileDisplayNameBeforeChange',
-      this.fileDisplayNameBeforeChange
-    );
-  }
 }
