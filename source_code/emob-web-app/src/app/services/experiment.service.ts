@@ -147,12 +147,6 @@ export class ExperimentService {
               runId
               name
               timestamp
-              preOrderBlobPath
-              locationBlobPath
-              locationUpdateBlobPath
-              validatedBlobPath
-              parameterBlobPath
-              outputRouteOptimizationBlobPath
               triggeredBy
               timeEnd
               timeStart
