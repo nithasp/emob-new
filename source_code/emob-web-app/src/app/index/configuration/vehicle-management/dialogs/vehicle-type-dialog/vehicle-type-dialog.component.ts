@@ -543,9 +543,8 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
 
     // Trigger validation for time range
     breakControl.updateValueAndValidity();
-    breakControl.get('earliestStart')?.markAsTouched();
-    breakControl.get('latestStart')?.markAsTouched();
-    breakControl.markAsTouched();
+    // Only mark the field that was changed as touched
+    breakControl.get(field)?.markAsTouched();
   }
 
   getBreakTimeObject(
