@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -44,14 +44,17 @@ interface VehicleBreak {
   templateUrl: './vehicle-type-dialog.component.html',
   styleUrls: ['./vehicle-type-dialog.component.scss'],
 })
-export class VehicleTypeDialogComponent implements OnInit {
+export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   @Input() mode: 'create' | 'edit' | 'view' = 'create';
   @Input() vehicleType: VehicleType | null = null;
+  @ViewChild('formContainer') formContainer!: ElementRef<HTMLDivElement>;
 
   formVehicleType!: FormGroup<VehicleTypeFormControls>;
   isEdit: boolean = false;
   isViewMode: boolean = false;
   isLoading: boolean = true;
+
+  private scrollTimeoutId?: number;
 
   vehicleProfileTypeOptions: VehicleEnumOption[] = [];
   accessPointOptions: VehicleEnumOption[] = [];
@@ -456,13 +459,25 @@ export class VehicleTypeDialogComponent implements OnInit {
   addBreak(): void {
     const newIndex = this.breaks.length;
     this.breaks.push(this.createBreakFormGroup());
-
-    // Initialize time objects for the new break
     this.breakTimeObjects[newIndex] = {
       duration: { hour: 0, minute: 0 },
       earliestStart: { hour: 0, minute: 0 },
       latestStart: { hour: 0, minute: 0 },
     };
+
+    if (this.scrollTimeoutId !== undefined) {
+      clearTimeout(this.scrollTimeoutId);
+    }
+
+    // Scroll to bottom of form container after DOM updates
+    this.scrollTimeoutId = window.setTimeout(() => {
+      if (this.formContainer && this.formContainer.nativeElement) {
+        this.formContainer.nativeElement.scrollTo({
+          top: this.formContainer.nativeElement.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
   }
 
   removeBreak(index: number): void {
@@ -548,5 +563,13 @@ export class VehicleTypeDialogComponent implements OnInit {
       (earliestStart?.hasError('timeRangeInvalid') && earliestStart?.touched) ||
       (latestStart?.hasError('timeRangeInvalid') && latestStart?.touched)
     );
+  }
+
+  ngOnDestroy(): void {
+    // Clean up timeout to prevent memory leaks
+    if (this.scrollTimeoutId !== undefined) {
+      clearTimeout(this.scrollTimeoutId);
+      this.scrollTimeoutId = undefined;
+    }
   }
 }
