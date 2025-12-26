@@ -421,6 +421,7 @@
             <ng-template ngbNavContent>
               <div style="min-height: 720px">
                 <h3 class="text-center mt-4 mb-4">{{ t("select_vehicle_and_input_number") }}</h3>
+                <h4 class="vehicle-selection-total text-center">{{ "total" | transloco }}: {{ this.selectedVehicleIds.length }}</h4>
                 <div class="d-flex flex-column align-items-center mt-4">
                   <div *ngFor="let vehicle of availableVehicleTypes; let i = index"
                     class="vehicle-card mb-3 p-3 border rounded w-100" style="max-width: 430px;">
