@@ -399,3 +399,10 @@ mat-icon {
   max-width: 220px !important;
   width: 100% !important;
 }
+
+.vehicle-selection-container {
+  height: 890px;
+  @media (max-width: 768px) {
+    height: auto;
+  }
+}
