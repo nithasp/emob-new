@@ -3043,27 +3043,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     modalRef.componentInstance.vehicleType = vehicleType;
   }
 
-  log() {
-    // console.log('this.selectedVehicleIds', this.selectedVehicleIds);
-    // console.log('this.selectedVehicleCounts', this.selectedVehicleCounts);
-    // console.log('this.myVehicleTypes', this.myVehicleTypes);
-
-    // console.log('this.depots', this.depots);
-    // console.log('this.selectedDepotId', this.selectedDepotId);
-
-    // console.log('this.experiment', this.experiment);
-
-    // console.log(
-    //   'this.experiment.depots[0].depotId',
-    //   this.experiment.depots[0]?.depotId
-    // );
-
-    // console.log('this.constraintsData', this.constraintsData);
-
-    console.log('this.availableVehicleTypes', this.availableVehicleTypes);
-    console.log('this.selectedLicensePlates', this.selectedLicensePlates);
-  }
-
   getVehicleMaxCount(vehicleId: string): number {
     const maxByConstraint = Number(
       this.constraintsData?.numberOfVehicleAvailable
