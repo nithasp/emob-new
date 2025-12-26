@@ -372,7 +372,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                         this.spinner.hide();
                         this.router.navigate(['/users/experiments']);
                       });
-                    } else if (!this.experiment.preOrderBlobPath) {
+                    } else if (!this.experiment.fileUrl.preOrderUrl) {
                       this.getDynamicParameters();
                       this.isFilePreview = true;
                     } else {
@@ -413,7 +413,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   async initializeDataFromExperiment(experiment: Experiment) {
     console.log("initialize Data From Experiment's historical", experiment);
     // Load Parameter
-    if (experiment.parameterBlobPath && experiment.fileUrl.parameterUrl) {
+    if (experiment.fileUrl.parameterUrl) {
       this.dataFromFileUrlToJson(experiment.fileUrl.parameterUrl).then(
         (response: Constraint) => {
           console.log('Constraint', response);
