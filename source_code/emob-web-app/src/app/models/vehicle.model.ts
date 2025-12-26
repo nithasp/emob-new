@@ -6,3 +6,9 @@ export interface Vehicle {
     maxTravelDistance:number,
     MaxWorkDuration:number
 }
+
+export interface VehicleValidationInput {
+  vehicleTypeId: string;
+  vehicleId?: string[];
+  numberOfVehiclesAvailable?: number;
+}
