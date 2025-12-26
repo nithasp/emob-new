@@ -13,6 +13,7 @@ import { Company, MyDepot } from '../models/experiment.model';
 import { Constraint, TimingAndCapacity } from '../models/constraint.model';
 import { Location } from '../models/location.model';
 import { CustomerUpdated } from '../models/pre-order.model';
+import { VehicleValidationInput } from '../models/vehicle.model';
 import type { Error } from '../models/graphql.model';
 import { ToastrService } from 'ngx-toastr';
 import { ErrorHandlingService } from './handle-error.service';
@@ -75,15 +76,11 @@ export class ExperimentService {
         query: gql`
           query experiment($Id: RunIdInput!) {
             experiment(input: $Id) {
+              companyName
               runId
               name
               timestamp
-              triggeredBy
-              timeEnd
-              timeStart
-              status
-              run
-              groupId
+              configurations
               inputdata {
                 keyName
                 filename
@@ -115,12 +112,26 @@ export class ExperimentService {
                   modifiedAt
                 }
               }
+              timeStart
+              timeEnd
+              timeDuration
+              triggeredBy
+              triggeredByName
+              status
+              run
+              groupId
+              countGeocoding
+              countReroute
               fileUrl {
                 parameterUrl
                 preOrderUrl
                 LocationBlobPathUrl
                 locationUpdateBlobPathUrl
                 validatedBlobPathUrl
+                outputGeoJsonUrl
+                outputReportUrl
+                outputPlanDetailUrl
+                vehiclesBlobPathUrl
               }
             }
           }
@@ -144,28 +155,62 @@ export class ExperimentService {
         query: gql`
           query experiment($Id: RunIdInput!) {
             experiment(input: $Id) {
+              companyName
               runId
               name
               timestamp
-              preOrderBlobPath
-              locationBlobPath
-              locationUpdateBlobPath
-              validatedBlobPath
-              parameterBlobPath
-              outputRouteOptimizationBlobPath
-              triggeredBy
-              timeEnd
+              configurations
+              inputdata {
+                keyName
+                filename
+                blobPath
+                displayName
+                fileFormatType
+                fileSize
+                fileUrl
+              }
+              depots {
+                companyName
+                depotId
+                depotName
+                latitude
+                longitude
+                tw_early
+                tw_late
+                createdAt
+                updatedAt
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  required
+                  createdAt
+                  modifiedAt
+                }
+              }
               timeStart
+              timeEnd
               timeDuration
+              triggeredBy
+              triggeredByName
               status
               run
               groupId
+              countGeocoding
+              countReroute
               fileUrl {
                 parameterUrl
+                preOrderUrl
+                LocationBlobPathUrl
+                locationUpdateBlobPathUrl
+                validatedBlobPathUrl
                 outputGeoJsonUrl
                 outputReportUrl
                 outputPlanDetailUrl
-                preOrderUrl
+                vehiclesBlobPathUrl
               }
             }
           }
@@ -210,7 +255,8 @@ export class ExperimentService {
   validateExperiment(
     runId: string,
     parameter: TimingAndCapacity,
-    locationUpdated: CustomerUpdated[]
+    locationUpdated: CustomerUpdated[],
+    vehicles?: VehicleValidationInput[]
   ): Observable<Experiment> {
     return this.apollo
       .mutate<Response>({
@@ -230,6 +276,7 @@ export class ExperimentService {
             updateLocation: {
               customers: locationUpdated,
             },
+            ...(vehicles && vehicles.length > 0 ? { vehicles } : {}),
           },
         },
       })
@@ -378,7 +425,6 @@ export class ExperimentService {
                 displayName
                 columnRequired
                 fileFormatType
-                required
                 createdAt
                 modifiedAt
               }
