@@ -30,7 +30,10 @@
 
       <div class="modal-body">
         <form [formGroup]="formVehicleType">
-          <div #formContainer class="form-container pt-1 row g-4 overflow-y-auto">
+          <div
+            #formContainer
+            class="form-container pt-1 row g-4 overflow-y-auto"
+          >
             <div
               class="form-group-section1 col-12 col-lg-5 d-flex flex-column gap-3"
             >
@@ -270,7 +273,10 @@
                 {{ t("allowed_breaks") }}
               </h2>
 
-              <div class="table-container-allowed-breaks" [class.overflow-x-auto]="breaks.length > 0">
+              <div
+                class="table-container-allowed-breaks"
+                [class.overflow-x-auto]="breaks.length > 0"
+              >
                 <div class="table-header row mb-2 text-muted small">
                   <div class="">{{ t("name") }}</div>
                   <div class="">{{ t("duration") }} (HH:MM)</div>
@@ -440,7 +446,8 @@
                 <button
                   *ngIf="!isViewMode"
                   type="button"
-                  class="btn btn-primary"
+                  mat-raised-button
+                  class="bg-custom-primary"
                   (click)="save()"
                 >
                   {{ isEdit ? ("update" | transloco) : ("save" | transloco) }}
