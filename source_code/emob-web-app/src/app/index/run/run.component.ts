@@ -650,7 +650,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       (existingFile) => existingFile.file.name === file.name
     );
     if (hasDuplicateFileName) {
-      warningMessages.push('ชื่อไฟล์ซ้ำกัน');
+      warningMessages.push(
+        this.transloco.translate('duplicate_file_name', {}, 'index')
+      );
       
       const hasDuplicateFileSize = this.preOrderFiles.some(
         (existingFile) => 
@@ -658,7 +660,9 @@ export class RunComponent implements OnInit, AfterViewInit {
           existingFile.file.size === file.size
       );
       if (hasDuplicateFileSize) {
-        warningMessages.push('ไฟล์มีขนาดเท่ากัน');
+        warningMessages.push(
+          this.transloco.translate('duplicate_file_size', {}, 'index')
+        );
       }
     }
 
@@ -2579,11 +2583,15 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     // Check duplicate file name first
     if (this.hasDuplicateFileName(fileObj)) {
-      messages.push('ชื่อไฟล์ซ้ำกัน');
+      messages.push(
+        this.transloco.translate('duplicate_file_name', {}, 'index')
+      );
       
       // Only check duplicate file size if file name is also duplicated
       if (this.hasDuplicateFileSize(fileObj)) {
-        messages.push('ไฟล์มีขนาดเท่ากัน');
+        messages.push(
+          this.transloco.translate('duplicate_file_size', {}, 'index')
+        );
       }
     }
 
@@ -2603,12 +2611,13 @@ export class RunComponent implements OnInit, AfterViewInit {
   getAllErrorMessages(fileObj: PreOrderFileItem): string {
     const messages: string[] = [];
     
-    // Add file warning messages if any
-    if (this.isFilePreview && this.hasFileWarning(fileObj)) {
-      messages.push(this.getFileWarningMessage(fileObj));
+    // Add file warning messages if any (WARNING - displayed first)
+    if (this.hasFileWarning(fileObj)) {
+      const warningMessages = this.getFileWarningMessages(fileObj);
+      messages.push(...warningMessages);
     }
     
-    // Add duplicate category message if applicable
+    // Add duplicate category message if applicable (ERROR - displayed after warnings)
     if (this.hasDuplicateCategory(fileObj)) {
       messages.push(
         this.transloco.translate(
@@ -3516,16 +3525,5 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isOverDistanceKey(dynamicParameter: DynamicParameter): boolean {
     return dynamicParameter.keyName === 'MaximumTravelDistance';
-  }
-
-  log() {
-    console.log('log');
-    console.log('this.depotInputDataItems', this.depotInputDataItems);
-    console.log('this.preOrderFiles', this.preOrderFiles);
-    console.log('this.fileColumnsCache', this.fileColumnsCache);
-    console.log(
-      'this.fileDisplayNameBeforeChange',
-      this.fileDisplayNameBeforeChange
-    );
   }
 }
