@@ -443,7 +443,7 @@
                   class="btn btn-primary"
                   (click)="save()"
                 >
-                  {{ "save" | transloco }}
+                  {{ isEdit ? ("update" | transloco) : ("save" | transloco) }}
                 </button>
               </div>
             </div>
