@@ -371,5 +371,10 @@
   "earliest_start": "Earliest Start",
   "latest_start": "Latest Start",
   "no_breaks_added": "No breaks added yet",
-  "add_new_break": "Add New Break"
+  "add_new_break": "Add New Break",
+
+  "width": "Width",
+  "height": "Height",
+  "length": "Length",
+  "cm": "cm"
 }
