@@ -364,7 +364,6 @@
   "are_you_sure_create_vehicle": "Are you sure you want to create this vehicle?",
   "are_you_sure_update_vehicle": "Are you sure you want to update this vehicle?",
   "are_you_sure_delete_vehicle": "Are you sure you want to delete this vehicle?",
-
   "license_plate_selection": "License Plate Selection",
   "no_license_plates_selected": "No license plates selected",
   "selected_license_plates": "Selected License Plates",
@@ -373,16 +372,17 @@
   "loading": "Loading",
   "search_license_plate": "Search license plate",
   "select_vehicle_and_input_number": "Please select Vehicle and Input number for car have use it",
-
   "allowed_breaks": "Allowed Breaks",
   "break_name": "Break Name",
   "earliest_start": "Earliest Start",
   "latest_start": "Latest Start",
   "no_breaks_added": "No breaks added yet",
   "add_new_break": "Add New Break",
-
   "width": "Width",
   "height": "Height",
   "length": "Length",
-  "cm": "cm"
+  "cm": "cm",
+
+  "file_category": "File Category",
+  "file_type": "File Type"
 }
