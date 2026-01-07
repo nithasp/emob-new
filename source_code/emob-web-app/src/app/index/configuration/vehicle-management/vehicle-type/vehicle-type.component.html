@@ -29,21 +29,21 @@
                 <div class="col-12 col-md-6 mb-3 mb-md-0">
                   <p>
                     <strong>{{ t("dimensions") }}: </strong>
-                    <span>{{ vehicleType.width }}</span
+                    <span>{{ vehicleType.dimension.width }} </span
                     ><span>{{ "m" | transloco }}</span> x
-                    <span>{{ vehicleType.height }}</span
+                    <span>{{ vehicleType.dimension.height }} </span
                     ><span>{{ "m" | transloco }}</span> x
-                    <span>{{ vehicleType.length }}</span
+                    <span>{{ vehicleType.dimension.depth }} </span
                     ><span>{{ "m" | transloco }}</span>
                   </p>
                   <p>
                     <strong>{{ t("capacity") }}: </strong>
-                    <span>{{ vehicleType.capacity | number }}</span>
+                    <span>{{ vehicleType.maximumWeightCapacity | number }} </span>
                     <span>{{ "kg" | transloco }}</span>
                   </p>
                   <p>
                     <strong>{{ t("volume") }}: </strong>
-                    <span>{{ vehicleType.volume | number }}</span>
+                    <span>{{ vehicleType.maximumVolumeCapacity | number }} </span>
                     <span>{{ "m3" | transloco }}</span>
                   </p>
                   <p>
@@ -54,12 +54,12 @@
                 <div class="col-12 col-md-6">
                   <p>
                     <strong>{{ t("max_distance") }}: </strong>
-                    <span>{{ vehicleType.maxDistance | number }}</span>
+                    <span>{{ vehicleType.maximumDistance | number }} </span>
                     <span>{{ "km" | transloco }}</span>
                   </p>
                   <p>
                     <strong>{{ t("max_duration") }}: </strong>
-                    <span>{{ vehicleType.maxDuration | number }}</span>
+                    <span>{{ vehicleType.maximumDuration | number }} </span>
                     <span>{{ "min" | transloco }}</span>
                   </p>
                   <p>
