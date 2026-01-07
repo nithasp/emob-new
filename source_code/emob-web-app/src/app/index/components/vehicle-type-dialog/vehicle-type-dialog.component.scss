@@ -1,0 +1,55 @@
+#vehicle-type-dialog {
+    height: 700px;
+    &.is-loading {
+      min-height: 710px;
+    }
+  
+    .dimensions-label {
+      @media (max-width: 992px) {
+        position: static !important;
+      }
+    }
+  
+    .form-container {
+      height: 560px;
+    }
+  
+    mat-dialog-actions {
+      @media (max-width: 576px) {
+        flex-direction: column;
+        button {
+          width: 100%;
+          margin: 0;
+        }
+      }
+      @media (max-width: 992px) {
+        margin: 0 0 16px 0 !important;
+      }
+    }
+  
+    .table-header {
+      display: grid;
+      grid-template-columns: repeat(4, 175px) auto;
+    }
+  
+    .table-body {
+      display: grid;
+      grid-template-columns: repeat(4, 165px) auto;
+  
+      &.has-long-message-error {
+        margin-bottom: 30px;
+      }
+    }
+  
+    @media (max-width: 992px) {
+      box-shadow: none;
+      .form-group-section2 {
+        margin-top: 0;
+      }
+    }
+  }
+  
+  // Global styles for overwrite z-index of mat-select panels in ngbModal
+  ::ng-deep .cdk-overlay-container {
+    z-index: 2000 !important;
+  }

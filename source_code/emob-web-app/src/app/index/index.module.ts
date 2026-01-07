@@ -41,9 +41,14 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ParametersDialogComponent } from './components/parameters-dialog/parameters-dialog.component';
 import { ConsumptionDialogComponent } from './components/consumption-dialog/consumption-dialog.component';
 import { ErrorDialogComponent } from './components/error-dialog/error-dialog.component';
+import { VehicleProfileTypeItemDialogComponent } from './components/vehicle-profile-type-item-dialog/vehicle-profile-type-item-dialog.component';
 
 import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { DynamicPopoverComponent } from '../shared/components/dynamic-popover/dynamic-popover.component';
+import { VehicleEnumConfigs } from '../models/vehicle.model';
+import { VehicleTypeDialogComponent } from './components/vehicle-type-dialog/vehicle-type-dialog.component';
+import { InputSelectComponent } from '../shared/components/form/input-select/input-select.component';
+import { InputFieldComponent } from '../shared/components/form/input-field/input-field.component';
 
 @NgModule({
   declarations: [
@@ -72,8 +77,10 @@ import { DynamicPopoverComponent } from '../shared/components/dynamic-popover/dy
     MapDetailsDialogComponent,
     ParametersDialogComponent,
     ConsumptionDialogComponent,
+    VehicleProfileTypeItemDialogComponent,
+    VehicleTypeDialogComponent,
     ErrorDialogComponent,
-    FormatStringDatePipe,
+    FormatStringDatePipe
   ],
   imports: [
     IndexRoutingModule,
@@ -91,7 +98,9 @@ import { DynamicPopoverComponent } from '../shared/components/dynamic-popover/dy
     OverlayModule,
     DragDropModule,
     TranslocoModule,
-    DynamicPopoverComponent
+    DynamicPopoverComponent,
+    InputFieldComponent,
+    InputSelectComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'index' }],

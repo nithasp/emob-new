@@ -39,7 +39,6 @@
                 </ngb-alert>
                 }
 
-
                 <div class="card p-3 mb-4">
                   <h4>
                     <mat-icon>location_on</mat-icon>
@@ -48,7 +47,7 @@
                   </h4>
                   <mat-form-field *ngIf="companyDepotType === 'Single'" appearance="fill" class="w-100">
                     <mat-label>
-                      {{ t('single_depot_selection') }}
+                      {{ t("single_depot_selection") }}
                     </mat-label>
                     <mat-select *ngIf="isFileSelectionStep" [(value)]="selectedDepotId"
                       (selectionChange)="onDepotSelectionChange()" [disabled]="!isFilePreview">
@@ -65,9 +64,9 @@
                   </mat-form-field>
 
                   <h4 *ngIf="isFileSelectionStep" class="file-type-required">
-                    <span>{{ t('file_type_to_upload') }}: </span>
+                    <span>{{ t("file_type_to_upload") }}: </span>
                     <ng-container *ngIf="requiredFileTypes.length > 0; else noDepot">
-                      <ng-container #singleTypes *ngIf="requiredFileTypes.length === 1; else multipleTypes">
+                      <ng-container *ngIf="requiredFileTypes.length === 1; else multipleTypes">
                         <span>{{ requiredFileTypes[0] }} - </span>
                         <ng-container *ngIf="isFileTypeAlreadyAdded(requiredFileTypes[0]); else showStatus">
                           <span class="text-success">
@@ -106,9 +105,7 @@
                       </ng-template>
                     </ng-container>
                     <ng-template #noDepot>
-                      <span class="text-muted">
-                        กรุณาเลือก Depot ก่อน
-                      </span>
+                      <span class="text-muted"> กรุณาเลือก Depot ก่อน </span>
                     </ng-template>
                   </h4>
                 </div>
@@ -128,7 +125,6 @@
                   </button>
                 </div>
 
-
                 <div class="col-md-12 rounded-3 dropzone" DropZone (onFileDropped)="onFileSelected($event)"
                   *ngIf="isFileSelectionStep">
                   <div class="row">
@@ -142,8 +138,9 @@
                     <input type="file" class="file-input" [accept]="requiredFileType" (change)="onFileSelected($event)"
                       (click)="resetFileInput($event)" #fileUpload />
                     <div class="col-md-12 text-center mt-2">
-                      <button mat-stroked-button class="bg-custom-primary" (click)="fileUpload.click()"
-                        [disabled]="preOrderFiles.length === this.inputDataKeys.length">
+                      <button mat-stroked-button class="bg-custom-primary" (click)="fileUpload.click()" [disabled]="
+                          preOrderFiles.length === this.inputDataKeys.length
+                        ">
                         <mat-icon class="icon-browser">attach_file</mat-icon>
                         <span>{{ t("browse_file") }}</span>
                       </button>
@@ -178,16 +175,13 @@
                                 word-wrap: break-word;
                                 min-width: 160px;
                                 max-width: 400px;
-                              "
-                              [ngClass]="{'pb-0': hasFileWarning(fileObj) || hasDuplicateCategory(fileObj)}">
+                              " [ngClass]="{'pb-0': hasFileWarning(fileObj) || hasDuplicateCategory(fileObj)}">
                               <span>{{ fileObj.file.name }}</span>
                               <p #warningErrorMessage *ngIf="hasFileWarning(fileObj) || hasDuplicateCategory(fileObj)">
-                                <small 
-                                  [ngClass]="{
+                                <small [ngClass]="{
                                     'text-danger': hasDuplicateCategory(fileObj),
                                     'text-warning-intense': !hasDuplicateCategory(fileObj) && hasFileWarning(fileObj)
-                                  }" 
-                                  class="font-weight-bold">{{ getAllErrorMessages(fileObj) }}</small>
+                                  }" class="font-weight-bold">{{ getAllErrorMessages(fileObj) }}</small>
                               </p>
                             </td>
                             <td>
@@ -445,7 +439,125 @@
               </div>
             </ng-template>
           </li>
+
           <li [ngbNavItem]="2" [disabled]="!isUpload">
+            <button ngbNavLink>
+              <h3>{{ t("vehicle") }}</h3>
+            </button>
+            <ng-template ngbNavContent>
+              <div style="min-height: 720px">
+                <h3 class="text-center mt-4 mb-4">{{ t("select_vehicle_and_input_number") }}</h3>
+                <h4 class="vehicle-selection-total text-center">{{ "total" | transloco }}: {{
+                  this.selectedVehicleIds.length }}</h4>
+                <div class="vehicle-selection-container overflow-auto d-flex flex-column align-items-center mt-4">
+                  <div *ngFor="let vehicle of availableVehicleTypes; let i = index"
+                    class="vehicle-card mb-3 p-3 border rounded w-100" style="max-width: 430px;">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div class="d-flex align-items-center">
+                        <mat-checkbox [checked]="isVehicleSelected(vehicle.vehicleTypeId)"
+                          (change)="onVehicleChecked(vehicle.vehicleTypeId, $event.checked)"
+                          class="me-2"></mat-checkbox>
+                        <span class="fw-normal">{{ vehicle.name }}</span>
+                      </div>
+                      <mat-icon style="cursor: pointer"
+                        (click)="openVehicleItemModal(vehicle.vehicleTypeId)">info</mat-icon>
+                    </div>
+                    <div *ngIf="isVehicleSelected(vehicle.vehicleTypeId)" class="ms-5 mt-2">
+                      <mat-radio-group [value]="getVehicleSelectionMode(vehicle.vehicleTypeId)"
+                        (change)="onVehicleSelectionModeChange(vehicle.vehicleTypeId, $event.value)"
+                        class="d-flex flex-column">
+                        <mat-radio-button value="count" class="mb-2">
+                          <div class="number-of-vehicle-available">
+                            <span>
+                              {{ t("number_of_vehicle_available") }}:
+                            </span>
+                            <app-dynamic-popover [placement]="'bottom-start'">
+                              <button type="button"
+                                class="number-of-vehicle-available-value btn btn-link p-0 align-baseline"
+                                popover-trigger [disabled]="getVehicleSelectionMode(vehicle.vehicleTypeId) !== 'count'">
+                                {{ getVehicleCount(vehicle.vehicleTypeId) }}
+                              </button>
+                              <div popover-content>
+                                <app-number-counter-input [value]="getVehicleCount(vehicle.vehicleTypeId)"
+                                  [minValue]="getVehicleMinCount()"
+                                  [maxValue]="getVehicleMaxCount(vehicle.vehicleTypeId)" [count]="1"
+                                  [errorMessage]="null"
+                                  (valueChange)="onVehicleCountChange(vehicle.vehicleTypeId, $event)"></app-number-counter-input>
+                              </div>
+                            </app-dynamic-popover>
+                          </div>
+                        </mat-radio-button>
+                        <mat-radio-button value="license-plate">
+                          <div class="license-plate-selection d-flex align-items-center gap-2">
+                            <span>{{ t('license_plate_selection') || 'License Plate Selection' }}</span>
+                            <button mat-raised-button class="bg-custom-primary p-0"
+                              (click)="openLicensePlateSelectionDialog($event, vehicle.vehicleTypeId)"
+                              [disabled]="getVehicleSelectionMode(vehicle.vehicleTypeId) !== 'license-plate'">
+                              {{ t('select') || 'Select' }}
+                            </button>
+
+                          </div>
+                        </mat-radio-button>
+                        <div
+                          *ngIf="getVehicleSelectionMode(vehicle.vehicleTypeId) === 'license-plate' && getSelectedLicensePlatesCount(vehicle.vehicleTypeId) > 0"
+                          class="license-plate-selection-count">
+                          <span>{{ 'total' | transloco }}: </span>
+                          <span>{{ getSelectedLicensePlatesCount(vehicle.vehicleTypeId) }}</span>
+
+                          <!-- License Plate list details -->
+                          <app-dynamic-popover [placement]="'bottom-start'" class="ml-2">
+                            <button type="button" popover-trigger
+                              class="license-plate-details-button btn btn-link p-0 align-baseline">
+                              {{ t('details') }}
+                            </button>
+                            <div popover-content class="license-plate-details">
+                              <div class="mb-2">
+                                <strong>{{ t("selected_license_plates") }}:</strong>
+                              </div>
+                              <div class="license-plate-list"
+                                *ngIf="(selectedLicensePlates[vehicle.vehicleTypeId]?.length ?? 0) > 0; else noPlates">
+                                <div class="license-plate-item"
+                                  *ngFor="let plate of (selectedLicensePlates[vehicle.vehicleTypeId] ?? []).slice().sort(); let i = index">
+                                  <span class="plate-number">{{ i + 1 }}. </span>
+                                  <span class="plate-text">{{ plate }}</span>
+                                </div>
+                              </div>
+                              <ng-template #noPlates>
+                                <p class="text-muted mb-0">{{ 'no_license_plates_selected' | transloco }}</p>
+                              </ng-template>
+                            </div>
+                          </app-dynamic-popover>
+                        </div>
+                      </mat-radio-group>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col text-end">
+                  <button mat-raised-button color="secondary" class="btn btn-secondary pr-3" (click)="navigateToTab(1)">
+                    <mat-icon>first_page</mat-icon>
+                    {{ "back" | transloco }}
+                  </button>
+                  <button *ngIf="!hasDynamicParameters()" mat-raised-button class="bg-custom-primary pr-3"
+                    (click)="validateExperimentPreOrder()">
+                    <mat-icon>rule</mat-icon>
+                    {{
+                    haveUpdateAfterValidated && haveValidated
+                    ? t("revalidate")
+                    : t("validate")
+                    }}
+                  </button>
+                  <button *ngIf="hasDynamicParameters()" mat-raised-button class="bg-custom-primary"
+                    (click)="navigateToTab(3)">
+                    <mat-icon>last_page</mat-icon>
+                    {{ t("next") }}
+                  </button>
+                </div>
+              </div>
+            </ng-template>
+          </li>
+
+          <li [ngbNavItem]="3" [disabled]="!isUpload" *ngIf="hasDynamicParameters()">
             <button ngbNavLink>
               <h3>{{ t("parameters") }}</h3>
             </button>
@@ -481,23 +593,43 @@
                 </ngb-alert>
                 }
                 <mat-accordion [multi]="true">
-                  <mat-expansion-panel [expanded]="true"
-                    *ngFor="let group of dynamicParametersByCategory; trackBy: trackByGroup">
+                  <mat-expansion-panel [expanded]="true" *ngFor="
+                      let group of dynamicParametersByCategory;
+                      trackBy: trackByGroup
+                    ">
                     <mat-expansion-panel-header>
                       <mat-panel-title>
                         {{ getLocalized(group.items[0].category) || group.key }}
-                        <mat-error class="text-danger ml-3" style="font-size: 12px" *ngIf="group.key === 'Generals' &&
-                            constraintsData.earlyDeliveryTime > constraintsData.backToDepotTime">
-                          *** {{ t("early_delivery_time_should_be_less_than_back_to_depot") }}
+                        <mat-error class="text-danger ml-3" style="font-size: 12px" *ngIf="
+                            group.key === 'Generals' &&
+                            constraintsData.earlyDeliveryTime >
+                              constraintsData.backToDepotTime
+                          ">
+                          ***
+                          {{
+                          t(
+                          "early_delivery_time_should_be_less_than_back_to_depot"
+                          )
+                          }}
                         </mat-error>
                       </mat-panel-title>
                     </mat-expansion-panel-header>
                     <ul class="list-unstyled">
                       <li>
                         <ul>
-                          <li *ngFor="let param of group.items; trackBy: trackByParam" [ngClass]="{
-                              'text-highlight': (isOverWeightKey(param) && validateExperiment && validateExperiment.filters.constraints.over_weight.length > 0)
-                                               || (isOverDistanceKey(param) && validateExperiment && validateExperiment.filters.constraints.over_distance.length > 0)
+                          <li *ngFor="
+                              let param of group.items;
+                              trackBy: trackByParam
+                            " [ngClass]="{
+                              'text-highlight':
+                                (isOverWeightKey(param) &&
+                                  validateExperiment &&
+                                  validateExperiment.filters.constraints
+                                    .over_weight.length > 0) ||
+                                (isOverDistanceKey(param) &&
+                                  validateExperiment &&
+                                  validateExperiment.filters.constraints
+                                    .over_distance.length > 0)
                             }">
                             <p>
                               <span>{{ getLocalized(param.displayName) }}</span>
@@ -517,7 +649,9 @@
                                   </ng-container>
                                 </button>
                                 <div popover-content>
-                                  <p class="card-title">{{ getLocalized(param.displayName) }}</p>
+                                  <p class="card-title">
+                                    {{ getLocalized(param.displayName) }}
+                                  </p>
                                   <ng-container *ngIf="isTimeType(param); else numberEditor">
                                     <ngb-timepicker [ngModel]="param.value || '00:00'"
                                       (ngModelChange)="onParamValueChange(param, $event)" />
@@ -530,7 +664,11 @@
                                       [errorMessage]="param.joiConfig.message || null"
                                       class="d-inline-block mt-0 mb-3"></app-number-counter-input>
                                   </ng-template>
-                                  <div><small class="text-muted">{{ getLocalized(param.description) }}</small></div>
+                                  <div>
+                                    <small class="text-muted">{{
+                                      getLocalized(param.description)
+                                      }}</small>
+                                  </div>
                                 </div>
                               </app-dynamic-popover>
                             </p>
@@ -550,7 +688,7 @@
                   </div>
                   <div class="col text-end">
                     <button mat-raised-button color="secondary" class="btn btn-secondary pr-3"
-                      (click)="navigateToTab(1)">
+                      (click)="navigateToTab(2)">
                       <mat-icon>first_page</mat-icon>
                       {{ "back" | transloco }}
                     </button>
@@ -567,7 +705,8 @@
               </div>
             </ng-template>
           </li>
-          <li [ngbNavItem]="3" [disabled]="!isUpload || validateExperiment == null">
+
+          <li [ngbNavItem]="4" [disabled]="!isUpload || validateExperiment == null">
             <button ngbNavLink>
               <h3>{{ t("validation") }}</h3>
             </button>
@@ -717,7 +856,9 @@
                               <th scope="col">{{ t("order_id") }}</th>
                               <th scope="col">{{ t("weight") }}</th>
                               <th scope="col">{{ t("address") }}</th>
-                              <th scope="col">{{ "sub_district" | transloco }}</th>
+                              <th scope="col">
+                                {{ "sub_district" | transloco }}
+                              </th>
                               <th scope="col">{{ "district" | transloco }}</th>
                               <th scope="col">{{ "province" | transloco }}</th>
                             </tr>
@@ -778,7 +919,9 @@
                               <th scope="col">{{ t("filter_type") }}</th>
                               <th scope="col">{{ t("order_id") }}</th>
                               <th scope="col">{{ t("address") }}</th>
-                              <th scope="col">{{ "sub_district" | transloco }}</th>
+                              <th scope="col">
+                                {{ "sub_district" | transloco }}
+                              </th>
                               <th scope="col">{{ "district" | transloco }}</th>
                               <th scope="col">{{ "province" | transloco }}</th>
                             </tr>

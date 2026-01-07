@@ -1,0 +1,141 @@
+.modal-header {
+  border-bottom: 2px solid #dee2e6;
+  
+  .modal-title {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+}
+
+.modal-body {
+  background-color: #f8f9fa;
+  
+  .card {
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .card-header {
+      font-weight: 600;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      
+      mat-icon {
+        vertical-align: middle;
+      }
+    }
+    
+    .card-body {
+      background-color: #ffffff;
+      
+      h6 {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        
+        mat-icon {
+          vertical-align: middle;
+        }
+      }
+      
+      small.text-muted {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      strong {
+        color: #2c3e50;
+        font-size: 0.95rem;
+      }
+      
+      .bg-light {
+        transition: background-color 0.2s ease;
+        
+        &:hover {
+          background-color: #e9ecef !important;
+        }
+      }
+    }
+    
+    .card-footer {
+      border-top: 1px solid #dee2e6;
+      font-size: 0.85rem;
+      
+      mat-icon {
+        vertical-align: middle;
+      }
+    }
+  }
+  
+  .alert {
+    mat-icon {
+      vertical-align: middle;
+    }
+  }
+}
+
+.modal-footer {
+  border-top: 2px solid #dee2e6;
+  background-color: #f8f9fa;
+  
+  button {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    
+    mat-icon {
+      vertical-align: middle;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+// Badge styling
+.badge {
+  font-size: 0.75rem;
+  padding: 0.35em 0.65em;
+  font-weight: 600;
+}
+
+// Scrollbar styling
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+  
+  &:hover {
+    background: #555;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .modal-body {
+    .card-body {
+      .row {
+        .col-md-6,
+        .col-md-4 {
+          margin-bottom: 0.5rem;
+        }
+      }
+    }
+  }
+}
+

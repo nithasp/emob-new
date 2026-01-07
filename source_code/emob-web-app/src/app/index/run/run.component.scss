@@ -351,13 +351,9 @@ tr.mat-mdc-footer-row td {
 }
 
 .table-responsive {
-  height:200px;
+  height: 200px;
   width: 100%;
   overflow: auto;
-}
-
-mat-icon {
-  vertical-align: middle;
 }
 
 .disabled {
@@ -379,4 +375,38 @@ mat-icon {
 .text-warning-intense {
   color: #b35a00 !important;
   font-weight: bold;
+  mat-icon {
+    vertical-align: middle;
+  }
+}
+
+::ng-deep mat-radio-button {
+  .mdc-label {
+    margin: 0;
+  }
+}
+
+.license-plate-selection-count {
+  margin-left: 44px;
+}
+
+.license-plate-details-button {
+  font-size: 14px;
+}
+
+.license-plate-list {
+  max-height: 120px;
+  overflow: auto;
+}
+
+::ng-deep .floating:has(.license-plate-details) {
+  max-width: 220px !important;
+  width: 100% !important;
+}
+
+.vehicle-selection-container {
+  height: 890px;
+  @media (max-width: 768px) {
+    height: auto;
+  }
 }

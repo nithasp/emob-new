@@ -11,9 +11,10 @@ import {
   Experiment,
   ExperimentState,
 } from './experiment.model';
+import { MyVehicles, VehicleType, Depot } from './vehicle.model';
 
 export interface Response {
-  myDepots: any;
+  myDepots: [Depot];
   timestamp: string;
   status_code: number;
   status_message: string;
@@ -41,6 +42,20 @@ export interface Response {
   dynamicParameter: DynamicParameter[];
   updateDynamicParameter: UpdateDynamicParameter;
   deleteDynamicParameter: DeleteDynamicParameter;
+
+  myVehicle: MyVehicles;
+  myVehicles: [MyVehicles];
+  myVehicleType: VehicleType;
+  myVehicleTypes: [VehicleType];
+  createVehicle: MyVehicles;
+  updateVehicle: MyVehicles;
+  deleteVehicle: boolean;
+  softDeleteVehicle: MyVehicles;
+  createVehicleType: VehicleType;
+  updateVehicleType: VehicleType;
+  deleteVehicleType: boolean;
+  getEnumValues: string[];
+  
 }
 
 export interface Error {

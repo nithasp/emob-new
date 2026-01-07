@@ -72,6 +72,7 @@ export interface FileUrl {
   outputGeoJsonUrl: string | null;
   outputReportUrl: string | null;
   outputPlanDetailUrl: string | null;
+  vehiclesBlobPathUrl: string | null;
 }
 export interface Result {
   customers: Customer[];

@@ -1,0 +1,34 @@
+<mat-form-field appearance="outline" class="w-100" [class.mat-form-field-required]="required && !disabled" [class.disabled-field]="disabled" [class.custom-height]="!!height" [style.height]="height">
+  <mat-label>{{ placeholder }}</mat-label>
+  <input #inputElement matInput [formControl]="control || internalControl" (input)="onInput($event)"
+    (keypress)="onKeyPress($event)" (blur)="onBlur()" [type]="computedInputType" [required]="required && !disabled" [readonly]="readonly" />
+
+  <div matSuffix class="suffix-container">
+    <ng-container *ngIf="type === 'password'">
+      <button mat-icon-button (click)="togglePasswordVisibility()" type="button" 
+              class="password-toggle-button" [class.disabled-suffix]="disabled" [disabled]="disabled">
+        <mat-icon [class.disabled-suffix]="disabled">{{
+          passwordVisible ? "visibility" : "visibility_off"
+          }}</mat-icon>
+      </button>
+    </ng-container>
+
+    <ng-container *ngIf="suffixIcon">
+      <button mat-icon-button (click)="onSuffixIconClick()" type="button" 
+              [class.disabled-suffix]="disabled" [disabled]="disabled || !suffixClickable">
+        <mat-icon [class.disabled-suffix]="disabled">{{ suffixIcon }}</mat-icon>
+      </button>
+    </ng-container>
+
+    <span *ngIf="suffix" class="mat-suffix mr-2" [class.disabled-suffix]="disabled">{{ suffix }}</span>
+  </div>
+
+  <mat-error *ngIf="
+      (control || internalControl) &&
+      (control || internalControl).invalid &&
+      ((control || internalControl).touched ||
+        (control || internalControl).dirty)
+    " class="text-red-600">
+    {{ getErrorMessage() }}
+  </mat-error>
+</mat-form-field> 

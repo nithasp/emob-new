@@ -88,7 +88,10 @@ import {
 } from 'src/app/models/location.model';
 import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
 import { DetailsDialogComponent } from '../components/details-dialog/details-dialog.component';
+import { VehicleProfileTypeItemDialogComponent } from '../components/vehicle-profile-type-item-dialog/vehicle-profile-type-item-dialog.component';
+import { VehicleTypeDialogComponent } from '../components/vehicle-type-dialog/vehicle-type-dialog.component';
 import { CustomerListComponent } from '../components/customer-list/customer-list.component';
+import { LicensePlateSelectionDialogComponent } from '../components/license-plate-selection-dialog/license-plate-selection-dialog.component';
 import { ValidateMessage } from 'src/app/models/validation-message';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { firstValueFrom, take } from 'rxjs';
@@ -100,6 +103,11 @@ import Text from 'ol/style/Text';
 import Fill from 'ol/style/Fill';
 import Stroke from 'ol/style/Stroke';
 import { TranslocoService } from '@jsverse/transloco';
+import { VehicleService } from 'src/app/services/vehicle.service';
+import {
+  VehicleType,
+  VehicleValidationInput,
+} from 'src/app/models/vehicle.model';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -265,6 +273,15 @@ export class RunComponent implements OnInit, AfterViewInit {
   }> = [];
 
   public canUpload: boolean = false;
+  
+  // vehicles
+  public myVehicleTypes: VehicleType[] = [];
+  public selectedVehicleIds: string[] = [];
+  public selectedVehicleCounts: Record<string, number> = {};
+  public vehicleSelectionMode: Record<string, 'count' | 'license-plate'> = {};
+  public selectedLicensePlates: Record<string, string[]> = {};
+  public selectedVehicleIdsByLicensePlate: Record<string, string[]> = {};
+  private readonly defaultVehicleMaxCount = 1000;
 
   constructor(
     private readonly spinner: NgxSpinnerService,
@@ -280,7 +297,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly configurationService: ConfigurationService,
     private readonly dataService: DataService,
     private readonly exportService: ExportFileService,
-    private readonly transloco: TranslocoService
+    private readonly transloco: TranslocoService,
+    private readonly vehicleService: VehicleService
   ) {}
 
   public generateUniqueId(): string {
@@ -317,6 +335,8 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.spinner.show();
+
+    this.getMyVehicleTypes();
   }
   ngAfterViewInit() {
     setTimeout(() => {
@@ -431,6 +451,20 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
     // ensure dynamic parameter metadata for rendering is loaded too
     this.getDynamicParameters();
+
+    // Load Vehicles data
+    if (experiment.fileUrl.vehiclesBlobPathUrl) {
+      this.toastr.info(
+        this.transloco.translate('loading_vehicle_data', {}, 'index'),
+        `${this.transloco.translate('please_wait', {}, 'index')} ...`
+      );
+      await this.dataFromFileUrlToJson(experiment.fileUrl.vehiclesBlobPathUrl).then(
+        (response: any) => {
+          console.log('Vehicles Data from vehiclesBlobPathUrl:', response);
+          this.loadVehicleDataFromBlob(response);
+        }
+      );
+    }
 
     this.toastr.info(
       this.transloco.translate('loading_preorder_data', {}, 'index'),
@@ -551,6 +585,111 @@ export class RunComponent implements OnInit, AfterViewInit {
       });
     }
   }
+
+  async loadVehicleDataFromBlob(vehiclesData: any[]): Promise<void> {
+    if (!Array.isArray(vehiclesData)) {
+      console.warn('Invalid vehicles data format:', vehiclesData);
+      return;
+    }
+
+    for (const vehicle of vehiclesData) {
+      const vehicleTypeId = vehicle.vehicleTypeId;
+      if (!vehicleTypeId) continue;
+
+      // Check if this vehicle type exists in myVehicleTypes
+      const vehicleTypeExists = this.myVehicleTypes.some(
+        (v) => v.vehicleTypeId === vehicleTypeId
+      );
+      if (!vehicleTypeExists) {
+        console.warn(`Vehicle type ${vehicleTypeId} not found in myVehicleTypes`);
+        continue;
+      }
+
+      // Determine selection mode based on data
+      const hasCount = vehicle.numberOfVehiclesAvailable && vehicle.numberOfVehiclesAvailable > 0;
+      const hasSpecificVehicles = vehicle.specificVehicleIds && Array.isArray(vehicle.specificVehicleIds) && vehicle.specificVehicleIds.length > 0;
+
+      if (hasCount || hasSpecificVehicles) {
+        // Mark vehicle as selected
+        if (!this.selectedVehicleIds.includes(vehicleTypeId)) {
+          this.selectedVehicleIds.push(vehicleTypeId);
+        }
+
+        if (hasSpecificVehicles) {
+          // Set to license-plate mode
+          this.vehicleSelectionMode[vehicleTypeId] = 'license-plate';
+          
+          // Load license plates for these vehicle IDs
+          // Pass the numberOfVehiclesAvailable to use for count display
+          await this.loadLicensePlatesForVehicleIds(
+            vehicleTypeId,
+            vehicle.specificVehicleIds,
+            vehicle.numberOfVehiclesAvailable
+          );
+        } else if (hasCount) {
+          // Set to count mode
+          this.vehicleSelectionMode[vehicleTypeId] = 'count';
+          this.selectedVehicleCounts[vehicleTypeId] = vehicle.numberOfVehiclesAvailable;
+        }
+      }
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  async loadLicensePlatesForVehicleIds(
+    vehicleTypeId: string,
+    vehicleIds: string[],
+    numberOfVehiclesAvailable?: number
+  ): Promise<void> {
+    try {
+      const depotId =
+        this.getSelectedDepotObject()?.depotId ||
+        this.experiment.depots?.[0]?.depotId;
+
+      // Fetch all vehicles for this vehicle type
+      const vehicles = await firstValueFrom(
+        this.vehicleService.getMyVehicles(depotId, vehicleTypeId)
+      );
+
+      // Filter to only the specific vehicle IDs
+      const selectedVehicles = vehicles.filter((v) =>
+        vehicleIds.includes(v.vehicleId)
+      );
+
+      // Extract license plates
+      const licensePlates = selectedVehicles
+        .filter((v) => v.licensePlate)
+        .map((v) => v.licensePlate);
+
+      // Update the component state
+      this.selectedLicensePlates[vehicleTypeId] = licensePlates;
+      this.selectedVehicleIdsByLicensePlate[vehicleTypeId] = vehicleIds;
+      
+      // Use numberOfVehiclesAvailable from blob if provided
+      // If it's 0 or not provided, default to 1
+      if (numberOfVehiclesAvailable !== undefined && numberOfVehiclesAvailable !== null) {
+        this.selectedVehicleCounts[vehicleTypeId] = numberOfVehiclesAvailable || 1;
+      } else {
+        this.selectedVehicleCounts[vehicleTypeId] = licensePlates.length || 1;
+      }
+    } catch (error) {
+      console.error(
+        `Error loading license plates for vehicle type ${vehicleTypeId}:`,
+        error
+      );
+      // Fallback: just store the vehicle IDs
+      this.selectedVehicleIdsByLicensePlate[vehicleTypeId] = vehicleIds;
+      
+      // Use numberOfVehiclesAvailable if provided, otherwise default to 1
+      if (numberOfVehiclesAvailable !== undefined && numberOfVehiclesAvailable !== null) {
+        this.selectedVehicleCounts[vehicleTypeId] = numberOfVehiclesAvailable || 1;
+      } else {
+        this.selectedVehicleCounts[vehicleTypeId] = vehicleIds.length || 1;
+      }
+    }
+  }
+
   initializeDefaultParameter() {
     this.constraintService
       .getMyParameter()
@@ -1878,6 +2017,10 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   validateExperimentPreOrder() {
     const parameterPayload = this.buildValidateParameterFromDynamic();
+    const vehiclesPayload = this.buildVehiclesPayload();
+
+    console.log('vehiclesPayload', vehiclesPayload);
+    //return
     // proceed with validation using constructed parameterPayload
     if (
       (parameterPayload.earlyDeliveryTime || '') >
@@ -1894,7 +2037,8 @@ export class RunComponent implements OnInit, AfterViewInit {
       .validateExperiment(
         this.experiment.runId,
         parameterPayload as Constraint,
-        this.customersLocationUpdated
+        this.customersLocationUpdated,
+        vehiclesPayload
       )
       .pipe(
         finalize(() => {
@@ -1918,7 +2062,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           // Rebuild dynamic parameters so values reflect constraintsData when validated
           this.refreshDynamicParametersForSelectedDepot();
           this.refreshValidationTable();
-          this.navigateToTab(3);
+          this.navigateToTab(4);
           // Mark validation as completed and show corresponding messages (success path)
           this.haveValidated = true;
           this.isValidateShowMessage = {
@@ -1967,6 +2111,37 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
 
     return payload as TimingAndCapacity;
+  }
+
+  // Build vehicles payload for validation
+  buildVehiclesPayload(): VehicleValidationInput[] {
+    const vehiclesPayload: VehicleValidationInput[] = [];
+
+    // Loop through all selected vehicle IDs
+    for (const vehicleTypeId of this.selectedVehicleIds) {
+      const mode = this.getVehicleSelectionMode(vehicleTypeId);
+      const vehicleItem: VehicleValidationInput = {
+        vehicleTypeId: vehicleTypeId,
+      };
+
+      if (mode === 'count') {
+        // Add numberOfVehiclesAvailable for count mode
+        const count = this.getVehicleCount(vehicleTypeId);
+        if (count > 0) {
+          vehicleItem.numberOfVehiclesAvailable = count;
+        }
+      } else if (mode === 'license-plate') {
+        // Add vehicleId array for license-plate mode
+        const vehicleIds = this.selectedVehicleIdsByLicensePlate[vehicleTypeId];
+        if (vehicleIds && vehicleIds.length > 0) {
+          vehicleItem.vehicleId = vehicleIds;
+        }
+      }
+
+      vehiclesPayload.push(vehicleItem);
+    }
+
+    return vehiclesPayload;
   }
 
   private normalizeKeyName(rawKey: string | null | undefined): string {
@@ -3097,7 +3272,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.constraintService
       .getDynamicParameters(selectedDepotId)
       .subscribe((response: DynamicParameter[]) => {
+        console.log('response', response);
         this.allDynamicParameters = response || [];
+        console.log('this.allDynamicParameters', this.allDynamicParameters);
         if (!this.constraintsFromFileLoaded) {
           this.constraintsData =
             this.transformDynamicParametersToConstraint(response);
@@ -3525,5 +3702,243 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isOverDistanceKey(dynamicParameter: DynamicParameter): boolean {
     return dynamicParameter.keyName === 'MaximumTravelDistance';
+  }
+
+  getMyVehicleTypes() {
+    this.vehicleService.getMyVehicleTypes().subscribe((res: VehicleType[]) => {
+      this.myVehicleTypes = res || [];
+      this.cdr.detectChanges();
+    });
+  }
+
+  get availableVehicleTypes(): VehicleType[] {
+    return this.myVehicleTypes.filter(
+      (vehicle) => vehicle.isVehicleAvailable ?? false
+    );
+  }
+
+  isVehicleSelected(vehicleId: string): boolean {
+    return this.selectedVehicleIds.includes(vehicleId);
+  }
+
+  isVehicleAvailable(vehicleId: string): boolean {
+    const vehicle = this.myVehicleTypes.find(
+      (v) => v.vehicleTypeId === vehicleId
+    );
+    return vehicle ? vehicle.isVehicleAvailable ?? false : false;
+  }
+
+  onVehicleChecked(vehicleId: string, checked: boolean): void {
+    if (checked) {
+      if (!this.selectedVehicleIds.includes(vehicleId)) {
+        this.selectedVehicleIds = [...this.selectedVehicleIds, vehicleId];
+        if (this.selectedVehicleCounts[vehicleId] == null) {
+          this.selectedVehicleCounts[vehicleId] = 1;
+        }
+        // Set default selection mode to 'count'
+        if (this.vehicleSelectionMode[vehicleId] == null) {
+          this.vehicleSelectionMode[vehicleId] = 'count';
+        }
+      }
+    } else {
+      this.selectedVehicleIds = this.selectedVehicleIds.filter(
+        (id) => id !== vehicleId
+      );
+      if (this.selectedVehicleCounts[vehicleId] != null) {
+        delete this.selectedVehicleCounts[vehicleId];
+      }
+      if (this.vehicleSelectionMode[vehicleId] != null) {
+        delete this.vehicleSelectionMode[vehicleId];
+      }
+      // Clear selected license plates when vehicle is unchecked
+      if (this.selectedLicensePlates[vehicleId] != null) {
+        delete this.selectedLicensePlates[vehicleId];
+      }
+      if (this.selectedVehicleIdsByLicensePlate[vehicleId] != null) {
+        delete this.selectedVehicleIdsByLicensePlate[vehicleId];
+      }
+    }
+    this.cdr.detectChanges();
+  }
+
+  getVehicleName(vehicleId: string): string {
+    const vehicle = this.myVehicleTypes.find(
+      (v) => v.vehicleTypeId === vehicleId
+    );
+    return vehicle ? vehicle.name : '';
+  }
+
+  getVehicleCount(vehicleId: string): number {
+    const value = this.selectedVehicleCounts[vehicleId];
+    return typeof value === 'number' && !isNaN(value) ? value : 1;
+  }
+
+  onVehicleCountChange(vehicleId: string, value: number): void {
+    const normalized = Number(value);
+    const min = this.getVehicleMinCount();
+    const max = this.getVehicleMaxCount(vehicleId);
+    let clamped = isNaN(normalized) ? min : Math.trunc(normalized);
+    if (clamped < min) {
+      clamped = min;
+    } else if (clamped > max) {
+      clamped = max;
+    }
+
+    this.selectedVehicleCounts[vehicleId] = clamped;
+    this.cdr.detectChanges();
+  }
+
+  openVehicleItemModal(vehicleId: string) {
+    const vehicleType = this.myVehicleTypes.find(
+      (v) => v.vehicleTypeId === vehicleId
+    );
+
+    if (!vehicleType) {
+      this.toastr.warning(
+        this.transloco.translate('vehicle_not_found', {}, 'index')
+      );
+      return;
+    }
+
+    const modalRef = this.ngbModal.open(VehicleTypeDialogComponent, {
+      centered: true,
+      size: 'lg',
+      animation: true,
+      backdrop: 'static',
+      keyboard: false,
+    });
+    modalRef.componentInstance.mode = 'view';
+    modalRef.componentInstance.vehicleType = vehicleType;
+  }
+
+  getVehicleMaxCount(vehicleId: string): number {
+    const maxByConstraint = Number(
+      this.constraintsData?.numberOfVehicleAvailable
+    );
+    if (!isNaN(maxByConstraint) && maxByConstraint > 0) {
+      return maxByConstraint;
+    }
+    return this.defaultVehicleMaxCount;
+  }
+
+  getVehicleMinCount(): number {
+    return 0;
+  }
+
+  getVehicleSelectionMode(vehicleId: string): 'count' | 'license-plate' {
+    return this.vehicleSelectionMode[vehicleId] || 'count';
+  }
+
+  onVehicleSelectionModeChange(
+    vehicleId: string,
+    mode: 'count' | 'license-plate'
+  ): void {
+    const previousMode = this.vehicleSelectionMode[vehicleId];
+    this.vehicleSelectionMode[vehicleId] = mode;
+
+    // Only update mode, preserve existing count values
+    if (previousMode !== mode) {
+      if (mode === 'count') {
+        // Switching to count mode - keep existing count, ensure it has a minimum value of 1
+        if (
+          this.selectedVehicleCounts[vehicleId] == null ||
+          this.selectedVehicleCounts[vehicleId] === 0
+        ) {
+          this.selectedVehicleCounts[vehicleId] = 1;
+        }
+        // Note: We don't delete selectedLicensePlates or selectedVehicleIdsByLicensePlate
+        // so user can switch back without losing their selection
+      } else {
+        // Switching to license-plate mode - preserve existing count value
+        // Count will only update when user actually selects/deselects license plates
+        if (
+          this.selectedVehicleCounts[vehicleId] == null ||
+          this.selectedVehicleCounts[vehicleId] === 0
+        ) {
+          this.selectedVehicleCounts[vehicleId] = 1;
+        }
+      }
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  openLicensePlateSelectionDialog(event: Event, vehicleId: string): void {
+    // Prevent the radio button from being triggered
+    event.stopPropagation();
+
+    const vehicleType = this.myVehicleTypes.find(
+      (v) => v.vehicleTypeId === vehicleId
+    );
+
+    if (!vehicleType) {
+      this.toastr.warning(
+        this.transloco.translate('vehicle_not_found', {}, 'index')
+      );
+      return;
+    }
+
+    // Get the depot ID from the selected depot or experiment depots
+    const depotId =
+      this.getSelectedDepotObject()?.depotId ||
+      this.experiment.depots?.[0]?.depotId;
+
+    const modalRef = this.ngbModal.open(LicensePlateSelectionDialogComponent, {
+      centered: true,
+      size: 'lg',
+      animation: true,
+    });
+
+    modalRef.componentInstance.vehicleType = vehicleType;
+    modalRef.componentInstance.vehicleId = vehicleId;
+    modalRef.componentInstance.depotId = depotId;
+    modalRef.componentInstance.preSelectedLicensePlates =
+      this.selectedLicensePlates[vehicleId] || [];
+
+    modalRef.result.then(
+      (result) => {
+        if (result) {
+          // Store the selected license plates for this vehicle type
+          this.selectedLicensePlates[vehicleId] = result.selectedLicensePlates;
+          this.selectedVehicleIdsByLicensePlate[vehicleId] =
+            result.selectedVehicleIds;
+
+          // Update the vehicle count based on selected license plates
+          this.selectedVehicleCounts[vehicleId] =
+            result.selectedLicensePlates.length;
+
+          this.cdr.detectChanges();
+        }
+      },
+      () => {
+        // Modal dismissed (closed without result)
+      }
+    );
+  }
+
+  getSelectedLicensePlatesCount(vehicleId: string): number {
+    return this.selectedLicensePlates[vehicleId]?.length || 0;
+  }
+
+  getSelectedLicensePlatesDisplay(vehicleId: string): string {
+    const plates = this.selectedLicensePlates[vehicleId];
+    if (!plates || plates.length === 0) {
+      return this.transloco.translate(
+        'no_license_plates_selected',
+        {},
+        'index'
+      );
+    }
+    if (plates.length <= 3) {
+      return plates.join(', ');
+    }
+    return `${plates.slice(0, 3).join(', ')} +${plates.length - 3}`;
+  }
+
+  hasDynamicParameters(): boolean {
+    return (
+      this.dynamicParametersByCategory &&
+      this.dynamicParametersByCategory.length > 0
+    );
   }
 }
