@@ -24,6 +24,7 @@
   "longitude": "Longitude",
   "minutes": "Minutes",
   "more": "More",
+  "no": "No",
   "not_set": "Not set",
   "or": "or",
   "order": "Order",
@@ -49,7 +50,6 @@
   "uploading": "Uploading",
   "wait_a_moment": "Wait a moment",
   "warning": "Warning",
-  "zipcode": "ZIPCODE",
   "yes": "Yes",
-  "no": "No"
+  "zipcode": "ZIPCODE"
 }
