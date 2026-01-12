@@ -5,16 +5,16 @@ import { VehicleService } from 'src/app/services/vehicle.service';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import {
   VehicleType,
-  Depot,
   MyVehicles,
   VehicleUpdateInput,
-  VehicleCreationResult,
   VehicleInput,
+  VehicleCreationResult,
 } from 'src/app/models/vehicle.model';
 import { MyDepot } from 'src/app/models/experiment.model';
-import { forkJoin } from 'rxjs';
+import { ActionMode, ActionType } from 'src/app/models/common.model';
+import { forkJoin, of } from 'rxjs';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { finalize } from 'rxjs/operators';
+import { finalize, catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 import { licensePlateDuplicateValidator } from 'src/app/shared/validators/license-plate.validator';
@@ -27,19 +27,24 @@ import { ConfirmationDialogComponent } from 'src/app/index/components/confirmati
   styleUrls: ['./vehicle-dialog.component.scss'],
 })
 export class VehicleDialogComponent implements OnInit {
-  @Input() mode: 'create' | 'edit' | 'view' = 'create';
+  @Input() mode: ActionMode = 'create';
   @Input() vehicle: MyVehicles | null = null;
 
   form!: FormGroup<VehicleFormControls>;
   licensePlates: string[] = [];
   isLoading: boolean = true;
   isSaving: boolean = false;
-  isEditMode: boolean = false;
-  isViewMode: boolean = false;
 
   vehicleTypeOptions: VehicleType[] = [];
-  startDepotOptions: MyDepot[] = [];
-  endDepotOptions: MyDepot[] = [];
+  depotOptions: MyDepot[] = [];
+
+  get isEditMode(): boolean {
+    return this.mode === 'edit';
+  }
+
+  get isViewMode(): boolean {
+    return this.mode === 'view';
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -53,23 +58,20 @@ export class VehicleDialogComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.isEditMode = this.mode === 'edit';
-    this.isViewMode = this.mode === 'view';
     this.initializeForm();
     this.loadData();
   }
 
   initializeForm(): void {
+    const licensePlateValidators =
+      this.isEditMode || this.isViewMode ? [Validators.required] : [];
+
     this.form = this.fb.group<VehicleFormControls>({
       vehicleType: this.fb.control<string | null>('', [Validators.required]),
       startDepot: this.fb.control<string | null>('', [Validators.required]),
       endDepot: this.fb.control<string | null>('', [Validators.required]),
-      licensePlate: this.fb.control<string | null>(''),
+      licensePlate: this.fb.control<string | null>('', licensePlateValidators),
     });
-
-    if (this.isEditMode || this.isViewMode) {
-      this.form.controls.licensePlate.setValidators([Validators.required]);
-    }
 
     this.updateLicensePlateValidators();
 
@@ -79,64 +81,56 @@ export class VehicleDialogComponent implements OnInit {
   }
 
   updateLicensePlateValidators(): void {
-    const validators = [];
+    const validators = [
+      ...(this.isEditMode || this.isViewMode ? [Validators.required] : []),
+      licensePlateDuplicateValidator(this.licensePlates),
+    ];
 
-    if (this.isEditMode || this.isViewMode) {
-      validators.push(Validators.required);
-    }
+    const control = this.form.controls.licensePlate;
+    control.setValidators(validators);
+    control.updateValueAndValidity();
 
-    validators.push(licensePlateDuplicateValidator(this.licensePlates));
-
-    this.form.controls.licensePlate.setValidators(validators);
-    this.form.controls.licensePlate.updateValueAndValidity();
-
-    if (
-      this.form.controls.licensePlate.value === null ||
-      this.form.controls.licensePlate.value === ''
-    ) {
-      this.form.controls.licensePlate.setErrors(null);
+    if (!control.value?.trim()) {
+      control.setErrors(null);
     }
   }
 
   loadData(): void {
-    this.isLoading = true;
-
-    const baseObservables = {
-      vehicleTypes: this.vehicleService.getMyVehicleTypes(),
-      depots: this.experimentService.getMyDepots(),
-    };
-
-    forkJoin(baseObservables)
-      .pipe(
-        finalize(() => {
-          this.isLoading = false;
+    forkJoin({
+      vehicleTypes: this.vehicleService.getMyVehicleTypes().pipe(
+        catchError((error) => {
+          console.error('Error loading vehicle types:', error);
+          this.showToast('error', 'failed_to_load_vehicle_types');
+          return of([] as VehicleType[]);
         })
-      )
+      ),
+      depots: this.experimentService.getMyDepots().pipe(
+        catchError((error) => {
+          console.error('Error loading depots:', error);
+          this.showToast('error', 'failed_to_load_depots');
+          return of([] as MyDepot[]);
+        })
+      ),
+    })
+      .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
-        next: (data: { vehicleTypes: VehicleType[]; depots: MyDepot[] }) => {
-          this.vehicleTypeOptions = data.vehicleTypes;
-          this.startDepotOptions = data.depots;
-          this.endDepotOptions = data.depots;
+        next: ({ vehicleTypes, depots }) => {
+          this.vehicleTypeOptions = vehicleTypes;
+          this.depotOptions = depots;
+
           if ((this.isEditMode || this.isViewMode) && this.vehicle?.vehicleId) {
             this.fetchAndPatchVehicleData();
           }
         },
-        error: (error: unknown) => {
-          console.error('Error loading vehicle types and depots:', error);
-          this.vehicleTypeOptions = [];
-          this.startDepotOptions = [];
-          this.endDepotOptions = [];
+        error: (error) => {
+          console.error(error);
         },
       });
   }
 
   fetchAndPatchVehicleData(): void {
-    if (!this.vehicle?.vehicleId) {
-      return;
-    }
-
-    this.vehicleService.getMyVehicle(this.vehicle.vehicleId).subscribe({
-      next: (vehicleData: MyVehicles) => {
+    this.vehicleService.getMyVehicle(this.vehicle!.vehicleId).subscribe({
+      next: (vehicleData) => {
         this.form.patchValue({
           vehicleType: vehicleData.vehicleType?.vehicleTypeId,
           startDepot: vehicleData.startDepotId?.depotId,
@@ -144,27 +138,17 @@ export class VehicleDialogComponent implements OnInit {
           licensePlate: vehicleData.licensePlate,
         });
       },
-      error: (error: unknown) => {
-        console.error('Error fetching vehicle data:', error);
-      },
+      error: (error) => console.error('Error fetching vehicle data:', error),
     });
   }
 
   addLicensePlate(): void {
-    const licensePlateValue = this.form.controls.licensePlate.value?.trim();
+    const value = this.form.controls.licensePlate.value?.trim();
 
-    if (licensePlateValue && this.form.controls.licensePlate.valid) {
-      if (!this.licensePlates.includes(licensePlateValue)) {
-        this.licensePlates.push(licensePlateValue);
-        this.form.controls.licensePlate.reset();
-        this.updateLicensePlateValidators();
-      }
-    } else if (licensePlateValue && !this.form.controls.licensePlate.valid) {
-      if (!this.licensePlates.includes(licensePlateValue)) {
-        this.licensePlates.push(licensePlateValue);
-        this.form.controls.licensePlate.reset();
-        this.updateLicensePlateValidators();
-      }
+    if (value && !this.licensePlates.includes(value)) {
+      this.licensePlates.push(value);
+      this.form.controls.licensePlate.reset();
+      this.updateLicensePlateValidators();
     }
   }
 
@@ -173,217 +157,172 @@ export class VehicleDialogComponent implements OnInit {
     this.updateLicensePlateValidators();
   }
 
-  save(): void {
-    if (!this.isEditMode && this.licensePlates.length === 0) {
-      this.form.controls.licensePlate.setErrors({ licensePlatesEmpty: true });
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    if (!this.isEditMode && this.licensePlates.length > 0) {
-      this.form.controls.licensePlate.setErrors(null);
-    }
-
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-    const action = this.isEditMode ? 'update' : 'create';
-    this.openDialogConfirm(action);
-  }
-
-  delete(): void {
-    this.openDialogConfirm('delete');
-  }
-
-  openDialogConfirm(action: 'create' | 'update' | 'delete'): void {
+  openDialogConfirm(action: ActionType): void {
     const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
       centered: true,
       animation: true,
     });
-    if (action === 'create') {
-      dialogRef.componentInstance.title = this.transloco.translate(
-        'vehicleManagement.confirm_create'
-      );
-      dialogRef.componentInstance.message = this.transloco.translate(
-        'vehicleManagement.are_you_sure_create_vehicle'
-      );
-    } else if (action === 'update') {
-      dialogRef.componentInstance.title = this.transloco.translate(
-        'vehicleManagement.confirm_update'
-      );
-      dialogRef.componentInstance.message = this.transloco.translate(
-        'vehicleManagement.are_you_sure_update_vehicle'
-      );
-    } else if (action === 'delete') {
-      dialogRef.componentInstance.title = this.transloco.translate(
-        'vehicleManagement.confirm_delete'
-      );
-      dialogRef.componentInstance.message = this.transloco.translate(
-        'vehicleManagement.are_you_sure_delete_vehicle'
-      );
-    }
+
+    const config = {
+      create: {
+        title: 'vehicleManagement.confirm_create',
+        message: 'vehicleManagement.are_you_sure_create_vehicle',
+      },
+      update: {
+        title: 'vehicleManagement.confirm_update',
+        message: 'vehicleManagement.are_you_sure_update_vehicle',
+      },
+      delete: {
+        title: 'vehicleManagement.confirm_delete',
+        message: 'vehicleManagement.are_you_sure_delete_vehicle',
+      },
+    };
+
+    dialogRef.componentInstance.title = this.transloco.translate(
+      config[action].title
+    );
+    dialogRef.componentInstance.message = this.transloco.translate(
+      config[action].message
+    );
+
     dialogRef.result
-      .then((confirmed: boolean) => {
-        if (confirmed) {
-          if (action === 'create') {
-            this.handleCreateVehicle();
-          } else if (action === 'update') {
-            this.handleUpdateVehicle();
-          } else if (action === 'delete') {
-            this.handleDeleteVehicle();
-          }
-        }
-      })
+      .then((confirmed: boolean) => confirmed && this.executeAction(action))
       .catch(() => {});
   }
 
+  executeAction(action: ActionType): void {
+    const actions = {
+      create: () => this.handleCreateVehicle(),
+      update: () => this.handleUpdateVehicle(),
+      delete: () => this.handleDeleteVehicle(),
+    };
+    actions[action]();
+  }
+
+  extractDepotId(value: any): string {
+    return typeof value === 'object' && value !== null ? value.depotId : value;
+  }
+
   handleCreateVehicle(): void {
-    this.isSaving = true;
     const formValues = this.form.value;
-    const startDepotId =
-      typeof formValues.startDepot === 'object' &&
-      formValues.startDepot !== null
-        ? (formValues.startDepot as MyDepot).depotId
-        : formValues.startDepot;
-    const endDepotId =
-      typeof formValues.endDepot === 'object' && formValues.endDepot !== null
-        ? (formValues.endDepot as MyDepot).depotId
-        : formValues.endDepot;
     const payload: VehicleInput = {
       vehicleTypeId: formValues.vehicleType!,
-      startDepotId: startDepotId!,
-      endDepotId: endDepotId!,
-      licensePlates: this.licensePlates || [],
+      startDepotId: this.extractDepotId(formValues.startDepot)!,
+      endDepotId: this.extractDepotId(formValues.endDepot)!,
+      licensePlates: this.licensePlates,
     };
+
+    this.isSaving = true;
     this.spinner.show();
+
     this.vehicleService
       .createVehicle(payload)
       .pipe(finalize(() => this.spinner.hide()))
       .subscribe({
         next: (result: VehicleCreationResult) => {
           this.isSaving = false;
-          const newVehicle = result.vehicles[0];
-          if (newVehicle) {
-            this.toastr.success(
-              this.transloco.translate(
-                'vehicleManagement.vehicle_created_successfully'
-              ),
-              this.transloco.translate('success')
-            );
-            this.activeModal.close({
-              success: true,
-              operation: 'create',
-              vehicle: newVehicle,
-            });
-          } else {
-            this.toastr.error(
-              this.transloco.translate(
-                'vehicleManagement.failed_to_create_vehicle'
-              ),
-              this.transloco.translate('error')
-            );
-          }
+          this.showToast('success', 'vehicle_created_successfully');
+          this.activeModal.close({
+            success: true,
+            operation: 'create',
+            result: result,
+          });
         },
-        error: (error: unknown) => {
+        error: (error) => {
           console.error('Error creating vehicle:', error);
           this.isSaving = false;
-          this.toastr.error(
-            this.transloco.translate(
-              'vehicleManagement.failed_to_create_vehicle'
-            ),
-            this.transloco.translate('error')
-          );
+          this.showToast('error', 'failed_to_create_vehicle');
         },
       });
   }
 
   handleUpdateVehicle(): void {
-    this.isSaving = true;
     const formValues = this.form.value;
-    const startDepotId =
-      typeof formValues.startDepot === 'object' &&
-      formValues.startDepot !== null
-        ? (formValues.startDepot as MyDepot).depotId
-        : formValues.startDepot;
-    const endDepotId =
-      typeof formValues.endDepot === 'object' && formValues.endDepot !== null
-        ? (formValues.endDepot as MyDepot).depotId
-        : formValues.endDepot;
     const payload: VehicleUpdateInput = {
       vehicleTypeId: formValues.vehicleType!,
-      startDepotId: startDepotId!,
-      endDepotId: endDepotId!,
+      startDepotId: this.extractDepotId(formValues.startDepot)!,
+      endDepotId: this.extractDepotId(formValues.endDepot)!,
       licensePlate: formValues.licensePlate!,
     };
+
+    this.isSaving = true;
     this.spinner.show();
+
     this.vehicleService
       .updateVehicle(this.vehicle!.vehicleId, payload)
       .pipe(finalize(() => this.spinner.hide()))
       .subscribe({
-        next: (updatedVehicle: MyVehicles) => {
+        next: (result: MyVehicles) => {
           this.isSaving = false;
-          this.toastr.success(
-            this.transloco.translate(
-              'vehicleManagement.vehicle_updated_successfully'
-            ),
-            this.transloco.translate('success')
-          );
+          this.showToast('success', 'vehicle_updated_successfully');
           this.activeModal.close({
             success: true,
             operation: 'update',
-            vehicle: updatedVehicle,
+            result: result,
           });
         },
-        error: (error: unknown) => {
+        error: (error) => {
           console.error('Error updating vehicle:', error);
           this.isSaving = false;
-          this.toastr.error(
-            this.transloco.translate(
-              'vehicleManagement.failed_to_update_vehicle'
-            ),
-            this.transloco.translate('error')
-          );
+          this.showToast('error', 'failed_to_update_vehicle');
         },
       });
   }
 
   handleDeleteVehicle(): void {
-    if (this.vehicle && this.vehicle.vehicleId) {
-      this.isSaving = true;
-      this.spinner.show();
-      this.vehicleService
-        .deleteVehicle(this.vehicle.vehicleId)
-        .pipe(finalize(() => this.spinner.hide()))
-        .subscribe({
-          next: (result: boolean) => {
-            this.isSaving = false;
-            if (result) {
-              this.toastr.success(
-                this.transloco.translate(
-                  'vehicleManagement.vehicle_deleted_successfully'
-                ),
-                this.transloco.translate('success')
-              );
-              this.activeModal.close({
-                success: true,
-                operation: 'delete',
-                vehicleId: this.vehicle!.vehicleId,
-              });
-            }
-          },
-          error: (error: unknown) => {
-            console.error('Error deleting vehicle:', error);
-            this.isSaving = false;
-            this.toastr.error(
-              this.transloco.translate(
-                'vehicleManagement.failed_to_delete_vehicle'
-              ),
-              this.transloco.translate('error')
-            );
-          },
-        });
+    if (!this.vehicle?.vehicleId) return;
+
+    this.isSaving = true;
+    this.spinner.show();
+
+    this.vehicleService
+      .deleteVehicle(this.vehicle.vehicleId)
+      .pipe(finalize(() => this.spinner.hide()))
+      .subscribe({
+        next: (result: boolean) => {
+          this.isSaving = false;
+          this.showToast('success', 'vehicle_deleted_successfully');
+          this.activeModal.close({
+            success: true,
+            operation: 'delete',
+            result: result,
+          });
+        },
+        error: (error) => {
+          console.error('Error deleting vehicle:', error);
+          this.isSaving = false;
+          this.showToast('error', 'failed_to_delete_vehicle');
+        },
+      });
+  }
+
+  showToast(type: 'success' | 'error', messageKey: string): void {
+    const message = this.transloco.translate(`vehicleManagement.${messageKey}`);
+    const title = this.transloco.translate(type);
+    this.toastr[type](message, title);
+  }
+
+  save(): void {
+    if (!this.isEditMode) {
+      const controlLicensePlate = this.form.controls.licensePlate;
+      if (this.licensePlates.length === 0) {
+        controlLicensePlate.setErrors({ licensePlatesEmpty: true });
+        controlLicensePlate.markAsTouched();
+      } else {
+        controlLicensePlate.updateValueAndValidity();
+      }
     }
+
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.openDialogConfirm(this.isEditMode ? 'update' : 'create');
+  }
+
+  delete(): void {
+    this.openDialogConfirm('delete');
   }
 
   cancel(): void {
