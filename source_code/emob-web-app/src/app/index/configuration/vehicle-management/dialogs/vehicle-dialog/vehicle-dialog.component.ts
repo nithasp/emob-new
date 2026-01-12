@@ -302,7 +302,7 @@ export class VehicleDialogComponent implements OnInit {
     this.toastr[type](message, title);
   }
 
-  save(): void {
+  onSubmit(): void {
     if (!this.isEditMode) {
       const controlLicensePlate = this.form.controls.licensePlate;
       if (this.licensePlates.length === 0) {
@@ -321,11 +321,11 @@ export class VehicleDialogComponent implements OnInit {
     this.openDialogConfirm(this.isEditMode ? 'update' : 'create');
   }
 
-  delete(): void {
+  onDelete(): void {
     this.openDialogConfirm('delete');
   }
 
-  cancel(): void {
+  onCancel(): void {
     this.activeModal.dismiss();
   }
 }

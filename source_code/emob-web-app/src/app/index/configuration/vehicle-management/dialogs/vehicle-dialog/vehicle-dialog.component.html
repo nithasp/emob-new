@@ -118,12 +118,12 @@
       <div class="modal-footer border-0 pt-3">
         <div class="row g-2 m-0 p-0 w-100 justify-content-end">
           <div class="btn-action col-12 col-sm-auto">
-            <button type="button" class="btn btn-outline-secondary" (click)="cancel()">
+            <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">
               {{ "cancel" | transloco }}
             </button>
           </div>
           <div class="btn-action col-12 col-sm-auto" *ngIf="!isViewMode">
-            <button type="button" mat-raised-button class="bg-custom-primary" (click)="save()">
+            <button type="button" mat-raised-button class="bg-custom-primary" (click)="onSubmit()">
               {{ (isEditMode ? "update" : "save") | transloco }}
             </button>
           </div>
