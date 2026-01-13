@@ -57,12 +57,12 @@ export class VehicleDialogComponent implements OnInit {
     this.loadData();
   }
 
-  initializeMode(): void {
+  private initializeMode(): void {
     this.isEditMode = this.mode === 'edit';
     this.isViewMode = this.mode === 'view';
   }
 
-  initializeForm(): void {
+  private initializeForm(): void {
     const licensePlateValidators =
       this.isEditMode || this.isViewMode ? [Validators.required] : [];
 
@@ -80,7 +80,7 @@ export class VehicleDialogComponent implements OnInit {
     }
   }
 
-  updateLicensePlateValidators(): void {
+  private updateLicensePlateValidators(): void {
     const validators = [
       ...(this.isEditMode || this.isViewMode ? [Validators.required] : []),
       licensePlateDuplicateValidator(this.licensePlates),
@@ -95,7 +95,7 @@ export class VehicleDialogComponent implements OnInit {
     }
   }
 
-  loadData(): void {
+  private loadData(): void {
     forkJoin({
       vehicleTypes: this.vehicleService.getMyVehicleTypes().pipe(
         catchError((error) => {
@@ -142,7 +142,7 @@ export class VehicleDialogComponent implements OnInit {
       });
   }
 
-  fetchAndPatchVehicleData(): void {
+  private fetchAndPatchVehicleData(): void {
     this.vehicleService.getMyVehicle(this.vehicle!.vehicleId).subscribe({
       next: (vehicleData) => {
         this.form.patchValue({
@@ -171,7 +171,7 @@ export class VehicleDialogComponent implements OnInit {
     this.updateLicensePlateValidators();
   }
 
-  openDialogConfirm(action: 'create' | 'update'): void {
+  private openDialogConfirm(action: 'create' | 'update'): void {
     const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
       centered: true,
       animation: true,
@@ -208,12 +208,12 @@ export class VehicleDialogComponent implements OnInit {
       .catch(() => {});
   }
 
-  extractDepotId(value: string | MyDepot | null | undefined): string {
+  private extractDepotId(value: string | MyDepot | null | undefined): string {
     if (!value) return '';
     return typeof value === 'object' ? value.depotId : value;
   }
 
-  handleCreateVehicle(): void {
+  private handleCreateVehicle(): void {
     const formValues = this.form.value;
     const payload: VehicleInput = {
       vehicleTypeId: formValues.vehicleType!,
@@ -257,7 +257,7 @@ export class VehicleDialogComponent implements OnInit {
       });
   }
 
-  handleUpdateVehicle(): void {
+  private handleUpdateVehicle(): void {
     const formValues = this.form.value;
     const payload: VehicleUpdateInput = {
       vehicleTypeId: formValues.vehicleType!,
