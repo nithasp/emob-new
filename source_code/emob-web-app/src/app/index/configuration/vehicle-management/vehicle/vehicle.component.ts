@@ -10,6 +10,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
+import { ActionMode } from 'src/app/models/common.model';
 
 @Component({
   selector: 'app-vehicle',
@@ -43,7 +44,7 @@ export class VehicleComponent implements OnInit {
     this.getMyVehicles();
   }
 
-  getMyVehicles(): void {
+  private getMyVehicles(): void {
     this.spinner.show();
     this.vehicleService
       .getMyVehicles()
@@ -59,10 +60,7 @@ export class VehicleComponent implements OnInit {
       });
   }
 
-  openVehicleModal(
-    vehicle?: MyVehicles,
-    mode: 'create' | 'edit' | 'view' = 'create'
-  ): void {
+  openVehicleModal(vehicle?: MyVehicles, mode: ActionMode = 'create'): void {
     const modalRef = this.ngbModal.open(VehicleDialogComponent, {
       centered: true,
       size: 'lg',
@@ -81,9 +79,7 @@ export class VehicleComponent implements OnInit {
           this.getMyVehicles();
         }
       },
-      () => {
-        // Modal dismissed
-      }
+      () => {}
     );
   }
 
@@ -129,9 +125,7 @@ export class VehicleComponent implements OnInit {
             });
         }
       },
-      () => {
-        // Modal dismissed
-      }
+      () => {}
     );
   }
 }
