@@ -11,7 +11,7 @@ import {
   VehicleCreationResult,
 } from 'src/app/models/vehicle.model';
 import { MyDepot } from 'src/app/models/experiment.model';
-import { ActionMode, ActionType } from 'src/app/models/common.model';
+import { ActionMode } from 'src/app/models/common.model';
 import { forkJoin, of } from 'rxjs';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { finalize, catchError } from 'rxjs/operators';
@@ -33,18 +33,12 @@ export class VehicleDialogComponent implements OnInit {
   form!: FormGroup<VehicleFormControls>;
   licensePlates: string[] = [];
   isLoading: boolean = true;
-  isSaving: boolean = false;
 
   vehicleTypeOptions: VehicleType[] = [];
   depotOptions: MyDepot[] = [];
 
-  get isEditMode(): boolean {
-    return this.mode === 'edit';
-  }
-
-  get isViewMode(): boolean {
-    return this.mode === 'view';
-  }
+  isEditMode: boolean = false;
+  isViewMode: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -58,8 +52,14 @@ export class VehicleDialogComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.initializeMode();
     this.initializeForm();
     this.loadData();
+  }
+
+  initializeMode(): void {
+    this.isEditMode = this.mode === 'edit';
+    this.isViewMode = this.mode === 'view';
   }
 
   initializeForm(): void {
@@ -100,14 +100,28 @@ export class VehicleDialogComponent implements OnInit {
       vehicleTypes: this.vehicleService.getMyVehicleTypes().pipe(
         catchError((error) => {
           console.error('Error loading vehicle types:', error);
-          this.showToast('error', 'failed_to_load_vehicle_types');
+          this.toastr.error(
+            this.transloco.translate(
+              'failed_to_load_vehicle_types',
+              {},
+              'vehicleManagement'
+            ),
+            this.transloco.translate('error')
+          );
           return of([] as VehicleType[]);
         })
       ),
       depots: this.experimentService.getMyDepots().pipe(
         catchError((error) => {
           console.error('Error loading depots:', error);
-          this.showToast('error', 'failed_to_load_depots');
+          this.toastr.error(
+            this.transloco.translate(
+              'failed_to_load_depots',
+              {},
+              'vehicleManagement'
+            ),
+            this.transloco.translate('error')
+          );
           return of([] as MyDepot[]);
         })
       ),
@@ -157,7 +171,7 @@ export class VehicleDialogComponent implements OnInit {
     this.updateLicensePlateValidators();
   }
 
-  openDialogConfirm(action: ActionType): void {
+  openDialogConfirm(action: 'create' | 'update'): void {
     const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
       centered: true,
       animation: true,
@@ -172,10 +186,6 @@ export class VehicleDialogComponent implements OnInit {
         title: 'vehicleManagement.confirm_update',
         message: 'vehicleManagement.are_you_sure_update_vehicle',
       },
-      delete: {
-        title: 'vehicleManagement.confirm_delete',
-        message: 'vehicleManagement.are_you_sure_delete_vehicle',
-      },
     };
 
     dialogRef.componentInstance.title = this.transloco.translate(
@@ -186,21 +196,21 @@ export class VehicleDialogComponent implements OnInit {
     );
 
     dialogRef.result
-      .then((confirmed: boolean) => confirmed && this.executeAction(action))
+      .then((confirmed: boolean) => {
+        if (confirmed) {
+          if (action === 'create') {
+            this.handleCreateVehicle();
+          } else if (action === 'update') {
+            this.handleUpdateVehicle();
+          }
+        }
+      })
       .catch(() => {});
   }
 
-  executeAction(action: ActionType): void {
-    const actions = {
-      create: () => this.handleCreateVehicle(),
-      update: () => this.handleUpdateVehicle(),
-      delete: () => this.handleDeleteVehicle(),
-    };
-    actions[action]();
-  }
-
-  extractDepotId(value: any): string {
-    return typeof value === 'object' && value !== null ? value.depotId : value;
+  extractDepotId(value: string | MyDepot | null | undefined): string {
+    if (!value) return '';
+    return typeof value === 'object' ? value.depotId : value;
   }
 
   handleCreateVehicle(): void {
@@ -212,7 +222,6 @@ export class VehicleDialogComponent implements OnInit {
       licensePlates: this.licensePlates,
     };
 
-    this.isSaving = true;
     this.spinner.show();
 
     this.vehicleService
@@ -220,8 +229,14 @@ export class VehicleDialogComponent implements OnInit {
       .pipe(finalize(() => this.spinner.hide()))
       .subscribe({
         next: (result: VehicleCreationResult) => {
-          this.isSaving = false;
-          this.showToast('success', 'vehicle_created_successfully');
+          this.toastr.success(
+            this.transloco.translate(
+              'vehicle_created_successfully',
+              {},
+              'vehicleManagement'
+            ),
+            this.transloco.translate('success')
+          );
           this.activeModal.close({
             success: true,
             operation: 'create',
@@ -230,8 +245,14 @@ export class VehicleDialogComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error creating vehicle:', error);
-          this.isSaving = false;
-          this.showToast('error', 'failed_to_create_vehicle');
+          this.toastr.error(
+            this.transloco.translate(
+              'failed_to_create_vehicle',
+              {},
+              'vehicleManagement'
+            ),
+            this.transloco.translate('error')
+          );
         },
       });
   }
@@ -245,7 +266,6 @@ export class VehicleDialogComponent implements OnInit {
       licensePlate: formValues.licensePlate!,
     };
 
-    this.isSaving = true;
     this.spinner.show();
 
     this.vehicleService
@@ -253,8 +273,14 @@ export class VehicleDialogComponent implements OnInit {
       .pipe(finalize(() => this.spinner.hide()))
       .subscribe({
         next: (result: MyVehicles) => {
-          this.isSaving = false;
-          this.showToast('success', 'vehicle_updated_successfully');
+          this.toastr.success(
+            this.transloco.translate(
+              'vehicle_updated_successfully',
+              {},
+              'vehicleManagement'
+            ),
+            this.transloco.translate('success')
+          );
           this.activeModal.close({
             success: true,
             operation: 'update',
@@ -263,8 +289,14 @@ export class VehicleDialogComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error updating vehicle:', error);
-          this.isSaving = false;
-          this.showToast('error', 'failed_to_update_vehicle');
+          this.toastr.error(
+            this.transloco.translate(
+              'failed_to_update_vehicle',
+              {},
+              'vehicleManagement'
+            ),
+            this.transloco.translate('error')
+          );
         },
       });
   }
@@ -272,7 +304,6 @@ export class VehicleDialogComponent implements OnInit {
   handleDeleteVehicle(): void {
     if (!this.vehicle?.vehicleId) return;
 
-    this.isSaving = true;
     this.spinner.show();
 
     this.vehicleService
@@ -280,8 +311,14 @@ export class VehicleDialogComponent implements OnInit {
       .pipe(finalize(() => this.spinner.hide()))
       .subscribe({
         next: (result: boolean) => {
-          this.isSaving = false;
-          this.showToast('success', 'vehicle_deleted_successfully');
+          this.toastr.success(
+            this.transloco.translate(
+              'vehicle_deleted_successfully',
+              {},
+              'vehicleManagement'
+            ),
+            this.transloco.translate('success')
+          );
           this.activeModal.close({
             success: true,
             operation: 'delete',
@@ -290,16 +327,16 @@ export class VehicleDialogComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error deleting vehicle:', error);
-          this.isSaving = false;
-          this.showToast('error', 'failed_to_delete_vehicle');
+          this.toastr.error(
+            this.transloco.translate(
+              'failed_to_delete_vehicle',
+              {},
+              'vehicleManagement'
+            ),
+            this.transloco.translate('error')
+          );
         },
       });
-  }
-
-  showToast(type: 'success' | 'error', messageKey: string): void {
-    const message = this.transloco.translate(`vehicleManagement.${messageKey}`);
-    const title = this.transloco.translate(type);
-    this.toastr[type](message, title);
   }
 
   onSubmit(): void {
@@ -319,10 +356,6 @@ export class VehicleDialogComponent implements OnInit {
     }
 
     this.openDialogConfirm(this.isEditMode ? 'update' : 'create');
-  }
-
-  onDelete(): void {
-    this.openDialogConfirm('delete');
   }
 
   onCancel(): void {

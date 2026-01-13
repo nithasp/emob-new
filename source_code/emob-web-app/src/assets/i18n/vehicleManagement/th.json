@@ -44,7 +44,6 @@
   "volume": "ปริมาตร",
   "delete_vehicle_title": "ลบยานพาหนะ",
   "delete_vehicle_type_title": "ลบประเภทยานพาหนะ",
-  "delete_vehicle_question": "คุณต้องการลบยานพาหนะนี้หรือไม่?",
   "delete_vehicle_type_question": "คุณแน่ใจหรือไม่ว่าต้องการลบประเภทยานพาหนะนี้หรือไม่?",
   "this_action_cannot_be_undone": "การดำเนินการนี้ไม่สามารถยกเลิกได้",
   "vehicle_deleted_successfully": "ลบยานพาหนะเรียบร้อยแล้ว!",
