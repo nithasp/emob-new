@@ -339,6 +339,14 @@ export class VehicleDialogComponent implements OnInit {
       });
   }
 
+  onLicensePlateEnter(event: Event): void {
+    event.preventDefault();
+    const value = this.form.controls.licensePlate.value?.trim();
+    if (value) {
+      this.addLicensePlate();
+    }
+  }
+
   onSubmit(): void {
     if (!this.isEditMode) {
       const controlLicensePlate = this.form.controls.licensePlate;

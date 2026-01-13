@@ -1,7 +1,9 @@
 <ng-container *transloco="let t; read: 'vehicleManagement'">
   <div id="vehicle-dialog" class="px-3 py-4 w-100 position-relative" [class.is-loading]="isLoading">
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="d-flex flex-column align-items-center justify-content-center position-absolute w-100 h-100 bg-white" style="z-index: 10; top: 0; left: 0; right: 0; bottom: 0">
+    <div *ngIf="isLoading"
+      class="d-flex flex-column align-items-center justify-content-center position-absolute w-100 h-100 bg-white"
+      style="z-index: 10; top: 0; left: 0; right: 0; bottom: 0">
       <mat-spinner diameter="40"></mat-spinner>
       <p class="mt-3 text-secondary small text-center">{{ t("loading_vehicle_data") }}</p>
     </div>
@@ -19,50 +21,29 @@
       <div class="modal-body pb-0">
         <form [formGroup]="form" class="d-flex flex-column gap-3 gap-sm-2 mt-3">
           <!-- Vehicle Type -->
-          <app-input-select
-            idAttribute="vehicleTypeId"
-            valueAttribute="name"
-            [placeholder]="t('vehicle_type')"
-            [options]="vehicleTypeOptions"
-            [control]="form.controls.vehicleType"
-            [required]="true"
+          <app-input-select idAttribute="vehicleTypeId" valueAttribute="name" [placeholder]="t('vehicle_type')"
+            [options]="vehicleTypeOptions" [control]="form.controls.vehicleType" [required]="true"
             [disabled]="isViewMode">
           </app-input-select>
 
           <!-- Start & End Depot -->
           <div class="row g-2">
             <div class="col-12 col-sm-6">
-              <app-input-select
-                idAttribute="depotId"
-                valueAttribute="depotName"
-                [placeholder]="t('start_depot')"
-                [options]="depotOptions"
-                [control]="form.controls.startDepot"
-                [required]="true"
-                [disabled]="isViewMode">
+              <app-input-select idAttribute="depotId" valueAttribute="depotName" [placeholder]="t('start_depot')"
+                [options]="depotOptions" [control]="form.controls.startDepot" [required]="true" [disabled]="isViewMode">
               </app-input-select>
             </div>
             <div class="col-12 col-sm-6">
-              <app-input-select
-                idAttribute="depotId"
-                valueAttribute="depotName"
-                [placeholder]="t('end_depot')"
-                [options]="depotOptions"
-                [control]="form.controls.endDepot"
-                [required]="true"
-                [disabled]="isViewMode">
+              <app-input-select idAttribute="depotId" valueAttribute="depotName" [placeholder]="t('end_depot')"
+                [options]="depotOptions" [control]="form.controls.endDepot" [required]="true" [disabled]="isViewMode">
               </app-input-select>
             </div>
           </div>
 
           <!-- License Plate (Edit/View Mode) -->
           <div *ngIf="isEditMode || isViewMode">
-            <app-input-field
-              class="w-100"
-              [placeholder]="t('license_plate')"
-              [control]="form.controls.licensePlate"
-              [required]="true"
-              [disabled]="isViewMode">
+            <app-input-field class="w-100" [placeholder]="t('license_plate')" [control]="form.controls.licensePlate"
+              [required]="true" [disabled]="isViewMode">
             </app-input-field>
           </div>
 
@@ -70,20 +51,13 @@
           <div *ngIf="!isEditMode && !isViewMode">
             <div class="row g-2 align-items-stretch">
               <div class="col-12 col-sm flex-grow-1">
-                <app-input-field
-                  [placeholder]="t('license_plate')"
-                  [control]="form.controls.licensePlate"
-                  [required]="true"
-                  class="w-100">
+                <app-input-field [placeholder]="t('license_plate')" [control]="form.controls.licensePlate"
+                  [required]="true" class="w-100" (enterKeyPressed)="onLicensePlateEnter($event)">
                 </app-input-field>
               </div>
               <div class="col-12 col-sm-auto flex-grow-1 flex-sm-grow-0">
-                <button
-                  mat-raised-button
-                  class="btn-add-license-plate bg-custom-secondary w-100"
-                  type="button"
-                  (click)="addLicensePlate()"
-                  [disabled]="!form.controls.licensePlate.value">
+                <button mat-raised-button class="btn-add-license-plate bg-custom-secondary w-100" type="button"
+                  (click)="addLicensePlate()" [disabled]="!form.controls.licensePlate.value">
                   {{ "add" | transloco }}
                 </button>
               </div>
@@ -98,11 +72,7 @@
                       <span class="fs-3 text-dark position-relative" style="top: 1px">•</span>
                       <span class="fw-medium text-dark mt-1 text-break">{{ plate }}</span>
                     </div>
-                    <button
-                      type="button"
-                      mat-icon-button
-                      color="warn"
-                      (click)="removeLicensePlate(i)"
+                    <button type="button" mat-icon-button color="warn" (click)="removeLicensePlate(i)"
                       style="width: 32px; height: 32px; margin-top: -12px">
                       <mat-icon style="font-size: 20px; width: 20px; height: 20px">close</mat-icon>
                     </button>
