@@ -8,6 +8,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
 import { finalize } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
+import { ActionMode } from 'src/app/models/common.model';
 
 @Component({
   selector: 'app-vehicle-type',
@@ -15,9 +16,9 @@ import { TranslocoService } from '@jsverse/transloco';
   styleUrls: ['./vehicle-type.component.scss'],
 })
 export class VehicleTypeComponent implements OnInit {
-  page = 1;
-  pageSize = 5;
-  collectionSize = 0;
+  page: number = 1;
+  pageSize: number = 5;
+  collectionSize: number = 0;
 
   allVehicleTypes: VehicleType[] = [];
   paginatedVehicleTypes: VehicleType[] = [];
@@ -34,26 +35,27 @@ export class VehicleTypeComponent implements OnInit {
     this.getMyVehicleTypes();
   }
 
-  getMyVehicleTypes(): void {
+  private getMyVehicleTypes(): void {
     this.spinner.show();
-    this.vehicleService.getMyVehicleTypes().subscribe({
-      next: (data) => {
-        this.allVehicleTypes = data;
-        this.collectionSize = this.allVehicleTypes.length;
-        this.refreshVehicleTypes();
-        this.spinner.hide();
-      },
-      error: (error) => {
-        this.spinner.hide();
-        this.toastr.error(
-          this.transloco.translate(
-            'vehicleManagement.error_fetching_vehicle_types'
-          ),
-          this.transloco.translate('error')
-        );
-        console.error('Error fetching vehicle types:', error);
-      },
-    });
+    this.vehicleService
+      .getMyVehicleTypes()
+      .pipe(finalize(() => this.spinner.hide()))
+      .subscribe({
+        next: (data) => {
+          this.allVehicleTypes = data;
+          this.collectionSize = this.allVehicleTypes.length;
+          this.refreshVehicleTypes();
+        },
+        error: (error) => {
+          this.toastr.error(
+            this.transloco.translate(
+              'vehicleManagement.error_fetching_vehicle_types'
+            ),
+            this.transloco.translate('error')
+          );
+          console.error('Error fetching vehicle types:', error);
+        },
+      });
   }
 
   refreshVehicleTypes(): void {
@@ -63,10 +65,7 @@ export class VehicleTypeComponent implements OnInit {
     );
   }
 
-  openVehicleTypeModal(
-    mode: 'create' | 'edit' | 'view',
-    vehicleType?: VehicleType
-  ): void {
+  openVehicleTypeModal(mode: ActionMode, vehicleType?: VehicleType): void {
     const modalRef = this.ngbModal.open(VehicleTypeDialogComponent, {
       centered: true,
       size: 'lg',
@@ -98,9 +97,7 @@ export class VehicleTypeComponent implements OnInit {
           this.getMyVehicleTypes();
         }
       },
-      () => {
-        // Modal dismissed
-      }
+      () => {}
     );
   }
 
