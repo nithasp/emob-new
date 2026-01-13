@@ -342,9 +342,19 @@ export class VehicleDialogComponent implements OnInit {
   onLicensePlateEnter(event: Event): void {
     event.preventDefault();
     const value = this.form.controls.licensePlate.value?.trim();
-    if (value) {
-      this.addLicensePlate();
+
+    if (!value) {
+      return;
     }
+
+    if (this.licensePlates.includes(value)) {
+      const control = this.form.controls.licensePlate;
+      control.setErrors({ licensePlateDuplicate: true });
+      control.markAsTouched();
+      return;
+    }
+
+    this.addLicensePlate();
   }
 
   onSubmit(): void {
