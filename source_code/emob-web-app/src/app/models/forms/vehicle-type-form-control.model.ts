@@ -1,6 +1,13 @@
 import { FormControl, FormGroup, FormArray } from '@angular/forms';
 import { AccessTypeEnum } from '../vehicle.model';
 
+export interface BreakFormControls {
+  name: FormControl<string | null>;
+  duration: FormControl<string | null>;
+  timeWindowEarly: FormControl<string | null>;
+  timeWindowLate: FormControl<string | null>;
+}
+
 export interface VehicleTypeFormControls {
   name: FormControl<string | null>;
   access: FormControl<AccessTypeEnum[] | null>;
@@ -20,5 +27,5 @@ export interface VehicleTypeFormControls {
   unitDistanceCost: FormControl<number | null>;
   unitDurationCost: FormControl<number | null>;
   fixedCost: FormControl<number | null>;
-  breaks: FormArray;
+  allowedBreaks: FormArray<FormGroup<BreakFormControls>>;
 }

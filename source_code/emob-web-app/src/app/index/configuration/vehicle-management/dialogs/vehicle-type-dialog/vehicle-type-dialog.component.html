@@ -74,8 +74,8 @@
                   [placeholder]="t('capacity')"
                   type="number"
                   [control]="formVehicleType.controls.maximumWeightCapacity"
-                  [disabled]="isViewMode"
                   [required]="true"
+                  [disabled]="isViewMode" 
                 ></app-input-field>
               </div>
 
@@ -84,6 +84,7 @@
                   [placeholder]="t('volume')"
                   type="number"
                   [control]="formVehicleType.controls.maximumVolumeCapacity"
+                  [required]="true"
                   [disabled]="isViewMode"
                 ></app-input-field>
               </div>
@@ -221,6 +222,7 @@
                     type="number"
                     [control]="formVehicleType.controls.maximumDistance"
                     [suffix]="'km' | transloco"
+                    [required]="true"
                     [disabled]="isViewMode"
                   ></app-input-field>
                 </div>
@@ -275,7 +277,7 @@
 
               <div
                 class="table-container-allowed-breaks"
-                [class.overflow-x-auto]="breaks.length > 0"
+                [class.overflow-x-auto]="allowedBreaks.length > 0"
               >
                 <div class="table-header row mb-2 text-muted small">
                   <div class="">{{ t("name") }}</div>
@@ -288,7 +290,7 @@
                 </div>
 
                 <div
-                  *ngIf="breaks.length === 0"
+                  *ngIf="allowedBreaks.length === 0"
                   class="text-center text-secondary py-4"
                 >
                   {{ t("no_breaks_added") }}
@@ -303,7 +305,7 @@
                 >
                   <div
                     [formGroup]="breakControl"
-                    [class.has-long-message-error]="
+                    [class.has-time-range-message-error]="
                       hasBreakTimeRangeError(breakControl)
                     "
                     class="table-body gap-2 align-items-center"
@@ -312,7 +314,7 @@
                     <div>
                       <app-input-field
                         placeholder=""
-                        [control]="$any(breakControl.get('name'))"
+                        [control]="breakControl.controls.name"
                         [disabled]="isViewMode"
                       ></app-input-field>
                     </div>
@@ -323,7 +325,7 @@
                         <app-input-field
                           popover-trigger="popover-trigger"
                           placeholder=""
-                          [control]="$any(breakControl.get('duration'))"
+                          [control]="breakControl.controls.duration"
                           [disabled]="isViewMode"
                           [readonly]="true"
                           suffixIcon="access_time"
@@ -351,7 +353,7 @@
                         <app-input-field
                           popover-trigger="popover-trigger"
                           placeholder=""
-                          [control]="$any(breakControl.get('earliestStart'))"
+                          [control]="breakControl.controls.timeWindowEarly"
                           [disabled]="isViewMode"
                           [readonly]="true"
                           suffixIcon="access_time"
@@ -361,12 +363,12 @@
                           <div class="card-body p-2">
                             <p class="card-title">{{ t("earliest_start") }}</p>
                             <ngb-timepicker
-                              [(ngModel)]="breakTimeObjects[i].earliestStart"
+                              [(ngModel)]="breakTimeObjects[i].timeWindowEarly"
                               [ngModelOptions]="{ standalone: true }"
                               (ngModelChange)="
                                 onBreakTimeValueChange(
                                   i,
-                                  'earliestStart',
+                                  'timeWindowEarly',
                                   $event
                                 )
                               "
@@ -383,7 +385,7 @@
                         <app-input-field
                           popover-trigger="popover-trigger"
                           placeholder=""
-                          [control]="$any(breakControl.get('latestStart'))"
+                          [control]="breakControl.controls.timeWindowLate"
                           [disabled]="isViewMode"
                           [readonly]="true"
                           suffixIcon="access_time"
@@ -393,10 +395,10 @@
                           <div class="card-body p-2">
                             <p class="card-title">{{ t("latest_start") }}</p>
                             <ngb-timepicker
-                              [(ngModel)]="breakTimeObjects[i].latestStart"
+                              [(ngModel)]="breakTimeObjects[i].timeWindowLate"
                               [ngModelOptions]="{ standalone: true }"
                               (ngModelChange)="
-                                onBreakTimeValueChange(i, 'latestStart', $event)
+                                onBreakTimeValueChange(i, 'timeWindowLate', $event)
                               "
                               [readonly]="isViewMode"
                             ></ngb-timepicker>

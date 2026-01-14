@@ -54,8 +54,8 @@ export interface Break {
 export interface VehicleBreak {
   name: string;
   duration: string;
-  earliestStart: string;
-  latestStart: string;
+  timeWindowEarly: string;
+  timeWindowLate: string;
 }
 
 export interface VehicleType {
@@ -145,4 +145,10 @@ export interface VehicleEnumOption {
 export interface TimeObject {
   hour: number;
   minute: number;
+}
+
+export interface BreakTimeObject {
+  duration: TimeObject;
+  timeWindowEarly: TimeObject;
+  timeWindowLate: TimeObject;
 }
