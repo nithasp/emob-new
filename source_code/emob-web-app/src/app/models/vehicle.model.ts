@@ -51,6 +51,13 @@ export interface Break {
   name: string;
 }
 
+export interface VehicleBreak {
+  name: string;
+  duration: string;
+  earliestStart: string;
+  latestStart: string;
+}
+
 export interface VehicleType {
   vehicleTypeId: string;
   name: string;

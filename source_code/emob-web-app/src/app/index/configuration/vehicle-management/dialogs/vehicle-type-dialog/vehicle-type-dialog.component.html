@@ -439,7 +439,7 @@
                 <button
                   type="button"
                   class="btn btn-outline-secondary"
-                  (click)="cancel()"
+                  (click)="onCancel()"
                 >
                   {{ "cancel" | transloco }}
                 </button>
@@ -448,7 +448,7 @@
                   type="button"
                   mat-raised-button
                   class="bg-custom-primary"
-                  (click)="save()"
+                  (click)="onSubmit()"
                 >
                   {{ isEdit ? ("update" | transloco) : ("save" | transloco) }}
                 </button>

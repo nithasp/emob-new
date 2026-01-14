@@ -1,4 +1,11 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -19,25 +26,14 @@ import {
   VehicleEnumConfigs,
   TimeObject,
   VehicleProfileTypeEnum,
+  VehicleBreak,
 } from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
-import {
-  timeStringToMinutes,
-  minutesToTimeString,
-} from 'src/app/directives/time-string-to-minutes.pipe';
+import { minutesToTimeString } from 'src/app/directives/time-string-to-minutes.pipe';
 import { VehicleTypeFormControls } from 'src/app/models/forms/vehicle-type-form-control.model';
-import {
-  compareTimeValidator,
-  createTimeRangeValidator,
-} from 'src/app/shared/validators/time-range.validator';
+import { createTimeRangeValidator } from 'src/app/shared/validators/time-range.validator';
 import { TranslocoService } from '@jsverse/transloco';
-
-interface VehicleBreak {
-  name: string;
-  duration: string;
-  earliestStart: string;
-  latestStart: string;
-}
+import { ActionMode } from 'src/app/models/common.model';
 
 @Component({
   selector: 'app-vehicle-type-dialog',
@@ -45,7 +41,7 @@ interface VehicleBreak {
   styleUrls: ['./vehicle-type-dialog.component.scss'],
 })
 export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
-  @Input() mode: 'create' | 'edit' | 'view' = 'create';
+  @Input() mode: ActionMode = 'create';
   @Input() vehicleType: VehicleType | null = null;
   @ViewChild('formContainer') formContainer!: ElementRef<HTMLDivElement>;
 
@@ -62,7 +58,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   timeWindowEarlyObject: TimeObject = { hour: 0, minute: 0 };
   timeWindowLateObject: TimeObject = { hour: 0, minute: 0 };
 
-  // Allowed Breaks
   breaks!: FormArray;
   breakTimeObjects: {
     [key: number]: {
@@ -82,100 +77,24 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.initializeMode();
+    this.initializeForm();
+    this.loadEnumValuesAndVehicleTypeData();
+  }
+
+  ngOnDestroy(): void {
+    if (this.scrollTimeoutId !== undefined) {
+      clearTimeout(this.scrollTimeoutId);
+      this.scrollTimeoutId = undefined;
+    }
+  }
+
+  private initializeMode(): void {
     this.isEdit = this.mode === 'edit';
     this.isViewMode = this.mode === 'view';
-    this.initForm();
-
-    this.getEnumValues().then(() => {
-      if ((this.isEdit || this.isViewMode) && this.vehicleType) {
-        const vehicleTypeData = this.vehicleType;
-        const vehicleType = {
-          name: vehicleTypeData.name,
-          access: vehicleTypeData.access,
-          vehicleProfileType: vehicleTypeData.vehicleProfileType,
-          unitDistanceCost: vehicleTypeData.unitDistanceCost,
-          unitDurationCost: vehicleTypeData.unitDurationCost,
-          fixedCost: vehicleTypeData.fixedCost,
-          timeWindowEarly: this.formatTimeForDisplay(
-            vehicleTypeData.timeWindowEarly
-          ),
-          timeWindowLate: this.formatTimeForDisplay(
-            vehicleTypeData.timeWindowLate
-          ),
-          maximumWeightCapacity: vehicleTypeData.maximumWeightCapacity,
-          maximumVolumeCapacity: (vehicleTypeData as any).maximumVolumeCapacity,
-          vehicleGroupId: (vehicleTypeData as any).vehicleGroupId,
-          maximumDistance: vehicleTypeData.maximumDistance,
-          maximumDuration: vehicleTypeData.maximumDuration,
-          dimension: {
-            width: vehicleTypeData.dimension?.width,
-            height: vehicleTypeData.dimension?.height,
-            depth: vehicleTypeData.dimension?.depth,
-          },
-        };
-        this.formVehicleType.patchValue(vehicleType);
-        if (vehicleType.timeWindowEarly) {
-          const [hour, minute] = vehicleType.timeWindowEarly
-            .split(':')
-            .map(Number);
-          this.timeWindowEarlyObject = { hour: hour || 0, minute: minute || 0 };
-        }
-        if (vehicleType.timeWindowLate) {
-          const [hour, minute] = vehicleType.timeWindowLate
-            .split(':')
-            .map(Number);
-          this.timeWindowLateObject = { hour: hour || 0, minute: minute || 0 };
-        }
-
-        // Load breaks if exists (handle both 'breaks' and 'allowedBreaks' properties)
-        const breaksData =
-          (vehicleTypeData as any).allowedBreaks ||
-          (vehicleTypeData as any).breaks;
-        if (breaksData && Array.isArray(breaksData)) {
-          this.breaks.clear();
-          this.breakTimeObjects = {};
-          breaksData.forEach((breakData: any, index: number) => {
-            // Map API field names to form field names
-            const mappedBreakData: VehicleBreak = {
-              name: breakData.name || '',
-              duration: this.formatTimeForDisplay(breakData.duration),
-              earliestStart: this.formatTimeForDisplay(
-                breakData.timeWindowEarly || breakData.earliestStart
-              ),
-              latestStart: this.formatTimeForDisplay(
-                breakData.timeWindowLate || breakData.latestStart
-              ),
-            };
-            this.breaks.push(this.createBreakFormGroup(mappedBreakData));
-
-            // Initialize time objects for each break
-            this.breakTimeObjects[index] = {
-              duration: this.parseTimeString(mappedBreakData.duration),
-              earliestStart: this.parseTimeString(
-                mappedBreakData.earliestStart
-              ),
-              latestStart: this.parseTimeString(mappedBreakData.latestStart),
-            };
-          });
-        }
-      }
-      if (this.isViewMode) {
-        this.formVehicleType.disable({ emitEvent: false });
-      }
-    });
   }
 
-  formatTimeForDisplay(timeValue: string | number | null | undefined): string {
-    if (typeof timeValue === 'string' && timeValue.includes(':')) {
-      return timeValue;
-    }
-    if (typeof timeValue === 'number') {
-      return minutesToTimeString(timeValue);
-    }
-    return '';
-  }
-
-  initForm(): void {
+  private initializeForm(): void {
     this.breaks = this.fb.array([]);
 
     const formGroup = this.fb.group(
@@ -225,100 +144,224 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
         }),
       }
     );
-    this.formVehicleType =
-      formGroup as any as FormGroup<VehicleTypeFormControls>;
+
+    this.formVehicleType = formGroup;
   }
 
-  save(): void {
-    if (this.formVehicleType.invalid) {
-      this.formVehicleType.markAllAsTouched();
-      // Mark all break controls as touched to show validation errors
-      this.breaks.controls.forEach((control) => {
-        control.markAsTouched();
+  private loadEnumValuesAndVehicleTypeData(): void {
+    this.isLoading = true;
+
+    const enumRequests = VehicleEnumConfigs.map((config) =>
+      this.vehicleService.getEnumValues(config.type)
+    );
+
+    forkJoin(enumRequests)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (responses) => {
+          VehicleEnumConfigs.forEach((config, index) => {
+            (this as Record<string, unknown>)[config.property] =
+              responses[index];
+          });
+
+          if ((this.isEdit || this.isViewMode) && this.vehicleType) {
+            const data = this.vehicleType;
+            this.formVehicleType.patchValue({
+              name: data.name,
+              access: data.access,
+              vehicleProfileType: data.vehicleProfileType,
+              unitDistanceCost: data.unitDistanceCost,
+              unitDurationCost: data.unitDurationCost,
+              fixedCost: data.fixedCost,
+              timeWindowEarly: this.formatTimeForDisplay(data.timeWindowEarly),
+              timeWindowLate: this.formatTimeForDisplay(data.timeWindowLate),
+              maximumWeightCapacity: data.maximumWeightCapacity,
+              maximumVolumeCapacity: data.maximumVolumeCapacity,
+              vehicleGroupId: data.vehicleGroupId,
+              maximumDistance: data.maximumDistance,
+              maximumDuration: data.maximumDuration,
+              dimension: data.dimension,
+            });
+
+            if (data.timeWindowEarly) {
+              this.timeWindowEarlyObject = this.parseTimeString(
+                data.timeWindowEarly
+              );
+            }
+            if (data.timeWindowLate) {
+              this.timeWindowLateObject = this.parseTimeString(
+                data.timeWindowLate
+              );
+            }
+            this.loadBreaksData();
+          }
+          if (this.isViewMode) {
+            this.formVehicleType.disable({ emitEvent: false });
+          }
+        },
+        error: (err) => {
+          console.error('Error loading enum values:', err);
+          VehicleEnumConfigs.forEach((config) => {
+            (this as Record<string, unknown>)[config.property] = [];
+          });
+        },
       });
+  }
+
+  private loadBreaksData(): void {
+    const breaksData = this.vehicleType!.allowedBreaks;
+
+    if (breaksData && Array.isArray(breaksData)) {
+      this.breaks.clear();
+      this.breakTimeObjects = {};
+
+      breaksData.forEach((breakData: any, index: number) => {
+        const mappedBreak = this.mapBreakDataToForm(breakData);
+        this.breaks.push(this.createBreakFormGroup(mappedBreak));
+        this.breakTimeObjects[index] = this.createBreakTimeObjects(mappedBreak);
+      });
+    }
+  }
+
+  private mapBreakDataToForm(breakData: any): VehicleBreak {
+    return {
+      name: breakData.name || '',
+      duration: this.formatTimeForDisplay(breakData.duration),
+      earliestStart: this.formatTimeForDisplay(
+        breakData.timeWindowEarly || breakData.earliestStart
+      ),
+      latestStart: this.formatTimeForDisplay(
+        breakData.timeWindowLate || breakData.latestStart
+      ),
+    };
+  }
+
+  private createBreakTimeObjects(breakData: VehicleBreak) {
+    return {
+      duration: this.parseTimeString(breakData.duration),
+      earliestStart: this.parseTimeString(breakData.earliestStart),
+      latestStart: this.parseTimeString(breakData.latestStart),
+    };
+  }
+
+  private formatTimeForDisplay(
+    timeValue: string | number | null | undefined
+  ): string {
+    if (typeof timeValue === 'string' && timeValue.includes(':')) {
+      return timeValue;
+    }
+    if (typeof timeValue === 'number') {
+      return minutesToTimeString(timeValue);
+    }
+    return '';
+  }
+
+  private parseTimeString(timeStr: string): TimeObject {
+    if (!timeStr) {
+      return { hour: 0, minute: 0 };
+    }
+    const parts = timeStr.split(':');
+    return {
+      hour: parseInt(parts[0]) || 0,
+      minute: parseInt(parts[1]) || 0,
+    };
+  }
+
+  onSubmit(): void {
+    if (this.formVehicleType.invalid) {
+      this.markFormAsInvalid();
       return;
     }
-    this.openDialogConfirm();
+
+    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      centered: true,
+      animation: true,
+    });
+
+    dialogRef.componentInstance.title = this.transloco.translate(
+      this.isEdit
+        ? 'vehicleManagement.confirm_update'
+        : 'vehicleManagement.confirm_create'
+    );
+    dialogRef.componentInstance.message = this.transloco.translate(
+      this.isEdit
+        ? 'vehicleManagement.are_you_sure_update_vehicle_type'
+        : 'vehicleManagement.are_you_sure_create_vehicle_type'
+    );
+
+    dialogRef.result
+      .then((confirmed: boolean) => {
+        if (confirmed) {
+          this.handleSubmit();
+        }
+      })
+      .catch(() => {});
   }
 
-  cancel(): void {
+  onCancel(): void {
     this.activeModal.dismiss();
   }
 
-  onAccessPointChange(
-    event: MatCheckboxChange,
-    accessPoint: AccessTypeEnum
-  ): void {
-    const accessPoints = this.formVehicleType.get('access') as FormControl<
-      AccessTypeEnum[] | null
-    >;
-    let currentValues = [...(accessPoints.value || [])];
-    if (event.checked) {
-      currentValues.push(accessPoint);
-    } else {
-      const index = currentValues.indexOf(accessPoint);
-      if (index > -1) {
-        currentValues.splice(index, 1);
-      }
-    }
-    accessPoints.setValue(currentValues);
-  }
-
-  isAccessPointChecked(accessPoint: AccessTypeEnum): boolean {
-    return (
-      this.formVehicleType.get('access')?.value?.includes(accessPoint) ?? false
-    );
-  }
-
-  isAccessPointCheckedString(accessPointKey: string): boolean {
-    return this.isAccessPointChecked(accessPointKey as AccessTypeEnum);
+  private markFormAsInvalid(): void {
+    this.formVehicleType.markAllAsTouched();
+    this.breaks.controls.forEach((control) => control.markAsTouched());
   }
 
   onAccessPointChangeString(
     event: MatCheckboxChange,
     accessPointKey: string
   ): void {
-    this.onAccessPointChange(event, accessPointKey as AccessTypeEnum);
-  }
+    const accessPoints = this.formVehicleType.get('access') as FormControl<
+      AccessTypeEnum[] | null
+    >;
+    let currentValues = [...(accessPoints.value || [])];
 
-  openDialogConfirm(): void {
-    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
-      centered: true,
-      animation: true,
-    });
-    const action = this.isEdit ? 'update' : 'create';
-    dialogRef.componentInstance.title = this.isEdit
-      ? this.transloco.translate('vehicleManagement.confirm_update')
-      : this.transloco.translate('vehicleManagement.confirm_create');
-    dialogRef.componentInstance.message = this.isEdit
-      ? this.transloco.translate(
-          'vehicleManagement.are_you_sure_update_vehicle_type'
-        )
-      : this.transloco.translate(
-          'vehicleManagement.are_you_sure_create_vehicle_type'
-        );
-    dialogRef.result.then((confirmed: boolean) => {
-      if (confirmed) {
-        this.handleSubmit();
+    if (event.checked) {
+      currentValues.push(accessPointKey as AccessTypeEnum);
+    } else {
+      const index = currentValues.indexOf(accessPointKey as AccessTypeEnum);
+      if (index > -1) {
+        currentValues.splice(index, 1);
       }
+    }
+
+    accessPoints.setValue(currentValues);
+  }
+
+  isAccessPointCheckedString(accessPointKey: string): boolean {
+    return (
+      this.formVehicleType
+        .get('access')
+        ?.value?.includes(accessPointKey as AccessTypeEnum) ?? false
+    );
+  }
+
+  private handleSubmit(): void {
+    this.spinner.show();
+
+    const payload = this.buildPayload();
+    const request$ = this.isEdit
+      ? this.vehicleService.updateVehicleType(
+          this.vehicleType!.vehicleTypeId,
+          payload as VehicleType
+        )
+      : this.vehicleService.createVehicleType(payload as VehicleType);
+
+    request$.pipe(finalize(() => this.spinner.hide())).subscribe({
+      next: (res: VehicleType) => {
+        this.activeModal.close({ refresh: true, vehicleType: res });
+      },
+      error: (err) => {
+        console.error(
+          `Failed to ${this.isEdit ? 'update' : 'create'} vehicle type:`,
+          err
+        );
+      },
     });
   }
 
-  handleSubmit(): void {
-    this.spinner.show();
-    const formValue = this.formVehicleType.getRawValue() as any;
-
-    // Map breaks form data to API format (allowedBreaks)
-    let allowedBreaks: any[] | undefined;
-    const breaksValue = this.breaks.getRawValue();
-    if (breaksValue && breaksValue.length > 0) {
-      allowedBreaks = breaksValue.map((breakItem: any) => ({
-        name: breakItem.name,
-        duration: breakItem.duration,
-        timeWindowEarly: breakItem.earliestStart,
-        timeWindowLate: breakItem.latestStart,
-      }));
-    }
+  private buildPayload(): Partial<VehicleType> {
+    const formValue = this.formVehicleType.getRawValue();
 
     const payload: Partial<VehicleType> = {
       name: formValue.name || '',
@@ -333,48 +376,58 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
         height: Number(formValue.dimension?.height) || 0,
         depth: Number(formValue.dimension?.depth) || 0,
       },
-      maximumDistance: formValue.maximumDistance ? Number(formValue.maximumDistance) : undefined,
-      maximumDuration: formValue.maximumDuration ? Number(formValue.maximumDuration) : undefined,
+      maximumDistance: formValue.maximumDistance
+        ? Number(formValue.maximumDistance)
+        : undefined,
+      maximumDuration: formValue.maximumDuration
+        ? Number(formValue.maximumDuration)
+        : undefined,
       unitDistanceCost: Number(formValue.unitDistanceCost) || 0,
       unitDurationCost: Number(formValue.unitDurationCost) || 0,
       fixedCost: Number(formValue.fixedCost) || 0,
     };
 
-    // Add new fields
-    if (formValue.maximumVolumeCapacity !== null && formValue.maximumVolumeCapacity !== undefined) {
-      (payload as any).maximumVolumeCapacity = Number(formValue.maximumVolumeCapacity);
+    if (
+      formValue.maximumVolumeCapacity !== null &&
+      formValue.maximumVolumeCapacity !== undefined
+    ) {
+      payload.maximumVolumeCapacity = Number(formValue.maximumVolumeCapacity);
     }
     if (formValue.vehicleGroupId) {
-      (payload as any).vehicleGroupId = formValue.vehicleGroupId;
-    }
-    if (allowedBreaks && allowedBreaks.length > 0) {
-      (payload as any).allowedBreaks = allowedBreaks;
+      payload.vehicleGroupId = formValue.vehicleGroupId;
     }
 
-    // Remove undefined values
+    const allowedBreaks = this.buildAllowedBreaks();
+    if (allowedBreaks.length > 0) {
+      payload.allowedBreaks = allowedBreaks;
+    }
+
+    return this.removeUndefinedValues(payload);
+  }
+
+  private buildAllowedBreaks(): any[] {
+    const breaksValue = this.breaks.getRawValue();
+    if (!breaksValue || breaksValue.length === 0) {
+      return [];
+    }
+
+    return breaksValue.map((breakItem: any) => ({
+      name: breakItem.name,
+      duration: breakItem.duration,
+      timeWindowEarly: breakItem.earliestStart,
+      timeWindowLate: breakItem.latestStart,
+    }));
+  }
+
+  private removeUndefinedValues(
+    payload: Partial<VehicleType>
+  ): Partial<VehicleType> {
     Object.keys(payload).forEach((key) => {
       if (payload[key as keyof typeof payload] === undefined) {
         delete payload[key as keyof typeof payload];
       }
     });
-
-    const request$ = this.isEdit
-      ? this.vehicleService.updateVehicleType(
-          this.vehicleType!.vehicleTypeId,
-          payload as VehicleType
-        )
-      : this.vehicleService.createVehicleType(payload as VehicleType);
-    request$.pipe(finalize(() => this.spinner.hide())).subscribe({
-      next: (res) => {
-        this.activeModal.close({ refresh: true, vehicleType: res });
-      },
-      error: (err) => {
-        console.error(
-          `Failed to ${this.isEdit ? 'update' : 'create'} vehicle type:`,
-          err
-        );
-      },
-    });
+    return payload;
   }
 
   onTimeValueChange(
@@ -386,53 +439,24 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     } else {
       this.timeWindowLateObject = event;
     }
+
+    const timeString = this.convertTimeObjectToString(event);
+    this.formVehicleType.controls[key].setValue(timeString);
+
+    this.formVehicleType.updateValueAndValidity();
+    this.formVehicleType.controls.timeWindowEarly.markAsTouched();
+    this.formVehicleType.controls.timeWindowLate.markAsTouched();
+  }
+
+  private convertTimeObjectToString(event: TimeObject): string {
     if (event && event.hour !== undefined && event.minute !== undefined) {
       const hour = String(event.hour).padStart(2, '0');
       const minute = String(event.minute).padStart(2, '0');
-      (this.formVehicleType.controls as any)[key].setValue(`${hour}:${minute}`);
-    } else {
-      (this.formVehicleType.controls as any)[key].setValue('');
+      return `${hour}:${minute}`;
     }
-
-    this.formVehicleType.updateValueAndValidity();
-    (this.formVehicleType.controls as any).timeWindowEarly.markAsTouched();
-    (this.formVehicleType.controls as any).timeWindowLate.markAsTouched();
+    return '';
   }
-
-  getEnumValues(): Promise<void> {
-    this.isLoading = true;
-
-    const enumRequests = VehicleEnumConfigs.map((config) =>
-      this.vehicleService.getEnumValues(config.type)
-    );
-
-    return new Promise((resolve) => {
-      forkJoin(enumRequests)
-        .pipe(
-          finalize(() => {
-            this.isLoading = false;
-            resolve();
-          })
-        )
-        .subscribe({
-          next: (responses) => {
-            VehicleEnumConfigs.forEach((config, index) => {
-              (this as Record<string, unknown>)[config.property] =
-                responses[index];
-            });
-          },
-          error: (err) => {
-            console.error('Error loading enum values:', err);
-
-            VehicleEnumConfigs.forEach((config) => {
-              (this as Record<string, unknown>)[config.property] = [];
-            });
-          },
-        });
-    });
-  }
-
-  // Allowed Breaks Methods
+  
   createBreakFormGroup(breakData?: VehicleBreak): FormGroup {
     return this.fb.group(
       {
@@ -465,55 +489,43 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
       latestStart: { hour: 0, minute: 0 },
     };
 
+    this.scrollToBottom();
+  }
+
+  removeBreak(index: number): void {
+    this.breaks.removeAt(index);
+    this.reindexBreakTimeObjects(index);
+  }
+
+  private scrollToBottom(): void {
     if (this.scrollTimeoutId !== undefined) {
       clearTimeout(this.scrollTimeoutId);
     }
 
-    // Scroll to bottom of form container after DOM updates
     this.scrollTimeoutId = window.setTimeout(() => {
-      if (this.formContainer && this.formContainer.nativeElement) {
+      if (this.formContainer?.nativeElement) {
         this.formContainer.nativeElement.scrollTo({
           top: this.formContainer.nativeElement.scrollHeight,
-          behavior: 'smooth'
+          behavior: 'smooth',
         });
       }
     }, 100);
   }
 
-  removeBreak(index: number): void {
-    this.breaks.removeAt(index);
-
-    // Remove time object and re-index
-    delete this.breakTimeObjects[index];
+  private reindexBreakTimeObjects(removedIndex: number): void {
+    delete this.breakTimeObjects[removedIndex];
     const newTimeObjects: typeof this.breakTimeObjects = {};
+
     Object.keys(this.breakTimeObjects).forEach((key) => {
       const numKey = parseInt(key);
-      if (numKey > index) {
+      if (numKey > removedIndex) {
         newTimeObjects[numKey - 1] = this.breakTimeObjects[numKey];
-      } else if (numKey < index) {
+      } else if (numKey < removedIndex) {
         newTimeObjects[numKey] = this.breakTimeObjects[numKey];
       }
     });
+
     this.breakTimeObjects = newTimeObjects;
-  }
-
-  trackByIndex(index: number): number {
-    return index;
-  }
-
-  getBreakControls(): FormGroup[] {
-    return this.breaks.controls as FormGroup[];
-  }
-
-  parseTimeString(timeStr: string): TimeObject {
-    if (!timeStr) {
-      return { hour: 0, minute: 0 };
-    }
-    const parts = timeStr.split(':');
-    return {
-      hour: parseInt(parts[0]) || 0,
-      minute: parseInt(parts[1]) || 0,
-    };
   }
 
   onBreakTimeValueChange(
@@ -521,6 +533,18 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     field: 'duration' | 'earliestStart' | 'latestStart',
     event: TimeObject
   ): void {
+    this.initializeBreakTimeObjectIfNeeded(breakIndex);
+    this.breakTimeObjects[breakIndex][field] = event;
+
+    const breakControl = this.breaks.at(breakIndex) as FormGroup;
+    const timeString = this.convertTimeObjectToString(event);
+    breakControl.get(field)?.setValue(timeString);
+
+    breakControl.updateValueAndValidity();
+    breakControl.get(field)?.markAsTouched();
+  }
+
+  private initializeBreakTimeObjectIfNeeded(breakIndex: number): void {
     if (!this.breakTimeObjects[breakIndex]) {
       this.breakTimeObjects[breakIndex] = {
         duration: { hour: 0, minute: 0 },
@@ -528,23 +552,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
         latestStart: { hour: 0, minute: 0 },
       };
     }
-
-    this.breakTimeObjects[breakIndex][field] = event;
-
-    const breakControl = this.breaks.at(breakIndex) as FormGroup;
-    
-    if (event && event.hour !== undefined && event.minute !== undefined) {
-      const hour = String(event.hour).padStart(2, '0');
-      const minute = String(event.minute).padStart(2, '0');
-      breakControl.get(field)?.setValue(`${hour}:${minute}`);
-    } else {
-      breakControl.get(field)?.setValue('');
-    }
-
-    // Trigger validation for time range
-    breakControl.updateValueAndValidity();
-    // Only mark the field that was changed as touched
-    breakControl.get(field)?.markAsTouched();
   }
 
   getBreakTimeObject(
@@ -557,18 +564,18 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   hasBreakTimeRangeError(breakControl: FormGroup): boolean {
     const earliestStart = breakControl.get('earliestStart');
     const latestStart = breakControl.get('latestStart');
-    
+
     return !!(
       (earliestStart?.hasError('timeRangeInvalid') && earliestStart?.touched) ||
       (latestStart?.hasError('timeRangeInvalid') && latestStart?.touched)
     );
   }
 
-  ngOnDestroy(): void {
-    // Clean up timeout to prevent memory leaks
-    if (this.scrollTimeoutId !== undefined) {
-      clearTimeout(this.scrollTimeoutId);
-      this.scrollTimeoutId = undefined;
-    }
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  getBreakControls(): FormGroup[] {
+    return this.breaks.controls as FormGroup[];
   }
 }
