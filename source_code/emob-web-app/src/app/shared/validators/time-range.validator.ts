@@ -64,6 +64,11 @@ export function createTimeRangeValidator(
       return null;
     }
 
+    // Skip validation if both times are "00:00" (represents no time window restriction)
+    if (startMinutes === 0 && endMinutes === 0) {
+      return null;
+    }
+
     if (startMinutes >= endMinutes) {
       const startCurrentErrors = startTimeControl.errors || {};
       startTimeControl.setErrors({

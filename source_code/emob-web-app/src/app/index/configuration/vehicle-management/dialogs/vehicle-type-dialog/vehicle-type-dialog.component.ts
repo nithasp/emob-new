@@ -93,7 +93,10 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   }
 
   private initializeForm(): void {
-    this.allowedBreaks = this.fb.array<FormGroup<BreakFormControls>>([]);
+    this.allowedBreaks = this.fb.array<FormGroup<BreakFormControls>>(
+      [],
+      Validators.required
+    );
 
     const formGroup = this.fb.group(
       {
@@ -291,7 +294,13 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
 
   private markFormAsInvalid(): void {
     this.formVehicleType.markAllAsTouched();
+    this.allowedBreaks.markAsTouched();
     this.allowedBreaks.controls.forEach((control) => control.markAsTouched());
+
+    // Scroll to bottom if there's an error with allowed breaks
+    if (this.allowedBreaks.hasError('required') && this.allowedBreaks.length === 0) {
+      this.scrollToBottom();
+    }
   }
 
   onAccessPointChangeString(
@@ -362,6 +371,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
         height: Number(formValue.dimension?.height) || 0,
         depth: Number(formValue.dimension?.depth) || 0,
       },
+      vehicleGroupId: formValue.vehicleGroupId || '',
       maximumDistance: formValue.maximumDistance
         ? Number(formValue.maximumDistance)
         : undefined,

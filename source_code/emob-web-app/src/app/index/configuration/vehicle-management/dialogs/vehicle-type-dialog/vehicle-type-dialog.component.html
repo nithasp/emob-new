@@ -75,7 +75,7 @@
                   type="number"
                   [control]="formVehicleType.controls.maximumWeightCapacity"
                   [required]="true"
-                  [disabled]="isViewMode" 
+                  [disabled]="isViewMode"
                 ></app-input-field>
               </div>
 
@@ -232,6 +232,7 @@
                     type="number"
                     [control]="formVehicleType.controls.maximumDuration"
                     [suffix]="'hr' | transloco"
+                    [required]="true"
                     [disabled]="isViewMode"
                   ></app-input-field>
                 </div>
@@ -398,7 +399,11 @@
                               [(ngModel)]="breakTimeObjects[i].timeWindowLate"
                               [ngModelOptions]="{ standalone: true }"
                               (ngModelChange)="
-                                onBreakTimeValueChange(i, 'timeWindowLate', $event)
+                                onBreakTimeValueChange(
+                                  i,
+                                  'timeWindowLate',
+                                  $event
+                                )
                               "
                               [readonly]="isViewMode"
                             ></ngb-timepicker>
@@ -420,6 +425,17 @@
                   </div>
                 </div>
               </div>
+
+              <mat-error
+                *ngIf="
+                  allowedBreaks.hasError('required') &&
+                  allowedBreaks.touched &&
+                  allowedBreaks.length === 0
+                "
+                class="d-block mt-2"
+              >
+                <small>{{ "form.error.required" | transloco }}</small>
+              </mat-error>
 
               <div class="mt-3">
                 <button
