@@ -116,7 +116,7 @@ export const VehicleEnumConfigs = [
   }
 ];
 
-export interface VehicleInput {
+export interface VehicleCreateInput {
   licensePlates: string[];
   startDepotId: string;
   endDepotId: string;
@@ -131,11 +131,13 @@ export interface VehicleUpdateInput {
   isActive?: boolean;
 }
 
-export interface VehicleCreationResult {
+export interface VehicleCreateResponse {
   vehicles: Vehicle[];
   duplicates: string[];
   message: string;
 }
+
+export type VehicleUpdateResponse = MyVehicles;
 
 export interface VehicleEnumOption {
   key: string;

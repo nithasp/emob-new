@@ -8,10 +8,10 @@ import {
   MyVehicles,
   VehicleEnumOption,
   VehicleType,
-  VehicleInput,
+  VehicleCreateInput,
   VehicleUpdateInput,
-  VehicleCreationResult,
-  Vehicle,
+  VehicleCreateResponse,
+  VehicleUpdateResponse,
 } from '../models/vehicle.model';
 
 @Injectable({ providedIn: 'root' })
@@ -328,7 +328,7 @@ export class VehicleService {
       );
   }
 
-  createVehicle(input: VehicleInput): Observable<VehicleCreationResult> {
+  createVehicle(input: VehicleCreateInput): Observable<VehicleCreateResponse> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`
@@ -432,7 +432,7 @@ export class VehicleService {
   updateVehicle(
     vehicleId: string,
     input: VehicleUpdateInput
-  ): Observable<MyVehicles> {
+  ): Observable<VehicleUpdateResponse> {
     return this.apollo
       .mutate<Response>({
         mutation: gql`

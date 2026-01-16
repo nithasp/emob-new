@@ -7,12 +7,13 @@ import {
   VehicleType,
   MyVehicles,
   VehicleUpdateInput,
-  VehicleInput,
-  VehicleCreationResult,
+  VehicleCreateInput,
+  VehicleCreateResponse,
+  VehicleUpdateResponse,
 } from 'src/app/models/vehicle.model';
 import { MyDepot } from 'src/app/models/experiment.model';
 import { ActionMode } from 'src/app/models/common.model';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Observable } from 'rxjs';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { finalize, catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
@@ -171,172 +172,78 @@ export class VehicleDialogComponent implements OnInit {
     this.updateLicensePlateValidators();
   }
 
-  private openDialogConfirm(action: 'create' | 'update'): void {
-    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
-      centered: true,
-      animation: true,
-    });
-
-    const config = {
-      create: {
-        title: 'vehicleManagement.confirm_create',
-        message: 'vehicleManagement.are_you_sure_create_vehicle',
-      },
-      update: {
-        title: 'vehicleManagement.confirm_update',
-        message: 'vehicleManagement.are_you_sure_update_vehicle',
-      },
-    };
-
-    dialogRef.componentInstance.title = this.transloco.translate(
-      config[action].title
-    );
-    dialogRef.componentInstance.message = this.transloco.translate(
-      config[action].message
-    );
-
-    dialogRef.result
-      .then((confirmed: boolean) => {
-        if (confirmed) {
-          if (action === 'create') {
-            this.handleCreateVehicle();
-          } else if (action === 'update') {
-            this.handleUpdateVehicle();
-          }
-        }
-      })
-      .catch(() => {});
-  }
-
   private extractDepotId(value: string | MyDepot | null | undefined): string {
     if (!value) return '';
     return typeof value === 'object' ? value.depotId : value;
   }
 
-  private handleCreateVehicle(): void {
+  private buildPayload(): VehicleCreateInput | VehicleUpdateInput {
     const formValues = this.form.value;
-    const payload: VehicleInput = {
+    const basePayload = {
       vehicleTypeId: formValues.vehicleType!,
       startDepotId: this.extractDepotId(formValues.startDepot)!,
       endDepotId: this.extractDepotId(formValues.endDepot)!,
-      licensePlates: this.licensePlates,
     };
 
-    this.spinner.show();
-
-    this.vehicleService
-      .createVehicle(payload)
-      .pipe(finalize(() => this.spinner.hide()))
-      .subscribe({
-        next: (result: VehicleCreationResult) => {
-          this.toastr.success(
-            this.transloco.translate(
-              'vehicle_created_successfully',
-              {},
-              'vehicleManagement'
-            ),
-            this.transloco.translate('success')
-          );
-          this.activeModal.close({
-            success: true,
-            operation: 'create',
-            result: result,
-          });
-        },
-        error: (error) => {
-          console.error('Error creating vehicle:', error);
-          this.toastr.error(
-            this.transloco.translate(
-              'failed_to_create_vehicle',
-              {},
-              'vehicleManagement'
-            ),
-            this.transloco.translate('error')
-          );
-        },
-      });
+    if (this.isEditMode) {
+      return {
+        ...basePayload,
+        licensePlate: formValues.licensePlate!,
+      } as VehicleUpdateInput;
+    } else {
+      return {
+        ...basePayload,
+        licensePlates: this.licensePlates,
+      } as VehicleCreateInput;
+    }
   }
 
-  private handleUpdateVehicle(): void {
-    const formValues = this.form.value;
-    const payload: VehicleUpdateInput = {
-      vehicleTypeId: formValues.vehicleType!,
-      startDepotId: this.extractDepotId(formValues.startDepot)!,
-      endDepotId: this.extractDepotId(formValues.endDepot)!,
-      licensePlate: formValues.licensePlate!,
-    };
-
+  private handleSubmit(): void {
     this.spinner.show();
+    const payload = this.buildPayload();
+    const request$ = (
+      this.isEditMode
+        ? this.vehicleService.updateVehicle(
+            this.vehicle!.vehicleId,
+            payload as VehicleUpdateInput
+          )
+        : this.vehicleService.createVehicle(payload as VehicleCreateInput)
+    ) as Observable<VehicleCreateResponse | VehicleUpdateResponse>;
 
-    this.vehicleService
-      .updateVehicle(this.vehicle!.vehicleId, payload)
-      .pipe(finalize(() => this.spinner.hide()))
-      .subscribe({
-        next: (result: MyVehicles) => {
-          this.toastr.success(
-            this.transloco.translate(
-              'vehicle_updated_successfully',
-              {},
-              'vehicleManagement'
-            ),
-            this.transloco.translate('success')
-          );
-          this.activeModal.close({
-            success: true,
-            operation: 'update',
-            result: result,
-          });
-        },
-        error: (error) => {
-          console.error('Error updating vehicle:', error);
-          this.toastr.error(
-            this.transloco.translate(
-              'failed_to_update_vehicle',
-              {},
-              'vehicleManagement'
-            ),
-            this.transloco.translate('error')
-          );
-        },
-      });
-  }
-
-  handleDeleteVehicle(): void {
-    if (!this.vehicle?.vehicleId) return;
-
-    this.spinner.show();
-
-    this.vehicleService
-      .deleteVehicle(this.vehicle.vehicleId)
-      .pipe(finalize(() => this.spinner.hide()))
-      .subscribe({
-        next: (result: boolean) => {
-          this.toastr.success(
-            this.transloco.translate(
-              'vehicle_deleted_successfully',
-              {},
-              'vehicleManagement'
-            ),
-            this.transloco.translate('success')
-          );
-          this.activeModal.close({
-            success: true,
-            operation: 'delete',
-            result: result,
-          });
-        },
-        error: (error) => {
-          console.error('Error deleting vehicle:', error);
-          this.toastr.error(
-            this.transloco.translate(
-              'failed_to_delete_vehicle',
-              {},
-              'vehicleManagement'
-            ),
-            this.transloco.translate('error')
-          );
-        },
-      });
+    request$.pipe(finalize(() => this.spinner.hide())).subscribe({
+      next: (res: VehicleCreateResponse | VehicleUpdateResponse) => {
+        this.toastr.success(
+          this.transloco.translate(
+            this.isEditMode
+              ? 'vehicle_updated_successfully'
+              : 'vehicle_created_successfully',
+            {},
+            'vehicleManagement'
+          ),
+          this.transloco.translate('success')
+        );
+        this.activeModal.close({
+          success: true,
+          res,
+        });
+      },
+      error: (err: unknown) => {
+        console.error(
+          `Error ${this.isEditMode ? 'updating' : 'creating'} vehicle:`,
+          err
+        );
+        this.toastr.error(
+          this.transloco.translate(
+            this.isEditMode
+              ? 'failed_to_update_vehicle'
+              : 'failed_to_create_vehicle',
+            {},
+            'vehicleManagement'
+          ),
+          this.transloco.translate('error')
+        );
+      },
+    });
   }
 
   onLicensePlateEnter(event: Event): void {
@@ -373,7 +280,37 @@ export class VehicleDialogComponent implements OnInit {
       return;
     }
 
-    this.openDialogConfirm(this.isEditMode ? 'update' : 'create');
+    const action = this.isEditMode ? 'update' : 'create';
+    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+      centered: true,
+      animation: true,
+    });
+
+    const config = {
+      create: {
+        title: 'vehicleManagement.confirm_create',
+        message: 'vehicleManagement.are_you_sure_create_vehicle',
+      },
+      update: {
+        title: 'vehicleManagement.confirm_update',
+        message: 'vehicleManagement.are_you_sure_update_vehicle',
+      },
+    };
+
+    dialogRef.componentInstance.title = this.transloco.translate(
+      config[action].title
+    );
+    dialogRef.componentInstance.message = this.transloco.translate(
+      config[action].message
+    );
+
+    dialogRef.result
+      .then((confirmed: boolean) => {
+        if (confirmed) {
+          this.handleSubmit();
+        }
+      })
+      .catch(() => {});
   }
 
   onCancel(): void {

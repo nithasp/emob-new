@@ -74,8 +74,8 @@ export class VehicleComponent implements OnInit {
     modalRef.componentInstance.vehicle = vehicle ? { ...vehicle } : null;
 
     modalRef.result.then(
-      (result) => {
-        if (result) {
+      (res) => {
+        if (res) {
           this.getMyVehicles();
         }
       },
