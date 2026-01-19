@@ -56,13 +56,32 @@
 
 .modal-body {
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 0.8rem;
+  grid-template-columns: minmax(320px, 350px) 1fr;
+  gap: 1rem;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 280px 1fr;
+    gap: 0.8rem;
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  @media (max-width: 576px) {
+    gap: 0.5rem;
+  }
 }
 
 .depot-details {
   height: 800px;
   overflow-y: auto;
+  
+  @media (max-width: 768px) {
+    height: 400px;
+    max-height: 50vh;
+  }
 
   .route-detail {
     background-color: #ffffff;
@@ -99,5 +118,12 @@
         }
       }
     }
+  }
+}
+
+::ng-deep .custom-modal-content {
+  @media (max-width: 768px) {
+    margin-left: auto;
+    margin-right: auto;
   }
 }
