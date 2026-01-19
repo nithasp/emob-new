@@ -3,7 +3,7 @@ import { fromLonLat } from 'ol/proj';
 import { OSM, Vector as VectorSource, XYZ } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { GeoJSON } from 'ol/format';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Map, Overlay, View } from 'ol';
 import { Circle, LineString, Point } from 'ol/geom';
 import {
@@ -23,6 +23,9 @@ import { FeatureLike } from 'ol/Feature';
 import { Fill, Icon, Stroke, Style, Text } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
 import { Coordinate } from 'ol/coordinate';
+import { CustomerDetailsComponent } from '../customer-details/customer-details.component';
+import { NodeSheet, PlanDetail } from 'src/app/models/experiment.model';
+
 @Component({
   selector: 'app-map-details-dialog',
   templateUrl: './map-details-dialog.component.html',
@@ -32,6 +35,11 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   @Input() routeInfo!: any;
   @Input() featureCollection: any;
   @Input() featureDepots: any[] = [];
+  @Input() nodeSheetData: NodeSheet[] = [];
+  @Input() planDetailData: PlanDetail[] = [];
+  @Input() preOrderData: any[] = [];
+  @Input() featureRoutes: any[] = [];
+  
   private map!: Map;
   public popUp?: Overlay;
   public popupContent?: any;
@@ -43,7 +51,10 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     route_order: number;
   }> = [];
 
-  constructor(private readonly ngbActiveModal: NgbActiveModal) {}
+  constructor(
+    private readonly ngbActiveModal: NgbActiveModal,
+    private readonly ngbModal: NgbModal
+  ) {}
 
   ngOnInit(): void {
     this.getDepotDetailsPoint();
@@ -279,5 +290,132 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
 
   sortedPointDetails() {
     return [...this.pointDetails].sort((a, b) => a.route_order - b.route_order);
+  }
+
+  handlePointClick(pointDetail: { name: string; weight: number; route_order: number }): void {
+    // Find the node_index from the featureCollection based on the point name
+    const allFeatures = new GeoJSON().readFeatures(this.featureCollection, {
+      dataProjection: 'EPSG:4326',
+      featureProjection: 'EPSG:3857',
+    });
+
+    const pointFeature = allFeatures.find((f) => {
+      if (f.getGeometry()?.getType() === 'Point') {
+        const props = f.getProperties();
+        return props['name'] === pointDetail.name && props['route_order'] === pointDetail.route_order;
+      }
+      return false;
+    });
+
+    if (!pointFeature) {
+      console.warn('Point feature not found for:', pointDetail);
+      return;
+    }
+
+    const nodeIndex = pointFeature.getProperties()['node_index'];
+    if (!nodeIndex) {
+      console.warn('node_index not found for point:', pointDetail);
+      return;
+    }
+
+    this.handleDistance(nodeIndex);
+  }
+
+  handleDistance(distance: number): void {
+    console.log('distance', distance);
+    if (distance) {
+      const matchedItem = this.nodeSheetData.find(
+        (item) => item.node_index === distance
+      );
+
+      const matchedOrderId = this.planDetailData.find(
+        (item) => item.ORDERID_ORG === matchedItem?.node_name
+      );
+
+      const matchedPreOrderData = this.preOrderData.find(
+        (item) => item.ORDERID === matchedItem?.node_name
+      );
+
+      const matchedFC = this.featureRoutes.find((fc) =>
+        fc.features.some(
+          (feature: any) => feature.properties.node_index === distance
+        )
+      );
+
+      let planDetails = null;
+      const refactormatchedPreOrderData = {
+        ...matchedPreOrderData,
+        validation_type: matchedItem?.validation_type,
+        replace_type: matchedItem?.replace_type,
+        PROVINCE: matchedPreOrderData?.PROVICE || '',
+      };
+
+      planDetails = {
+        ...refactormatchedPreOrderData,
+        details: [refactormatchedPreOrderData],
+      };
+      const matchedFeatureRoutes = {
+        ...matchedFC,
+        features: matchedFC?.features?.filter(
+          (feature: any) => feature.properties.node_index === distance
+        ),
+      };
+
+      if (matchedFC) {
+        const { type, properties, geometry } = matchedFeatureRoutes.features[0];
+
+        planDetails = {
+          ORDERID_ORG: properties.name,
+          CHANNEL: properties.extra.channel,
+          CUSTOMER_NAME: properties.extra.customer_name,
+          TEL: properties.extra.tel,
+          AUMPHER: properties.original_address.district,
+          PROVINCE: properties.original_address.province,
+          ZIPCODE: properties.original_address.postal_code,
+          ADDRESS: properties.original_address.address,
+          latitude: geometry.coordinates[1],
+          longitude: geometry.coordinates[0],
+
+          details: properties.extra.products_info.map((product: any) => ({
+            PRODUCTID: product.product_id,
+            ORDER_ID: product.order_id,
+            PRODUCTNAME: product.product_name,
+            QUANTITYMAIN: product.quantity_major,
+            QUANTITYMINOR: product.quantity_minor,
+            UserConfirm: product.user_confirm,
+            DateConfirm: product.date_confirm,
+          })),
+        };
+      } else {
+        planDetails = {
+          ...refactormatchedPreOrderData,
+          details: [refactormatchedPreOrderData],
+        };
+      }
+
+      const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
+        centered: true,
+        size: 'xl',
+        animation: true,
+        backdrop: 'static',
+        keyboard: false,
+        beforeDismiss: () => {
+          return false;
+        },
+      });
+
+      modalRef.componentInstance.dataPreOder = planDetails;
+      modalRef.componentInstance.dataCustomer = planDetails;
+      modalRef.componentInstance.isGeolocationDisplay = false;
+    }
+  }
+
+  splitLatLng(order: Record<string, any>): Record<string, any> {
+    if (typeof order['LatLng'] === 'string') {
+      const [latStr, lngStr] = order['LatLng'].split(',');
+      order['latitude'] = parseFloat(latStr.trim());
+      order['longitude'] = parseFloat(lngStr.trim());
+    }
+    return order;
   }
 }

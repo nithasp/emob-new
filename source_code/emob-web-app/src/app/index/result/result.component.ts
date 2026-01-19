@@ -733,9 +733,16 @@ export class ResultComponent implements OnInit, AfterViewInit {
       windowClass: 'custom-modal-width',
       modalDialogClass: 'custom-modal-content',
     });
+    
     modalRef.componentInstance.featureCollection = featureCollection;
     modalRef.componentInstance.featureDepots = featureDepots;
     modalRef.componentInstance.routeInfo = this.routeInfoDetails;
+
+
+    modalRef.componentInstance.nodeSheetData = this.nodeSheetData;
+    modalRef.componentInstance.planDetailData = this.planDetailData;
+    modalRef.componentInstance.preOrderData = this.preOrderData;
+    modalRef.componentInstance.featureRoutes = this.featureRoutes;
   }
 
   styleFunction(feature: FeatureLike): Style | Style[] {
@@ -1418,6 +1425,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   handleDistance(distance: number) {
+    console.log('distance', distance);
     if (distance) {
       const matchedItem = this.nodeSheetData.find(
         (item) => item.node_index === distance
