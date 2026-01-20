@@ -101,7 +101,6 @@ interface Warning {
   zero_weight: Customer[];
 }
 
-
 export interface DownloadResultFile {
   resultFileBlobPath: string;
   fileUrl: {
@@ -147,7 +146,8 @@ export interface myDepots {
   updatedAt: string;
 }
 
-export interface ExperimentCounts extends Pick<Experiment, 'countGeocoding' | 'countReroute'> {}
+export interface ExperimentCounts
+  extends Pick<Experiment, 'countGeocoding' | 'countReroute'> {}
 
 export interface PlanDetail {
   TripNo: number;
@@ -196,4 +196,107 @@ export interface NodeSheet {
   validation_type: string;
   replace_type: string;
   address: string;
+}
+
+export interface RouteInfo {
+  route_label: string;
+  number_delivery_points: number;
+  weight?: number;
+  travel_distance?: number;
+  travel_duration?: number;
+  service_time?: number;
+  [key: string]: string | number | undefined;
+}
+
+export interface PopupContent {
+  route_label?: string;
+  node_index?: number;
+  route_order?: number;
+  name?: string;
+  is_depot?: boolean;
+  num_customers?: number;
+  distance?: number;
+  duration?: number;
+  weight?: number;
+  zone?: string;
+  customers?: string[];
+  service_duration?: number;
+  travel_duration?: number;
+  original_address?: {
+    address?: string;
+    district?: string;
+    province?: string;
+    postal_code?: string;
+  };
+  extra?: {
+    channel?: string;
+    customer_name?: string;
+    tel?: string;
+    products_info?: ProductInfo[];
+  };
+  [key: string]: string | number | boolean | string[] | object | undefined;
+}
+
+export interface ProductInfo {
+  product_id: string;
+  order_id: string;
+  product_name: string;
+  quantity_major: number;
+  quantity_minor: number;
+  user_confirm?: string;
+  date_confirm?: string;
+}
+
+export interface PreOrderData {
+  ORDERID?: string;
+  PROVICE?: string;
+  PROVINCE?: string;
+  CHANNEL?: string;
+  CUSTOMER_NAME?: string;
+  TEL?: string;
+  AUMPHER?: string;
+  ZIPCODE?: string;
+  ADDRESS?: string;
+  latitude?: number;
+  longitude?: number;
+  LatLng?: string;
+  validation_type?: string;
+  replace_type?: string;
+}
+
+export interface GeoJSONFeatureCollection {
+  type: string;
+  features: GeoJSONFeature[];
+}
+
+export interface GeoJSONFeature {
+  type: string;
+  properties: {
+    node_index?: number;
+    name?: string;
+    route_order?: number;
+    weight?: number;
+    color?: string;
+    is_depot?: boolean;
+    extra?: PopupContent['extra'];
+    original_address?: PopupContent['original_address'];
+    [key: string]: unknown;
+  };
+  geometry: {
+    type: string;
+    coordinates: number[] | number[][];
+  };
+}
+
+export interface PlanDetailsData extends PreOrderData {
+  ORDERID_ORG?: string;
+  details?: Array<PreOrderData & ProductInfo>;
+  validation_type?: string;
+  replace_type?: string;
+}
+
+export interface PointDetail {
+  name: string;
+  weight: number;
+  route_order: number;
 }

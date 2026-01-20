@@ -734,11 +734,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
       modalDialogClass: 'custom-modal-content',
     });
     
+    // Data for map details dialog
     modalRef.componentInstance.featureCollection = featureCollection;
     modalRef.componentInstance.featureDepots = featureDepots;
     modalRef.componentInstance.routeInfo = this.routeInfoDetails;
 
-
+    // Data for customer details dialog
     modalRef.componentInstance.nodeSheetData = this.nodeSheetData;
     modalRef.componentInstance.planDetailData = this.planDetailData;
     modalRef.componentInstance.preOrderData = this.preOrderData;
