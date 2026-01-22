@@ -148,7 +148,7 @@
                   }"
                 >
                   @if(isNumber(row[col])){
-                  {{ row[col] | number : "1.0-2" }}
+                  {{ getNumberValue(row[col]) | number : "1.0-2" }}
                   }@else{
                   {{ row[col] }}
                   }
@@ -517,7 +517,7 @@
         <div
           id="popupMapResult"
           class="ol-popup"
-          [ngClass]="{ 'depot-popup': popupContent?.is_depot }"
+          [ngClass]="{ 'depot-popup': popupContent?.['is_depot'] }"
           [hidden]="!mapAlreadyRendered"
         >
           <div
@@ -528,33 +528,33 @@
           >
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.route_label"
+              *ngIf="popupContent?.['route_label']"
             >
               <strong>{{ t("route_label") }} : </strong>
-              <span>{{ popupContent?.route_label }}</span>
+              <span>{{ popupContent['route_label'] }}</span>
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.node_index"
+              *ngIf="popupContent?.['node_index']"
             >
               <strong>{{ t("point_index") }} : </strong>
               <span>{{ popupContent["node_index"] }}</span>
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.route_order"
+              *ngIf="popupContent?.['route_order']"
             >
               <strong>{{ t("route_order") }} : </strong>
               <span>{{ popupContent["route_order"] }}</span>
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.name"
+              *ngIf="popupContent?.['name']"
             >
               <strong>
                 <span>
                   {{
-                    popupContent.is_depot ? t("depot_name") : t("order_id")
+                    popupContent['is_depot'] ? t("depot_name") : t("order_id")
                   }}</span
                 >
                 <span> : </span>
@@ -563,44 +563,44 @@
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.num_customers"
+              *ngIf="popupContent?.['num_customers']"
             >
               <strong>{{ t("total_points") }} : </strong>
               <span>{{ popupContent["num_customers"] }}</span>
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.distance"
+              *ngIf="popupContent?.['distance']"
             >
               <strong>{{ t("distance") }} : </strong>
               <span
-                >{{ popupContent["distance"] | number : "1.2-2" }}
+                >{{ getNumberValue(popupContent["distance"] || 0) | number : "1.2-2" }}
                 {{ "kilometer" | transloco }}</span
               >
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.duration"
+              *ngIf="popupContent?.['duration']"
             >
               <strong>{{ t("duration") }} : </strong>
               <span>
-                {{ popupContent["duration"] / 60 | number : "1.2-2" }}
+                {{ getNumberValue(popupContent["duration"] || 0) / 60 | number : "1.2-2" }}
                 {{ "hours" | transloco }}</span
               >
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.weight"
+              *ngIf="popupContent?.['weight']"
             >
               <strong>{{ t("weight") }} : </strong>
               <span
-                >{{ popupContent["weight"] | number : "1.2-2" }}
+                >{{ getNumberValue(popupContent["weight"] || 0) | number : "1.2-2" }}
                 {{ "kg" | transloco }}.</span
               >
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.zone"
+              *ngIf="popupContent?.['zone']"
             >
               <strong>{{ t("zone") }} : </strong>
               <span>{{ popupContent["zone"] }}</span>

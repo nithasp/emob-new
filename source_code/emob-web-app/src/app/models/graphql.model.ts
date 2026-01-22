@@ -10,6 +10,7 @@ import {
   DownloadResultFile,
   Experiment,
   ExperimentState,
+  MyDepot,
 } from './experiment.model';
 import { MyVehicles, VehicleType, Depot } from './vehicle.model';
 

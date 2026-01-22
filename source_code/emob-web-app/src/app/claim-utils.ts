@@ -1,10 +1,7 @@
-/**
- * Populate claims table with appropriate description
- * @param {Record} claims ID token claims
- * @returns claimsTable
- */
-export const createClaimsTable = (claims: Record<string, string>): any[] => {
-  const claimsTable: any[] = [];
+import { ClaimTableItem, JwtClaims } from './models/claim.model';
+
+export const createClaimsTable = (claims: JwtClaims): ClaimTableItem[] => {
+  const claimsTable: ClaimTableItem[] = [];
 
   Object.keys(claims).map((key) => {
     switch (key) {
@@ -27,7 +24,7 @@ export const createClaimsTable = (claims: Record<string, string>): any[] => {
       case 'iat':
         populateClaim(
           key,
-          changeDateFormat(+claims[key]),
+          changeDateFormat(+(claims[key] ?? 0)),
           '"Issued At" indicates the timestamp (UNIX timestamp) when the authentication for this user occurred.',
           claimsTable
         );
@@ -35,7 +32,7 @@ export const createClaimsTable = (claims: Record<string, string>): any[] => {
       case 'nbf':
         populateClaim(
           key,
-          changeDateFormat(+claims[key]),
+          changeDateFormat(+(claims[key] ?? 0)),
           'The nbf (not before) claim dictates the time (as UNIX timestamp) before which the JWT must not be accepted for processing.',
           claimsTable
         );
@@ -43,7 +40,7 @@ export const createClaimsTable = (claims: Record<string, string>): any[] => {
       case 'exp':
         populateClaim(
           key,
-          changeDateFormat(+claims[key]),
+          changeDateFormat(+(claims[key] ?? 0)),
           "The exp (expiration time) claim dictates the expiration time (as UNIX timestamp) on or after which the JWT must not be accepted for processing. It's important to note that in certain circumstances, a resource may reject the token before this time. For example, if a change in authentication is required or a token revocation has been detected.",
           claimsTable
         );
@@ -172,13 +169,13 @@ export const createClaimsTable = (claims: Record<string, string>): any[] => {
  */
 const populateClaim = (
   claim: string,
-  value: string,
+  value: string | number | undefined,
   description: string,
-  claimsTable: any[]
+  claimsTable: ClaimTableItem[]
 ): void => {
   claimsTable.push({
     claim: claim,
-    value: value,
+    value: String(value ?? ''),
     description: description,
   });
 };

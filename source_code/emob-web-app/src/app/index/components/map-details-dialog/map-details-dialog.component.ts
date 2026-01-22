@@ -35,6 +35,7 @@ import {
   PlanDetailsData,
   PointDetail,
 } from 'src/app/models/experiment.model';
+import { FeatureProperties } from 'src/app/models/location.model';
 import { MapBrowserEvent } from 'ol';
 
 @Component({
@@ -53,7 +54,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
 
   private map!: Map;
   public popUp?: Overlay;
-  public popupContent?: PopupContent;
+  public popupContent?: PopupContent | FeatureProperties;
   private highlightedFeatureCollectionId: number | null = null;
 
   public pointDetails: PointDetail[] = [];
@@ -204,11 +205,11 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
         coordinates = [];
       }
       this.popUp?.setPosition(coordinates);
-      const properties = feature.getProperties();
-      if (properties['features'] && properties['features'].length > 0) {
+      const properties = feature.getProperties() as FeatureProperties;
+      if (properties.features && properties.features.length > 0) {
         const nestedFeatureProperties =
-          properties['features'][0].getProperties();
-        this.popupContent = nestedFeatureProperties;
+          properties.features[0].getProperties();
+        this.popupContent = nestedFeatureProperties as FeatureProperties;
       } else {
         this.popupContent = properties;
       }
@@ -218,8 +219,8 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     }
 
     if (feature && feature.getGeometry()?.getType() === 'LineString') {
-      this.highlightedFeatureCollectionId =
-        feature.getProperties()['route_index'];
+      const properties = feature.getProperties() as FeatureProperties;
+      this.highlightedFeatureCollectionId = properties.route_index || null;
     } else {
       this.highlightedFeatureCollectionId = null;
     }
@@ -296,11 +297,11 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     );
 
     this.pointDetails = pointFeatures.map((f) => {
-      const props = f.getProperties();
+      const props = f.getProperties() as FeatureProperties;
       return {
-        route_order: props['route_order'],
-        name: props['name'],
-        weight: props['weight'],
+        route_order: props.route_order || 0,
+        name: props.name || '',
+        weight: props.weight || 0,
       };
     });
   }

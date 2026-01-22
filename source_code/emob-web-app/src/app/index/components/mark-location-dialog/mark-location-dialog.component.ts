@@ -5,7 +5,7 @@ import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
 import { fromLonLat } from 'ol/proj';
 import OSM from 'ol/source/OSM';
-import { Feature, Overlay } from 'ol';
+import { Feature, Overlay, MapBrowserEvent } from 'ol';
 import { XYZ } from 'ol/source';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
@@ -92,10 +92,12 @@ export class MarkLocationDialogComponent implements OnInit, AfterViewInit {
       ]),
     });
   }
-  async markerMap(event: any) {
-    let coords = OlProj.toLonLat(event.coordinate);
-    let lat = coords[1];
-    let lon = coords[0];
+  async markerMap(
+    event: MapBrowserEvent<PointerEvent | KeyboardEvent | WheelEvent>
+  ): Promise<void> {
+    const coords: number[] = OlProj.toLonLat(event.coordinate);
+    const lat: number = coords[1];
+    const lon: number = coords[0];
     console.log('Mark latlong:', coords);
     this.isEditLocation = true;
     this.location.latitude = lat;
