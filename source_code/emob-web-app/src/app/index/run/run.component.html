@@ -440,7 +440,7 @@
             </ng-template>
           </li>
 
-          <li [ngbNavItem]="2" [disabled]="!isUpload">
+          <li [ngbNavItem]="2" [disabled]="!isUpload" *ngIf="hasMyVehicleTypes()">
             <button ngbNavLink>
               <h3>{{ t("vehicle") }}</h3>
             </button>

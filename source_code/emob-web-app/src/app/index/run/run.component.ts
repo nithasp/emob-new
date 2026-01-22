@@ -2019,8 +2019,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     const parameterPayload = this.buildValidateParameterFromDynamic();
     const vehiclesPayload = this.buildVehiclesPayload();
 
-    console.log('vehiclesPayload', vehiclesPayload);
-    //return
     // proceed with validation using constructed parameterPayload
     if (
       (parameterPayload.earlyDeliveryTime || '') >
@@ -3940,5 +3938,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.dynamicParametersByCategory &&
       this.dynamicParametersByCategory.length > 0
     );
+  }
+
+  hasMyVehicleTypes(): boolean {
+    return this.myVehicleTypes && this.myVehicleTypes.length > 0;
   }
 }
