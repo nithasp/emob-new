@@ -107,6 +107,7 @@ import { VehicleService } from 'src/app/services/vehicle.service';
 import {
   VehicleType,
   VehicleValidationInput,
+  VehicleBlobData,
 } from 'src/app/models/vehicle.model';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
@@ -459,7 +460,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         `${this.transloco.translate('please_wait', {}, 'index')} ...`
       );
       await this.dataFromFileUrlToJson(experiment.fileUrl.vehiclesBlobPathUrl).then(
-        (response: any) => {
+        (response: VehicleBlobData[]) => {
           console.log('Vehicles Data from vehiclesBlobPathUrl:', response);
           this.loadVehicleDataFromBlob(response);
         }
@@ -586,7 +587,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
-  async loadVehicleDataFromBlob(vehiclesData: any[]): Promise<void> {
+  async loadVehicleDataFromBlob(vehiclesData: VehicleBlobData[]): Promise<void> {
     if (!Array.isArray(vehiclesData)) {
       console.warn('Invalid vehicles data format:', vehiclesData);
       return;
@@ -623,13 +624,13 @@ export class RunComponent implements OnInit, AfterViewInit {
           // Pass the numberOfVehiclesAvailable to use for count display
           await this.loadLicensePlatesForVehicleIds(
             vehicleTypeId,
-            vehicle.specificVehicleIds,
+            vehicle.specificVehicleIds!,
             vehicle.numberOfVehiclesAvailable
           );
         } else if (hasCount) {
           // Set to count mode
           this.vehicleSelectionMode[vehicleTypeId] = 'count';
-          this.selectedVehicleCounts[vehicleTypeId] = vehicle.numberOfVehiclesAvailable;
+          this.selectedVehicleCounts[vehicleTypeId] = vehicle.numberOfVehiclesAvailable!;
         }
       }
     }

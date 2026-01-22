@@ -149,3 +149,9 @@ export interface VehicleValidationInput {
   vehicleId?: string[];
   numberOfVehiclesAvailable?: number;
 }
+
+export interface VehicleBlobData {
+  vehicleTypeId: string;
+  numberOfVehiclesAvailable?: number;
+  specificVehicleIds?: string[];
+}
