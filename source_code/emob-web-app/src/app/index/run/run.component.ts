@@ -2073,6 +2073,18 @@ export class RunComponent implements OnInit, AfterViewInit {
       );
       return;
     }
+
+    // Validate vehicles payload - check if license-plate mode has selections
+    const invalidVehicles = this.getInvalidVehicleSelections();
+    if (invalidVehicles.length > 0) {
+      const vehicleNames = invalidVehicles.map(v => this.getVehicleName(v)).join(', ');
+      this.toastr.error(
+        `${this.transloco.translate('please_select_at_least_one_vehicle', {}, 'index')}: ${vehicleNames}`,
+        this.transloco.translate('error', {}, 'index')
+      );
+      return;
+    }
+
     this.showSpinner();
     this.experimentService
       .validateExperiment(
@@ -3976,5 +3988,23 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   hasMyVehicleTypes(): boolean {
     return this.myVehicleTypes && this.myVehicleTypes.length > 0;
+  }
+
+  // Check if any selected vehicle in 'license-plate' mode has no vehicle IDs selected
+  getInvalidVehicleSelections(): string[] {
+    const invalidVehicles: string[] = [];
+    
+    for (const vehicleTypeId of this.selectedVehicleIds) {
+      const mode = this.getVehicleSelectionMode(vehicleTypeId);
+      
+      if (mode === 'license-plate') {
+        const vehicleIds = this.selectedVehicleIdsByLicensePlate[vehicleTypeId];
+        if (!vehicleIds || vehicleIds.length === 0) {
+          invalidVehicles.push(vehicleTypeId);
+        }
+      }
+    }
+    
+    return invalidVehicles;
   }
 }
