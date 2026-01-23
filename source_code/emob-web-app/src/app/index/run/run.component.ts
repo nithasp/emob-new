@@ -3934,25 +3934,18 @@ export class RunComponent implements OnInit, AfterViewInit {
     modalRef.componentInstance.preSelectedLicensePlates =
       this.selectedLicensePlates[vehicleId] || [];
 
-    modalRef.result.then(
-      (result) => {
-        if (result) {
-          // Store the selected license plates for this vehicle type
-          this.selectedLicensePlates[vehicleId] = result.selectedLicensePlates;
-          this.selectedVehicleIdsByLicensePlate[vehicleId] =
-            result.selectedVehicleIds;
-
-          // Update the vehicle count based on selected license plates
-          this.selectedVehicleCounts[vehicleId] =
-            result.selectedLicensePlates.length;
-
-          this.cdr.detectChanges();
-        }
-      },
-      () => {
-        // Modal dismissed (closed without result)
+  modalRef.result.then(
+    (result) => {
+      if (result) {
+        // Store the selected license plates for this vehicle type
+        this.selectedLicensePlates[vehicleId] = result.selectedLicensePlates;
+        this.selectedVehicleIdsByLicensePlate[vehicleId] =
+          result.selectedVehicleIds;
+        this.cdr.detectChanges();
       }
-    );
+    },
+    () => {}
+  );
   }
 
   getSelectedLicensePlatesCount(vehicleId: string): number {
