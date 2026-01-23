@@ -430,7 +430,7 @@
                     </mat-paginator>
                   </div>
                   <div class="text-end mt-3" [hidden]="preOrderFiles.length < 1">
-                    <button mat-raised-button class="bg-custom-primary" (click)="navigateToTab(2)">
+                    <button mat-raised-button class="bg-custom-primary" (click)="navigateToNextTab()">
                       <mat-icon>last_page</mat-icon>
                       {{ t("next") }}
                     </button>
@@ -440,7 +440,7 @@
             </ng-template>
           </li>
 
-          <li [ngbNavItem]="2" [disabled]="!isUpload">
+          <li [ngbNavItem]="2" [disabled]="!isUpload" *ngIf="hasMyVehicleTypes()">
             <button ngbNavLink>
               <h3>{{ t("vehicle") }}</h3>
             </button>
@@ -534,7 +534,7 @@
                 </div>
 
                 <div class="col text-end">
-                  <button mat-raised-button color="secondary" class="btn btn-secondary pr-3" (click)="navigateToTab(1)">
+                  <button mat-raised-button color="secondary" class="btn btn-secondary pr-3" (click)="navigateToPreviousTab()">
                     <mat-icon>first_page</mat-icon>
                     {{ "back" | transloco }}
                   </button>
@@ -548,7 +548,7 @@
                     }}
                   </button>
                   <button *ngIf="hasDynamicParameters()" mat-raised-button class="bg-custom-primary"
-                    (click)="navigateToTab(3)">
+                    (click)="navigateToNextTab()">
                     <mat-icon>last_page</mat-icon>
                     {{ t("next") }}
                   </button>
@@ -688,7 +688,7 @@
                   </div>
                   <div class="col text-end">
                     <button mat-raised-button color="secondary" class="btn btn-secondary pr-3"
-                      (click)="navigateToTab(2)">
+                      (click)="navigateToPreviousTab()">
                       <mat-icon>first_page</mat-icon>
                       {{ "back" | transloco }}
                     </button>
@@ -1016,7 +1016,7 @@
                   </div>
                   <div class="col text-end">
                     <button mat-raised-button color="secondary" class="btn btn-secondary pr-3"
-                      (click)="navigateToTab(1)">
+                      (click)="navigateToPreviousTab()">
                       <mat-icon>first_page</mat-icon>
                       {{ "back" | transloco }}
                     </button>

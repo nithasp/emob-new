@@ -644,13 +644,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     numberOfVehiclesAvailable?: number
   ): Promise<void> {
     try {
-      const depotId =
-        this.getSelectedDepotObject()?.depotId ||
-        this.experiment.depots?.[0]?.depotId;
-
       // Fetch all vehicles for this vehicle type
       const vehicles = await firstValueFrom(
-        this.vehicleService.getMyVehicles(depotId, vehicleTypeId)
+        this.vehicleService.getMyVehicles(this.experiment.depots[0].depotId, vehicleTypeId)
       );
 
       // Filter to only the specific vehicle IDs
@@ -1807,6 +1803,52 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
+  getNextTab(currentTab: number): number {
+    switch (currentTab) {
+      case 1: // Orders Data
+        if (this.hasMyVehicleTypes()) return 2;
+        if (this.hasDynamicParameters()) return 3;
+        return 4;
+      case 2: // Vehicle
+        if (this.hasDynamicParameters()) return 3;
+        return 4;
+      case 3: // Parameters
+        return 4;
+      case 4: // Validation
+        return 4; // Already at the last tab
+      default:
+        return currentTab;
+    }
+  }
+
+  getPreviousTab(currentTab: number): number {
+    switch (currentTab) {
+      case 4: // Validation
+        if (this.hasDynamicParameters()) return 3;
+        if (this.hasMyVehicleTypes()) return 2;
+        return 1;
+      case 3: // Parameters
+        if (this.hasMyVehicleTypes()) return 2;
+        return 1;
+      case 2: // Vehicle
+        return 1;
+      case 1: // Orders Data
+        return 1; // Already at the first tab
+      default:
+        return currentTab;
+    }
+  }
+
+  navigateToNextTab(): void {
+    const nextTab = this.getNextTab(this.activeNavId);
+    this.navigateToTab(nextTab);
+  }
+
+  navigateToPreviousTab(): void {
+    const prevTab = this.getPreviousTab(this.activeNavId);
+    this.navigateToTab(prevTab);
+  }
+
   private reInitializeDataTable(): void {
     if (!this.uploadDataGroupCustomers) {
       this.dataSource.data = [];
@@ -2020,8 +2062,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     const parameterPayload = this.buildValidateParameterFromDynamic();
     const vehiclesPayload = this.buildVehiclesPayload();
 
-    console.log('vehiclesPayload', vehiclesPayload);
-    //return
     // proceed with validation using constructed parameterPayload
     if (
       (parameterPayload.earlyDeliveryTime || '') >
@@ -2063,7 +2103,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           // Rebuild dynamic parameters so values reflect constraintsData when validated
           this.refreshDynamicParametersForSelectedDepot();
           this.refreshValidationTable();
-          this.navigateToTab(4);
+          this.navigateToTab(4); // Always navigate to validation tab after validation
           // Mark validation as completed and show corresponding messages (success path)
           this.haveValidated = true;
           this.isValidateShowMessage = {
@@ -3273,9 +3313,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.constraintService
       .getDynamicParameters(selectedDepotId)
       .subscribe((response: DynamicParameter[]) => {
-        console.log('response', response);
         this.allDynamicParameters = response || [];
-        console.log('this.allDynamicParameters', this.allDynamicParameters);
         if (!this.constraintsFromFileLoaded) {
           this.constraintsData =
             this.transformDynamicParametersToConstraint(response);
@@ -3941,5 +3979,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.dynamicParametersByCategory &&
       this.dynamicParametersByCategory.length > 0
     );
+  }
+
+  hasMyVehicleTypes(): boolean {
+    return this.myVehicleTypes && this.myVehicleTypes.length > 0;
   }
 }
