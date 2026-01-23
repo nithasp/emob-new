@@ -336,8 +336,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.spinner.show();
-
-    this.getMyVehicleTypes();
   }
   ngAfterViewInit() {
     setTimeout(() => {
@@ -345,77 +343,86 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.route.params
         .pipe(take(1))
         .subscribe((params: { [x: string]: string }) => {
-          this.experimentService
-            .getExperiment(params['runId'])
-            .subscribe((response: Experiment) => {
-              this.experiment = { ...response };
-              console.log('experiment', this.experiment);
-              if (this.experiment.status !== StatusExperiment.Initializing) {
-                this.spinner.hide();
-                this.openConfirmDialog(
-                  this.transloco.translate('warning'),
-                  `${this.transloco.translate(
-                    'this_experiment_have_been',
-                    {},
-                    'index'
-                  )} ${this.experiment.status}`,
-                  `${this.transloco.translate(
-                    'we_will_to_go_back_to_the_experiments_page',
-                    {},
-                    'index'
-                  )}?`,
-                  this.transloco.translate('acknowledge', {}, 'index'),
-                  true
-                ).result.then((confirmed) => {
+          // First, ensure vehicle types are loaded
+          this.vehicleService.getMyVehicleTypes().pipe(
+            take(1)
+          ).subscribe((vehicleTypes: VehicleType[]) => {
+            this.myVehicleTypes = vehicleTypes || [];
+            this.cdr.detectChanges();
+            
+            // Now proceed with loading experiment data
+            this.experimentService
+              .getExperiment(params['runId'])
+              .subscribe((response: Experiment) => {
+                this.experiment = { ...response };
+                console.log('experiment', this.experiment);
+                if (this.experiment.status !== StatusExperiment.Initializing) {
                   this.spinner.hide();
-                  this.router.navigate(['/users/experiments']);
-                });
-              } else
-                this.userMsGraphService
-                  .getUserId()
-                  .subscribe((userId: string | null) => {
-                    if (userId !== this.experiment.triggeredBy) {
-                      this.openConfirmDialog(
-                        this.transloco.translate('warning'),
-                        this.transloco.translate(
-                          'you_are_not_the_creator_of_this_experiment',
-                          {},
-                          'index'
-                        ),
-                        `${this.transloco.translate(
-                          'we_will_to_go_back_to_the_experiments_page',
-                          {},
-                          'index'
-                        )}?`,
-                        this.transloco.translate('acknowledge', {}, 'index'),
-                        true
-                      ).result.then((confirmed) => {
-                        this.spinner.hide();
-                        this.router.navigate(['/users/experiments']);
-                      });
-                    } else if (!this.experiment.fileUrl.preOrderUrl) {
-                      this.getDynamicParameters();
-                      this.isFilePreview = true;
-                    } else {
-                      this.initializeDataFromExperiment(
-                        this.experiment
-                      ).finally(() => {
-                        this.isFileSelectionStep = false;
-                        setTimeout(() => {
-                          this.toastr.success(
-                            this.transloco.translate(
-                              'success_load_experiment',
-                              {},
-                              'index'
-                            ),
-                            this.experiment.name
-                          );
-                          this.spinner.hide();
-                        }, 500);
-                      });
-                    }
+                  this.openConfirmDialog(
+                    this.transloco.translate('warning'),
+                    `${this.transloco.translate(
+                      'this_experiment_have_been',
+                      {},
+                      'index'
+                    )} ${this.experiment.status}`,
+                    `${this.transloco.translate(
+                      'we_will_to_go_back_to_the_experiments_page',
+                      {},
+                      'index'
+                    )}?`,
+                    this.transloco.translate('acknowledge', {}, 'index'),
+                    true
+                  ).result.then((confirmed) => {
+                    this.spinner.hide();
+                    this.router.navigate(['/users/experiments']);
                   });
-            });
+                } else
+                  this.userMsGraphService
+                    .getUserId()
+                    .subscribe((userId: string | null) => {
+                      if (userId !== this.experiment.triggeredBy) {
+                        this.openConfirmDialog(
+                          this.transloco.translate('warning'),
+                          this.transloco.translate(
+                            'you_are_not_the_creator_of_this_experiment',
+                            {},
+                            'index'
+                          ),
+                          `${this.transloco.translate(
+                            'we_will_to_go_back_to_the_experiments_page',
+                            {},
+                            'index'
+                          )}?`,
+                          this.transloco.translate('acknowledge', {}, 'index'),
+                          true
+                        ).result.then((confirmed) => {
+                          this.spinner.hide();
+                          this.router.navigate(['/users/experiments']);
+                        });
+                      } else if (!this.experiment.fileUrl.preOrderUrl) {
+                        this.getDynamicParameters();
+                        this.isFilePreview = true;
+                      } else {
+                        this.initializeDataFromExperiment(
+                          this.experiment
+                        ).finally(() => {
+                          this.isFileSelectionStep = false;
+                          setTimeout(() => {
+                            this.toastr.success(
+                              this.transloco.translate(
+                                'success_load_experiment',
+                                {},
+                                'index'
+                              ),
+                              this.experiment.name
+                            );
+                            this.spinner.hide();
+                          }, 500);
+                        });
+                      }
+                    });
+              });
+          });
         });
 
       this.initIconStyle();
@@ -3756,7 +3763,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   getMyVehicleTypes() {
-    this.vehicleService.getMyVehicleTypes().subscribe((res: VehicleType[]) => {
+    this.vehicleService.getMyVehicleTypes().pipe(take(1)).subscribe((res: VehicleType[]) => {
       this.myVehicleTypes = res || [];
       this.cdr.detectChanges();
     });
