@@ -49,14 +49,14 @@
                     <mat-label>
                       {{ t("single_depot_selection") }}
                     </mat-label>
-                    <mat-select *ngIf="isFileSelectionStep" [(value)]="selectedDepotId"
+                    <mat-select *ngIf="isFileSelectionStep" [(value)]="selectedDepotIdName"
                       (selectionChange)="onDepotSelectionChange()" [disabled]="!isFilePreview">
                       <mat-option *ngFor="let depot of depots" [value]="depot.depotName">
                         {{ depot.depotName }}
                       </mat-option>
                     </mat-select>
 
-                    <mat-select *ngIf="!isFileSelectionStep" [(value)]="selectedDepotId" disabled>
+                    <mat-select *ngIf="!isFileSelectionStep" [(value)]="selectedDepotIdName" disabled>
                       <mat-option *ngFor="let depot of experiment.depots" [value]="depot.depotName">
                         {{ depot.depotName }}
                       </mat-option>

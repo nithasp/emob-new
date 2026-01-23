@@ -263,7 +263,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   isFilePreview: boolean = false;
 
   public depots: MyDepot[] = [];
-  public selectedDepotId: string | null = null;
+  public selectedDepotIdName: string | null = null;
   public selectedDepotIds: string[] = [];
   public inputDataKeys: string[] = [];
   // dynamic parameters rendering
@@ -1290,9 +1290,9 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.spinner.show();
           // Prepare depotIds (single or multiple selection)
           let depotIds: string[] = [];
-          if (this.selectedDepotId) {
+          if (this.selectedDepotIdName) {
             const found = this.depots.find(
-              (d) => d.depotName === this.selectedDepotId
+              (d) => d.depotName === this.selectedDepotIdName
             );
             if (found && found.depotId) {
               depotIds = [found.depotId];
@@ -1544,10 +1544,10 @@ export class RunComponent implements OnInit, AfterViewInit {
         (this.experiment && this.experiment.depots && this.experiment.depots[0]
           ? this.experiment.depots[0].depotName
           : this.depots[0].depotName) || this.depots[0].depotName;
-      this.selectedDepotId = defaultDepotName;
+      this.selectedDepotIdName = defaultDepotName;
       this.selectedDepotIds = [];
     } else {
-      this.selectedDepotId = null;
+      this.selectedDepotIdName = null;
       this.selectedDepotIds = [];
       this.inputDataKeys = [];
       this.depotInputDataItems = [];
@@ -2522,7 +2522,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   async onDepotSelectionChange() {
-    const depot = this.depots.find((d) => d.depotName === this.selectedDepotId);
+    const depot = this.depots.find((d) => d.depotName === this.selectedDepotIdName);
     if (depot) {
       this.updateDepot([depot]);
       this.updateInputDataKeysFromDepot(depot);
@@ -2605,7 +2605,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           inputdata: depot.inputdata || [],
         }));
         if (this.depots && this.depots.length > 0) {
-          this.selectedDepotId = this.depots[0].depotName;
+          this.selectedDepotIdName = this.depots[0].depotName;
           this.selectedDepotIds = [];
 
           // Update input data keys from the first depot
@@ -2613,8 +2613,8 @@ export class RunComponent implements OnInit, AfterViewInit {
           // refresh dynamic parameters view for selected depot
           this.refreshDynamicParametersForSelectedDepot();
 
-          if (this.selectedDepotId) {
-            localStorage.setItem('selectedDepotId', this.selectedDepotId);
+          if (this.selectedDepotIdName) {
+            localStorage.setItem('selectedDepotIdName', this.selectedDepotIdName);
           }
 
           // Initialize upload button state
@@ -3319,11 +3319,11 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   getDynamicParameters() {
-    const selectedDepotId =
+    const selectedDepotIdName =
       this.getSelectedDepotObject()?.depotId ||
       this.experiment.depots?.[0]?.depotId;
     this.constraintService
-      .getDynamicParameters(selectedDepotId)
+      .getDynamicParameters(selectedDepotIdName)
       .subscribe((response: DynamicParameter[]) => {
         this.allDynamicParameters = response || [];
         if (!this.constraintsFromFileLoaded) {
@@ -3530,9 +3530,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   getSelectedDepotObject(): MyDepot | undefined {
-    if (!this.selectedDepotId) return undefined;
+    if (!this.selectedDepotIdName) return undefined;
     return this.depots.find(
-      (depot) => depot.depotName === this.selectedDepotId
+      (depot) => depot.depotName === this.selectedDepotIdName
     );
   }
 
