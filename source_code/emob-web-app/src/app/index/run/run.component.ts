@@ -643,13 +643,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     numberOfVehiclesAvailable?: number
   ): Promise<void> {
     try {
-      const depotId =
-        this.getSelectedDepotObject()?.depotId ||
-        this.experiment.depots?.[0]?.depotId;
-
       // Fetch all vehicles for this vehicle type
       const vehicles = await firstValueFrom(
-        this.vehicleService.getMyVehicles(depotId, vehicleTypeId)
+        this.vehicleService.getMyVehicles(this.experiment.depots[0].depotId, vehicleTypeId)
       );
 
       // Filter to only the specific vehicle IDs
