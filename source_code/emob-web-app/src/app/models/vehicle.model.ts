@@ -144,6 +144,12 @@ export interface VehicleBreak {
   latestStart: string;
 }
 
+export interface VehicleTypePayload extends Partial<VehicleType> {
+  maximumVolumeCapacity?: number;
+  vehicleGroupId?: string;
+  allowedBreaks?: Break[];
+}
+
 export interface VehicleValidationInput {
   vehicleTypeId: string;
   vehicleId?: string[];

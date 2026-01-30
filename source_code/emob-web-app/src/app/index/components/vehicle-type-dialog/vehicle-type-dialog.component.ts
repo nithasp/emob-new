@@ -19,6 +19,9 @@ import {
   VehicleEnumConfigs,
   TimeObject,
   VehicleProfileTypeEnum,
+  VehicleBreak,
+  Break,
+  VehicleTypePayload
 } from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import {
@@ -30,7 +33,6 @@ import {
   createTimeRangeValidator,
 } from 'src/app/shared/validators/time-range.validator';
 import { TranslocoService } from '@jsverse/transloco';
-import { VehicleBreak } from 'src/app/models/vehicle.model';
 
 @Component({
   selector: 'app-vehicle-type-dialog',
@@ -96,8 +98,8 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
             vehicleTypeData.timeWindowLate
           ),
           maximumWeightCapacity: vehicleTypeData.maximumWeightCapacity,
-          maximumVolumeCapacity: (vehicleTypeData as any).maximumVolumeCapacity,
-          vehicleGroupId: (vehicleTypeData as any).vehicleGroupId,
+          maximumVolumeCapacity: vehicleTypeData.maximumVolumeCapacity,
+          vehicleGroupId: vehicleTypeData.vehicleGroupId,
           maximumDistance: vehicleTypeData.maximumDistance,
           maximumDuration: vehicleTypeData.maximumDuration,
           dimension: {
@@ -121,22 +123,21 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
         }
 
         // Load breaks if exists (handle both 'breaks' and 'allowedBreaks' properties)
-        const breaksData =
-          (vehicleTypeData as any).allowedBreaks ||
-          (vehicleTypeData as any).breaks;
+        const extendedData = vehicleTypeData;
+        const breaksData = extendedData.allowedBreaks || vehicleTypeData.allowedBreaks;
         if (breaksData && Array.isArray(breaksData)) {
           this.breaks.clear();
           this.breakTimeObjects = {};
-          breaksData.forEach((breakData: any, index: number) => {
+          breaksData.forEach((breakData: Break | VehicleBreak, index: number) => {
             // Map API field names to form field names
             const mappedBreakData: VehicleBreak = {
               name: breakData.name || '',
               duration: this.formatTimeForDisplay(breakData.duration),
               earliestStart: this.formatTimeForDisplay(
-                breakData.timeWindowEarly || breakData.earliestStart
+                (breakData as Break).timeWindowEarly || (breakData as VehicleBreak).earliestStart
               ),
               latestStart: this.formatTimeForDisplay(
-                breakData.timeWindowLate || breakData.latestStart
+                (breakData as Break).timeWindowLate || (breakData as VehicleBreak).latestStart
               ),
             };
             this.breaks.push(this.createBreakFormGroup(mappedBreakData));
@@ -218,8 +219,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
         }),
       }
     );
-    this.formVehicleType =
-      formGroup as any as FormGroup<VehicleTypeFormControls>;
+    this.formVehicleType = formGroup;
   }
 
   save(): void {
@@ -299,13 +299,13 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
 
   handleSubmit(): void {
     this.spinner.show();
-    const formValue = this.formVehicleType.getRawValue() as any;
+    const formValue = this.formVehicleType.getRawValue();
 
     // Map breaks form data to API format (allowedBreaks)
-    let allowedBreaks: any[] | undefined;
+    let allowedBreaks: Break[] | undefined;
     const breaksValue = this.breaks.getRawValue();
     if (breaksValue && breaksValue.length > 0) {
-      allowedBreaks = breaksValue.map((breakItem: any) => ({
+      allowedBreaks = breaksValue.map((breakItem: VehicleBreak): Break => ({
         name: breakItem.name,
         duration: breakItem.duration,
         timeWindowEarly: breakItem.earliestStart,
@@ -313,7 +313,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
       }));
     }
 
-    const payload: Partial<VehicleType> = {
+    const payload: VehicleTypePayload = {
       name: formValue.name || '',
       access: formValue.access || [],
       vehicleProfileType:
@@ -335,13 +335,13 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
 
     // Add new fields
     if (formValue.maximumVolumeCapacity !== null && formValue.maximumVolumeCapacity !== undefined) {
-      (payload as any).maximumVolumeCapacity = Number(formValue.maximumVolumeCapacity);
+      payload.maximumVolumeCapacity = Number(formValue.maximumVolumeCapacity);
     }
     if (formValue.vehicleGroupId) {
-      (payload as any).vehicleGroupId = formValue.vehicleGroupId;
+      payload.vehicleGroupId = formValue.vehicleGroupId;
     }
     if (allowedBreaks && allowedBreaks.length > 0) {
-      (payload as any).allowedBreaks = allowedBreaks;
+      payload.allowedBreaks = allowedBreaks;
     }
 
     // Remove undefined values
@@ -382,14 +382,14 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     if (event && event.hour !== undefined && event.minute !== undefined) {
       const hour = String(event.hour).padStart(2, '0');
       const minute = String(event.minute).padStart(2, '0');
-      (this.formVehicleType.controls as any)[key].setValue(`${hour}:${minute}`);
+      this.formVehicleType.controls[key].setValue(`${hour}:${minute}`);
     } else {
-      (this.formVehicleType.controls as any)[key].setValue('');
+      this.formVehicleType.controls[key].setValue('');
     }
 
     this.formVehicleType.updateValueAndValidity();
-    (this.formVehicleType.controls as any).timeWindowEarly.markAsTouched();
-    (this.formVehicleType.controls as any).timeWindowLate.markAsTouched();
+    this.formVehicleType.controls.timeWindowEarly.markAsTouched();
+    this.formVehicleType.controls.timeWindowLate.markAsTouched();
   }
 
   getEnumValues(): Promise<void> {
@@ -524,7 +524,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
 
     this.breakTimeObjects[breakIndex][field] = event;
 
-    const breakControl = this.breaks.at(breakIndex) as FormGroup;
+    const breakControl = this.breaks.at(breakIndex);
     
     if (event && event.hour !== undefined && event.minute !== undefined) {
       const hour = String(event.hour).padStart(2, '0');
