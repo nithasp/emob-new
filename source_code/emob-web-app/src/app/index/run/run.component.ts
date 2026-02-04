@@ -109,6 +109,7 @@ import {
   VehicleValidationInput,
   VehicleBlobData,
 } from 'src/app/models/vehicle.model';
+import newOrderData from './newOrderData/newOrderData.json';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -336,6 +337,8 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.spinner.show();
+
+    console.log('newOrderData', newOrderData)
   }
   ngAfterViewInit() {
     setTimeout(() => {
@@ -1875,6 +1878,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
 
     this.dataSource.data = newData;
+   // this.dataSource.data = newOrderData;
   }
 
   displayDataInTable(locationType: LocationType) {
@@ -2390,10 +2394,13 @@ export class RunComponent implements OnInit, AfterViewInit {
         type: LocationType.Edit,
       },
     };
+
     console.log(
       'prepared uploadDataGroupCustomers',
       this.uploadDataGroupCustomers
     );
+    console.log('depots', depots)
+    
     this.reInitializeDataTable();
     this.loadLocation(this.uploadDataGroupCustomers);
     this.loadLocationDepot(depots);
@@ -4013,5 +4020,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
     
     return invalidVehicles;
+  }
+
+  log() {
+    console.log('this.dataSource', this.dataSource)
+    console.log('this.displayLocationType', this.displayLocationType)
   }
 }
