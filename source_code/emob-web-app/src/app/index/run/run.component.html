@@ -361,7 +361,7 @@
                         <td mat-cell *matCellDef="let element">
                           <div class="address-container">
                             <span>{{
-                              element.original_address.address
+                              element.originalAddress.address
                               | truncate:70:"..."
                               }}</span>
                             <!-- <button class="btn btn-sm align-right"
@@ -384,7 +384,7 @@
                         </th>
 
                         <td mat-cell *matCellDef="let element">
-                          {{ element.original_address.district }}
+                          {{ element.originalAddress.district }}
                         </td>
                       </ng-container>
 
@@ -395,7 +395,7 @@
                         </th>
 
                         <td mat-cell *matCellDef="let element">
-                          {{ element.original_address.province }}
+                          {{ element.originalAddress.province }}
                         </td>
                       </ng-container>
 
@@ -405,7 +405,7 @@
                         </th>
 
                         <td mat-cell *matCellDef="let element" class="ps-3">
-                          {{ element?.extra?.products_info?.length || "" }}
+                          {{ element?.extra?.productsInfo?.length || "" }}
                         </td>
                       </ng-container>
                       <ng-container matColumnDef>
@@ -810,21 +810,21 @@
 
                               <td>{{ item.name }}</td>
                               <td>
-                                {{
+                                <!-- {{
                                 item.metrics!.excess_distance / 100
                                 | number : "2.0-2"
-                                }}
+                                }} -->
                                 {{ "kilometer" | transloco }}
                               </td>
                               <td>
                                 {{
-                                item.original_address.address
+                                item.originalAddress.address
                                 | truncate:70:"..."
                                 }}
                               </td>
-                              <td>{{ item.original_address.subdistrict }}</td>
-                              <td>{{ item.original_address.district }}</td>
-                              <td>{{ item.original_address.province }}</td>
+                              <td>{{ item.originalAddress.subdistrict }}</td>
+                              <td>{{ item.originalAddress.district }}</td>
+                              <td>{{ item.originalAddress.province }}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -873,21 +873,21 @@
 
                               <td>{{ item.name }}</td>
                               <td>
-                                {{
+                                <!-- {{
                                 item.metrics?.excess_weight | number : "2.0-2"
-                                }}
+                                }} -->
                                 {{ "kg" | transloco }}
                               </td>
 
                               <td>
                                 {{
-                                item.original_address.address
+                                item.originalAddress.address
                                 | truncate:70:"..."
                                 }}
                               </td>
-                              <td>{{ item.original_address.subdistrict }}</td>
-                              <td>{{ item.original_address.district }}</td>
-                              <td>{{ item.original_address.province }}</td>
+                              <td>{{ item.originalAddress.subdistrict }}</td>
+                              <td>{{ item.originalAddress.district }}</td>
+                              <td>{{ item.originalAddress.province }}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -937,13 +937,13 @@
                               <td>{{ item.name }}</td>
                               <td>
                                 {{
-                                item.original_address.address
+                                item.originalAddress.address
                                 | truncate:70:"..."
                                 }}
                               </td>
-                              <td>{{ item.original_address.subdistrict }}</td>
-                              <td>{{ item.original_address.district }}</td>
-                              <td>{{ item.original_address.province }}</td>
+                              <td>{{ item.originalAddress.subdistrict }}</td>
+                              <td>{{ item.originalAddress.district }}</td>
+                              <td>{{ item.originalAddress.province }}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -990,11 +990,11 @@
                               " (click)="openCustomerOrderDetails(item)" style="cursor: pointer">
                               <td>{{ item.name }}</td>
                               <td>
-                                {{ item.metrics?.product_ids?.join(", ") }}
+                                {{ item.metrics?.productIds?.join(", ") }}
                               </td>
                               <td>
                                 {{
-                                item.metrics?.missing_product_ids?.join(", ")
+                                item.metrics?.missingProductIds?.join(", ")
                                 }}
                               </td>
                             </tr>
@@ -1050,18 +1050,18 @@
             <div id="popup-content" class="row justify-content-end mt-2" *ngIf="popupContent && !popupContent.isDepot">
               <p class="d-inline-block text-truncate" style="max-width: 300px">
                 <strong>{{ "address" | transloco }} : </strong>
-                {{ popupContent.data.original_address.address }}
+                {{ popupContent.data.originalAddress.address }}
               </p>
               <p class="d-inline-block text-truncate" style="max-width: 300px">
                 <strong>{{ "sub_district" | transloco }} : </strong>
-                {{ popupContent.data.original_address.subdistrict }}
+                {{ popupContent.data.originalAddress.subdistrict }}
               </p>
               <p class="d-inline-block text-truncate" style="max-width: 300px">
-                <strong>{{ "district" | transloco }} : </strong>{{ popupContent.data.original_address.district }}
+                <strong>{{ "district" | transloco }} : </strong>{{ popupContent.data.originalAddress.district }}
               </p>
 
               <p class="d-inline-block text-truncate" style="max-width: 300px">
-                <strong>{{ "province" | transloco }} : </strong>{{ popupContent.data.original_address.province }}
+                <strong>{{ "province" | transloco }} : </strong>{{ popupContent.data.originalAddress.province }}
               </p>
             </div>
             <button class="float-right" mat-raised-button class="bg-custom-primary"

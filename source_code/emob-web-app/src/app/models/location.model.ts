@@ -95,22 +95,22 @@ export interface FeatureProperties {
   travel_duration?: number;
   extra?: {
     channel?: string;
-    customer_name?: string;
+    customerName?: string;
     tel?: string;
-    products_info?: Array<{
-      product_id: string;
-      order_id: string;
-      product_name: string;
-      quantity_major: number;
-      quantity_minor: number;
-      user_confirm: string;
-      date_confirm: string;
+    productsInfo?: Array<{
+      productId: string;
+      orderId: string;
+      productName: string;
+      quantityMajor: number;
+      quantityMinor: number;
+      userConfirm: string;
+      dateConfirm: string;
     }>;
   };
-  original_address?: {
+  originalAddress?: {
     district: string;
     province: string;
-    postal_code: string;
+    postalCode: string;
     address: string;
   };
 }

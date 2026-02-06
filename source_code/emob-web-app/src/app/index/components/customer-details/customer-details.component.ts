@@ -90,8 +90,8 @@ export class CustomerDetailsComponent
     } else {
       console.log('Component is used via selector in HTML');
     }
-    this.location.latitude = Number(this.dataCustomer.latitude);
-    this.location.longitude = Number(this.dataCustomer.longitude);
+    this.location.latitude = Number(this.dataCustomer?.latitude || 0);
+    this.location.longitude = Number(this.dataCustomer?.longitude || 0);
     console.log(this.dataCustomer);
     this.vectorSource = new VectorSource({});
     this.vectorLayer = new VectorLayer({
@@ -186,24 +186,24 @@ export class CustomerDetailsComponent
       location.setStyle(this.iconStyle.edit);
       this.locationType = LocationType.Edit;
     } else if (
-      (customer.replace_type === ReplaceType.NO_REPLACE ||
-        customer.replace_type === ReplaceType.INPUT) &&
-      (customer.validation_type === ValidationType.SUBDISTRICT_LEVEL ||
-        customer.validation_type === ValidationType.DISTRICT_LEVEL)
+      (customer.replaceType === ReplaceType.NO_REPLACE ||
+        customer.replaceType === ReplaceType.INPUT) &&
+      (customer.validationType === ValidationType.SUBDISTRICT_LEVEL ||
+        customer.validationType === ValidationType.DISTRICT_LEVEL)
     ) {
       location.setStyle(this.iconStyle.verify);
       this.locationType = LocationType.Verify;
     } else if (
-      customer.replace_type === ReplaceType.SUBDISTRICT_LEVEL ||
-      customer.replace_type === ReplaceType.DISTRICT_LEVEL
+      customer.replaceType === ReplaceType.SUBDISTRICT_LEVEL ||
+      customer.replaceType === ReplaceType.DISTRICT_LEVEL
     ) {
       location.setStyle(this.iconStyle.uncertain);
       this.locationType = LocationType.Uncertain;
     } else if (
-      customer.replace_type === ReplaceType.PROVINCE_LEVEL ||
-      customer.validation_type === ValidationType.NO_VALID ||
-      customer.validation_type === ValidationType.NAN_INPUT ||
-      customer.validation_type === ValidationType.NON_VALIDATED
+      customer.replaceType === ReplaceType.PROVINCE_LEVEL ||
+      customer.validationType === ValidationType.NO_VALID ||
+      customer.validationType === ValidationType.NAN_INPUT ||
+      customer.validationType === ValidationType.NON_VALIDATED
     ) {
       location.setStyle(this.iconStyle.unverify);
       this.locationType = LocationType.Unverify;
@@ -311,7 +311,7 @@ export class CustomerDetailsComponent
       latitude: this.dataCustomer.latitude,
     };
     dialogRef.componentInstance.address =
-      this.dataCustomer.original_address.address;
+      this.dataCustomer.originalAddress.address;
 
     dialogRef.result
       .then((result: Location) => {

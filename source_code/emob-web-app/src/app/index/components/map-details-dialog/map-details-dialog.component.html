@@ -1,5 +1,5 @@
 <ng-container *transloco="let t; read: 'index'">
-  <div class="modal-header">
+  <!-- <div class="modal-header">
     <h4 class="modal-title">{{ t("overview_routing_plan") }}</h4>
     <button type="button" class="close" aria-label="Close" (click)="close()">
       <span aria-hidden="true">&times;</span>
@@ -143,12 +143,12 @@
             {{ popupContent.travel_duration | number : "1.2-2" }}
             <span>{{ t("km") }}.</span>
           </p>
-          <p class="d-inline-block text-truncate mr-2 text-wrap" *ngIf="popupContent.original_address?.address">
+          <p class="d-inline-block text-truncate mr-2 text-wrap" *ngIf="popupContent.originalAddress?.address">
             <strong>{{ "address" | transloco }} : </strong>
-            {{ popupContent["original_address"]!["address"] }}
+            {{ popupContent["originalAddress"]!["address"] }}
           </p>
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 </ng-container>

@@ -366,8 +366,8 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
       let planDetails: PlanDetailsData | null = null;
       const refactormatchedPreOrderData: PreOrderData = {
         ...matchedPreOrderData,
-        validation_type: matchedItem?.validation_type,
-        replace_type: matchedItem?.replace_type,
+        validationType: matchedItem?.validationType,
+        replaceType: matchedItem?.replaceType,
         PROVINCE: matchedPreOrderData?.PROVICE || '',
       };
 
@@ -391,26 +391,26 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
           ORDERID: properties.name || '',
           ORDERID_ORG: properties.name,
           CHANNEL: properties.extra?.channel,
-          CUSTOMER_NAME: properties.extra?.customer_name,
+          CUSTOMER_NAME: properties.extra?.customerName,
           TEL: properties.extra?.tel,
-          AUMPHER: properties.original_address?.district,
-          PROVINCE: properties.original_address?.province,
-          ZIPCODE: properties.original_address?.postal_code,
-          ADDRESS: properties.original_address?.address,
+          AUMPHER: properties.originalAddress?.district,
+          PROVINCE: properties.originalAddress?.province,
+          ZIPCODE: properties.originalAddress?.postalCode,
+          ADDRESS: properties.originalAddress?.address,
           latitude: (geometry.coordinates as number[])[1],
           longitude: (geometry.coordinates as number[])[0],
-          details:
-            properties.extra?.products_info?.map((product: ProductInfo) => ({
-              ...product,
-              ORDERID: product.order_id,
-              PRODUCTID: product.product_id,
-              ORDER_ID: product.order_id,
-              PRODUCTNAME: product.product_name,
-              QUANTITYMAIN: product.quantity_major,
-              QUANTITYMINOR: product.quantity_minor,
-              UserConfirm: product.user_confirm,
-              DateConfirm: product.date_confirm,
-            })) || [],
+          // details:
+          //   properties.extra?.productsInfo?.map((product: ProductInfo) => ({
+          //     ...product,
+          //     ORDERID: product.orderId,
+          //     PRODUCTID: product.productId,
+          //     ORDER_ID: product.orderId,
+          //     PRODUCTNAME: product.productName,
+          //     QUANTITYMAIN: product.quantityMajor,
+          //     QUANTITYMINOR: product.quantityMinor,
+          //     UserConfirm: product.userConfirm,
+          //     DateConfirm: product.dateConfirm,
+          //   })) || [],
         };
       } else {
         planDetails = {

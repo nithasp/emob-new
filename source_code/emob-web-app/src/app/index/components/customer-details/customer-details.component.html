@@ -158,11 +158,11 @@
             <dt class="col-sm-2">{{ t("validation") }}</dt>
 
             <dd class="col-sm-10">
-              {{ getEnumDescription(dataCustomer.validation_type) }}
+              {{ getEnumDescription(dataCustomer.validationType) }}
             </dd>
             <dt class="col-sm-2">{{ t("replace") }}</dt>
             <dd class="col-sm-10">
-              {{ getEnumDescription(dataCustomer.replace_type) }}
+              {{ getEnumDescription(dataCustomer.replaceType) }}
             </dd>
           </div>
         </ng-container>
@@ -220,7 +220,7 @@
       </div>
     </div>
 
-    <h3 mat-dialog-title class="text-center">{{ t("order_details") }}</h3>
+    <!-- <h3 mat-dialog-title class="text-center">{{ t("order_details") }}</h3> -->
     <div mat-dialog-content>
       <div class="modal-body" *ngIf="(dataPreOder?.details?.length || 0) > 0">
         <div class="table-responsive">

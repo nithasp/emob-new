@@ -34,7 +34,7 @@ export interface PreOrder {
 }
 
 export interface CustomerUpdated {
-  node_id: string;
+  nodeId: string;
   name: string;
   index: number;
   latitude: number;
@@ -42,66 +42,73 @@ export interface CustomerUpdated {
 }
 
 export interface ProductInfo {
-  product_id: string;
-  product_name: string;
-  quantity_major: number;
-  quantity_minor: number;
-  order_id: string | null;
-  user_confirm: string | null;
-  date_confirm: string | null;
+  productId: string;
+  productName: string;
+  quantityMajor: number;
+  quantityMinor: number;
+  orderId: string | null;
+  userConfirm: string | null;
+  dateConfirm: string | null;
 }
 
 export interface Extra {
-  order_id: string | null;
+  orderId: string | null;
   channel: string | null;
-  customer_name: string;
+  customerName: string;
   tel: string | null;
-  products_info: ProductInfo[];
+  productsInfo: ProductInfo[];
 }
 
 export interface Customer {
-  delivery: number | string;
+  deliveryWeight: number | string;
   index: number;
-  is_depot: boolean;
+  isDepot: boolean;
   latitude: number;
   longitude: number;
   metrics: Metrics | null;
   name: string;
-  node_id: string;
-  original_address: Address;
-  pickup: number;
-  processed_address: Address;
-  replace_type: ReplaceType;
+  nodeId: string;
+  originalAddress: Address;
+  pickupWeight: number;
+  processedAddress: Address;
+  replaceType: ReplaceType;
   required: boolean;
-  service_duration: number;
-  tw_early: number;
-  tw_late: string;
-  validation_type: ValidationType;
-  volumn_delivery: number | string;
-  volumn_pickup: number;
+  serviceDuration: number;
+  timeWindowEarly: number;
+  timeWindowLate: string | number;
+  validationType: ValidationType;
+  deliveryVolume: number | string;
+  pickupVolume: number;
   zone: string;
   extra: Extra;
+  label?: number;
+  priorityGroup?: number;
+  priority?: number;
+  prize?: number;
+  productQuantity?: any[];
+  allowVehicleGroupId?: string[];
+  additionalProperties?: any;
 }
 
 interface Metrics {
-  excess_distance: number;
-  excess_duration: number;
-  excess_volumn: number;
-  excess_weight: number;
-  is_excess_distance: boolean;
-  is_excess_duration: boolean;
-  is_excess_volumn: boolean;
-  is_excess_weight: boolean;
-  is_feasible: boolean;
-  is_missing_product: boolean;
-  missing_product_ids: string[];
-  product_ids: string[];
+  excessDistance: number;
+  excessDuration: number;
+  excessVolumn: number;
+  excessWeight: number;
+  isExcessDistance: boolean;
+  isExcessDuration: boolean;
+  isExcessVolumn: boolean;
+  isExcessWeight: boolean;
+  isFeasible: boolean;
+  isMissingProduct: boolean;
+  missingProductIds: string[];
+  productIds: string[];
 }
 
 export interface Address {
   address: string;
   district: null | string;
-  postal_code: number | null;
+  postalCode: number | null;
   province: string | null;
   subdistrict: null | string;
 }
@@ -153,26 +160,33 @@ export function getDescription(
   return enumDescriptions[enumValue] || 'No description available';
 }
 export interface Depot {
-  id: string;
-  delivery: number;
+  id?: string;
+  deliveryWeight: number;
   index: number;
-  is_depot: boolean;
-  latitude: string;
-  longitude: string;
+  isDepot: boolean;
+  latitude: string | number;
+  longitude: string | number;
   name: string;
-  node_id: string;
-  original_address: Address;
-  pickup: number;
-  processed_address: Address;
-  replace_type: ReplaceType;
+  nodeId: string;
+  originalAddress: Address;
+  pickupWeight: number;
+  processedAddress: Address;
+  replaceType: ReplaceType;
   required: boolean;
-  service_duration: number;
-  tw_early: number;
-  tw_late: string;
-  validation_type: ValidationType;
-  volumn_delivery: number;
-  volumn_pickup: number;
+  serviceDuration: number;
+  timeWindowEarly: number;
+  timeWindowLate: string | number;
+  validationType: ValidationType;
+  deliveryVolume: number;
+  pickupVolume: number;
   zone: string;
+  label?: number;
+  priorityGroup?: number;
+  priority?: number;
+  prize?: number;
+  productQuantity?: any[];
+  allowVehicleGroupId?: string[];
+  additionalProperties?: any;
 }
 
 export interface GroupedDataPreOrder {

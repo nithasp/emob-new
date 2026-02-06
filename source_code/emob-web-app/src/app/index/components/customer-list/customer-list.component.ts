@@ -53,7 +53,7 @@ export class CustomerListComponent implements OnInit {
     if (existingIndex !== -1) {
       // Replace the existing entry
       this.customersLocationUpdated[existingIndex] = {
-        node_id: customer.node_id,
+        nodeId: customer.nodeId,
         index: customer.index,
         name: customer.name,
         latitude: locationUpdated.latitude,
@@ -62,7 +62,7 @@ export class CustomerListComponent implements OnInit {
     } else {
       // Add a new entry
       this.customersLocationUpdated.push({
-        node_id: customer.node_id,
+        nodeId: customer.nodeId,
         index: customer.index,
         name: customer.name,
         latitude: locationUpdated.latitude,
@@ -94,20 +94,20 @@ export class CustomerListComponent implements OnInit {
     const fallback = keyed || {
       ORDERID_ORG: selected?.name,
       CHANNEL: selected?.extra?.channel || '',
-      CUSTOMER_NAME: selected?.extra?.customer_name || '',
+      CUSTOMER_NAME: selected?.extra?.customerName || '',
       TEL: selected?.extra?.tel || '',
-      ADDRESS: selected?.original_address?.address || '',
-      AUMPHER: selected?.original_address?.district || '',
-      PROVINCE: selected?.original_address?.province || '',
-      ZIPCODE: Number(selected?.original_address?.postal_code || 0),
-      details: (selected?.extra?.products_info || []).map((p) => ({
-        PRODUCTID: String(p.product_id || ''),
-        ORDER_ID: p.order_id || null,
-        PRODUCTNAME: p.product_name || '',
-        QUANTITYMAIN: Number(p.quantity_major || 0),
-        QUANTITYMINOR: Number(p.quantity_minor || 0),
-        UserConfirm: p.user_confirm || null,
-        DateConfirm: p.date_confirm || null,
+      ADDRESS: selected?.originalAddress?.address || '',
+      AUMPHER: selected?.originalAddress?.district || '',
+      PROVINCE: selected?.originalAddress?.province || '',
+      ZIPCODE: Number(selected?.originalAddress?.postalCode || 0),
+      details: (selected?.extra?.productsInfo || []).map((p) => ({
+        PRODUCTID: String(p.productId || ''),
+        ORDER_ID: p.orderId || null,
+        PRODUCTNAME: p.productName || '',
+        QUANTITYMAIN: Number(p.quantityMajor || 0),
+        QUANTITYMINOR: Number(p.quantityMinor || 0),
+        UserConfirm: p.userConfirm || null,
+        DateConfirm: p.dateConfirm || null,
       })),
     };
 

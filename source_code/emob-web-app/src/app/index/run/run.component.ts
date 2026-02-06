@@ -514,7 +514,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         experiment.fileUrl.LocationBlobPathUrl
       ).then((response: Result) => {
         console.log('Result', response);
-        this.groupingCustomer(response.customers, response.depots);
+       //this.groupingCustomer(response.customers, response.depots);
+       this.groupingCustomer(newOrderData.customers, newOrderData.depots);
       });
     }
     if (experiment.fileUrl.locationUpdateBlobPathUrl) {
@@ -1508,6 +1509,10 @@ export class RunComponent implements OnInit, AfterViewInit {
       updatedAt?: string;
     }>
   ) {
+
+
+    console.log('loadLocationDepot incoming', incoming);
+
     // Always use the incoming depots array for default selection and display
     const normalizedIncoming: MyDepot[] = incoming.map((item) => {
       const nameKey =
@@ -1532,6 +1537,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
 
     this.depots = normalizedIncoming;
+
+
+    console.log('this.depots', this.depots);
 
     if (!this.experiment.depots || this.experiment.depots.length === 0) {
       this.experiment.depots = normalizedIncoming.map((depot: MyDepot) => ({
@@ -1770,22 +1778,22 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     customers.forEach((customer) => {
       if (
-        (customer.replace_type === ReplaceType.NO_REPLACE ||
-          customer.replace_type === ReplaceType.INPUT) &&
-        (customer.validation_type === ValidationType.SUBDISTRICT_LEVEL ||
-          customer.validation_type === ValidationType.DISTRICT_LEVEL)
+        (customer.replaceType === ReplaceType.NO_REPLACE ||
+          customer.replaceType === ReplaceType.INPUT) &&
+        (customer.validationType === ValidationType.SUBDISTRICT_LEVEL ||
+          customer.validationType === ValidationType.DISTRICT_LEVEL)
       ) {
         verify.push(customer);
       } else if (
-        customer.replace_type === ReplaceType.SUBDISTRICT_LEVEL ||
-        customer.replace_type === ReplaceType.DISTRICT_LEVEL
+        customer.replaceType === ReplaceType.SUBDISTRICT_LEVEL ||
+        customer.replaceType === ReplaceType.DISTRICT_LEVEL
       ) {
         uncertain.push(customer);
       } else if (
-        customer.replace_type === ReplaceType.PROVINCE_LEVEL ||
-        customer.validation_type === ValidationType.NO_VALID ||
-        customer.validation_type === ValidationType.NAN_INPUT ||
-        customer.validation_type === ValidationType.NON_VALIDATED
+        customer.replaceType === ReplaceType.PROVINCE_LEVEL ||
+        customer.validationType === ValidationType.NO_VALID ||
+        customer.validationType === ValidationType.NAN_INPUT ||
+        customer.validationType === ValidationType.NON_VALIDATED
       ) {
         unverify.push(customer);
       }
@@ -1914,25 +1922,25 @@ export class RunComponent implements OnInit, AfterViewInit {
       modalRef.componentInstance.locationType = LocationType.Edit;
     }
 
-    // Create dataPreOder using primarily customer.extra data
+    // Create dataPreOder using primarily customer.extra data with new camelCase structure
     const dataPreOder: DataPreOrder = {
       ORDERID_ORG: customer.name,
-      CHANNEL: customer.extra.channel,
-      CUSTOMER_NAME: customer.extra.customer_name,
-      TEL: customer.extra.tel,
-      ADDRESS: customer.original_address.address,
-      AUMPHER: customer.original_address.district,
-      PROVINCE: customer.original_address.province,
-      ZIPCODE: customer.original_address.postal_code,
-      details: customer.extra.products_info.map((product: ProductInfo) => ({
-        PRODUCTID: product.product_id,
-        ORDER_ID: product.order_id,
-        PRODUCTNAME: product.product_name,
-        QUANTITYMAIN: product.quantity_major,
-        QUANTITYMINOR: product.quantity_minor,
-        UserConfirm: product.user_confirm,
-        DateConfirm: product.date_confirm,
-      })),
+      CHANNEL: customer.extra?.channel || null,
+      CUSTOMER_NAME: customer.extra?.customerName || '',
+      TEL: customer.extra?.tel || null,
+      ADDRESS: customer.originalAddress?.address || '',
+      AUMPHER: customer.originalAddress?.district || null,
+      PROVINCE: customer.originalAddress?.province || null,
+      ZIPCODE: customer.originalAddress?.postalCode || null,
+      details: customer.extra?.productsInfo?.map((product: ProductInfo) => ({
+        PRODUCTID: product.productId,
+        ORDER_ID: product.orderId,
+        PRODUCTNAME: product.productName,
+        QUANTITYMAIN: product.quantityMajor,
+        QUANTITYMINOR: product.quantityMinor,
+        UserConfirm: product.userConfirm,
+        DateConfirm: product.dateConfirm,
+      })) || [],
     };
 
     // Pass customer directly as dataCustomer (the component expects Customer type)
@@ -1945,7 +1953,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         Number(customer.latitude) !== Number(locationUpdated.latitude)
       ) {
         const updatedCustomer = {
-          node_id: customer.node_id,
+          nodeId: customer.nodeId,
           index: customer.index,
           name: customer.name,
           latitude: locationUpdated.latitude,
@@ -2368,14 +2376,21 @@ export class RunComponent implements OnInit, AfterViewInit {
       }
     });
   }
-  groupingCustomer(customers: Customer[], depots: Depot[]) {
+
+  groupingCustomer(customers: any[], depots: any[]) {
     this.countUploadedCustomers = customers.length;
-    // Sum all products_info lengths across customers for preOrderCount
+    // Sum all productsInfo lengths across customers for preOrderCount
     this.preOrderCount = customers.reduce((sum, customer) => {
-      const products = customer?.extra?.products_info;
+      const products = customer?.extra?.productsInfo;
       return sum + (Array.isArray(products) ? products.length : 0);
     }, 0);
+
     const groupedCustomer = this.groupCustomers(customers);
+
+
+    console.log('groupingCustomer customers', customers);
+    console.log('groupingCustomer depots', depots);
+
     this.uploadDataGroupCustomers = {
       verify: {
         customers: groupedCustomer.verify,
@@ -2396,7 +2411,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     };
 
     console.log(
-      'prepared uploadDataGroupCustomers',
+      'this.uploadDataGroupCustomers',
       this.uploadDataGroupCustomers
     );
     console.log('depots', depots)
@@ -2441,10 +2456,10 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.validateExperiment?.warning.zero_weight.map((customer, i) => ({
             index: i + 1,
             ORDER_ID: customer.name,
-            ADDRESS: customer.original_address.address ?? '',
-            SUBDISTRICT: customer.original_address.subdistrict ?? '',
-            DISTRICT: customer.original_address.district ?? '',
-            PROVINCE: customer.original_address.province ?? '',
+            ADDRESS: customer.originalAddress.address ?? '',
+            SUBDISTRICT: customer.originalAddress.subdistrict ?? '',
+            DISTRICT: customer.originalAddress.district ?? '',
+            PROVINCE: customer.originalAddress.province ?? '',
           })) || [],
         name:
           'Remove_Order_' + this.experiment.name + '_' + this.experiment.runId,
@@ -2460,9 +2475,9 @@ export class RunComponent implements OnInit, AfterViewInit {
             index: i + 1,
             ORDER_ID: customer.name,
             PRODUCT_ID_ZERO_WEIGHT:
-              (customer.metrics?.product_ids || []).join(',') ?? '',
+              (customer.metrics?.productIds || []).join(',') ?? '',
             PRODUCT_ID_MISSING:
-              (customer.metrics?.missing_product_ids || []).join(',') ?? '',
+              (customer.metrics?.missingProductIds || []).join(',') ?? '',
           })) || [],
         name:
           'Zero_Weight_' + this.experiment.name + '_' + this.experiment.runId,
@@ -4025,5 +4040,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   log() {
     console.log('this.dataSource', this.dataSource)
     console.log('this.displayLocationType', this.displayLocationType)
+    console.log('newOrderData.depots.length', newOrderData.depots.length)
+    console.log('newOrderData.customers.length', newOrderData.customers.length)
   }
 }

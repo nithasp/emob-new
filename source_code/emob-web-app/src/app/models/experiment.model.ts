@@ -193,8 +193,8 @@ export interface NodeSheet {
   node_name: string;
   latitude: number;
   longitude: number;
-  validation_type: string;
-  replace_type: string;
+  validationType: string;
+  replaceType: string;
   address: string;
 }
 
@@ -220,17 +220,17 @@ export interface PopupContent {
   weight?: number;
   zone?: string;
   customers?: string[];
-  service_duration?: number;
-  travel_duration?: number;
-  original_address?: {
+  serviceDuration?: number;
+  travelDuration?: number;
+  originalAddress?: {
     address?: string;
     district?: string;
     province?: string;
-    postal_code?: string;
+    postalCode?: string;
   };
   extra?: {
     channel?: string;
-    customer_name?: string;
+    customerName?: string;
     tel?: string;
     products_info?: ProductInfo[];
   };
@@ -260,8 +260,8 @@ export interface PreOrderData {
   latitude?: number;
   longitude?: number;
   LatLng?: string;
-  validation_type?: string;
-  replace_type?: string;
+  validationType?: string;
+  replaceType?: string;
 }
 
 export interface GeoJSONFeatureCollection {
@@ -277,9 +277,9 @@ export interface GeoJSONFeature {
     route_order?: number;
     weight?: number;
     color?: string;
-    is_depot?: boolean;
+    isDepot?: boolean;
     extra?: PopupContent['extra'];
-    original_address?: PopupContent['original_address'];
+    originalAddress?: PopupContent['originalAddress'];
     [key: string]: unknown;
   };
   geometry: {
@@ -291,8 +291,8 @@ export interface GeoJSONFeature {
 export interface PlanDetailsData extends PreOrderData {
   ORDERID_ORG?: string;
   details?: Array<PreOrderData & ProductInfo>;
-  validation_type?: string;
-  replace_type?: string;
+  validationType?: string;
+  replaceType?: string;
 }
 
 export interface PointDetail {

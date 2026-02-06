@@ -1583,8 +1583,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
       let planDetails = null;
       const refactormatchedPreOrderData = {
         ...matchedPreOrderData,
-        validation_type: matchedItem?.validation_type,
-        replace_type: matchedItem?.replace_type,
+        validationType: matchedItem?.validationType,
+        replaceType: matchedItem?.replaceType,
         PROVINCE: matchedPreOrderData?.['PROVICE'] || '',
       };
 
@@ -1611,23 +1611,23 @@ export class ResultComponent implements OnInit, AfterViewInit {
         planDetails = {
           ORDERID_ORG: properties.name,
           CHANNEL: properties.extra?.channel,
-          CUSTOMER_NAME: properties.extra?.customer_name,
+          CUSTOMER_NAME: properties.extra?.customerName,
           TEL: properties.extra?.tel,
-          AUMPHER: properties.original_address?.district,
-          PROVINCE: properties.original_address?.province,
-          ZIPCODE: properties.original_address?.postal_code,
-          ADDRESS: properties.original_address?.address,
+          AUMPHER: properties.originalAddress?.district,
+          PROVINCE: properties.originalAddress?.province,
+          ZIPCODE: properties.originalAddress?.postalCode,
+          ADDRESS: properties.originalAddress?.address,
           latitude: geometry.coordinates[1],
           longitude: geometry.coordinates[0],
 
-          details: properties.extra?.products_info?.map((product) => ({
-            PRODUCTID: product.product_id,
-            ORDER_ID: product.order_id,
-            PRODUCTNAME: product.product_name,
-            QUANTITYMAIN: product.quantity_major,
-            QUANTITYMINOR: product.quantity_minor,
-            UserConfirm: product.user_confirm,
-            DateConfirm: product.date_confirm,
+          details: properties.extra?.productsInfo?.map((product) => ({
+            PRODUCTID: product.productId,
+            ORDER_ID: product.orderId,
+            PRODUCTNAME: product.productName,
+            QUANTITYMAIN: product.quantityMajor,
+            QUANTITYMINOR: product.quantityMinor,
+            UserConfirm: product.userConfirm,
+            DateConfirm: product.dateConfirm,
           })),
         };
       } else {
