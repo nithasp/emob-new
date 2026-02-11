@@ -3944,8 +3944,8 @@
         {
             "latitude": 13.92089928,
             "longitude": 100.683215,
-            "validationType": "SUB_DISTRICT LEVEL",
-            "replaceType": "ORIGINAL LOCATION",
+            "validationType": "NO_VALID",
+            "replaceType": "SUB_DISTRICT CENTROID",
             "originalAddress": {
                 "address": "เลขที่ 52 ถ.สายไหม แขวงสายไหม เขตสายไหม กรุงเทพมหานคร",
                 "subdistrict": "สายไหม",
@@ -3962,7 +3962,7 @@
             },
             "nodeId": "406447-1",
             "index": 91,
-            "name": "บริษัท ซีพี แอ็กซ์ตร้า จำกัด(มหาชน)สาขาวงศกร 2 (00158)",
+            "name": "บริษัท เซ็นทรัลกรุ๊ป จำกัด",
             "deliveryWeight": 1493.5,
             "pickupWeight": 0.0,
             "deliveryVolume": 103.0,
@@ -3987,8 +3987,8 @@
         {
             "latitude": 13.92089928,
             "longitude": 100.683215,
-            "validationType": "SUB_DISTRICT LEVEL",
-            "replaceType": "ORIGINAL LOCATION",
+            "validationType": "NO_VALID",
+            "replaceType": "SUB_DISTRICT CENTROID",
             "originalAddress": {
                 "address": "เลขที่ 52 ถ.สายไหม แขวงสายไหม เขตสายไหม กรุงเทพมหานคร",
                 "subdistrict": "สายไหม",
