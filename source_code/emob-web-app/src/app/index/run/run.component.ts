@@ -515,7 +515,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       ).then((response: Result) => {
         console.log('Result', response);
        //this.groupingCustomer(response.customers, response.depots);
-       this.groupingCustomer(newOrderData.customers, newOrderData.depots);
+       this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
       });
     }
     if (experiment.fileUrl.locationUpdateBlobPathUrl) {
@@ -2377,7 +2377,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  groupingCustomer(customers: any[], depots: any[]) {
+  groupingCustomer(customers: Customer[], depots: Depot[]) {
     this.countUploadedCustomers = customers.length;
     // Sum all productsInfo lengths across customers for preOrderCount
     this.preOrderCount = customers.reduce((sum, customer) => {
