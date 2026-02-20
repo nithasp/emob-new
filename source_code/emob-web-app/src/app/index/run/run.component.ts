@@ -1319,13 +1319,20 @@ export class RunComponent implements OnInit, AfterViewInit {
                 .getExperiment(this.experiment.runId)
                 .pipe(take(1))
                 .subscribe(async (exp: Experiment) => {
+
+
+                 
+
                   this.experiment = { ...exp };
-                  if (response.result) {
-                    this.groupingCustomer(
-                      response.result.customers,
-                      response.result.depots
-                    );
-                  }
+
+
+                  // if (response.result) {
+                  //   this.groupingCustomer(
+                  //     response.result.customers,
+                  //     response.result.depots
+                  //   );
+                  // }
+                  this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
 
                   this.experiment.name = response.name;
                   // Map inputdata to UI structure expected by template
