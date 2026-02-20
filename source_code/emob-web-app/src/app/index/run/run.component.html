@@ -361,7 +361,7 @@
                         <td mat-cell *matCellDef="let element">
                           <div class="address-container">
                             <span>{{
-                              element.originalAddress.address
+                              (element.originalAddress?.address ?? '')
                               | truncate:70:"..."
                               }}</span>
                             <!-- <button class="btn btn-sm align-right"
@@ -384,7 +384,7 @@
                         </th>
 
                         <td mat-cell *matCellDef="let element">
-                          {{ element.originalAddress.district }}
+                          {{ element.originalAddress?.district }}
                         </td>
                       </ng-container>
 
@@ -395,7 +395,7 @@
                         </th>
 
                         <td mat-cell *matCellDef="let element">
-                          {{ element.originalAddress.province }}
+                          {{ element.originalAddress?.province }}
                         </td>
                       </ng-container>
 
@@ -818,13 +818,13 @@
                               </td>
                               <td>
                                 {{
-                                item.originalAddress.address
+                                (item.originalAddress?.address ?? '')
                                 | truncate:70:"..."
                                 }}
                               </td>
-                              <td>{{ item.originalAddress.subdistrict }}</td>
-                              <td>{{ item.originalAddress.district }}</td>
-                              <td>{{ item.originalAddress.province }}</td>
+                              <td>{{ item.originalAddress?.subdistrict }}</td>
+                              <td>{{ item.originalAddress?.district }}</td>
+                              <td>{{ item.originalAddress?.province }}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -881,13 +881,13 @@
 
                               <td>
                                 {{
-                                item.originalAddress.address
+                                (item.originalAddress?.address ?? '')
                                 | truncate:70:"..."
                                 }}
                               </td>
-                              <td>{{ item.originalAddress.subdistrict }}</td>
-                              <td>{{ item.originalAddress.district }}</td>
-                              <td>{{ item.originalAddress.province }}</td>
+                              <td>{{ item.originalAddress?.subdistrict }}</td>
+                              <td>{{ item.originalAddress?.district }}</td>
+                              <td>{{ item.originalAddress?.province }}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -937,13 +937,13 @@
                               <td>{{ item.name }}</td>
                               <td>
                                 {{
-                                item.originalAddress.address
+                                (item.originalAddress?.address ?? '')
                                 | truncate:70:"..."
                                 }}
                               </td>
-                              <td>{{ item.originalAddress.subdistrict }}</td>
-                              <td>{{ item.originalAddress.district }}</td>
-                              <td>{{ item.originalAddress.province }}</td>
+                              <td>{{ item.originalAddress?.subdistrict }}</td>
+                              <td>{{ item.originalAddress?.district }}</td>
+                              <td>{{ item.originalAddress?.province }}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -1050,18 +1050,18 @@
             <div id="popup-content" class="row justify-content-end mt-2" *ngIf="popupContent && !popupContent.isDepot">
               <p class="d-inline-block text-truncate" style="max-width: 300px">
                 <strong>{{ "address" | transloco }} : </strong>
-                {{ popupContent.data.originalAddress.address }}
+                {{ popupContent.data.originalAddress?.address }}
               </p>
               <p class="d-inline-block text-truncate" style="max-width: 300px">
                 <strong>{{ "sub_district" | transloco }} : </strong>
-                {{ popupContent.data.originalAddress.subdistrict }}
+                {{ popupContent.data.originalAddress?.subdistrict }}
               </p>
               <p class="d-inline-block text-truncate" style="max-width: 300px">
-                <strong>{{ "district" | transloco }} : </strong>{{ popupContent.data.originalAddress.district }}
+                <strong>{{ "district" | transloco }} : </strong>{{ popupContent.data.originalAddress?.district }}
               </p>
 
               <p class="d-inline-block text-truncate" style="max-width: 300px">
-                <strong>{{ "province" | transloco }} : </strong>{{ popupContent.data.originalAddress.province }}
+                <strong>{{ "province" | transloco }} : </strong>{{ popupContent.data.originalAddress?.province }}
               </p>
             </div>
             <button class="float-right" mat-raised-button class="bg-custom-primary"

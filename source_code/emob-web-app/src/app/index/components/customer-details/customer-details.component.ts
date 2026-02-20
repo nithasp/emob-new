@@ -311,7 +311,7 @@ export class CustomerDetailsComponent
       latitude: this.dataCustomer.latitude,
     };
     dialogRef.componentInstance.address =
-      this.dataCustomer.originalAddress.address;
+      this.dataCustomer.originalAddress?.address ?? '';
 
     dialogRef.result
       .then((result: Location) => {

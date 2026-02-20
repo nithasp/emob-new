@@ -2456,10 +2456,10 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.validateExperiment?.warning.zero_weight.map((customer, i) => ({
             index: i + 1,
             ORDER_ID: customer.name,
-            ADDRESS: customer.originalAddress.address ?? '',
-            SUBDISTRICT: customer.originalAddress.subdistrict ?? '',
-            DISTRICT: customer.originalAddress.district ?? '',
-            PROVINCE: customer.originalAddress.province ?? '',
+            ADDRESS: customer.originalAddress?.address ?? '',
+            SUBDISTRICT: customer.originalAddress?.subdistrict ?? '',
+            DISTRICT: customer.originalAddress?.district ?? '',
+            PROVINCE: customer.originalAddress?.province ?? '',
           })) || [],
         name:
           'Remove_Order_' + this.experiment.name + '_' + this.experiment.runId,

@@ -68,7 +68,7 @@ export interface Customer {
   metrics: Metrics | null;
   name: string;
   nodeId: string;
-  originalAddress: Address;
+  originalAddress?: Address;
   pickupWeight: number;
   processedAddress: Address;
   replaceType: ReplaceType;
@@ -168,7 +168,7 @@ export interface Depot {
   longitude: string | number;
   name: string;
   nodeId: string;
-  originalAddress: Address;
+  originalAddress?: Address;
   pickupWeight: number;
   processedAddress: Address;
   replaceType: ReplaceType;
