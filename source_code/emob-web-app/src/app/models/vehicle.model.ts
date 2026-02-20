@@ -51,6 +51,13 @@ export interface Break {
   name: string;
 }
 
+export interface VehicleBreak {
+  name: string;
+  duration: string;
+  timeWindowEarly: string;
+  timeWindowLate: string;
+}
+
 export interface VehicleType {
   vehicleTypeId: string;
   name: string;
@@ -71,6 +78,15 @@ export interface VehicleType {
   isVehicleAvailable?: boolean;
   createdAt: string;
   modifiedAt: string;
+  twEarly?: string | number;
+  twLate?: string | number;
+  width?: number;
+  height?: number;
+  length?: number;
+  capacity?: number;
+  volume?: number;
+  maxDistance?: number;
+  maxDuration?: number;
 }
 
 export enum AccessTypeEnum {
@@ -107,6 +123,14 @@ export interface VehicleInput {
   vehicleTypeId: string;
 }
 
+
+export interface VehicleCreateInput {
+  licensePlates: string[];
+  startDepotId: string;
+  endDepotId: string;
+  vehicleTypeId: string;
+}
+
 export interface VehicleUpdateInput {
   licensePlate: string;
   startDepotId: string;
@@ -120,6 +144,14 @@ export interface VehicleCreationResult {
   duplicates: string[];
   message: string;
 }
+
+export interface VehicleCreateResponse {
+  vehicles: Vehicle[];
+  duplicates: string[];
+  message: string;
+}
+
+export type VehicleUpdateResponse = MyVehicles;
 
 export interface VehicleEnumOption {
   key: string;
@@ -137,12 +169,6 @@ export interface VehicleValidationInput {
   numberOfVehiclesAvailable?: number;
 }
 
-export interface VehicleBreak {
-  name: string;
-  duration: string;
-  earliestStart: string;
-  latestStart: string;
-}
 
 export interface VehicleTypePayload extends Partial<VehicleType> {
   maximumVolumeCapacity?: number;
@@ -160,4 +186,10 @@ export interface VehicleBlobData {
   vehicleTypeId: string;
   numberOfVehiclesAvailable?: number;
   specificVehicleIds?: string[];
+}
+
+export interface BreakTimeObject {
+  duration: TimeObject;
+  timeWindowEarly: TimeObject;
+  timeWindowLate: TimeObject;
 }

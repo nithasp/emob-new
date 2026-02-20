@@ -129,15 +129,14 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
           this.breaks.clear();
           this.breakTimeObjects = {};
           breaksData.forEach((breakData: Break | VehicleBreak, index: number) => {
-            // Map API field names to form field names
-            const mappedBreakData: VehicleBreak = {
+            const mappedBreakData = {
               name: breakData.name || '',
               duration: this.formatTimeForDisplay(breakData.duration),
               earliestStart: this.formatTimeForDisplay(
-                (breakData as Break).timeWindowEarly || (breakData as VehicleBreak).earliestStart
+                (breakData as Break).timeWindowEarly || (breakData as VehicleBreak).timeWindowEarly
               ),
               latestStart: this.formatTimeForDisplay(
-                (breakData as Break).timeWindowLate || (breakData as VehicleBreak).latestStart
+                (breakData as Break).timeWindowLate || (breakData as VehicleBreak).timeWindowLate
               ),
             };
             this.breaks.push(this.createBreakFormGroup(mappedBreakData));
@@ -305,7 +304,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     let allowedBreaks: Break[] | undefined;
     const breaksValue = this.breaks.getRawValue();
     if (breaksValue && breaksValue.length > 0) {
-      allowedBreaks = breaksValue.map((breakItem: VehicleBreak): Break => ({
+      allowedBreaks = breaksValue.map((breakItem): Break => ({
         name: breakItem.name,
         duration: breakItem.duration,
         timeWindowEarly: breakItem.earliestStart,
@@ -426,7 +425,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   }
 
   // Allowed Breaks Methods
-  createBreakFormGroup(breakData?: VehicleBreak): FormGroup {
+  createBreakFormGroup(breakData?: { name?: string; duration?: string; earliestStart?: string; latestStart?: string }): FormGroup {
     return this.fb.group(
       {
         name: [breakData?.name || '', Validators.required],

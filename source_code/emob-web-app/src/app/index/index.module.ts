@@ -3,13 +3,13 @@ import { IndexRoutingModule } from './index-routing.module';
 import { ExperimentComponent } from './experiment/experiment.component';
 import { RunComponent } from './run/run.component';
 import { ResultComponent } from './result/result.component';
-import { ConfigurationComponent } from './configuration/configuration.component';
 import { MaterialModule } from '../material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NavbarComponent } from './default/navbar/navbar.component';
 import { RouterLinkActive } from '@angular/router';
 import { IndexComponent } from './index.component';
 import {
+  NgbDropdownModule,
   NgbModule,
   NgbNavModule,
   NgbTooltipModule,
@@ -34,7 +34,6 @@ import { CustomerListComponent } from './components/customer-list/customer-list.
 import { FilterPipe } from '../directives/filter-pipe.directive';
 import { SnakeCasePipe } from '../directives/snakecase.pipe.directive';
 import { ResizableDirective } from '../directives/resizable.directive';
-import { UploadFileComponent } from './configuration/upload-file/upload-file.component';
 import { MapDetailsDialogComponent } from './components/map-details-dialog/map-details-dialog.component';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -56,7 +55,6 @@ import { InputFieldComponent } from '../shared/components/form/input-field/input
     ExperimentComponent,
     RunComponent,
     ResultComponent,
-    ConfigurationComponent,
     NavbarComponent,
     ConfirmationDialogComponent,
     ConfirmationDepotUploadFileDialogComponent,
@@ -73,7 +71,6 @@ import { InputFieldComponent } from '../shared/components/form/input-field/input
     FilterPipe,
     SnakeCasePipe,
     ResizableDirective,
-    UploadFileComponent,
     MapDetailsDialogComponent,
     ParametersDialogComponent,
     ConsumptionDialogComponent,
@@ -83,6 +80,7 @@ import { InputFieldComponent } from '../shared/components/form/input-field/input
     FormatStringDatePipe
   ],
   imports: [
+    CommonModule,
     IndexRoutingModule,
     RouterLinkActive,
     FormsModule,
@@ -95,12 +93,16 @@ import { InputFieldComponent } from '../shared/components/form/input-field/input
     Arrow,
     NgxSpinnerModule,
     NgbTooltipModule,
+    NgbDropdownModule,
     OverlayModule,
     DragDropModule,
     TranslocoModule,
     DynamicPopoverComponent,
     InputFieldComponent,
     InputSelectComponent
+  ],
+  exports: [
+    FilterPipe
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'index' }],

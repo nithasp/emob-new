@@ -1,17 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ConfigurationComponent } from './configuration.component';
 
-describe('InventoryComponent', () => {
-  let component: ConfigurationComponent;
-  let fixture: ComponentFixture<ConfigurationComponent>;
+import { VehicleDialogComponent } from './vehicle-dialog.component';
+
+describe('VehicleDialogComponent', () => {
+  let component: VehicleDialogComponent;
+  let fixture: ComponentFixture<VehicleDialogComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ConfigurationComponent]
+      imports: [VehicleDialogComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ConfigurationComponent);
+    fixture = TestBed.createComponent(VehicleDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -19,4 +20,4 @@ describe('InventoryComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-});
+}); 

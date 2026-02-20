@@ -11,6 +11,8 @@ import { UserADProfile } from 'src/app/models/profile.model';
 import { version } from 'package.json';
 import { TranslocoService } from '@jsverse/transloco';
 import { LanguageChangeService } from 'src/app/services/language-change.service';
+import { filter } from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-topbar',
@@ -21,6 +23,7 @@ export class TopbarComponent implements OnInit {
   @Input() public userADprofile?: UserADProfile;
   public activeRoute: string;
   version: string = version;
+  currentUrl = '';
 
   constructor(
     private readonly router: Router,
@@ -35,15 +38,11 @@ export class TopbarComponent implements OnInit {
 
   ngOnInit() {
     this.getLanguage();
-    this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        this.activeRoute = event.urlAfterRedirects.split('/')[2];
-      } else if (event instanceof Scroll) {
-        console.log('Scroll event detected');
-        this.activeRoute = event.routerEvent.url.split('/')[2];
-      }
-      console.log('Active Route', this.activeRoute);
-    });
+    this.router.events
+      .pipe(filter(ev => ev instanceof NavigationEnd))
+      .subscribe((ev: NavigationEnd) => {
+        this.currentUrl = ev.urlAfterRedirects;
+      });
   }
 
   logout() {
@@ -79,5 +78,9 @@ export class TopbarComponent implements OnInit {
     const currentLang =
       localStorage.getItem('lang') || this.transloco.getDefaultLang();
     this.transloco.setActiveLang(currentLang);
+  }
+
+  isInConfigurations(): boolean {
+    return this.currentUrl.includes('/users/configurations');
   }
 }

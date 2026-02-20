@@ -352,9 +352,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
     end: string | Date | number
   ): number {
     if (!start || !end) return 0;
-    const startTime = new Date(start).getTime();
-    const endTime = new Date(end).getTime();
-    return endTime - startTime;
+    const twEarly = new Date(start).getTime();
+    const twLate = new Date(end).getTime();
+    return twLate - twEarly;
   }
 
   toSnakeCaseHeader(raw: string): string {

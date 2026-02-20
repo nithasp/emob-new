@@ -1,0 +1,1 @@
+export type ActionMode = 'create' | 'edit' | 'view';

@@ -8,8 +8,9 @@ import {
   DownloadResultFile,
   Experiment,
   ExperimentState,
+  Company, 
+  MyDepot
 } from '../models/experiment.model';
-import { Company, MyDepot } from '../models/experiment.model';
 import { Constraint, TimingAndCapacity } from '../models/constraint.model';
 import { Location } from '../models/location.model';
 import { CustomerUpdated } from '../models/pre-order.model';

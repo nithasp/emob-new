@@ -300,3 +300,27 @@ export interface PointDetail {
   weight: number;
   route_order: number;
 }
+
+export interface MyDepot {
+  depotId: string;
+  depotName: string;
+  latitude: number | string;
+  longitude: number | string;
+  tw_early: string;
+  tw_late: string;
+  createdAt: string;
+  updatedAt: string;
+  inputdata: DepotInputRequirement[];
+  columns?: string[];
+}
+
+export interface DepotInputRequirement {
+  companyName: string;
+  depotId: string;
+  keyName: string;
+  displayName: string;
+  columnRequired: string[];
+  fileFormatType: string;
+  createdAt: string;
+  modifiedAt: string;
+}

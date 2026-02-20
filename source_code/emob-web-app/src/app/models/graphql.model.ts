@@ -48,6 +48,7 @@ export interface Response {
   myVehicles: [MyVehicles];
   myVehicleType: VehicleType;
   myVehicleTypes: [VehicleType];
+
   createVehicle: MyVehicles;
   updateVehicle: MyVehicles;
   deleteVehicle: boolean;
@@ -56,7 +57,6 @@ export interface Response {
   updateVehicleType: VehicleType;
   deleteVehicleType: boolean;
   getEnumValues: string[];
-  
 }
 
 export interface Error {

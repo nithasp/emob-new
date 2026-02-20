@@ -35,17 +35,31 @@
           >{{ "experiments" | transloco }}</a
         >
       </li>
-      <li
-        class="nav-item"
-        [class.active]="isActive('configurations')"
-        (click)="setActive('configurations')"
-      >
-        <a
-          class="nav-link"
-          [routerLink]="['/users/configurations']"
-          routerLinkActive
-          >{{ "configurations" | transloco }}</a
-        >
+      <li ngbDropdown class="nav-item">
+        <button type="button" class="nav-link" ngbDropdownToggle [class.active]="isInConfigurations()">
+          {{ "configurations" | transloco }}
+        </button>
+        <div ngbDropdownMenu class="dropdown-menu">
+          <a
+            class="nav-link dropdown-item"
+            ngbDropdownItem
+            [routerLink]="['/users/configurations/upload']"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }" (click)="setActive('configurations')"
+          >
+            {{ "upload" | transloco }}
+          </a>
+          <a
+            class="nav-link dropdown-item"
+            ngbDropdownItem
+            [routerLink]="['/users/configurations/vehicle-management']"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="setActive('configurations')"
+          >
+            {{ "vehicle" | transloco }}
+          </a>
+        </div>
       </li>
     </ul>
     <ul class="navbar-nav ml-auto nav-flex-icons">

@@ -137,4 +137,13 @@
       bottom: -1.5em;
     }
   }
+
+  // Hide notch (top placeholder label when input is focused) when no placeholder is provided
+  .mat-mdc-form-field.no-placeholder {
+    .mdc-notched-outline {
+      .mdc-notched-outline__notch {
+        display: none !important;
+      }
+    }
+  }
 }
