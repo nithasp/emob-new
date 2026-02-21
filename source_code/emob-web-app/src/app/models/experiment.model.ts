@@ -220,6 +220,8 @@ export interface PopupContent {
   weight?: number;
   zone?: string;
   customers?: string[];
+  service_duration?: number;
+  travel_duration?: number;
   serviceDuration?: number;
   travelDuration?: number;
   originalAddress?: {
