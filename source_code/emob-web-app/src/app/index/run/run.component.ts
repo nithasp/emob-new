@@ -109,7 +109,8 @@ import {
   VehicleValidationInput,
   VehicleBlobData,
 } from 'src/app/models/vehicle.model';
-import newOrderData from './newOrderData/newOrderData.json';
+//import newOrderData from './newOrderData/newOrderData.json';
+import newOrderData from './newOrderData/location17022026.json';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -514,7 +515,10 @@ export class RunComponent implements OnInit, AfterViewInit {
         experiment.fileUrl.LocationBlobPathUrl
       ).then((response: Result) => {
         console.log('Result', response);
+        console.log('newOrderData', newOrderData);
+
        //this.groupingCustomer(response.customers, response.depots);
+
        this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
       });
     }
@@ -1320,18 +1324,14 @@ export class RunComponent implements OnInit, AfterViewInit {
                 .pipe(take(1))
                 .subscribe(async (exp: Experiment) => {
 
-
-                 
-
                   this.experiment = { ...exp };
-
-
                   // if (response.result) {
                   //   this.groupingCustomer(
                   //     response.result.customers,
                   //     response.result.depots
                   //   );
                   // }
+
                   this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
 
                   this.experiment.name = response.name;

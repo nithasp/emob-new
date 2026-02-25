@@ -518,7 +518,7 @@
                               <div class="license-plate-list"
                                 *ngIf="(selectedLicensePlates[vehicle.vehicleTypeId]?.length ?? 0) > 0; else noPlates">
                                 <div class="license-plate-item"
-                                  *ngFor="let plate of (selectedLicensePlates[vehicle.vehicleTypeId] ?? []).slice().sort(); let i = index">
+                                  *ngFor="let plate of (selectedLicensePlates[vehicle.vehicleTypeId] || []).slice().sort(); let i = index">
                                   <span class="plate-number">{{ i + 1 }}. </span>
                                   <span class="plate-text">{{ plate }}</span>
                                 </div>
@@ -535,7 +535,8 @@
                 </div>
 
                 <div class="col text-end">
-                  <button mat-raised-button color="secondary" class="btn btn-secondary pr-3" (click)="navigateToPreviousTab()">
+                  <button mat-raised-button color="secondary" class="btn btn-secondary pr-3"
+                    (click)="navigateToPreviousTab()">
                     <mat-icon>first_page</mat-icon>
                     {{ "back" | transloco }}
                   </button>
