@@ -1,5 +1,6 @@
 #vehicle-type-dialog {
   height: 700px;
+
   &.is-loading {
     min-height: 710px;
   }
@@ -17,11 +18,13 @@
   mat-dialog-actions {
     @media (max-width: 576px) {
       flex-direction: column;
+
       button {
         width: 100%;
         margin: 0;
       }
     }
+
     @media (max-width: 992px) {
       margin: 0 0 16px 0 !important;
     }
@@ -41,8 +44,23 @@
     }
   }
 
+  .sizing-selection-wrapper {
+    margin-bottom: 16px;
+    p {
+      font-size: 0.875rem;
+    }
+  }
+
+  .access-points-wrapper {
+    margin-bottom: 15px;
+    .form-label {
+      font-size: 0.875rem;
+    }
+  }
+
   @media (max-width: 992px) {
     box-shadow: none;
+
     .form-group-section2 {
       margin-top: 0;
     }
@@ -52,4 +70,8 @@
 // Global styles for overwrite z-index of mat-select panels in ngbModal
 ::ng-deep .cdk-overlay-container {
   z-index: 2000 !important;
+}
+
+::ng-deep .mdc-label {
+  margin-bottom: 0 !important;
 }

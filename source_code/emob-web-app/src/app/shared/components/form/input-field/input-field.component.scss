@@ -61,8 +61,26 @@
   }
 
   .mat-form-field-disabled .mat-form-field-label,
-  .mat-mdc-form-field.mat-form-field-disabled .mdc-floating-label {
-    color: #374151 !important;
+  .mat-mdc-form-field.mat-form-field-disabled .mdc-floating-label,
+  .mat-mdc-form-field.disabled-field .mdc-floating-label {
+    color: rgba(0, 0, 0, 0.38) !important;
+  }
+
+  .mat-mdc-form-field.mat-form-field-disabled .mdc-notched-outline .mdc-notched-outline__leading,
+  .mat-mdc-form-field.mat-form-field-disabled .mdc-notched-outline .mdc-notched-outline__notch,
+  .mat-mdc-form-field.mat-form-field-disabled .mdc-notched-outline .mdc-notched-outline__trailing,
+  .mat-mdc-form-field.disabled-field .mdc-notched-outline .mdc-notched-outline__leading,
+  .mat-mdc-form-field.disabled-field .mdc-notched-outline .mdc-notched-outline__notch,
+  .mat-mdc-form-field.disabled-field .mdc-notched-outline .mdc-notched-outline__trailing {
+    border-color: rgba(0, 0, 0, 0.38) !important;
+  }
+
+  .mat-mdc-form-field.mat-form-field-disabled input,
+  .mat-mdc-form-field.mat-form-field-disabled .mat-mdc-input-element,
+  .mat-mdc-form-field.disabled-field input,
+  .mat-mdc-form-field.disabled-field .mat-mdc-input-element {
+    color: rgba(0, 0, 0, 0.38) !important;
+    -webkit-text-fill-color: rgba(0, 0, 0, 0.38) !important;
   }
 
   .mat-form-field-disabled .mat-form-field-required-marker,
