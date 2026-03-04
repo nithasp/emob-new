@@ -92,7 +92,7 @@ export class CustomerDetailsComponent
     }
     this.location.latitude = Number(this.dataCustomer?.latitude || 0);
     this.location.longitude = Number(this.dataCustomer?.longitude || 0);
-    console.log(this.dataCustomer);
+    
     this.vectorSource = new VectorSource({});
     this.vectorLayer = new VectorLayer({
       source: this.vectorSource,
@@ -101,6 +101,9 @@ export class CustomerDetailsComponent
       updateWhileAnimating: true,
     });
     this.initIconStyle();
+
+    console.log('this.dataCustomer', this.dataCustomer);
+    console.log('this.dataPreOder', this.dataPreOder);
   }
 
   ngAfterViewInit(): void {

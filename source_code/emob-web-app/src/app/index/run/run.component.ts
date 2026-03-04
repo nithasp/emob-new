@@ -110,7 +110,8 @@ import {
   VehicleBlobData,
 } from 'src/app/models/vehicle.model';
 //import newOrderData from './newOrderData/newOrderData.json';
-import newOrderData from './newOrderData/location17022026.json';
+//import newOrderData from './newOrderData/location17022026.json';
+import newOrderData from './newOrderData/location_with_productinfo.json';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -1910,6 +1911,8 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   openCustomerOrderDetails(customer: Customer) {
+    console.log('openCustomerOrderDetails customer', customer);
+
     const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
       centered: true,
       size: 'xl',
@@ -1930,6 +1933,26 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
 
     // Create dataPreOder using primarily customer.extra data with new camelCase structure
+    // const dataPreOder: DataPreOrder = {
+    //   ORDERID_ORG: customer.name,
+    //   CHANNEL: customer.extra?.channel || null,
+    //   CUSTOMER_NAME: customer.extra?.customerName || '',
+    //   TEL: customer.extra?.tel || null,
+    //   ADDRESS: customer.originalAddress?.address || '',
+    //   AUMPHER: customer.originalAddress?.district || null,
+    //   PROVINCE: customer.originalAddress?.province || null,
+    //   ZIPCODE: customer.originalAddress?.postalCode || null,
+    //   details: customer.extra?.productsInfo?.map((product: ProductInfo) => ({
+    //     PRODUCTID: product.productId,
+    //     ORDER_ID: product.orderId,
+    //     PRODUCTNAME: product.productName,
+    //     QUANTITYMAIN: product.quantityMajor,
+    //     QUANTITYMINOR: product.quantityMinor,
+    //     UserConfirm: product.userConfirm,
+    //     DateConfirm: product.dateConfirm,
+    //   })) || [],
+    // };
+
     const dataPreOder: DataPreOrder = {
       ORDERID_ORG: customer.name,
       CHANNEL: customer.extra?.channel || null,
@@ -1939,14 +1962,14 @@ export class RunComponent implements OnInit, AfterViewInit {
       AUMPHER: customer.originalAddress?.district || null,
       PROVINCE: customer.originalAddress?.province || null,
       ZIPCODE: customer.originalAddress?.postalCode || null,
-      details: customer.extra?.productsInfo?.map((product: ProductInfo) => ({
+      details: customer.productQuantity?.map((product: any) => ({
         PRODUCTID: product.productId,
-        ORDER_ID: product.orderId,
-        PRODUCTNAME: product.productName,
-        QUANTITYMAIN: product.quantityMajor,
-        QUANTITYMINOR: product.quantityMinor,
-        UserConfirm: product.userConfirm,
-        DateConfirm: product.dateConfirm,
+        ORDER_ID: product.skuCode,
+        PRODUCTNAME: product.name,
+        QUANTITYMAIN: product.productQuantity,
+        QUANTITYMINOR: product?.quantityMinor,
+        UserConfirm: product?.userConfirm,
+        DateConfirm: product?.dateConfirm,
       })) || [],
     };
 
