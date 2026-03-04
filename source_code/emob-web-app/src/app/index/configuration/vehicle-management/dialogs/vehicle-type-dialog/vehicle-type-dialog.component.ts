@@ -80,8 +80,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   vehicleProfileTypeOptions: VehicleEnumOption[] = [];
   accessPointOptions: VehicleEnumOption[] = [];
 
-  vehicleSizingType: 'dimension' | 'volume' = 'dimension';
-
   timeWindowEarlyObject: TimeObject = { hour: 0, minute: 0 };
   timeWindowLateObject: TimeObject = { hour: 0, minute: 0 };
 
@@ -100,7 +98,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initializeMode();
     this.initializeForm();
-    this.onVehicleSizingTypeChange();
     this.loadEnumValuesAndVehicleTypeData();
   }
 
@@ -213,12 +210,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
               maximumDuration: data.maximumDuration,
               dimension: data.dimension,
             });
-
-            const hasDimension = data.dimension &&
-              (data.dimension.width > 0 || data.dimension.height > 0 || data.dimension.depth > 0);
-            const hasVolume = data.maximumVolumeCapacity && data.maximumVolumeCapacity > 0;
-            this.vehicleSizingType = hasVolume && !hasDimension ? 'volume' : 'dimension';
-            this.onVehicleSizingTypeChange();
 
             if (timeWindowEarly || data.timeWindowEarly) {
               this.timeWindowEarlyObject = this.parseTimeString(
@@ -352,21 +343,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     }
   }
 
-  onVehicleSizingTypeChange(): void {
-    if (this.isViewMode) return;
-
-    const dimensionGroup = this.formVehicleType.controls.dimension;
-    const volumeControl = this.formVehicleType.controls.maximumVolumeCapacity;
-
-    if (this.vehicleSizingType === 'dimension') {
-      dimensionGroup.enable({ emitEvent: false });
-      volumeControl.disable({ emitEvent: false });
-    } else {
-      volumeControl.enable({ emitEvent: false });
-      dimensionGroup.disable({ emitEvent: false });
-    }
-  }
-
   onAccessPointChangeString(
     event: MatCheckboxChange,
     accessPointKey: string
@@ -421,24 +397,20 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   private buildPayload(): Partial<VehicleType> {
     const formValue = this.formVehicleType.getRawValue();
 
-    const isDimension = this.vehicleSizingType === 'dimension';
-
     const payload: Partial<VehicleType> = {
       name: formValue.name || '',
       access: formValue.access || [],
       vehicleProfileType:
         formValue.vehicleProfileType as VehicleProfileTypeEnum,
-      maximumVolumeCapacity: isDimension ? 0 : Number(formValue.maximumVolumeCapacity) || 0,
+      maximumVolumeCapacity: Number(formValue.maximumVolumeCapacity) || 0,
       maximumWeightCapacity: Number(formValue.maximumWeightCapacity) || 0,
       timeWindowEarly: formValue.timeWindowEarly || '00:00',
       timeWindowLate: formValue.timeWindowLate || '00:00',
-      dimension: isDimension
-        ? {
-            width: Number(formValue.dimension?.width) || 0,
-            height: Number(formValue.dimension?.height) || 0,
-            depth: Number(formValue.dimension?.depth) || 0,
-          }
-        : { width: 0, height: 0, depth: 0 },
+      dimension: {
+        width: Number(formValue.dimension?.width) || 0,
+        height: Number(formValue.dimension?.height) || 0,
+        depth: Number(formValue.dimension?.depth) || 0,
+      },
       vehicleGroupId: formValue.vehicleGroupId || '',
       maximumDistance: formValue.maximumDistance
         ? Number(formValue.maximumDistance)

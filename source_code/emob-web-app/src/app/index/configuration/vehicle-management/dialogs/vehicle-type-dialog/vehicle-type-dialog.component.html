@@ -46,20 +46,6 @@
                 ></app-input-field>
               </div>
 
-              <div class="sizing-selection-wrapper">
-                <p class="fw-semibold mb-2">{{ t("select_sizing_of_vehicle") }}</p>
-                <mat-radio-group
-                  class="d-flex gap-3 align-items-center"
-                  [(ngModel)]="vehicleSizingType"
-                  [ngModelOptions]="{ standalone: true }"
-                  [disabled]="isViewMode"
-                  (change)="onVehicleSizingTypeChange()"
-                >
-                  <mat-radio-button value="dimension">{{ t("dimension") }}</mat-radio-button>
-                  <mat-radio-button value="volume">{{ t("volume") }}</mat-radio-button>
-                </mat-radio-group>
-              </div>
-
               <div class="access-points-wrapper">
                 <label class="form-label fw-semibold">{{ t("access_points") }}</label>
                 <div class="row mt-1">
@@ -99,8 +85,7 @@
                   [placeholder]="t('volume')"
                   type="number"
                   [control]="formVehicleType.controls.maximumVolumeCapacity"
-                  [required]="vehicleSizingType === 'volume'"
-                  [disabled]="isViewMode || vehicleSizingType === 'dimension'"
+                  [disabled]="isViewMode"
                 ></app-input-field>
               </div>
 
@@ -177,8 +162,8 @@
                         formVehicleType.controls.dimension.controls.width
                       "
                       [suffix]="'cm' | transloco"
-                      [disabled]="isViewMode || vehicleSizingType === 'volume'"
-                      [required]="vehicleSizingType === 'dimension'"
+                      [disabled]="isViewMode"
+                      [required]="true"
                       [decimal]="3"
                     ></app-input-field>
                   </div>
@@ -190,8 +175,8 @@
                         formVehicleType.controls.dimension.controls.height
                       "
                       [suffix]="'cm' | transloco"
-                      [disabled]="isViewMode || vehicleSizingType === 'volume'"
-                      [required]="vehicleSizingType === 'dimension'"
+                      [disabled]="isViewMode"
+                      [required]="true"
                       [decimal]="3"
                     ></app-input-field>
                   </div>
@@ -203,8 +188,8 @@
                         formVehicleType.controls.dimension.controls.depth
                       "
                       [suffix]="'cm' | transloco"
-                      [disabled]="isViewMode || vehicleSizingType === 'volume'"
-                      [required]="vehicleSizingType === 'dimension'"
+                      [disabled]="isViewMode"
+                      [required]="true"
                       [decimal]="3"
                     ></app-input-field>
                   </div>
