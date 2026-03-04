@@ -6,18 +6,21 @@ import {
   ViewChild,
   ElementRef,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
   FormControl,
   FormGroup,
   FormArray,
   Validators,
+  FormsModule,
+  ReactiveFormsModule,
 } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { MatCheckboxChange } from '@angular/material/checkbox';
-import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { NgxSpinnerService } from 'ngx-spinner';
+import { NgbActiveModal, NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
 import {
   VehicleType,
@@ -31,18 +34,36 @@ import {
   Break,
 } from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
+import { minutesToTimeString } from 'src/app/directives/time-string-to-minutes.pipe';
 import {
   ConfigVehicleTypeFormControls,
   BreakFormControls,
 } from 'src/app/models/forms/vehicle-type-form-control.model';
 import { createTimeRangeValidator } from 'src/app/shared/validators/time-range.validator';
-import { TranslocoService } from '@jsverse/transloco';
+import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
+import { MaterialModule } from 'src/app/material.module';
+import { InputFieldComponent } from 'src/app/shared/components/form/input-field/input-field.component';
+import { InputSelectComponent } from 'src/app/shared/components/form/input-select/input-select.component';
+import { DynamicPopoverComponent } from 'src/app/shared/components/dynamic-popover/dynamic-popover.component';
 import { ActionMode } from 'src/app/models/common.model';
 
 @Component({
   selector: 'app-vehicle-type-dialog',
   templateUrl: './vehicle-type-dialog.component.html',
   styleUrls: ['./vehicle-type-dialog.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NgbModule,
+    TranslocoModule,
+    MaterialModule,
+    NgxSpinnerModule,
+    InputFieldComponent,
+    InputSelectComponent,
+    DynamicPopoverComponent,
+  ],
 })
 export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   @Input() mode: ActionMode = 'create';
@@ -170,6 +191,12 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
 
           if ((this.isEdit || this.isViewMode) && this.vehicleType) {
             const data = this.vehicleType;
+            const timeWindowEarly = this.formatTimeForDisplay(
+              data.timeWindowEarly ?? (data as { twEarly?: string | number }).twEarly
+            );
+            const timeWindowLate = this.formatTimeForDisplay(
+              data.timeWindowLate ?? (data as { twLate?: string | number }).twLate
+            );
             this.formVehicleType.patchValue({
               name: data.name,
               access: data.access,
@@ -177,8 +204,8 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
               unitDistanceCost: data.unitDistanceCost,
               unitDurationCost: data.unitDurationCost,
               fixedCost: data.fixedCost,
-              timeWindowEarly: data.timeWindowEarly,
-              timeWindowLate: data.timeWindowLate,
+              timeWindowEarly: timeWindowEarly || data.timeWindowEarly,
+              timeWindowLate: timeWindowLate || data.timeWindowLate,
               maximumWeightCapacity: data.maximumWeightCapacity,
               maximumVolumeCapacity: data.maximumVolumeCapacity,
               vehicleGroupId: data.vehicleGroupId,
@@ -193,14 +220,14 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
             this.vehicleSizingType = hasVolume && !hasDimension ? 'volume' : 'dimension';
             this.onVehicleSizingTypeChange();
 
-            if (data.timeWindowEarly) {
+            if (timeWindowEarly || data.timeWindowEarly) {
               this.timeWindowEarlyObject = this.parseTimeString(
-                data.timeWindowEarly
+                timeWindowEarly || data.timeWindowEarly
               );
             }
-            if (data.timeWindowLate) {
+            if (timeWindowLate || data.timeWindowLate) {
               this.timeWindowLateObject = this.parseTimeString(
-                data.timeWindowLate
+                timeWindowLate || data.timeWindowLate
               );
             }
 
@@ -241,9 +268,9 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   private mapBreakDataToForm(breakData: Break): VehicleBreak {
     return {
       name: breakData.name,
-      duration: breakData.duration,
-      timeWindowEarly: breakData.timeWindowEarly,
-      timeWindowLate: breakData.timeWindowLate,
+      duration: this.formatTimeForDisplay(breakData.duration) || breakData.duration,
+      timeWindowEarly: this.formatTimeForDisplay(breakData.timeWindowEarly) || breakData.timeWindowEarly,
+      timeWindowLate: this.formatTimeForDisplay(breakData.timeWindowLate) || breakData.timeWindowLate,
     };
   }
 
@@ -255,11 +282,24 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     };
   }
 
-  private parseTimeString(timeStr: string): TimeObject {
-    if (!timeStr) {
+  private formatTimeForDisplay(
+    timeValue: string | number | null | undefined
+  ): string {
+    if (typeof timeValue === 'string' && timeValue.includes(':')) {
+      return timeValue;
+    }
+    if (typeof timeValue === 'number') {
+      return minutesToTimeString(timeValue);
+    }
+    return '';
+  }
+
+  private parseTimeString(timeStr: string | number | null | undefined): TimeObject {
+    const str = this.formatTimeForDisplay(timeStr);
+    if (!str) {
       return { hour: 0, minute: 0 };
     }
-    const parts = timeStr.split(':');
+    const parts = str.split(':');
     return {
       hour: parseInt(parts[0]) || 0,
       minute: parseInt(parts[1]) || 0,

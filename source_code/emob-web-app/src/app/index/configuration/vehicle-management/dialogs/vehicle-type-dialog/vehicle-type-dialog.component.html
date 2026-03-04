@@ -124,7 +124,7 @@
                         (ngModelChange)="
                           onTimeValueChange('timeWindowEarly', $event)
                         "
-                        [readonly]="isViewMode"
+                        [disabled]="isViewMode"
                       ></ngb-timepicker>
                     </div>
                   </div>
@@ -151,7 +151,7 @@
                         (ngModelChange)="
                           onTimeValueChange('timeWindowLate', $event)
                         "
-                        [readonly]="isViewMode"
+                        [disabled]="isViewMode"
                       ></ngb-timepicker>
                     </div>
                   </div>
@@ -356,7 +356,7 @@
                               (ngModelChange)="
                                 onBreakTimeValueChange(i, 'duration', $event)
                               "
-                              [readonly]="isViewMode"
+                              [disabled]="isViewMode"
                             ></ngb-timepicker>
                           </div>
                         </div>
@@ -388,7 +388,7 @@
                                   $event
                                 )
                               "
-                              [readonly]="isViewMode"
+                              [disabled]="isViewMode"
                             ></ngb-timepicker>
                           </div>
                         </div>
@@ -420,7 +420,7 @@
                                   $event
                                 )
                               "
-                              [readonly]="isViewMode"
+                              [disabled]="isViewMode"
                             ></ngb-timepicker>
                           </div>
                         </div>

@@ -22,9 +22,9 @@ import { DynamicPopoverComponent } from 'src/app/shared/components/dynamic-popov
     VehicleComponent,
     VehicleTypeComponent,
     VehicleDialogComponent,
-    VehicleTypeDialogComponent
   ],
   imports: [
+    VehicleTypeDialogComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

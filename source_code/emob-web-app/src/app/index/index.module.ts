@@ -44,8 +44,7 @@ import { VehicleProfileTypeItemDialogComponent } from './components/vehicle-prof
 
 import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { DynamicPopoverComponent } from '../shared/components/dynamic-popover/dynamic-popover.component';
-import { VehicleEnumConfigs } from '../models/vehicle.model';
-import { VehicleTypeDialogComponent } from './components/vehicle-type-dialog/vehicle-type-dialog.component';
+import { VehicleTypeDialogComponent } from './configuration/vehicle-management/dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
 import { InputSelectComponent } from '../shared/components/form/input-select/input-select.component';
 import { InputFieldComponent } from '../shared/components/form/input-field/input-field.component';
 
@@ -75,7 +74,6 @@ import { InputFieldComponent } from '../shared/components/form/input-field/input
     ParametersDialogComponent,
     ConsumptionDialogComponent,
     VehicleProfileTypeItemDialogComponent,
-    VehicleTypeDialogComponent,
     ErrorDialogComponent,
     FormatStringDatePipe
   ],
@@ -99,7 +97,8 @@ import { InputFieldComponent } from '../shared/components/form/input-field/input
     TranslocoModule,
     DynamicPopoverComponent,
     InputFieldComponent,
-    InputSelectComponent
+    InputSelectComponent,
+    VehicleTypeDialogComponent,
   ],
   exports: [
     FilterPipe
