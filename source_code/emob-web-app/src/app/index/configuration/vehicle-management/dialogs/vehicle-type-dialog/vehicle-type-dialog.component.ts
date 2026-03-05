@@ -360,9 +360,11 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
 
     if (this.vehicleSizingType === 'dimension') {
       dimensionGroup.enable({ emitEvent: false });
+      volumeControl.reset(null, { emitEvent: false });
       volumeControl.disable({ emitEvent: false });
     } else {
       volumeControl.enable({ emitEvent: false });
+      dimensionGroup.reset({ width: null, height: null, depth: null }, { emitEvent: false });
       dimensionGroup.disable({ emitEvent: false });
     }
   }
