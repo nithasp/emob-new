@@ -126,7 +126,28 @@
         </mat-card>
       </div>
       <div class="col-md-7 mb-3">
-        <div class="table-vrp-stats table-responsive mb-3">
+        <div class="vrp-stats-view-toggle mb-2">
+          <button
+            [class.active]="vrpStatsView === 'dashboard'"
+            (click)="vrpStatsView = 'dashboard'"
+          >
+            <mat-icon>dashboard</mat-icon> Dashboard
+          </button>
+          <button
+            [class.active]="vrpStatsView === 'matrix'"
+            (click)="vrpStatsView = 'matrix'"
+          >
+            <mat-icon>table_chart</mat-icon> Matrix
+          </button>
+          <button
+            [class.active]="vrpStatsView === 'keyvalue'"
+            (click)="vrpStatsView = 'keyvalue'"
+          >
+            <mat-icon>list</mat-icon> Key-Value
+          </button>
+        </div>
+
+        <div class="table-vrp-stats table-responsive mb-3" *ngIf="vrpStatsView === 'keyvalue'">
           <table class="table table-striped table-bordered">
             <thead class="thead-dark">
               <tr>
@@ -156,7 +177,7 @@
           </table>
         </div>
 
-        <div class="table-vrp-stats-tabular-matrix table-responsive mb-3">
+        <div class="table-vrp-stats-tabular-matrix table-responsive mb-3" *ngIf="vrpStatsView === 'matrix'">
           <table class="table table-striped table-bordered">
             <thead class="thead-dark">
               <tr>
@@ -190,7 +211,7 @@
           </table>
         </div>
 
-        <div class="table-vrp-stats-dashboard mb-3">
+        <div class="table-vrp-stats-dashboard mb-3" *ngIf="vrpStatsView === 'dashboard'">
           <div class="vrp-dashboard-header">VRP Statistics Dashboard Overview</div>
 
           <div class="vrp-dashboard-cards">
@@ -218,7 +239,7 @@
             </div>
           </div>
 
-          <div class="">
+          <div class="vrp-dashboard-info">
             <table class="table vrp-dashboard-table">
               <thead>
                 <tr>

@@ -322,6 +322,40 @@ mat-card.mb-4 {
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
  
+// ─── VRP Stats View Toggle ───────────────────────────────────────────────────
+.vrp-stats-view-toggle {
+  display: flex;
+  gap: 6px;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 14px;
+    border: 1px solid #ced4da;
+    border-radius: 20px;
+    background: #fff;
+    color: #495057;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+    mat-icon { font-size: 15px; height: 15px; width: 15px; }
+
+    &:hover {
+      background: #e9ecef;
+      border-color: #adb5bd;
+    }
+
+    &.active {
+      background: #0e1547;
+      color: #fff;
+      border-color: #0e1547;
+    }
+  }
+}
+
 // ─── VRP Statistics Dashboard New version ────────────────────────────────────────────────
 .table-vrp-stats-dashboard {
   font-family: 'Segoe UI', Arial, sans-serif;
@@ -376,6 +410,11 @@ mat-card.mb-4 {
       .vrp-feasible-icon { color: #198754; font-size: 22px; }
       .vrp-infeasible-icon { color: #dc3545; font-size: 22px; }
     }
+  }
+
+  .vrp-dashboard-info {
+    height: 275px;
+    overflow: auto;
   }
 
   .vrp-dashboard-table {

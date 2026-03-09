@@ -122,6 +122,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   headersReport: string[] = [];
   dataSourceReport: ReportDataItem[] = [];
+  vrpStatsView: 'dashboard' | 'matrix' | 'keyvalue' = 'dashboard';
 
   vrpDashboardCards: {
     label: string;
