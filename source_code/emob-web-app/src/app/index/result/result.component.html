@@ -189,6 +189,80 @@
             </tbody>
           </table>
         </div>
+
+        <div class="table-vrp-stats-dashboard mb-3">
+          <div class="vrp-dashboard-header">VRP Statistics Dashboard Overview</div>
+
+          <div class="vrp-dashboard-cards">
+            <div
+              *ngFor="let card of vrpDashboardCards"
+              class="vrp-dashboard-card"
+              [class.vrp-dashboard-card--feasible]="card.isFeasible === true"
+              [class.vrp-dashboard-card--infeasible]="card.isFeasible === false"
+            >
+              <div class="vrp-card-label">{{ card.label }}</div>
+              <div class="vrp-card-value">
+                <span>
+                  @if(isNumber(card.value)){
+                    {{ getNumberValue(card.value) | number : "1.0-2" }}
+                  }@else{
+                    {{ card.value }}
+                  }
+                </span>
+                @if(card.isFeasible === true){
+                  <mat-icon class="vrp-feasible-icon">check_circle</mat-icon>
+                }@else if(card.isFeasible === false){
+                  <mat-icon class="vrp-infeasible-icon">cancel</mat-icon>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="">
+            <table class="table vrp-dashboard-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Metric</th>
+                  <th class="text-right">Total Value</th>
+                  <th class="text-right">Excess Value</th>
+                  <th class="text-center">Unit</th>
+                  <th class="text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of vrpDashboardRows">
+                  <td class="vrp-row-index">{{ row.index }}</td>
+                  <td>{{ row.metric }}</td>
+                  <td class="text-right">
+                    @if(row.totalValue !== null){
+                      {{ row.totalValue | number : "1.0-2" }}
+                    }@else{
+                      <span class="vrp-dash">-</span>
+                    }
+                  </td>
+                  <td class="text-right">
+                    @if(row.excessValue !== null){
+                      {{ row.excessValue | number : "1.0-1" }}
+                    }@else{
+                      <span class="vrp-dash">-</span>
+                    }
+                  </td>
+                  <td class="text-center vrp-unit">{{ row.unit }}</td>
+                  <td class="text-center">
+                    @if(row.statusOk === true){
+                      <span class="vrp-badge vrp-badge--ok">OK</span>
+                    }@else if(row.statusOk === false){
+                      <span class="vrp-badge vrp-badge--warn">!</span>
+                    }@else{
+                      <span class="vrp-dash">-</span>
+                    }
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <div id="filter-result" class="col-md-5">
