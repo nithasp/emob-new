@@ -131,6 +131,8 @@ export interface FeatureCollection {
 }
 
 export interface ReportDataItem {
+  property: string;
+  value: string | number | boolean;
   [key: string]: string | number | boolean;
 }
 

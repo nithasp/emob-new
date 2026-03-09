@@ -83,6 +83,7 @@ import { DownloadResultFile } from '../../models/experiment.model';
 import { TranslocoService } from '@jsverse/transloco';
 import { LanguageChangeService } from 'src/app/services/language-change.service';
 import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
+import vrpStats from './newData/vrpStats.json';
 
 @Component({
   selector: 'app-result',
@@ -342,9 +343,78 @@ export class ResultComponent implements OnInit, AfterViewInit {
       return;
     }
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
-    await this.fetchAndParseExcel(arrayBuffer, 0);
+    this.buildVrpStatsReport();
+    //await this.fetchAndParseExcel(arrayBuffer, 0);
     await this.fetchAndParseExcel(arrayBuffer, 1);
     await this.fetchAndParseExcel(arrayBuffer, 3);
+  }
+
+  private buildVrpStatsReport(): void {
+    this.headersReport = ['property', 'value'];
+
+    const stats = vrpStats as Record<string, unknown>;
+    const rows: ReportDataItem[] = [];
+
+    const propertyOrder = [
+      'customerCount',
+      'routeCount',
+      'feasibleRouteCount',
+      'infeasibleRouteCount',
+      'isSolutionFeasible',
+      'totalFitness',
+      'totalCost',
+      'totalWeight',
+      'totalVolume',
+      'totalDistance',
+      'totalDuration',
+      'totalTravelDuration',
+      'totalServiceDuration',
+      'totalBreakDuration',
+      'excessWeight',
+      'excessVolume',
+      'excessDistance',
+      'excessDuration',
+      'excessEarlyTime',
+      'excessLateTime',
+      'hasExcessWeight',
+      'hasExcessVolume',
+      'hasExcessDistance',
+      'hasExcessDuration',
+      'hasExcessEarlyTime',
+      'hasExcessLateTime',
+      'hasIncorrectOrder',
+    ];
+
+    for (const key of propertyOrder) {
+      const value = stats[key];
+      let displayValue: string | number;
+
+      if (typeof value === 'boolean') {
+        displayValue = value ? 'Yes' : 'No';
+      } else if (typeof value === 'number') {
+        displayValue = value;
+      } else {
+        displayValue = String(value ?? '');
+      }
+
+      rows.push({ property: key, value: displayValue } as ReportDataItem);
+    }
+
+    if (stats['dataUnits'] && typeof stats['dataUnits'] === 'object') {
+      const units = stats['dataUnits'] as Record<string, string>;
+      for (const [unitKey, unitValue] of Object.entries(units)) {
+        rows.push({ property: unitKey, value: unitValue } as ReportDataItem);
+      }
+    }
+
+    if (Array.isArray(stats['unassignedCustomers'])) {
+      rows.push({
+        property: 'unassignedCustomers',
+        value: (stats['unassignedCustomers'] as unknown[]).length,
+      } as ReportDataItem);
+    }
+
+    this.dataSourceReport = rows;
   }
 
   calculateDuration(
@@ -387,13 +457,17 @@ export class ResultComponent implements OnInit, AfterViewInit {
         cell.value != null ? String(cell.value).trim() : `Column ${col}`;
     });
 
+    console.log('worksheet', worksheet);
+
     for (let i = 0; i < headers.length; i++) {
       const original = headers[i] ?? `Column ${i + 1}`;
       const snake = this.toSnakeCaseHeader(original);
       headers[i] = snake || `column_${i + 1}`;
     }
     if (!isPlanDetail && sheetIndex === 0) {
-      this.headersReport = headers;
+      console.log('headers', headers);
+      //this.headersReport = headers;
+      return;
     }
 
     worksheet.eachRow((row, rowIndex) => {
@@ -1724,5 +1798,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
       this.toastr.error('Failed to fetch or parse PreOrder file');
       return [];
     }
+  }
+
+  logReport() {
+    console.log('this.headersReport', this.headersReport);
+    console.log('this.dataSourceReport', this.dataSourceReport);
+    console.log('vrpStats', vrpStats);
   }
 }
