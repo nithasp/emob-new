@@ -619,11 +619,16 @@ export class ResultComponent implements OnInit, AfterViewInit {
       } else {
         switch (sheetIndex) {
           case 0:
-            this.dataSourceReport.push(rowData as ReportDataItem);
+            // old vrpStats data (top right table)
+            //this.dataSourceReport.push(rowData as ReportDataItem);
             break;
           case 1:
             try {
               // Transform the data with proper typing
+
+              // old vrp_solution_lean data (bottom left table + expand)
+              console.log('rowData', rowData);
+
               const transformedData: Record<string, unknown> = { ...rowData };
 
               const customersDistanceStr = rowData['customers_distance'];
@@ -645,6 +650,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
                   zoneStr.replace(/'/g, '"')
                 ) as string[];
               }
+
+              console.log('transformedData', transformedData);
 
               this.dataRouteInfo.data.push(
                 transformedData as unknown as RouteInfo
@@ -692,12 +699,32 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   private async loadAndProcessGeoJSON(url: string): Promise<void> {
     const geoJson = await this.dataFromFileUrlToJson(url);
+
+    // DEBUG: clear all LineString coordinates to test map UI behaviour
+    // geoJson.routes.forEach((route: any) => {
+    //   route.features.forEach((feature: any) => {
+    //     if (feature.geometry?.type === 'LineString') {
+    //       feature.geometry.coordinates = [];
+    //     }
+    //   });
+    // });
+
+    // geoJson.routes.forEach((route: any) => {
+    //   route.features.forEach((feature: any) => {
+    //     if (feature.geometry?.type === 'Point') {
+    //       feature.geometry.coordinates = [];
+    //     }
+    //   });
+    // });
+
     this.featureCollections = geoJson.routes.map((rc: FeatureCollection) => ({
       ...rc,
       route_index: rc.features[0]?.properties?.route_index,
     }));
     this.featureDepots = geoJson.depots;
     this.featureRoutes = geoJson.routes;
+
+    console.log('geoJson', geoJson);
 
     const allFeatures: Feature<Geometry>[] = [];
     geoJson.routes.forEach((item: FeatureCollection, index_: number) => {
@@ -1278,6 +1305,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   openRouteDetails(routeIndex: number): void {
+    console.log('openRouteDetails routeIndex', routeIndex);
+
     let depotStartId: number | null = null;
     let depotEndId: number | null = null;
 
@@ -1753,6 +1782,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   handleDistance(distance: number) {
     console.log('distance', distance);
+
     if (distance) {
       const matchedItem = this.nodeSheetData.find(
         (item) => item.node_index === distance
@@ -1799,7 +1829,16 @@ export class ResultComponent implements OnInit, AfterViewInit {
         matchedFeatureRoutes.features &&
         matchedFeatureRoutes.features[0]
       ) {
+        console.log('matchedFC', matchedFC);
+        console.log('matchedFeatureRoutes', matchedFeatureRoutes);
+        console.log('matchedFeatureRoutes.features', matchedFeatureRoutes.features);
+        console.log('matchedFeatureRoutes.features[0]', matchedFeatureRoutes.features[0]);
+        console.log('x1');
+        
         const { type, properties, geometry } = matchedFeatureRoutes.features[0];
+
+        console.log('properties', properties);
+        console.log('geometry', geometry);
 
         planDetails = {
           ORDERID_ORG: properties.name,
@@ -1923,5 +1962,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
     console.log('this.headersReport', this.headersReport);
     console.log('this.dataSourceReport', this.dataSourceReport);
     console.log('vrpStats', vrpStats);
+
+    console.log('this.dataRouteInfo', this.dataRouteInfo);
+ 
+    console.log('this.featureRoutes', this.featureRoutes);
   }
 }
