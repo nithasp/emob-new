@@ -232,9 +232,6 @@
                 <th scope="col">{{ t("order_id") }}</th>
                 <th scope="col">{{ t("product_name") }}</th>
                 <th scope="col">{{ t("quantity_main") }}</th>
-                <th scope="col">{{ t("quantity_minor") }}</th>
-                <th scope="col">{{ t("user_confirm") }}</th>
-                <th scope="col">{{ t("date_confirm") }}</th>
               </tr>
             </thead>
             <tbody>
@@ -244,11 +241,6 @@
                 <td>{{ order.ORDER_ID }}</td>
                 <td>{{ order.PRODUCTNAME }}</td>
                 <td>{{ order.QUANTITYMAIN }}</td>
-                <td>{{ order.QUANTITYMINOR }}</td>
-                <td>{{ order.UserConfirm }}</td>
-                <td>
-                  {{ order.DateConfirm | formatStringDate: 'dd MMM yy h:mm:ss a' }}
-                </td>
               </tr>
             </tbody>
           </table>

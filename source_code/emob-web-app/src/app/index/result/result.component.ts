@@ -57,21 +57,14 @@ import { MapDetailsDialogComponent } from '../components/map-details-dialog/map-
 import { Workbook } from 'exceljs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExperimentService } from 'src/app/services/experiment.service';
-import {
-  Experiment,
-  NodeSheet,
-  PlanDetail,
-} from 'src/app/models/experiment.model';
+import { Experiment } from 'src/app/models/experiment.model';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import { firstValueFrom, take } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import {
   RouteInfo,
-  FeatureProperties,
-  GeoJSONFeature,
   FeatureCollection,
   ReportDataItem,
-  PreOrderDataItem,
   PopupContent,
   NumberValue,
   MapPointerBrowserEvent,
@@ -197,11 +190,16 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   // data store
   experiment?: Experiment;
-  nodeSheetData: NodeSheet[] = [];
-  planDetailData: PlanDetail[] = [];
-  preOrderData: PreOrderDataItem[] = [];
+  nodeSheetData: any[] = [];
+  planDetailData: any[] = [];
+  preOrderData: any[] = [];
   routeInfoDetails: RouteInfo | null = null;
   visibleRoutes = new Set<number>();
+
+  // VRP routing nodes for data lookup
+  private routingNodes: any[] = [];
+  private routingNodesMap: Record<number, any> = {};
+  private routingNodesByIdMap: Record<string, any> = {};
 
   isLoading: boolean = true;
 
@@ -233,36 +231,23 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.initRoutingNodes();
+
     this.route.params
       .pipe(take(1))
       .subscribe((params: { [x: string]: string }) => {
         this.experimentService
           .getExperimentResult(params['experimentId'])
-          .subscribe(async (response: Experiment) => {
+          .subscribe((response: Experiment) => {
             console.log(response);
             this.experiment = { ...response };
             this.expandedElement = [];
-            if (response.fileUrl.outputReportUrl) {
-              await this.loadReportData(response.fileUrl.outputReportUrl);
-            }
-            if (this.experiment.fileUrl.outputPlanDetailUrl) {
-              await this.loadPlanDetailData(
-                this.experiment.fileUrl.outputPlanDetailUrl
-              );
-            }
 
-            if (response.fileUrl.preOrderUrl) {
-              await this.downloadExcelFromUrlAsJson(
-                response.fileUrl.preOrderUrl
-              );
-            }
+            this.buildVrpStatsReport();
+            this.buildRouteInfoFromVrpSolution();
 
             this.spinner.hide();
-            if (response.fileUrl.outputGeoJsonUrl) {
-              await this.loadAndProcessGeoJSON(
-                response.fileUrl.outputGeoJsonUrl
-              );
-            }
+            this.loadAndProcessGeoJSON();
 
             this.dataRouteInfo.filterPredicate =
               this.multiFilterPredicate.bind(this);
@@ -538,6 +523,57 @@ export class ResultComponent implements OnInit, AfterViewInit {
     ];
   }
 
+  private initRoutingNodes(): void {
+    const vrpData = (vrpSolution as any)?.vrpData;
+    this.routingNodes = vrpData?.routingNodes ?? [];
+    this.routingNodes.forEach((node: any) => {
+      if (node?.index != null) this.routingNodesMap[node.index] = node;
+      if (node?.nodeId) this.routingNodesByIdMap[node.nodeId] = node;
+    });
+  }
+
+  private buildRouteInfoFromVrpSolution(): void {
+    const routeMetrics =
+      (vrpSolution as any)?.solutionMetrics?.routeMetrics ?? [];
+
+    routeMetrics.forEach((route: any) => {
+      const customerNodes = route.routeNodes?.slice(1, -1) ?? [];
+      const zones = [
+        ...new Set(
+          customerNodes
+            .map((idx: number) => this.routingNodesMap[idx]?.zone)
+            .filter((z: any) => !!z)
+        ),
+      ] as string[];
+
+      this.dataRouteInfo.data.push({
+        route_label: route.routeLabel ?? 0,
+        route_index: route.routeIndex ?? 0,
+        route: route.routeNodes ?? [],
+        number_delivery_points: route.customerCount ?? 0,
+        weight: route.routeWeight ?? 0,
+        utilize: 0,
+        travel_distance: route.routeDistance ?? 0,
+        total_duration: route.routeDuration ?? 0,
+        travel_duration: route.routeTravelDuration ?? 0,
+        service_time: route.routeServiceDuration ?? 0,
+        depot2first_distance: 0,
+        last2depot_distance: 0,
+        total_customers_distance: 0,
+        average_customers_distance: 0,
+        max_customers_distance: 0,
+        customers_distance: [],
+        number_zone: zones.length,
+        zone: zones,
+        number_of_validate_types: '',
+        number_of_replace_types: '',
+      } as unknown as RouteInfo);
+    });
+
+    this.dataRouteInfo.sort = this.sort;
+    this.dataRouteInfo.paginator = this.paginator;
+  }
+
   calculateDuration(
     start: string | Date | number,
     end: string | Date | number
@@ -617,7 +653,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       });
 
       if (isPlanDetail) {
-        this.planDetailData.push(rowData as unknown as PlanDetail);
+        this.planDetailData.push(rowData as any);
       } else {
         switch (sheetIndex) {
           case 0:
@@ -666,7 +702,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
             }
             break;
           case 3:
-            this.nodeSheetData.push(rowData as unknown as NodeSheet);
+            this.nodeSheetData.push(rowData as any);
             break;
         }
       }
@@ -699,51 +735,21 @@ export class ResultComponent implements OnInit, AfterViewInit {
     };
   }
 
-  private async loadAndProcessGeoJSON(url: string): Promise<void> {
-    // old logic get geoJson from api excel
-    //const geoJson = await this.dataFromFileUrlToJson(url);
+  private loadAndProcessGeoJSON(): void {
+    const geoJson: any = JSON.parse(JSON.stringify(geoJsonData));
 
-    // new logic get geoJson from newData/geoJson.json
-    const geoJson: any = geoJsonData as any;
-    
-    // DEBUG: clear all LineString coordinates to test map UI behaviour
-    // geoJson.routes.forEach((route: any) => {
-    //   route.features.forEach((feature: any) => {
-    //     if (feature.geometry?.type === 'LineString') {
-    //       feature.geometry.coordinates = [];
-    //     }
-    //   });
-    // });
+    this.enrichGeoJsonData(geoJson);
 
-    // geoJson.routes.forEach((route: any) => {
-    //   route.features.forEach((feature: any) => {
-    //     if (feature.geometry?.type === 'Point') {
-    //       feature.geometry.coordinates = [];
-    //     }
-    //   });
-    // });
-
-    // old logic get geoJson from api excel
-    // this.featureCollections = geoJson.routes.map((rc: FeatureCollection) => ({
-    //   ...rc,
-    //   route_index: rc.features[0]?.properties?.route_index,
-    // }));
-
-    // new logic get geoJson from newData/geoJson.json
     this.featureCollections = geoJson.routes.map((rc: any) => ({
       ...rc,
-      route_index: rc.features[0]?.properties?.routeIndex,
+      route_index: rc.features[0]?.properties?.route_index,
     }));
 
-    // old logic get geoJson from api excel
-    // this.featureDepots = geoJson.depots;
-    // this.featureRoutes = geoJson.routes;
-
-    // new logic get geoJson from newData/geoJson.json
-    this.featureDepots = geoJson.depots;
+    this.featureDepots = geoJson.depots.map((depot: any) => ({
+      type: 'FeatureCollection',
+      features: [depot],
+    }));
     this.featureRoutes = geoJson.routes;
-
-    console.log('geoJson', geoJson);
 
     const allFeatures: Feature<Geometry>[] = [];
     geoJson.routes.forEach((item: FeatureCollection, index_: number) => {
@@ -752,19 +758,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
         featureProjection: 'EPSG:3857',
       });
 
-      const reducedItemFeatures = itemFeatures.map((feature, index, arr) => {
+      const reducedItemFeatures = itemFeatures.map((feature) => {
         const geometry = feature.getGeometry();
         if (geometry?.getType() === 'LineString') {
           const lineString = geometry as LineString;
           const coordinates = lineString.getCoordinates();
           const reducedCoordinates = coordinates.filter((_, i) => i % 10 === 0);
-          console.log(
-            index_,
-            'Original coordinates:',
-            coordinates.length,
-            'Reduced coordinates:',
-            reducedCoordinates.length
-          );
           lineString.setCoordinates(reducedCoordinates);
         }
         return feature;
@@ -776,31 +775,22 @@ export class ResultComponent implements OnInit, AfterViewInit {
       distance: 40,
       source: new VectorSource({
         features: allFeatures.filter((feature) => {
-          if (feature.getGeometry() && feature.getGeometry()!.getType()) {
-            return feature.getGeometry()!.getType() === 'Point';
-          } else {
-            return false;
-          }
+          return feature.getGeometry()?.getType() === 'Point';
         }),
       }),
     });
     const vectorSource = new VectorSource({
       features: allFeatures.filter((feature) => {
-        if (feature.getGeometry() && feature.getGeometry()!.getType()) {
-          return feature.getGeometry()!.getType() !== 'Point';
-        } else {
-          return false;
-        }
+        return feature.getGeometry()?.getType() !== 'Point';
       }),
     });
-    console.log(clusterSource);
     const clusterLayer = new VectorLayer({
       source: clusterSource,
       style: this.clusterStyleFunction.bind(this),
     });
 
     const depotFeatures: Feature<Geometry>[] = [];
-    geoJson.depots.forEach((depot: FeatureCollection) => {
+    geoJson.depots.forEach((depot: any) => {
       const itemFeatures = new GeoJSON().readFeatures(depot, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
@@ -811,6 +801,82 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     this.initMap(clusterLayer, vectorSource);
     this.mapAlreadyRendered = true;
+  }
+
+  private enrichGeoJsonData(geoJson: any): void {
+    const routeMetricsMap: Record<number, any> = {};
+    ((vrpSolution as any)?.solutionMetrics?.routeMetrics ?? []).forEach(
+      (rm: any) => {
+        if (rm?.routeIndex != null) routeMetricsMap[rm.routeIndex] = rm;
+      }
+    );
+
+    geoJson.depots?.forEach((depot: any) => {
+      const node = this.routingNodesByIdMap[depot.properties?.nodeId];
+      if (node) {
+        depot.properties = {
+          ...depot.properties,
+          is_depot: true,
+          depot_id: node.nodeId,
+          name: node.name,
+          node_index: node.index,
+        };
+      }
+    });
+
+    geoJson.routes?.forEach((route: any) => {
+      let routeMetric: any = null;
+
+      route.features?.forEach((feature: any) => {
+        if (feature.geometry?.type === 'LineString') {
+          const routeIdx = feature.properties?.routeIndex ?? 0;
+          routeMetric = routeMetricsMap[routeIdx];
+
+          const customerNodes = routeMetric?.routeNodes?.slice(1, -1) ?? [];
+          const zones = [
+            ...new Set(
+              customerNodes
+                .map((idx: number) => this.routingNodesMap[idx]?.zone)
+                .filter((z: any) => !!z)
+            ),
+          ] as string[];
+
+          feature.properties = {
+            ...feature.properties,
+            route_index: feature.properties?.routeIndex,
+            route_label: feature.properties?.routeLabel,
+            distance: routeMetric?.routeDistance ?? 0,
+            duration: routeMetric?.routeDuration ?? 0,
+            weight: routeMetric?.routeWeight ?? 0,
+            num_customers: routeMetric?.customerCount ?? 0,
+            zone: zones.join(', '),
+            service_duration: routeMetric?.routeServiceDuration ?? 0,
+            travel_duration: routeMetric?.routeTravelDuration ?? 0,
+          };
+        } else if (feature.geometry?.type === 'Point') {
+          const node = this.routingNodesByIdMap[feature.properties?.nodeId];
+          if (node) {
+            let routeOrder = 0;
+            if (routeMetric?.routeNodes) {
+              routeOrder = routeMetric.routeNodes.indexOf(node.index);
+              if (routeOrder < 0) routeOrder = 0;
+            }
+
+            feature.properties = {
+              ...feature.properties,
+              node_index: node.index,
+              name: node.name,
+              weight: node.deliveryWeight ?? 0,
+              is_depot: node.isDepot ?? false,
+              route_order: routeOrder,
+              route_index: routeMetric?.routeIndex ?? 0,
+              route_label: routeMetric?.routeLabel ?? 0,
+              originalAddress: node.originalAddress,
+            };
+          }
+        }
+      });
+    });
   }
   async fetchDataFromFileUrl(url: string) {
     const blob = await firstValueFrom(
@@ -1029,42 +1095,21 @@ export class ResultComponent implements OnInit, AfterViewInit {
     featureCollection: FeatureCollection,
     featureDepots: FeatureCollection[]
   ): void {
-
-
-    console.log('featureCollection result', featureCollection);
-    console.log('featureDepots result', featureDepots);
-
     const modalRef = this.ngbModal.open(MapDetailsDialogComponent, {
       size: 'xl',
       centered: true,
       windowClass: 'custom-modal-width',
       modalDialogClass: 'custom-modal-content',
     });
-    
-    // Data for map details dialog
+
     modalRef.componentInstance.featureCollection = featureCollection;
     modalRef.componentInstance.featureDepots = featureDepots;
     modalRef.componentInstance.routeInfo = this.routeInfoDetails;
-
-    // Data for customer details dialog
-    modalRef.componentInstance.nodeSheetData = this.nodeSheetData;
-    modalRef.componentInstance.planDetailData = this.planDetailData;
-    modalRef.componentInstance.preOrderData = this.preOrderData;
-    modalRef.componentInstance.featureRoutes = this.featureRoutes;
-
-
-    console.log('featureCollection', featureCollection);
-    console.log('featureDepots', featureDepots);
-    console.log('routeInfoDetails', this.routeInfoDetails);
-    console.log('nodeSheetData', this.nodeSheetData);
-    console.log('planDetailData', this.planDetailData);
-    console.log('preOrderData', this.preOrderData);
-    console.log('featureRoutes', this.featureRoutes);
+    modalRef.componentInstance.routingNodes = this.routingNodes;
   }
 
   styleFunction(feature: FeatureLike): Style | Style[] {
     const geom = feature.getGeometry();
-    // ─── DEPOT POINTS ───────────────────────────────────────────────────────────
     if (geom?.getType() === 'Point') {
       return new Style({
         image: new Icon({
@@ -1077,7 +1122,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
           src: `assets/image/depot.png`,
         }),
         text: new Text({
-          text: feature.get('depot_id')?.toString() || '',
+          text: feature.get('name')?.toString() || '',
           font: '12px Calibri,sans-serif',
           fill: new Fill({ color: '#000' }),
         }),
@@ -1338,103 +1383,24 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   openRouteDetails(routeIndex: number): void {
-    console.log('openRouteDetails routeIndex', routeIndex);
-
-    let depotStartId: number | null = null;
-    let depotEndId: number | null = null;
-
     this.routeInfoDetails =
       this.dataRouteInfo.data.find((r) => r.route_index === routeIndex) || null;
 
-      // old logic get geoJson from api excel
-    // const collection = this.featureCollections.find(
-    //   (collection: FeatureCollection) => {
-    //     return collection.features.some((feature: GeoJSONFeature) => {
-    //       if (feature.properties.route_index === routeIndex) {
-    //         depotStartId = feature.properties.start_depot_id || null;
-    //         depotEndId = feature.properties.end_depot_id || null;
-    //         return collection.route_index === routeIndex;
-    //       }
-    //       return false;
-    //     });
-    //   }
-    // );
-
-    // new logic get geoJson from api excel
     const collection = this.featureCollections.find(
-      (collection: any) => {
-        return collection.features.some((feature: any) => {
-          if (feature.properties.routeIndex === routeIndex) {
-            depotStartId = feature.properties.start_depot_id || null;
-            depotEndId = feature.properties.end_depot_id || null;
-            return collection.route_index === routeIndex;
-          }
-          return false;
-        });
-      }
+      (fc: any) => fc.route_index === routeIndex
     );
-
 
     if (!collection) {
       console.error(`No route found for index ${routeIndex}`);
       return;
     }
 
-    const featureDepots: FeatureCollection[] = [];
-
-    // Debug logging
-    console.log('featureDepots array:', this.featureDepots);
-    console.log('depotStartId:', depotStartId, 'depotEndId:', depotEndId);
-
-    // Check if featureDepots is properly initialized
-    if (!this.featureDepots || !Array.isArray(this.featureDepots)) {
-      console.error(
-        'featureDepots is not properly initialized:',
-        this.featureDepots
-      );
+    if (!this.featureDepots || !Array.isArray(this.featureDepots) || this.featureDepots.length === 0) {
+      console.error('featureDepots is not properly initialized');
       return;
     }
 
-    if (this.featureDepots.length === 1) {
-      featureDepots.push(this.featureDepots[0]);
-    } else {
-      const matchingDepots = this.featureDepots.filter(
-        (depot: FeatureCollection) => {
-          // Check if depot has features and at least one feature exists
-          if (
-            !depot ||
-            !depot.features ||
-            !Array.isArray(depot.features) ||
-            depot.features.length === 0
-          ) {
-            console.warn('Depot missing features or invalid structure:', depot);
-            return false;
-          }
-
-          // Safely access the first feature and its properties
-          const firstFeature = depot.features[0];
-          if (!firstFeature || !firstFeature.properties) {
-            console.warn('Depot feature missing properties:', firstFeature);
-            return false;
-          }
-
-          const depotId = firstFeature.properties.depot_id || null;
-          const isMatch = [depotStartId, depotEndId].includes(depotId);
-          console.log('Checking depot:', depotId, 'isMatch:', isMatch);
-          return isMatch;
-        }
-      );
-      featureDepots.push(...matchingDepots);
-    }
-    if (featureDepots.length === 0) {
-      console.error(
-        `No depot found with depot_id ${depotStartId} : ${depotEndId}`
-      );
-      return;
-    }
-
-    console.log('featureDepots:', featureDepots);
-
+    const featureDepots = [...this.featureDepots];
     this.openModal(collection, featureDepots);
   }
 
@@ -1829,110 +1795,44 @@ export class ResultComponent implements OnInit, AfterViewInit {
     });
   }
 
-  handleDistance(distance: number) {
-    console.log('distance', distance);
+  handleDistance(nodeIndex: number) {
+    if (!nodeIndex) return;
 
-    if (distance) {
-      const matchedItem = this.nodeSheetData.find(
-        (item) => item.node_index === distance
-      );
+    const matchedItem = this.routingNodesMap[nodeIndex];
+    if (!matchedItem) return;
 
-      const matchedOrderId = this.planDetailData.find(
-        (item) => item.ORDERID_ORG === matchedItem?.node_name
-      );
+    const planDetails = {
+      ORDERID_ORG: matchedItem?.nodeId ?? '',
+      CHANNEL: matchedItem?.additionalProperties?.channel ?? '',
+      CUSTOMER_NAME: matchedItem?.name ?? '',
+      TEL: matchedItem?.additionalProperties?.telephone?.toString() ?? '',
+      AUMPHER: matchedItem?.originalAddress?.district ?? '',
+      PROVINCE: matchedItem?.originalAddress?.province ?? '',
+      ZIPCODE: matchedItem?.originalAddress?.postalCode ?? '',
+      ADDRESS: matchedItem?.originalAddress?.address ?? '',
+      latitude: matchedItem?.latitude ?? 0,
+      longitude: matchedItem?.longitude ?? 0,
+      details:
+        matchedItem?.productQuantity?.map((product: any) => ({
+          PRODUCTID: product?.productId ?? '',
+          ORDER_ID: product?.skuCode ?? '',
+          PRODUCTNAME: product?.name ?? '',
+          QUANTITYMAIN: product?.productQuantity ?? 0,
+        })) ?? [],
+    };
 
-      const matchedPreOrderData = this.preOrderData.find(
-        (item) => item['ORDERID'] === matchedItem?.node_name
-      );
+    const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
+      centered: true,
+      size: 'xl',
+      animation: true,
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => false,
+    });
 
-      const matchedFC = this.featureRoutes.find((fc: FeatureCollection) =>
-        fc.features.some(
-          (feature: GeoJSONFeature) =>
-            feature.properties.node_index === distance
-        )
-      );
-
-      let planDetails = null;
-      const refactormatchedPreOrderData = {
-        ...matchedPreOrderData,
-        validationType: matchedItem?.validationType,
-        replaceType: matchedItem?.replaceType,
-        PROVINCE: matchedPreOrderData?.['PROVICE'] || '',
-      };
-
-      planDetails = {
-        ...refactormatchedPreOrderData,
-        details: [refactormatchedPreOrderData],
-      };
-      const matchedFeatureRoutes = {
-        ...matchedFC,
-        features:
-          matchedFC?.features.filter(
-            (feature: GeoJSONFeature) =>
-              feature.properties.node_index === distance
-          ) || [],
-      };
-
-      if (
-        matchedFC &&
-        matchedFeatureRoutes.features &&
-        matchedFeatureRoutes.features[0]
-      ) {
-        console.log('matchedFC', matchedFC);
-        console.log('matchedFeatureRoutes', matchedFeatureRoutes);
-        console.log('matchedFeatureRoutes.features', matchedFeatureRoutes.features);
-        console.log('matchedFeatureRoutes.features[0]', matchedFeatureRoutes.features[0]);
-        console.log('x1');
-        
-        const { type, properties, geometry } = matchedFeatureRoutes.features[0];
-
-        console.log('properties', properties);
-        console.log('geometry', geometry);
-
-        planDetails = {
-          ORDERID_ORG: properties.name,
-          CHANNEL: properties.extra?.channel,
-          CUSTOMER_NAME: properties.extra?.customerName,
-          TEL: properties.extra?.tel,
-          AUMPHER: properties.originalAddress?.district,
-          PROVINCE: properties.originalAddress?.province,
-          ZIPCODE: properties.originalAddress?.postalCode,
-          ADDRESS: properties.originalAddress?.address,
-          latitude: geometry.coordinates[1],
-          longitude: geometry.coordinates[0],
-
-          details: properties.extra?.productsInfo?.map((product) => ({
-            PRODUCTID: product.productId,
-            ORDER_ID: product.orderId,
-            PRODUCTNAME: product.productName,
-            QUANTITYMAIN: product.quantityMajor,
-            QUANTITYMINOR: product.quantityMinor,
-            UserConfirm: product.userConfirm,
-            DateConfirm: product.dateConfirm,
-          })),
-        };
-      } else {
-        planDetails = {
-          ...refactormatchedPreOrderData,
-          details: [refactormatchedPreOrderData],
-        };
-      }
-
-      const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
-        centered: true,
-        size: 'xl',
-        animation: true,
-        backdrop: 'static',
-        keyboard: false,
-        beforeDismiss: () => {
-          return false;
-        },
-      });
-
-      modalRef.componentInstance.dataPreOder = planDetails;
-      modalRef.componentInstance.dataCustomer = planDetails;
-      modalRef.componentInstance.isGeolocationDisplay = false;
-    }
+    modalRef.componentInstance.dataPreOder = planDetails;
+    modalRef.componentInstance.dataCustomer = planDetails;
+    modalRef.componentInstance.isGeolocationDisplay = false;
   }
 
   splitLatLng(
@@ -1950,7 +1850,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   async downloadExcelFromUrlAsJson(
     location: string
-  ): Promise<PreOrderDataItem[]> {
+  ): Promise<any[]> {
     try {
       const arrayBuffer = await this.fetchDataFromFileUrl(location);
       const workbook = new Workbook();
@@ -1963,13 +1863,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
         return [];
       }
 
-      // build headers
       const headers: string[] = [];
       worksheet.getRow(1).eachCell((cell, colNumber) => {
         headers[colNumber] = cell.text.trim();
       });
 
-      // parse rows
       const result: Record<string, string | number | boolean | undefined>[] =
         [];
       worksheet.eachRow((row, rowNumber) => {
@@ -1993,12 +1891,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
         result.push(obj);
       });
 
-      const transformed: PreOrderDataItem[] = result.map((r) =>
-        this.splitLatLng(r)
-      ) as PreOrderDataItem[];
+      const transformed = result.map((r) => this.splitLatLng(r)) as any[];
 
       this.preOrderData = transformed;
-      console.log('this.preOrderData', this.preOrderData);
       return transformed;
     } catch (err: unknown) {
       console.error('downloadExcelFromUrlAsJson failed', err);
@@ -2017,5 +1912,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     console.log('this.featureDepots', this.featureDepots);
     console.log('this.featureRoutes', this.featureRoutes);
     console.log('this.featureCollections', this.featureCollections);
+
+    console.log('this.popupContent', this.popupContent);
   }
 }

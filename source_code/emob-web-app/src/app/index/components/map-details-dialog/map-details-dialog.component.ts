@@ -24,15 +24,9 @@ import CircleStyle from 'ol/style/Circle';
 import { Coordinate } from 'ol/coordinate';
 import { CustomerDetailsComponent } from '../customer-details/customer-details.component';
 import {
-  NodeSheet,
-  PlanDetail,
   RouteInfo,
   PopupContent,
-  ProductInfo,
-  PreOrderData,
   GeoJSONFeatureCollection,
-  GeoJSONFeature,
-  PlanDetailsData,
   PointDetail,
 } from 'src/app/models/experiment.model';
 import { FeatureProperties } from 'src/app/models/location.model';
@@ -47,10 +41,10 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   @Input() routeInfo!: RouteInfo;
   @Input() featureCollection: GeoJSONFeatureCollection | null = null;
   @Input() featureDepots: GeoJSONFeatureCollection[] = [];
-  @Input() nodeSheetData: NodeSheet[] = [];
-  @Input() planDetailData: PlanDetail[] = [];
-  @Input() preOrderData: PreOrderData[] = [];
-  @Input() featureRoutes: GeoJSONFeatureCollection[] = [];
+  @Input() routingNodes: any[] = [];
+
+  private routingNodesMap: Record<number, any> = {};
+  private routingNodesByIdMap: Record<string, any> = {};
 
   private map!: Map;
   public popUp?: Overlay;
@@ -65,6 +59,10 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    this.routingNodes.forEach((node: any) => {
+      if (node?.index != null) this.routingNodesMap[node.index] = node;
+      if (node?.nodeId) this.routingNodesByIdMap[node.nodeId] = node;
+    });
     this.getDepotDetailsPoint();
   }
 
@@ -229,7 +227,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   }
   styleFunction(feature: FeatureLike): Style | Style[] | undefined {
     const geometryType = feature.getGeometry()!.getType();
-    const text = feature.getProperties()['route_order'] as string;
+    const text = String(feature.getProperties()['route_order'] ?? '');
     const isDepot = feature.getProperties()['is_depot'] as boolean;
 
     switch (geometryType) {
@@ -346,102 +344,43 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     this.handleDistance(nodeIndex);
   }
 
-  handleDistance(distance: number): void {
-    if (distance) {
-      const matchedItem = this.nodeSheetData.find(
-        (item) => item.node_index === distance
-      );
+  handleDistance(nodeIndex: number): void {
+    if (!nodeIndex) return;
 
-      const matchedPreOrderData = this.preOrderData.find(
-        (item) => item.ORDERID === matchedItem?.node_name
-      );
+    const matchedItem = this.routingNodesMap[nodeIndex];
+    if (!matchedItem) return;
 
-      const matchedFC = this.featureRoutes.find((fc) =>
-        fc.features.some(
-          (feature: GeoJSONFeature) =>
-            feature.properties.node_index === distance
-        )
-      );
+    const planDetails = {
+      ORDERID_ORG: matchedItem?.nodeId ?? '',
+      CHANNEL: matchedItem?.additionalProperties?.channel ?? '',
+      CUSTOMER_NAME: matchedItem?.name ?? '',
+      TEL: matchedItem?.additionalProperties?.telephone?.toString() ?? '',
+      AUMPHER: matchedItem?.originalAddress?.district ?? '',
+      PROVINCE: matchedItem?.originalAddress?.province ?? '',
+      ZIPCODE: matchedItem?.originalAddress?.postalCode ?? '',
+      ADDRESS: matchedItem?.originalAddress?.address ?? '',
+      latitude: matchedItem?.latitude ?? 0,
+      longitude: matchedItem?.longitude ?? 0,
+      details:
+        matchedItem?.productQuantity?.map((product: any) => ({
+          PRODUCTID: product?.productId ?? '',
+          ORDER_ID: product?.skuCode ?? '',
+          PRODUCTNAME: product?.name ?? '',
+          QUANTITYMAIN: product?.productQuantity ?? 0,
+        })) ?? [],
+    };
 
-      let planDetails: PlanDetailsData | null = null;
-      const refactormatchedPreOrderData: PreOrderData = {
-        ...matchedPreOrderData,
-        validationType: matchedItem?.validationType,
-        replaceType: matchedItem?.replaceType,
-        PROVINCE: matchedPreOrderData?.PROVICE || '',
-      };
+    const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
+      centered: true,
+      size: 'xl',
+      animation: true,
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => false,
+    });
 
-      const matchedFeatureRoutes = matchedFC
-        ? {
-            ...matchedFC,
-            features: matchedFC.features.filter(
-              (feature: GeoJSONFeature) =>
-                feature.properties.node_index === distance
-            ),
-          }
-        : null;
-
-      if (
-        matchedFeatureRoutes &&
-        matchedFeatureRoutes.features &&
-        matchedFeatureRoutes.features.length > 0
-      ) {
-        const { properties, geometry } = matchedFeatureRoutes.features[0];
-        planDetails = {
-          ORDERID: properties.name || '',
-          ORDERID_ORG: properties.name,
-          CHANNEL: properties.extra?.channel,
-          CUSTOMER_NAME: properties.extra?.customerName,
-          TEL: properties.extra?.tel,
-          AUMPHER: properties.originalAddress?.district,
-          PROVINCE: properties.originalAddress?.province,
-          ZIPCODE: properties.originalAddress?.postalCode,
-          ADDRESS: properties.originalAddress?.address,
-          latitude: (geometry.coordinates as number[])[1],
-          longitude: (geometry.coordinates as number[])[0],
-          // details:
-          //   properties.extra?.productsInfo?.map((product: ProductInfo) => ({
-          //     ...product,
-          //     ORDERID: product.orderId,
-          //     PRODUCTID: product.productId,
-          //     ORDER_ID: product.orderId,
-          //     PRODUCTNAME: product.productName,
-          //     QUANTITYMAIN: product.quantityMajor,
-          //     QUANTITYMINOR: product.quantityMinor,
-          //     UserConfirm: product.userConfirm,
-          //     DateConfirm: product.dateConfirm,
-          //   })) || [],
-        };
-      } else {
-        planDetails = {
-          ...refactormatchedPreOrderData,
-          details: [refactormatchedPreOrderData as PreOrderData & ProductInfo],
-        };
-      }
-
-      const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
-        centered: true,
-        size: 'xl',
-        animation: true,
-        backdrop: 'static',
-        keyboard: false,
-        beforeDismiss: () => {
-          return false;
-        },
-      });
-
-      modalRef.componentInstance.dataPreOder = planDetails;
-      modalRef.componentInstance.dataCustomer = planDetails;
-      modalRef.componentInstance.isGeolocationDisplay = false;
-    }
-  }
-
-  splitLatLng(order: PreOrderData): PreOrderData {
-    if (typeof order.LatLng === 'string') {
-      const [latStr, lngStr] = order.LatLng.split(',');
-      order.latitude = parseFloat(latStr.trim());
-      order.longitude = parseFloat(lngStr.trim());
-    }
-    return order;
+    modalRef.componentInstance.dataPreOder = planDetails;
+    modalRef.componentInstance.dataCustomer = planDetails;
+    modalRef.componentInstance.isGeolocationDisplay = false;
   }
 }

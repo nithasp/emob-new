@@ -591,18 +591,17 @@
                           : node
                       }}
                       <div class="text">
-                        @if(i === 1) {
+                        @if(i === 1 && element.depot2first_distance) {
                         {{ element.depot2first_distance | number : "1.0-1" }}
                         {{ "km" | transloco }}
-                        } @else if (i === element.route.length - 1) {
+                        } @else if (i === element.route.length - 1 && element.last2depot_distance) {
                         {{ element.last2depot_distance | number : "1.0-1" }}
                         {{ "km" | transloco }}
-                        } @else if(i !== 0) {
+                        } @else if(i !== 0 && element.customers_distance?.[i - 2] != null) {
                         {{
                           element.customers_distance[i - 2] | number : "1.0-1"
                         }}
-                        {{ "km" | transloco }} }@else {
-                        {{ 0 | number : "1.0-1" }} {{ "km" | transloco }} }
+                        {{ "km" | transloco }} }
                       </div>
                     </div>
                     }
