@@ -84,6 +84,8 @@ import { TranslocoService } from '@jsverse/transloco';
 import { LanguageChangeService } from 'src/app/services/language-change.service';
 import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
 import vrpStats from './newData/vrpStats.json';
+import vrpSolution from './newData/vrpSolutionLean.json';
+import geoJsonData from './newData/geoJson.json';
 
 @Component({
   selector: 'app-result',
@@ -698,8 +700,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   private async loadAndProcessGeoJSON(url: string): Promise<void> {
-    const geoJson = await this.dataFromFileUrlToJson(url);
+    // old logic get geoJson from api excel
+    //const geoJson = await this.dataFromFileUrlToJson(url);
 
+    // new logic get geoJson from newData/geoJson.json
+    const geoJson: any = geoJsonData as any;
+    
     // DEBUG: clear all LineString coordinates to test map UI behaviour
     // geoJson.routes.forEach((route: any) => {
     //   route.features.forEach((feature: any) => {
@@ -717,10 +723,23 @@ export class ResultComponent implements OnInit, AfterViewInit {
     //   });
     // });
 
-    this.featureCollections = geoJson.routes.map((rc: FeatureCollection) => ({
+    // old logic get geoJson from api excel
+    // this.featureCollections = geoJson.routes.map((rc: FeatureCollection) => ({
+    //   ...rc,
+    //   route_index: rc.features[0]?.properties?.route_index,
+    // }));
+
+    // new logic get geoJson from newData/geoJson.json
+    this.featureCollections = geoJson.routes.map((rc: any) => ({
       ...rc,
-      route_index: rc.features[0]?.properties?.route_index,
+      route_index: rc.features[0]?.properties?.routeIndex,
     }));
+
+    // old logic get geoJson from api excel
+    // this.featureDepots = geoJson.depots;
+    // this.featureRoutes = geoJson.routes;
+
+    // new logic get geoJson from newData/geoJson.json
     this.featureDepots = geoJson.depots;
     this.featureRoutes = geoJson.routes;
 
@@ -1010,6 +1029,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
     featureCollection: FeatureCollection,
     featureDepots: FeatureCollection[]
   ): void {
+
+
+    console.log('featureCollection result', featureCollection);
+    console.log('featureDepots result', featureDepots);
+
     const modalRef = this.ngbModal.open(MapDetailsDialogComponent, {
       size: 'xl',
       centered: true,
@@ -1027,6 +1051,15 @@ export class ResultComponent implements OnInit, AfterViewInit {
     modalRef.componentInstance.planDetailData = this.planDetailData;
     modalRef.componentInstance.preOrderData = this.preOrderData;
     modalRef.componentInstance.featureRoutes = this.featureRoutes;
+
+
+    console.log('featureCollection', featureCollection);
+    console.log('featureDepots', featureDepots);
+    console.log('routeInfoDetails', this.routeInfoDetails);
+    console.log('nodeSheetData', this.nodeSheetData);
+    console.log('planDetailData', this.planDetailData);
+    console.log('preOrderData', this.preOrderData);
+    console.log('featureRoutes', this.featureRoutes);
   }
 
   styleFunction(feature: FeatureLike): Style | Style[] {
@@ -1313,10 +1346,25 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.routeInfoDetails =
       this.dataRouteInfo.data.find((r) => r.route_index === routeIndex) || null;
 
+      // old logic get geoJson from api excel
+    // const collection = this.featureCollections.find(
+    //   (collection: FeatureCollection) => {
+    //     return collection.features.some((feature: GeoJSONFeature) => {
+    //       if (feature.properties.route_index === routeIndex) {
+    //         depotStartId = feature.properties.start_depot_id || null;
+    //         depotEndId = feature.properties.end_depot_id || null;
+    //         return collection.route_index === routeIndex;
+    //       }
+    //       return false;
+    //     });
+    //   }
+    // );
+
+    // new logic get geoJson from api excel
     const collection = this.featureCollections.find(
-      (collection: FeatureCollection) => {
-        return collection.features.some((feature: GeoJSONFeature) => {
-          if (feature.properties.route_index === routeIndex) {
+      (collection: any) => {
+        return collection.features.some((feature: any) => {
+          if (feature.properties.routeIndex === routeIndex) {
             depotStartId = feature.properties.start_depot_id || null;
             depotEndId = feature.properties.end_depot_id || null;
             return collection.route_index === routeIndex;
@@ -1325,6 +1373,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         });
       }
     );
+
 
     if (!collection) {
       console.error(`No route found for index ${routeIndex}`);
@@ -1965,6 +2014,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     console.log('this.dataRouteInfo', this.dataRouteInfo);
  
+    console.log('this.featureDepots', this.featureDepots);
     console.log('this.featureRoutes', this.featureRoutes);
+    console.log('this.featureCollections', this.featureCollections);
   }
 }
