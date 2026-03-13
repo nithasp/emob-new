@@ -532,9 +532,24 @@ export class ResultComponent implements OnInit, AfterViewInit {
     });
   }
 
+  private buildRouteDistancesMap(): Record<number, number[]> {
+    const distancesMap: Record<number, number[]> = {};
+    const geoJson: any = geoJsonData;
+    geoJson.routes?.forEach((route: any) => {
+      route.features?.forEach((feature: any) => {
+        if (feature.geometry?.type === 'LineString' && feature.properties?.distances) {
+          const routeIdx = feature.properties.routeIndex ?? 0;
+          distancesMap[routeIdx] = feature.properties.distances;
+        }
+      });
+    });
+    return distancesMap;
+  }
+
   private buildRouteInfoFromVrpSolution(): void {
     const routeMetrics =
       (vrpSolution as any)?.solutionMetrics?.routeMetrics ?? [];
+    const routeDistancesMap = this.buildRouteDistancesMap();
 
     routeMetrics.forEach((route: any) => {
       const customerNodes = route.routeNodes?.slice(1, -1) ?? [];
@@ -546,10 +561,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
         ),
       ] as string[];
 
+      const routeIndex = route.routeIndex ?? 0;
+
       this.dataRouteInfo.data.push({
         route_label: route.routeLabel ?? 0,
-        route_index: route.routeIndex ?? 0,
+        route_index: routeIndex,
         route: route.routeNodes ?? [],
+        route_distances: routeDistancesMap[routeIndex] ?? [],
         number_delivery_points: route.customerCount ?? 0,
         weight: route.routeWeight ?? 0,
         utilize: 0,

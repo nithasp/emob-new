@@ -61,6 +61,7 @@ export interface RouteInfo {
   node_index: number;
   node_label: number;
   route: number[];
+  route_distances: number[];
   route_label: number;
   route_index: number;
   service_time: number;
