@@ -305,7 +305,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   }
 
   sortedPointDetails() {
-    return [...this.pointDetails].sort((a, b) => a.route_order - b.route_order);
+    return [...this.pointDetails].sort((a, b) => a.route_order - b.route_order).filter((point) => point.route_order !== 0);
   }
 
   handlePointClick(pointDetail: PointDetail): void {
