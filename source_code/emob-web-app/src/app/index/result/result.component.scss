@@ -483,6 +483,120 @@ mat-card.mb-4 {
   }
 }
 
+// ─── VRP Stats Key-Value View ────────────────────────────────────────────────
+.table-vrp-stats {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 13px;
+  background: #fff;
+  height: 400px;
+  overflow-y: auto;
+
+  table {
+    margin-bottom: 0;
+    width: 100%;
+
+      thead tr th {
+      background: #0e1547;
+      color: #fff;
+      font-weight: 600;
+      padding: 8px 14px;
+      border: none;
+      font-size: 12px;
+      letter-spacing: 0.3px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      white-space: nowrap;
+
+      &:last-child { text-align: right; }
+    }
+
+    tbody tr {
+      &:nth-child(even) { background-color: #f4f6fb; }
+      &:nth-child(odd)  { background-color: #fff; }
+
+      &:hover { background-color: #edf0f7; }
+
+      td {
+        padding: 7px 14px;
+        border-bottom: 1px solid #dee2e6;
+        border-left: none;
+        border-right: none;
+        vertical-align: middle;
+        font-size: 13px;
+        color: #212529;
+
+        &:first-child {
+          font-weight: 600;
+          color: #495057;
+          text-align: left;
+          white-space: nowrap;
+          width: 1%;
+        }
+
+        &:last-child {
+          text-align: right;
+        }
+
+        &.text-success { color: #198754 !important; font-weight: 600; }
+        &.text-danger  { color: #dc3545 !important; font-weight: 600; }
+      }
+
+      &:last-child td { border-bottom: none; }
+    }
+  }
+}
+
+// ─── VRP Stats Tabular Matrix View ───────────────────────────────────────────
+.table-vrp-stats-tabular-matrix {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 13px;
+  background: #fff;
+  overflow-x: auto;
+
+  table {
+    margin-bottom: 0;
+    width: 100%;
+
+    thead tr th {
+      background: #0e1547;
+      color: #fff;
+      font-weight: 600;
+      padding: 8px 14px;
+      border: none;
+      font-size: 12px;
+      letter-spacing: 0.3px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    tbody tr td {
+      padding: 10px 14px;
+      border-bottom: none;
+      border-left: 1px solid #dee2e6;
+      border-right: none;
+      vertical-align: middle;
+      font-size: 13px;
+      font-weight: 600;
+      color: #0e1547;
+      text-align: center;
+      background-color: #f4f6fb;
+      white-space: nowrap;
+
+      &:first-child { border-left: none; }
+
+      &.text-success { color: #198754 !important; }
+      &.text-danger  { color: #dc3545 !important; }
+    }
+  }
+}
+
 .route-box {cursor: pointer;
   &:not(:first-child):not(:last-child) {
     transition: 0.1s;
