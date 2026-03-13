@@ -793,7 +793,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       distance: 40,
       source: new VectorSource({
         features: allFeatures.filter((feature) => {
-          return feature.getGeometry()?.getType() === 'Point';
+          return feature.getGeometry()?.getType() === 'Point' && !feature.get('is_depot');
         }),
       }),
     });
