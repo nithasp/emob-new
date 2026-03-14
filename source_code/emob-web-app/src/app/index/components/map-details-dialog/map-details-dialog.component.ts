@@ -218,7 +218,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
 
     if (feature && feature.getGeometry()?.getType() === 'LineString') {
       const properties = feature.getProperties() as FeatureProperties;
-      this.highlightedFeatureCollectionId = properties.route_index || null;
+      this.highlightedFeatureCollectionId = properties.routeIndex || null;
     } else {
       this.highlightedFeatureCollectionId = null;
     }
@@ -227,8 +227,8 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   }
   styleFunction(feature: FeatureLike): Style | Style[] | undefined {
     const geometryType = feature.getGeometry()!.getType();
-    const text = String(feature.getProperties()['route_order'] ?? '');
-    const isDepot = feature.getProperties()['is_depot'] as boolean;
+    const text = String(feature.getProperties()['routeOrder'] ?? '');
+    const isDepot = feature.getProperties()['isDepot'] as boolean;
 
     switch (geometryType) {
       case 'Point':
@@ -297,7 +297,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     this.pointDetails = pointFeatures.map((f) => {
       const props = f.getProperties() as FeatureProperties;
       return {
-        route_order: props.route_order || 0,
+        routeOrder: props.routeOrder || 0,
         name: props.name || '',
         weight: props.weight || 0,
       };
@@ -305,7 +305,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   }
 
   sortedPointDetails() {
-    return [...this.pointDetails].sort((a, b) => a.route_order - b.route_order).filter((point) => point.route_order !== 0);
+    return [...this.pointDetails].sort((a, b) => a.routeOrder - b.routeOrder).filter((point) => point.routeOrder !== 0);
   }
 
   handlePointClick(pointDetail: PointDetail): void {
@@ -313,7 +313,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Find the node_index from the featureCollection based on the point name
+    // Find the nodeIndex from the featureCollection based on the point name
     const allFeatures = new GeoJSON().readFeatures(this.featureCollection, {
       dataProjection: 'EPSG:4326',
       featureProjection: 'EPSG:3857',
@@ -324,7 +324,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
         const props = f.getProperties();
         return (
           props['name'] === pointDetail.name &&
-          props['route_order'] === pointDetail.route_order
+          props['routeOrder'] === pointDetail.routeOrder
         );
       }
       return false;
@@ -335,9 +335,9 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const nodeIndex = pointFeature.getProperties()['node_index'];
+    const nodeIndex = pointFeature.getProperties()['nodeIndex'];
     if (!nodeIndex) {
-      console.warn('node_index not found for point:', pointDetail);
+      console.warn('nodeIndex not found for point:', pointDetail);
       return;
     }
 

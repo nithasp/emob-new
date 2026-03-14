@@ -293,7 +293,7 @@
                   ngbDropdownToggle
                   class="btn btn-outline-secondary btn-sm text-capitalize d-flex align-items-center justify-content-between w-100 text-black"
                 >
-                  {{ t(selectedSearchOption) }}
+                  {{ t(selectedSearchOption | snakeCase) }}
                 </button>
                 <div ngbDropdownMenu class="w-100">
                   <button
@@ -302,7 +302,7 @@
                     (click)="setSearchOption(item)"
                     class="text-capitalize text-black"
                   >
-                    {{ t(item) }}
+                    {{ t(item | snakeCase) }}
                   </button>
                 </div>
               </div>
@@ -371,7 +371,7 @@
                 class="text-capitalize chip-outline"
                 color="primary"
               >
-                {{ t(f.column) }}
+                {{ t(f.column | snakeCase) }}
                 {{ t(f.criteria) }}
                 {{ f.value }}
                 <mat-icon matChipRemove class="opacity-100">cancel</mat-icon>
@@ -486,7 +486,7 @@
                 mat-sort-header
                 class="text-wrap text-capitalize"
               >
-                {{ t(column) }}
+                {{ t(column | snakeCase) }}
               </th>
               <td
                 mat-cell
@@ -499,15 +499,15 @@
                       {{ element[column] | number : "1.0-0" }} {{ t("kg") }}
                     </ng-container>
 
-                    <ng-container *ngSwitchCase="'travel_distance'">
+                    <ng-container *ngSwitchCase="'travelDistance'">
                       {{ element[column] | number : "1.0-0" }} {{ t("km") }}
                     </ng-container>
 
-                    <ng-container *ngSwitchCase="'travel_duration'">
+                    <ng-container *ngSwitchCase="'travelDuration'">
                       {{ element[column] / 60 | number : "1.0-2" }}
                       {{ "hours" | transloco }}
                     </ng-container>
-                    <ng-container *ngSwitchCase="'service_time'">
+                    <ng-container *ngSwitchCase="'serviceTime'">
                       {{ element[column] / 60 | number : "1.0-2" }}
                       {{ "hours" | transloco }}
                     </ng-container>
@@ -546,7 +546,7 @@
                   <button
                     mat-raised-button
                     class="bg-custom-secondary small-button"
-                    (click)="openRouteDetails(element.route_index)"
+                    (click)="openRouteDetails(element.routeIndex)"
                     [disabled]="isLoading"
                   >
                     <mat-icon>route</mat-icon>
@@ -586,8 +586,8 @@
                         }}
                       </div>
                       <div class="route-node-distance">
-                        @if(element.route_distances?.[i] != null) {
-                        {{ element.route_distances[i] | number : "1.0-1" }}
+                        @if(element.routeDistances?.[i] != null) {
+                        {{ element.routeDistances[i] | number : "1.0-1" }}
                         {{ "km" | transloco }}
                         }
                       </div>
@@ -631,7 +631,7 @@
         <div
           id="popupMapResult"
           class="ol-popup"
-          [ngClass]="{ 'depot-popup': popupContent?.['is_depot'] }"
+          [ngClass]="{ 'depot-popup': popupContent?.['isDepot'] }"
           [hidden]="!mapAlreadyRendered"
         >
           <div
@@ -642,24 +642,24 @@
           >
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.['route_label']"
+              *ngIf="popupContent?.['routeLabel']"
             >
               <strong>{{ t("route_label") }} : </strong>
-              <span>{{ popupContent['route_label'] }}</span>
+              <span>{{ popupContent['routeLabel'] }}</span>
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.['node_index']"
+              *ngIf="popupContent?.['nodeIndex']"
             >
               <strong>{{ t("point_index") }} : </strong>
-              <span>{{ popupContent["node_index"] }}</span>
+              <span>{{ popupContent["nodeIndex"] }}</span>
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.['route_order']"
+              *ngIf="popupContent?.['routeOrder']"
             >
               <strong>{{ t("route_order") }} : </strong>
-              <span>{{ popupContent["route_order"] }}</span>
+              <span>{{ popupContent["routeOrder"] }}</span>
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
@@ -668,7 +668,7 @@
               <strong>
                 <span>
                   {{
-                    popupContent['is_depot'] ? t("depot_name") : t("order_id")
+                    popupContent['isDepot'] ? t("depot_name") : t("order_id")
                   }}</span
                 >
                 <span> : </span>
@@ -677,10 +677,10 @@
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.['num_customers']"
+              *ngIf="popupContent?.['numCustomers']"
             >
               <strong>{{ t("total_points") }} : </strong>
-              <span>{{ popupContent["num_customers"] }}</span>
+              <span>{{ popupContent["numCustomers"] }}</span>
             </p>
             <p
               class="d-inline-block text-truncate mr-2"

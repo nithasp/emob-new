@@ -10,10 +10,9 @@ export class SnakeCasePipe implements PipeTransform {
       return value;
     }
     return value
+      .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
       .toLowerCase()
-      // replace any sequence of non-alphanumeric chars with a single underscore
       .replace(/[^a-z0-9]+/g, '_')
-      // trim leading/trailing underscores
       .replace(/^_+|_+$/g, '');
   }
 }

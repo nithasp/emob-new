@@ -48,52 +48,52 @@ export interface Location {
 }
 
 export interface RouteInfo {
-  average_customers_distance: number;
-  customers_distance: number[];
-  depot2first_distance: number;
-  last2depot_distance: number;
-  max_customers_distance: number;
-  number_delivery_points: number;
-  number_of_replace_types: string;
-  number_of_validate_types: string;
-  number_zone: number;
-  node_id: string;
-  node_index: number;
-  node_label: number;
+  averageCustomersDistance: number;
+  customersDistance: number[];
+  depot2firstDistance: number;
+  last2depotDistance: number;
+  maxCustomersDistance: number;
+  numberDeliveryPoints: number;
+  numberOfReplaceTypes: string;
+  numberOfValidateTypes: string;
+  numberZone: number;
+  nodeId: string;
+  nodeIndex: number;
+  nodeLabel: number;
   route: number[];
-  route_distances: number[];
-  route_label: number;
-  route_index: number;
-  service_time: number;
-  total_customers_distance: number;
-  total_duration: number;
-  travel_distance: number;
-  travel_duration: number;
+  routeDistances: number[];
+  routeLabel: number;
+  routeIndex: number;
+  serviceTime: number;
+  totalCustomersDistance: number;
+  totalDuration: number;
+  travelDistance: number;
+  travelDuration: number;
   utilize: number;
   weight: number;
   zone: string[];
 }
 
 export interface FeatureProperties {
-  route_index?: number;
-  route_order?: number;
-  route_label?: number;
-  start_depot_id?: number;
-  end_depot_id?: number;
-  depot_id?: number;
-  node_index?: number;
+  routeIndex?: number;
+  routeOrder?: number;
+  routeLabel?: number;
+  startDepotId?: number;
+  endDepotId?: number;
+  depotId?: number;
+  nodeIndex?: number;
   name?: string;
   weight?: number;
   color?: string;
-  is_depot?: boolean;
+  isDepot?: boolean;
   features?: FeatureLike[];
-  num_customers?: number;
+  numCustomers?: number;
   distance?: number;
   duration?: number;
   zone?: string | string[];
   customers?: string[];
-  service_duration?: number;
-  travel_duration?: number;
+  serviceDuration?: number;
+  travelDuration?: number;
   extra?: {
     channel?: string;
     customerName?: string;
@@ -128,7 +128,7 @@ export interface GeoJSONFeature {
 export interface FeatureCollection {
   type: string;
   features: GeoJSONFeature[];
-  route_index?: number;
+  routeIndex?: number;
 }
 
 export interface ReportDataItem {

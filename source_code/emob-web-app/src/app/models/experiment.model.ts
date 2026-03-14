@@ -188,9 +188,9 @@ export interface ExperimentDepot {
 }
 
 export interface NodeSheet {
-  node_label: number;
-  node_index: number;
-  node_name: string;
+  nodeLabel: number;
+  nodeIndex: number;
+  nodeName: string;
   latitude: number;
   longitude: number;
   validationType: string;
@@ -199,29 +199,27 @@ export interface NodeSheet {
 }
 
 export interface RouteInfo {
-  route_label: string;
-  number_delivery_points: number;
+  routeLabel: string;
+  numberDeliveryPoints: number;
   weight?: number;
-  travel_distance?: number;
-  travel_duration?: number;
-  service_time?: number;
+  travelDistance?: number;
+  travelDuration?: number;
+  serviceTime?: number;
   [key: string]: string | number | undefined;
 }
 
 export interface PopupContent {
-  route_label?: string;
-  node_index?: number;
-  route_order?: number;
+  routeLabel?: string;
+  nodeIndex?: number;
+  routeOrder?: number;
   name?: string;
-  is_depot?: boolean;
-  num_customers?: number;
+  isDepot?: boolean;
+  numCustomers?: number;
   distance?: number;
   duration?: number;
   weight?: number;
   zone?: string;
   customers?: string[];
-  service_duration?: number;
-  travel_duration?: number;
   serviceDuration?: number;
   travelDuration?: number;
   originalAddress?: {
@@ -234,19 +232,19 @@ export interface PopupContent {
     channel?: string;
     customerName?: string;
     tel?: string;
-    products_info?: ProductInfo[];
+    productsInfo?: ProductInfo[];
   };
   [key: string]: string | number | boolean | string[] | object | undefined;
 }
 
 export interface ProductInfo {
-  product_id: string;
-  order_id: string;
-  product_name: string;
-  quantity_major: number;
-  quantity_minor: number;
-  user_confirm?: string;
-  date_confirm?: string;
+  productId: string;
+  orderId: string;
+  productName: string;
+  quantityMajor: number;
+  quantityMinor: number;
+  userConfirm?: string;
+  dateConfirm?: string;
 }
 
 export interface PreOrderData {
@@ -274,9 +272,9 @@ export interface GeoJSONFeatureCollection {
 export interface GeoJSONFeature {
   type: string;
   properties: {
-    node_index?: number;
+    nodeIndex?: number;
     name?: string;
-    route_order?: number;
+    routeOrder?: number;
     weight?: number;
     color?: string;
     isDepot?: boolean;
@@ -300,7 +298,7 @@ export interface PlanDetailsData extends PreOrderData {
 export interface PointDetail {
   name: string;
   weight: number;
-  route_order: number;
+  routeOrder: number;
 }
 
 export interface MyDepot {

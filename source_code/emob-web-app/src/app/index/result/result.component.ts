@@ -138,11 +138,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
   searchControl = new FormControl<string>('');
   showFilterPanel = false;
   columnsToDisplay: string[] = [
-    'route_label',
-    'number_delivery_points',
-    'service_time',
-    'travel_distance',
-    'travel_duration',
+    'routeLabel',
+    'numberDeliveryPoints',
+    'serviceTime',
+    'travelDistance',
+    'travelDuration',
     'weight',
   ];
   filterCriteriaToDisplay: string[] = [
@@ -174,7 +174,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     does_not_end_with: '!$=',
   };
   selectedFilterCriteria: string = 'equal';
-  selectedSearchOption: string = 'route_label';
+  selectedSearchOption: string = 'routeLabel';
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: RouteInfo[] = [];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -284,13 +284,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const search = searchValue.trim().toLowerCase();
     let displayValue: number | string;
     switch (column) {
-      case 'service_time':
+      case 'serviceTime':
         displayValue = Number(rawValue) / 60;
         break;
-      case 'travel_duration':
+      case 'travelDuration':
         displayValue = Number((Number(rawValue) / 60).toFixed(2));
         break;
-      case 'travel_distance':
+      case 'travelDistance':
       case 'weight':
         displayValue = Math.round(Number(rawValue));
         break;
@@ -564,27 +564,27 @@ export class ResultComponent implements OnInit, AfterViewInit {
       const routeIndex = route.routeIndex ?? 0;
 
       this.dataRouteInfo.data.push({
-        route_label: route.routeLabel ?? 0,
-        route_index: routeIndex,
+        routeLabel: route.routeLabel ?? 0,
+        routeIndex: routeIndex,
         route: route.routeNodes ?? [],
-        route_distances: routeDistancesMap[routeIndex] ?? [],
-        number_delivery_points: route.customerCount ?? 0,
+        routeDistances: routeDistancesMap[routeIndex] ?? [],
+        numberDeliveryPoints: route.customerCount ?? 0,
         weight: route.routeWeight ?? 0,
         utilize: 0,
-        travel_distance: route.routeDistance ?? 0,
-        total_duration: route.routeDuration ?? 0,
-        travel_duration: route.routeTravelDuration ?? 0,
-        service_time: route.routeServiceDuration ?? 0,
-        depot2first_distance: 0,
-        last2depot_distance: 0,
-        total_customers_distance: 0,
-        average_customers_distance: 0,
-        max_customers_distance: 0,
-        customers_distance: [],
-        number_zone: zones.length,
+        travelDistance: route.routeDistance ?? 0,
+        totalDuration: route.routeDuration ?? 0,
+        travelDuration: route.routeTravelDuration ?? 0,
+        serviceTime: route.routeServiceDuration ?? 0,
+        depot2firstDistance: 0,
+        last2depotDistance: 0,
+        totalCustomersDistance: 0,
+        averageCustomersDistance: 0,
+        maxCustomersDistance: 0,
+        customersDistance: [],
+        numberZone: zones.length,
         zone: zones,
-        number_of_validate_types: '',
-        number_of_replace_types: '',
+        numberOfValidateTypes: '',
+        numberOfReplaceTypes: '',
       } as unknown as RouteInfo);
     });
 
@@ -687,9 +687,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
               const transformedData: Record<string, unknown> = { ...rowData };
 
-              const customersDistanceStr = rowData['customers_distance'];
+              const customersDistanceStr = rowData['customersDistance'];
               if (typeof customersDistanceStr === 'string') {
-                transformedData['customers_distance'] = customersDistanceStr
+                transformedData['customersDistance'] = customersDistanceStr
                   .split('➠')
                   .map(Number)
                   .filter((n) => !isNaN(n));
@@ -760,7 +760,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     this.featureCollections = geoJson.routes.map((rc: any) => ({
       ...rc,
-      route_index: rc.features[0]?.properties?.route_index,
+      routeIndex: rc.features[0]?.properties?.routeIndex,
     }));
 
     this.featureDepots = geoJson.depots.map((depot: any) => ({
@@ -793,7 +793,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       distance: 40,
       source: new VectorSource({
         features: allFeatures.filter((feature) => {
-          return feature.getGeometry()?.getType() === 'Point' && !feature.get('is_depot');
+          return feature.getGeometry()?.getType() === 'Point' && !feature.get('isDepot');
         }),
       }),
     });
@@ -834,10 +834,10 @@ export class ResultComponent implements OnInit, AfterViewInit {
       if (node) {
         depot.properties = {
           ...depot.properties,
-          is_depot: true,
-          depot_id: node.nodeId,
+          isDepot: true,
+          depotId: node.nodeId,
           name: node.name,
-          node_index: node.index,
+          nodeIndex: node.index,
         };
       }
     });
@@ -861,15 +861,15 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
           feature.properties = {
             ...feature.properties,
-            route_index: feature.properties?.routeIndex,
-            route_label: feature.properties?.routeLabel,
+            routeIndex: feature.properties?.routeIndex,
+            routeLabel: feature.properties?.routeLabel,
             distance: routeMetric?.routeDistance ?? 0,
             duration: routeMetric?.routeDuration ?? 0,
             weight: routeMetric?.routeWeight ?? 0,
-            num_customers: routeMetric?.customerCount ?? 0,
+            numCustomers: routeMetric?.customerCount ?? 0,
             zone: zones.join(', '),
-            service_duration: routeMetric?.routeServiceDuration ?? 0,
-            travel_duration: routeMetric?.routeTravelDuration ?? 0,
+            serviceDuration: routeMetric?.routeServiceDuration ?? 0,
+            travelDuration: routeMetric?.routeTravelDuration ?? 0,
           };
         } else if (feature.geometry?.type === 'Point') {
           const node = this.routingNodesByIdMap[feature.properties?.nodeId];
@@ -882,13 +882,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
             feature.properties = {
               ...feature.properties,
-              node_index: node.index,
+              nodeIndex: node.index,
               name: node.name,
               weight: node.deliveryWeight ?? 0,
-              is_depot: node.isDepot ?? false,
-              route_order: routeOrder,
-              route_index: routeMetric?.routeIndex ?? 0,
-              route_label: routeMetric?.routeLabel ?? 0,
+              isDepot: node.isDepot ?? false,
+              routeOrder: routeOrder,
+              routeIndex: routeMetric?.routeIndex ?? 0,
+              routeLabel: routeMetric?.routeLabel ?? 0,
               originalAddress: node.originalAddress,
             };
           }
@@ -1034,13 +1034,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
     // determine which route (if any) is hovered
     if (feature && feature.getGeometry()?.getType() === 'LineString') {
       this.highlightedFeatureCollectionId = feature.get(
-        'route_index'
+        'routeIndex'
       ) as number;
     } else if (feature && feature.get('features')) {
-      // if it's a cluster, pick one child route_index
+      // if it's a cluster, pick one child routeIndex
       const members = feature.get('features') as FeatureLike[];
       this.highlightedFeatureCollectionId =
-        (members[0]?.get('route_index') as number) || null;
+        (members[0]?.get('routeIndex') as number) || null;
     } else {
       this.highlightedFeatureCollectionId = null;
     }
@@ -1053,7 +1053,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         .getSource()!
         .getFeatures()
         .forEach((feat) => {
-          if (feat.get('route_index') === hoverId) {
+          if (feat.get('routeIndex') === hoverId) {
             feat.setStyle(undefined);
           }
         });
@@ -1064,7 +1064,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         .getFeatures()
         .forEach((clusterFeat) => {
           const members = clusterFeat.get('features') as FeatureLike[];
-          if (members.some((m) => m.get('route_index') === hoverId)) {
+          if (members.some((m) => m.get('routeIndex') === hoverId)) {
             clusterFeat.setStyle(undefined);
           }
         });
@@ -1088,9 +1088,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
     }
 
     const routeIndex: number | undefined =
-      feature.getProperties()['route_index'];
+      feature.getProperties()['routeIndex'] as number | undefined;
     if (routeIndex == null) {
-      console.error('Clicked LineString has no route_index');
+      console.error('Clicked LineString has no routeIndex');
       return;
     }
 
@@ -1148,7 +1148,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     }
 
     // ─── ROUTE LINES ────────────────────────────────────────────────────────────
-    const idx = feature.get('route_index') as number;
+    const idx = feature.get('routeIndex') as number;
     const color = feature.get('color') as string;
     const hovered = this.highlightedFeatureCollectionId;
 
@@ -1185,9 +1185,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   clusterStyleFunction(feature: FeatureLike): Style | Style[] {
     const members = feature.get('features') as FeatureLike[];
-    const idxs = members.map((m) => m.get('route_index') as number);
+    const idxs = members.map((m) => m.get('routeIndex') as number);
     const baseColor = (members[0].get('color') as string) || '#3399CC';
-    const orderTxt = String(members[0].get('route_order') || '');
+    const orderTxt = String(members[0].get('routeOrder') || '');
 
     const hovered = this.highlightedFeatureCollectionId;
 
@@ -1275,7 +1275,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   toggleRow(row: RouteInfo) {
     const index = this.expandedElement.findIndex(
-      (x) => x.route_index == row.route_index
+      (x) => x.routeIndex == row.routeIndex
     );
     if (index === -1) {
       this.expandedElement.push(row);
@@ -1286,7 +1286,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   isExpanded(row: RouteInfo): string {
     const index = this.expandedElement.findIndex(
-      (x) => x.route_index == row.route_index
+      (x) => x.routeIndex == row.routeIndex
     );
     if (index === -1) {
       return 'collapsed';
@@ -1402,10 +1402,10 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   openRouteDetails(routeIndex: number): void {
     this.routeInfoDetails =
-      this.dataRouteInfo.data.find((r) => r.route_index === routeIndex) || null;
+      this.dataRouteInfo.data.find((r) => r.routeIndex === routeIndex) || null;
 
     const collection = this.featureCollections.find(
-      (fc: any) => fc.route_index === routeIndex
+      (fc: any) => fc.routeIndex === routeIndex
     );
 
     if (!collection) {
@@ -1426,7 +1426,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     if (!this.mapAlreadyRendered) return;
     console.log('Mouse entered row:', row);
 
-    this.highlightedFeatureCollectionId = row.route_index;
+    this.highlightedFeatureCollectionId = row.routeIndex;
     const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
     vectorLayer.getSource()?.changed();
     const clusterLayer = this.map.getLayers()?.item(2) as VectorLayer;
@@ -1750,7 +1750,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     // compute visibleRoutes array exactly as you do now
     const visibleRoutesArr = (
       this.dataRouteInfo.filteredData as RouteInfo[]
-    ).map((r) => r.route_index);
+    ).map((r) => r.routeIndex);
     this.visibleRoutes = new Set(visibleRoutesArr);
 
     // 1) vector lines
@@ -1759,7 +1759,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       .getFeatures()
       .forEach((feat) => {
         if (feat.getGeometry()?.getType() === 'LineString') {
-          const idx = feat.get('route_index') as number;
+          const idx = feat.get('routeIndex') as number;
           if (!this.visibleRoutes.has(idx)) {
             // outside filter → dim
             feat.setStyle(this.dimStyle);
@@ -1776,7 +1776,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       .getFeatures()
       .forEach((clusterFeat) => {
         const members = clusterFeat.get('features') as FeatureLike[];
-        const routeIndexes = members.map((m) => m.get('route_index') as number);
+        const routeIndexes = members.map((m) => m.get('routeIndex') as number);
         // if *none* of the member routes is in your filter → dim
         const isAnyVisible = routeIndexes.some((i) =>
           this.visibleRoutes.has(i)
@@ -1793,7 +1793,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
                 stroke: new Stroke({ color: '#fff', width: 2 }),
               }),
               text: new Text({
-                text: String(members[0].get('route_order') || ''),
+                text: String(members[0].get('routeOrder') || ''),
                 font: '15px Calibri,sans-serif',
                 fill: new Fill({ color: '#fff' }),
               }),
