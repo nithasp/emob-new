@@ -48,8 +48,8 @@ export class ConfigurationService {
                 depotName
                 latitude
                 longitude
-                tw_early
-                tw_late
+                timeWindowEarly
+                timeWindowLate
                 createdAt
                 updatedAt
               }

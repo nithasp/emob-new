@@ -54,8 +54,8 @@ export class VehicleService {
                 depotName
                 latitude
                 longitude
-                tw_early
-                tw_late
+                timeWindowEarly
+                timeWindowLate
                 createdAt
                 updatedAt
                 inputdata {
@@ -75,8 +75,8 @@ export class VehicleService {
                 depotName
                 latitude
                 longitude
-                tw_early
-                tw_late
+                timeWindowEarly
+                timeWindowLate
                 createdAt
                 updatedAt
                 inputdata {
@@ -153,8 +153,8 @@ export class VehicleService {
                 depotName
                 latitude
                 longitude
-                tw_early
-                tw_late
+                timeWindowEarly
+                timeWindowLate
                 createdAt
                 updatedAt
                 inputdata {
@@ -174,8 +174,8 @@ export class VehicleService {
                 depotName
                 latitude
                 longitude
-                tw_early
-                tw_late
+                timeWindowEarly
+                timeWindowLate
                 createdAt
                 updatedAt
                 inputdata {
@@ -344,8 +344,8 @@ export class VehicleService {
                   depotName
                   latitude
                   longitude
-                  tw_early
-                  tw_late
+                  timeWindowEarly
+                  timeWindowLate
                   createdAt
                   updatedAt
                   inputdata {
@@ -365,8 +365,8 @@ export class VehicleService {
                   depotName
                   latitude
                   longitude
-                  tw_early
-                  tw_late
+                  timeWindowEarly
+                  timeWindowLate
                   createdAt
                   updatedAt
                   inputdata {
@@ -450,8 +450,8 @@ export class VehicleService {
                 depotName
                 latitude
                 longitude
-                tw_early
-                tw_late
+                timeWindowEarly
+                timeWindowLate
                 createdAt
                 updatedAt
                 inputdata {
@@ -471,8 +471,8 @@ export class VehicleService {
                 depotName
                 latitude
                 longitude
-                tw_early
-                tw_late
+                timeWindowEarly
+                timeWindowLate
                 createdAt
                 updatedAt
                 inputdata {
@@ -565,8 +565,8 @@ export class VehicleService {
                 depotName
                 latitude
                 longitude
-                tw_early
-                tw_late
+                timeWindowEarly
+                timeWindowLate
                 createdAt
                 updatedAt
               }
@@ -575,8 +575,8 @@ export class VehicleService {
                 depotName
                 latitude
                 longitude
-                tw_early
-                tw_late
+                timeWindowEarly
+                timeWindowLate
                 createdAt
                 updatedAt
               }
