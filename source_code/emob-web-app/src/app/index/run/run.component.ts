@@ -151,7 +151,7 @@ export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
 export class RunComponent implements OnInit, AfterViewInit {
   // Condition
   public activeNavId = 1;
-  public isUpload!: boolean;
+  public isUpload: boolean = false;
   public isFileSelectionStep: boolean = true;
   public requiredFileType: string = '.xlsx, .xls';
   readonly validTypes = [
@@ -511,18 +511,23 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
 
     // load geocoding location
-    if (experiment.fileUrls?.transform?.locations) {
-      await this.dataFromFileUrlToJson(
-        experiment.fileUrls.transform.locations
-      ).then((response: Result) => {
-        console.log('Result', response);
-        console.log('newOrderData', newOrderData);
+    // if (experiment.fileUrls?.transform?.locations) {
+    //   console.log('experiment.fileUrls?.transform?.locations', experiment.fileUrls?.transform?.locations)
+    //   await this.dataFromFileUrlToJson(
+    //     experiment.fileUrls.transform.locations
+    //   ).then((response: Result) => {
+    //     console.log('Result', response);
+    //     console.log('newOrderData', newOrderData);
 
-       //this.groupingCustomer(response.customers, response.depots);
+    //    //this.groupingCustomer(response.customers, response.depots);
 
-       this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
-      });
-    }
+    //    this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
+    //   });
+    // }
+
+    // new load geocoding location, use hardcode temporary data
+    this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
+
     if (experiment.fileUrls?.validate?.vrpConfig) {
       this.toastr.info(
         this.transloco.translate('loading_geo_location_data', {}, 'index'),
@@ -4072,5 +4077,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     console.log('this.displayLocationType', this.displayLocationType)
     console.log('newOrderData.depots.length', newOrderData.depots.length)
     console.log('newOrderData.customers.length', newOrderData.customers.length)
+
+    console.log(' this.isUpload', this.isUpload)
+
+ 
   }
 }
