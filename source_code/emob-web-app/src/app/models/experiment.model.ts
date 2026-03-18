@@ -130,8 +130,8 @@ export interface MyDepot {
   depotName: string;
   latitude: number | string;
   longitude: number | string;
-  tw_early: string;
-  tw_late: string;
+  timeWindowEarly: string;
+  timeWindowLate: string;
   createdAt: string;
   updatedAt: string;
   inputdata: DepotInputRequirement[];
@@ -306,8 +306,8 @@ export interface MyDepot {
   depotName: string;
   latitude: number | string;
   longitude: number | string;
-  tw_early: string;
-  tw_late: string;
+  timeWindowEarly: string;
+  timeWindowLate: string;
   createdAt: string;
   updatedAt: string;
   inputdata: DepotInputRequirement[];

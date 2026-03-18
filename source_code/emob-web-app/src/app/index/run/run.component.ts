@@ -1511,8 +1511,8 @@ export class RunComponent implements OnInit, AfterViewInit {
       longitude?: number | string;
       columns?: string[];
       inputdata?: DepotInputRequirement[];
-      tw_early?: string | number;
-      tw_late?: string | number;
+      timeWindowEarly?: string | number;
+      timeWindowLate?: string | number;
       createdAt?: string;
       updatedAt?: string;
     }>
@@ -1536,8 +1536,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         longitude: Number(item.longitude),
         columns: item.columns || [],
         inputdata: item.inputdata || [],
-        tw_early: String(item.tw_early ?? ''),
-        tw_late: String(item.tw_late ?? ''),
+        timeWindowEarly: String(item.timeWindowEarly ?? ''),
+        timeWindowLate: String(item.timeWindowLate ?? ''),
         createdAt: item.createdAt || '',
         updatedAt: item.updatedAt || '',
       };
@@ -1556,8 +1556,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         depotName: depot.depotName,
         latitude: Number(depot.latitude),
         longitude: Number(depot.longitude),
-        tw_early: depot.tw_early || '',
-        tw_late: depot.tw_late || '',
+        tw_early: depot.timeWindowEarly || '',
+        tw_late: depot.timeWindowLate || '',
         createdAt: depot.createdAt || '',
         updatedAt: depot.updatedAt || '',
         columns: depot.columns || [],

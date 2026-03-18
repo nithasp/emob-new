@@ -415,8 +415,8 @@ export class ExperimentService {
               depotName
               latitude
               longitude
-              tw_early
-              tw_late
+              timeWindowEarly
+              timeWindowLate
               createdAt
               updatedAt
               inputdata {
