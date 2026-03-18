@@ -15,7 +15,6 @@ import { VehicleTypeDialogComponent } from './dialogs/vehicle-type-dialog/vehicl
 import { InputFieldComponent } from 'src/app/shared/components/form/input-field/input-field.component';
 import { InputSelectComponent } from 'src/app/shared/components/form/input-select/input-select.component';
 import { DynamicPopoverComponent } from 'src/app/shared/components/dynamic-popover/dynamic-popover.component';
-
 @NgModule({
   declarations: [
     VehicleManagementComponent,

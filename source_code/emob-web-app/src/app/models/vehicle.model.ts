@@ -61,9 +61,9 @@ export interface VehicleBreak {
 export interface VehicleType {
   vehicleTypeId: string;
   name: string;
-  access: AccessTypeEnum[];
+  access: AccessTypeEnum[] | null;
   allowedBreaks?: Break[];
-  dimension: Dimension;
+  dimension: Dimension | null;
   maximumWeightCapacity: number;
   maximumVolumeCapacity: number;
   timeWindowEarly: string;

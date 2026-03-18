@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { formatNumber } from '@angular/common';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { VehicleType } from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
@@ -99,6 +100,12 @@ export class VehicleTypeComponent implements OnInit {
       },
       () => {}
     );
+  }
+
+  formatNumberTemporary(value: string | number | null | undefined): string {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'string') return value;
+    return formatNumber(value, 'en-US');
   }
 
   deleteVehicleType(vehicleType: VehicleType): void {

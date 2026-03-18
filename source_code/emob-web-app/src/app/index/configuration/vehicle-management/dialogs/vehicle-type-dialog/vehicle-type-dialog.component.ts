@@ -208,7 +208,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
               vehicleGroupId: data.vehicleGroupId,
               maximumDistance: data.maximumDistance,
               maximumDuration: data.maximumDuration,
-              dimension: data.dimension,
+              dimension: data.dimension ?? undefined,
             });
 
             if (timeWindowEarly || data.timeWindowEarly) {

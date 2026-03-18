@@ -24,9 +24,9 @@
               <div class="col-12 col-md-6 mb-3 mb-md-0">
                 <p>
                   <strong>{{ t("dimensions") }}: </strong>
-                  <span>{{ vehicleTypeData.dimension.width }}</span><span>{{ "m" | transloco }}</span> x
-                  <span>{{ vehicleTypeData.dimension.height }}</span><span>{{ "m" | transloco }}</span> x
-                  <span>{{ vehicleTypeData.dimension.depth }}</span><span>{{ "m" | transloco }}</span>
+                  <span>{{ vehicleTypeData.dimension?.width }}</span><span>{{ "m" | transloco }}</span> x
+                  <span>{{ vehicleTypeData.dimension?.height }}</span><span>{{ "m" | transloco }}</span> x
+                  <span>{{ vehicleTypeData.dimension?.depth }}</span><span>{{ "m" | transloco }}</span>
                 </p>
                 <p>
                   <strong>{{ t("capacity") }}: </strong>
@@ -40,7 +40,7 @@
                 </p>
                 <p>
                   <strong>{{ t("access_points") }}: </strong>
-                  <span>{{ vehicleTypeData.access.join(", ") }}</span>
+                  <span>{{ vehicleTypeData.access?.join(", ") }}</span>
                 </p>
               </div>
               <div class="col-12 col-md-6">
