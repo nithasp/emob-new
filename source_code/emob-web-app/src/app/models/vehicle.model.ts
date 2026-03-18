@@ -76,6 +76,8 @@ export interface VehicleType {
   unitDurationCost: number;
   vehicleProfileType: VehicleProfileTypeEnum;
   isVehicleAvailable?: boolean;
+  maxpallet?: number;
+  zone?: string;
   createdAt: string;
   modifiedAt: string;
   twEarly?: string | number;

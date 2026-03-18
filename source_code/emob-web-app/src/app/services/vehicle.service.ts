@@ -268,6 +268,8 @@ export class VehicleService {
               unitDurationCost
               vehicleProfileType
               isVehicleAvailable
+              maxpallet
+              zone
               createdAt
               modifiedAt
             }
@@ -313,6 +315,8 @@ export class VehicleService {
               unitDurationCost
               vehicleProfileType
               isVehicleAvailable
+              maxpallet
+              zone
               createdAt
               modifiedAt
             }
@@ -659,6 +663,8 @@ export class VehicleService {
               unitDurationCost
               vehicleProfileType
               isVehicleAvailable
+              maxpallet
+              zone
               createdAt
               modifiedAt
             }
@@ -712,6 +718,8 @@ export class VehicleService {
               unitDurationCost
               vehicleProfileType
               isVehicleAvailable
+              maxpallet
+              zone
               createdAt
               modifiedAt
             }
