@@ -22,32 +22,32 @@
         <ng-container matColumnDef="maxLoadWeight">
           <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("max_load_weight") }}</th>
           <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
-            <span>{{ v.vehicleType.maximumWeightCapacity }} </span>
-            <span *ngIf="v.vehicleType.maximumWeightCapacity">{{ "kg" | transloco }}</span>
+            <span>{{ v.vehicleType?.maximumWeightCapacity }} </span>
+            <span *ngIf="v.vehicleType?.maximumWeightCapacity">{{ "kg" | transloco }}</span>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="cargoWidth">
           <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("cargo_width") }}</th>
           <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
-            <span>{{ v.vehicleType.dimension.width }} </span>
-            <span *ngIf="v.vehicleType.dimension.width ">{{ "m" | transloco }}</span>
+            <span>{{ v.vehicleType?.dimension?.width }} </span>
+            <span *ngIf="v.vehicleType?.dimension?.width">{{ "m" | transloco }}</span>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="cargoLength">
           <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("cargo_length") }}</th>
           <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
-            <span>{{ v.vehicleType.dimension.depth }} </span>
-            <span *ngIf="v.vehicleType.dimension.depth">{{ "m" | transloco }}</span>
+            <span>{{ v.vehicleType?.dimension?.depth }} </span>
+            <span *ngIf="v.vehicleType?.dimension?.depth">{{ "m" | transloco }}</span>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="cargoHeight">
           <th mat-header-cell *matHeaderCellDef class="text-nowrap text-center">{{ t("cargo_height") }}</th>
           <td mat-cell *matCellDef="let v" class="text-nowrap text-center">
-            <span>{{ v.vehicleType.dimension.height }} </span>
-            <span *ngIf="v.vehicleType.dimension.height">{{ "m" | transloco }}</span>
+            <span>{{ v.vehicleType?.dimension?.height }} </span>
+            <span *ngIf="v.vehicleType?.dimension?.height">{{ "m" | transloco }}</span>
           </td>
         </ng-container>
 
