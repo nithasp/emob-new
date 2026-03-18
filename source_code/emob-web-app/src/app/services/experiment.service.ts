@@ -97,8 +97,8 @@ export class ExperimentService {
                 depotName
                 latitude
                 longitude
-                tw_early
-                tw_late
+                timeWindowEarly
+                timeWindowLate
                 createdAt
                 updatedAt
                 inputdata {
@@ -123,16 +123,21 @@ export class ExperimentService {
               groupId
               countGeocoding
               countReroute
-              fileUrl {
-                parameterUrl
-                preOrderUrl
-                LocationBlobPathUrl
-                locationUpdateBlobPathUrl
-                validatedBlobPathUrl
-                outputGeoJsonUrl
-                outputReportUrl
-                outputPlanDetailUrl
-                vehiclesBlobPathUrl
+              fileUrls {
+                transform {
+                  locations
+                }
+                validate {
+                  parameterFormats
+                  vehicleTypes
+                  preVRPSolution
+                  vrpConfig
+                }
+                plan {
+                  vrpSolutionLean
+                  geoJson
+                  vrpStats
+                }
               }
             }
           }
@@ -176,8 +181,8 @@ export class ExperimentService {
                 depotName
                 latitude
                 longitude
-                tw_early
-                tw_late
+                timeWindowEarly
+                timeWindowLate
                 createdAt
                 updatedAt
                 inputdata {
@@ -202,16 +207,21 @@ export class ExperimentService {
               groupId
               countGeocoding
               countReroute
-              fileUrl {
-                parameterUrl
-                preOrderUrl
-                LocationBlobPathUrl
-                locationUpdateBlobPathUrl
-                validatedBlobPathUrl
-                outputGeoJsonUrl
-                outputReportUrl
-                outputPlanDetailUrl
-                vehiclesBlobPathUrl
+              fileUrls {
+                transform {
+                  locations
+                }
+                validate {
+                  parameterFormats
+                  vehicleTypes
+                  preVRPSolution
+                  vrpConfig
+                }
+                plan {
+                  vrpSolutionLean
+                  geoJson
+                  vrpStats
+                }
               }
             }
           }

@@ -404,7 +404,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                           this.spinner.hide();
                           this.router.navigate(['/users/experiments']);
                         });
-                      } else if (!this.experiment.fileUrl.preOrderUrl) {
+                      } else if (!this.experiment.inputdata?.some(data => data.fileUrl)) {
                         this.getDynamicParameters();
                         this.isFilePreview = true;
                       } else {
@@ -446,8 +446,8 @@ export class RunComponent implements OnInit, AfterViewInit {
   async initializeDataFromExperiment(experiment: Experiment) {
     console.log("initialize Data From Experiment's historical", experiment);
     // Load Parameter
-    if (experiment.fileUrl.parameterUrl) {
-      this.dataFromFileUrlToJson(experiment.fileUrl.parameterUrl).then(
+    if (experiment.fileUrls?.validate?.parameterFormats) {
+      this.dataFromFileUrlToJson(experiment.fileUrls.validate.parameterFormats).then(
         (response: Constraint) => {
           console.log('Constraint', response);
           this.constraintsData = { ...response };
@@ -466,12 +466,12 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.getDynamicParameters();
 
     // Load Vehicles data
-    if (experiment.fileUrl.vehiclesBlobPathUrl) {
+    if (experiment.fileUrls?.validate?.vehicleTypes) {
       this.toastr.info(
         this.transloco.translate('loading_vehicle_data', {}, 'index'),
         `${this.transloco.translate('please_wait', {}, 'index')} ...`
       );
-      await this.dataFromFileUrlToJson(experiment.fileUrl.vehiclesBlobPathUrl).then(
+      await this.dataFromFileUrlToJson(experiment.fileUrls.validate.vehicleTypes).then(
         (response: VehicleBlobData[]) => {
           console.log('Vehicles Data from vehiclesBlobPathUrl:', response);
           this.loadVehicleDataFromBlob(response);
@@ -511,9 +511,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
 
     // load geocoding location
-    if (experiment.fileUrl.LocationBlobPathUrl) {
+    if (experiment.fileUrls?.transform?.locations) {
       await this.dataFromFileUrlToJson(
-        experiment.fileUrl.LocationBlobPathUrl
+        experiment.fileUrls.transform.locations
       ).then((response: Result) => {
         console.log('Result', response);
         console.log('newOrderData', newOrderData);
@@ -523,14 +523,14 @@ export class RunComponent implements OnInit, AfterViewInit {
        this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
       });
     }
-    if (experiment.fileUrl.locationUpdateBlobPathUrl) {
+    if (experiment.fileUrls?.validate?.vrpConfig) {
       this.toastr.info(
         this.transloco.translate('loading_geo_location_data', {}, 'index'),
         `${this.transloco.translate('please_wait', {}, 'index')} ...`
       );
       // load geocoding location edited
       await this.dataFromFileUrlToJson(
-        experiment.fileUrl.locationUpdateBlobPathUrl
+        experiment.fileUrls.validate.vrpConfig
       ).then((response: { customers: CustomerUpdated[] }) => {
         this.updateCustomerGroup(response.customers);
         this.dataService
@@ -566,14 +566,14 @@ export class RunComponent implements OnInit, AfterViewInit {
       });
     }
 
-    if (experiment.fileUrl.validatedBlobPathUrl) {
+    if (experiment.fileUrls?.validate?.preVRPSolution) {
       // load validation data
       this.toastr.info(
         this.transloco.translate('loading_validation_data', {}, 'index'),
         `${this.transloco.translate('please_wait', {}, 'index')} ...`
       );
       await this.dataFromFileUrlToJson(
-        experiment.fileUrl.validatedBlobPathUrl
+        experiment.fileUrls.validate.preVRPSolution
       ).then((response: Result) => {
         console.log('Result', response);
         this.validateExperiment = response.validate;
@@ -1556,8 +1556,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         depotName: depot.depotName,
         latitude: Number(depot.latitude),
         longitude: Number(depot.longitude),
-        tw_early: depot.timeWindowEarly || '',
-        tw_late: depot.timeWindowLate || '',
+        timeWindowEarly: depot.timeWindowEarly || '',
+        timeWindowLate: depot.timeWindowLate || '',
         createdAt: depot.createdAt || '',
         updatedAt: depot.updatedAt || '',
         columns: depot.columns || [],

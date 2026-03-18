@@ -13,17 +13,8 @@ export interface Experiment {
   runId: string;
   name: string;
   timestamp: string;
-  preOrderBlobPath: string;
-  groupZoneBlobPath: string;
-  productMat1BlobPath: string;
-  productMat7BlobPath: string;
-  locationBlobPath: string;
-  locationUpdateBlobPath: string | null;
-  validatedBlobPath: string | null;
-  parameterBlobPath: string | null;
-  outputRouteOptimizationBlobPath: string | null;
-  configurations: ExperimentConfigurations;
-  inputdata: InputDataItem[];
+  configurations: any;
+  inputdata: ExperimentInputdata[];
   depots: ExperimentDepot[];
   timeStart: string | null;
   timeEnd: string | null;
@@ -35,45 +26,56 @@ export interface Experiment {
   groupId: string;
   countGeocoding: number;
   countReroute: number;
-  fileUrl: FileUrl;
+  fileUrls: FileUrlsGroup;
   result?: Result;
 }
 
 export enum StatusExperiment {
+  Initializing = 'Initializing',
+  UploadCompleted = 'UploadCompleted',
   Succeeded = 'Succeeded',
   InProgress = 'InProgress',
   Queued = 'Queued',
   Failed = 'Failed',
   Canceled = 'Canceled',
-  Initializing = 'Initializing',
 }
 
-export interface ExperimentConfigurations {
-  groupZone: string;
-  productMat1: string;
-  productMat7: string;
-}
-
-export interface InputDataItem {
+export interface ExperimentInputdata {
   keyName: string;
   filename: string;
   blobPath: string;
   displayName: string;
   fileFormatType: string;
   fileSize: number;
+  fileUrl: string;
 }
 
-export interface FileUrl {
-  parameterUrl: string | null;
-  preOrderUrl: string | null;
-  LocationBlobPathUrl: string | null;
-  locationUpdateBlobPathUrl: string | null;
-  validatedBlobPathUrl: string | null;
-  outputGeoJsonUrl: string | null;
-  outputReportUrl: string | null;
-  outputPlanDetailUrl: string | null;
-  vehiclesBlobPathUrl: string | null;
+/** @deprecated Use ExperimentInputdata instead */
+export type InputDataItem = ExperimentInputdata;
+
+export interface FileUrlsGroup {
+  transform: TransformState;
+  validate: ValidateState;
+  plan: PlanState;
 }
+
+export interface TransformState {
+  locations: string | null;
+}
+
+export interface ValidateState {
+  parameterFormats: string | null;
+  vehicleTypes: string | null;
+  preVRPSolution: string | null;
+  vrpConfig: string | null;
+}
+
+export interface PlanState {
+  vrpSolutionLean: string | null;
+  geoJson: string | null;
+  vrpStats: string | null;
+}
+
 export interface Result {
   customers: Customer[];
   depots: Depot[];
@@ -118,7 +120,7 @@ export interface DepotInputRequirement {
   depotId: string;
   keyName: string;
   displayName: string;
-  columnRequired: string[];
+  columnRequired: any;
   fileFormatType: string;
   required: boolean;
   createdAt: string;
@@ -179,12 +181,24 @@ export interface ExperimentDepot {
   depotName: string;
   latitude: number;
   longitude: number;
-  tw_early: string;
-  tw_late: string;
+  timeWindowEarly: string;
+  timeWindowLate: string;
   createdAt: string;
   updatedAt: string;
   columns?: string[];
-  inputdata?: InputDataItem[];
+  inputdata?: DepotInputdata[];
+}
+
+export interface DepotInputdata {
+  companyName: string;
+  depotId: string;
+  keyName: string;
+  displayName: string;
+  columnRequired: any;
+  fileFormatType: string;
+  required: boolean;
+  createdAt: string;
+  modifiedAt: string;
 }
 
 export interface NodeSheet {
@@ -301,26 +315,3 @@ export interface PointDetail {
   routeOrder: number;
 }
 
-export interface MyDepot {
-  depotId: string;
-  depotName: string;
-  latitude: number | string;
-  longitude: number | string;
-  timeWindowEarly: string;
-  timeWindowLate: string;
-  createdAt: string;
-  updatedAt: string;
-  inputdata: DepotInputRequirement[];
-  columns?: string[];
-}
-
-export interface DepotInputRequirement {
-  companyName: string;
-  depotId: string;
-  keyName: string;
-  displayName: string;
-  columnRequired: string[];
-  fileFormatType: string;
-  createdAt: string;
-  modifiedAt: string;
-}
