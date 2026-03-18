@@ -151,6 +151,8 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
         unitDistanceCost: [null as number | null, Validators.min(0)],
         unitDurationCost: [null as number | null, Validators.min(0)],
         fixedCost: [null as number | null, Validators.min(0)],
+        maxpallet: [null as number | null, Validators.min(0)],
+        zone: [null as string | null],
         allowedBreaks: this.allowedBreaks,
       },
       {
@@ -209,6 +211,8 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
               maximumDistance: data.maximumDistance,
               maximumDuration: data.maximumDuration,
               dimension: data.dimension ?? undefined,
+              maxpallet: data.maxpallet ?? null,
+              zone: data.zone ?? null,
             });
 
             if (timeWindowEarly || data.timeWindowEarly) {
@@ -421,6 +425,8 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
       unitDistanceCost: Number(formValue.unitDistanceCost) || 0,
       unitDurationCost: Number(formValue.unitDurationCost) || 0,
       fixedCost: Number(formValue.fixedCost) || 0,
+      maxpallet: formValue.maxpallet != null ? Number(formValue.maxpallet) : undefined,
+      zone: formValue.zone || undefined,
     };
 
     if (this.allowedBreaks.length > 0) {

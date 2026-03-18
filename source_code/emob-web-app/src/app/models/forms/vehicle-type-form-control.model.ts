@@ -42,4 +42,6 @@ export interface VehicleTypeFormControls extends BaseVehicleTypeFormControls {
 
 export interface ConfigVehicleTypeFormControls extends BaseVehicleTypeFormControls {
   allowedBreaks: FormArray<FormGroup<BreakFormControls>>;
+  maxpallet: FormControl<number | null>;
+  zone: FormControl<string | null>;
 }
