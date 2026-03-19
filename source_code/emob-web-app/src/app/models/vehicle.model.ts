@@ -69,7 +69,7 @@ export interface VehicleType {
   timeWindowEarly: string;
   timeWindowLate: string;
   maximumDistance: number;
-  maximumDuration: number;
+  maximumDuration: string;
   vehicleGroupId?: string;
   fixedCost: number;
   unitDistanceCost: number;

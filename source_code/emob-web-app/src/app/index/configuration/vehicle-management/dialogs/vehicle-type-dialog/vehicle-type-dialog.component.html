@@ -1,6 +1,6 @@
 <ng-container *transloco="let t; read: 'index'">
-  <button (click)="addMockData()">Add Mock Data</button>
-  <h1 (click)="logFormValue()">log form value</h1>
+  <!-- <button (click)="addMockData()">Add Mock Data</button>
+  <h1 (click)="logFormValue()">log form value</h1> -->
   <div
     id="vehicle-type-dialog"
     [class.is-loading]="isLoading"
@@ -99,15 +99,6 @@
                   type="number"
                   [control]="formVehicleType.controls.maximumWeightCapacity"
                   [required]="true"
-                  [disabled]="isViewMode"
-                ></app-input-field>
-              </div>
-
-              <div>
-                <app-input-field
-                  [placeholder]="t('volume')"
-                  type="number"
-                  [control]="formVehicleType.controls.maximumVolumeCapacity"
                   [disabled]="isViewMode"
                 ></app-input-field>
               </div>
@@ -260,14 +251,28 @@
                   ></app-input-field>
                 </div>
                 <div class="col-sm-6">
-                  <app-input-field
-                    [placeholder]="t('max_duration')"
-                    type="number"
-                    [control]="formVehicleType.controls.maximumDuration"
-                    [suffix]="'hr' | transloco"
-                    [required]="true"
-                    [disabled]="isViewMode"
-                  ></app-input-field>
+                  <app-dynamic-popover [placement]="'bottom-start'">
+                    <app-input-field
+                      popover-trigger="popover-trigger"
+                      [placeholder]="t('max_duration')"
+                      [control]="formVehicleType.controls.maximumDuration"
+                      [disabled]="isViewMode"
+                      [readonly]="true"
+                      suffixIcon="access_time"
+                    ></app-input-field>
+
+                    <div popover-content="popover-content">
+                      <div class="card-body p-2">
+                        <p class="card-title">{{ t("max_duration") }}</p>
+                        <ngb-timepicker
+                          [(ngModel)]="maximumDurationObject"
+                          [ngModelOptions]="{ standalone: true }"
+                          (ngModelChange)="onMaximumDurationChange($event)"
+                          [disabled]="isViewMode"
+                        ></ngb-timepicker>
+                      </div>
+                    </div>
+                  </app-dynamic-popover>
                 </div>
               </div>
 

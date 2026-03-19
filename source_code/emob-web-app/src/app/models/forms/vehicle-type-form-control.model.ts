@@ -23,7 +23,7 @@ interface BaseVehicleTypeFormControls {
   vehicleProfileType: FormControl<string | null>;
   vehicleGroupId: FormControl<string | null>;
   maximumDistance: FormControl<number | null>;
-  maximumDuration: FormControl<number | null>;
+  maximumDuration: FormControl<string | null>;
   unitDistanceCost: FormControl<number | null>;
   unitDurationCost: FormControl<number | null>;
   fixedCost: FormControl<number | null>;
