@@ -83,6 +83,8 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   timeWindowEarlyObject: TimeObject = { hour: 0, minute: 0 };
   timeWindowLateObject: TimeObject = { hour: 0, minute: 0 };
 
+  vehicleSizingType: 'dimension' | 'volume' = 'dimension';
+
   allowedBreaks!: FormArray<FormGroup<BreakFormControls>>;
   breakTimeObjects: BreakTimeObject[] = [];
 
@@ -190,6 +192,11 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
 
           if ((this.isEdit || this.isViewMode) && this.vehicleType) {
             const data = this.vehicleType;
+            this.vehicleSizingType =
+              data.maximumVolumeCapacity != null && !data.dimension
+                ? 'volume'
+                : 'dimension';
+            this.onVehicleSizingTypeChange();
             const timeWindowEarly = this.formatTimeForDisplay(
               data.timeWindowEarly ?? (data as { twEarly?: string | number }).twEarly
             );
@@ -344,6 +351,23 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     // Scroll to bottom if there's an error with allowed breaks
     if (this.allowedBreaks.hasError('required') && this.allowedBreaks.length === 0) {
       this.scrollToBottom();
+    }
+  }
+
+  onVehicleSizingTypeChange(): void {
+    if (this.isViewMode) return;
+
+    const dimensionGroup = this.formVehicleType.controls.dimension;
+    const volumeControl = this.formVehicleType.controls.maximumVolumeCapacity;
+
+    if (this.vehicleSizingType === 'dimension') {
+      dimensionGroup.enable({ emitEvent: false });
+      volumeControl.reset(null, { emitEvent: false });
+      volumeControl.disable({ emitEvent: false });
+    } else {
+      volumeControl.enable({ emitEvent: false });
+      dimensionGroup.reset({ width: null, height: null, depth: null }, { emitEvent: false });
+      dimensionGroup.disable({ emitEvent: false });
     }
   }
 
@@ -558,5 +582,67 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
 
   getBreakControls(): FormGroup<BreakFormControls>[] {
     return this.allowedBreaks.controls;
+  }
+
+  logFormValue() {
+    console.log(this.formVehicleType.getRawValue());
+  }
+
+  addMockData(): void {
+    const mock = {
+      name: '2',
+      access: [] as AccessTypeEnum[],
+      vehicleProfileType: 'CAR',
+      maximumVolumeCapacity: 0,
+      maximumWeightCapacity: 2,
+      timeWindowEarly: null,
+      timeWindowLate: null,
+      dimension: { width: 2, height: 2, depth: 2 },
+      vehicleGroupId: '2',
+      maximumDistance: 2,
+      maximumDuration: 2,
+      unitDistanceCost: 0,
+      unitDurationCost: 0,
+      fixedCost: 0,
+      allowedBreaks: [
+        {
+          name: '2',
+          duration: '00:01',
+          timeWindowEarly: '00:02',
+          timeWindowLate: '00:03',
+        },
+      ],
+    };
+
+    this.vehicleSizingType = 'dimension';
+    this.onVehicleSizingTypeChange();
+
+    this.formVehicleType.patchValue({
+      name: mock.name,
+      access: mock.access,
+      vehicleProfileType: mock.vehicleProfileType,
+      maximumVolumeCapacity: mock.maximumVolumeCapacity,
+      maximumWeightCapacity: mock.maximumWeightCapacity,
+      timeWindowEarly: mock.timeWindowEarly,
+      timeWindowLate: mock.timeWindowLate,
+      dimension: mock.dimension,
+      vehicleGroupId: mock.vehicleGroupId,
+      maximumDistance: mock.maximumDistance,
+      maximumDuration: mock.maximumDuration,
+      unitDistanceCost: mock.unitDistanceCost,
+      unitDurationCost: mock.unitDurationCost,
+      fixedCost: mock.fixedCost,
+    });
+
+    this.timeWindowEarlyObject = this.parseTimeString(mock.timeWindowEarly);
+    this.timeWindowLateObject = this.parseTimeString(mock.timeWindowLate);
+
+    this.allowedBreaks.clear();
+    this.breakTimeObjects = [];
+
+    mock.allowedBreaks.forEach((breakData) => {
+      this.allowedBreaks.push(this.createBreakFormGroup(breakData));
+      this.breakTimeObjects.push(this.createBreakTimeObjects(breakData));
+    });
   }
 }

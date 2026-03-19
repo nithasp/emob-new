@@ -1,4 +1,6 @@
 <ng-container *transloco="let t; read: 'index'">
+  <button (click)="addMockData()">Add Mock Data</button>
+  <h1 (click)="logFormValue()">log form value</h1>
   <div
     id="vehicle-type-dialog"
     [class.is-loading]="isLoading"
@@ -22,8 +24,8 @@
             isViewMode
               ? t("view_vehicle_type")
               : isEdit
-              ? t("edit_vehicle_type")
-              : t("add_vehicle_type")
+                ? t("edit_vehicle_type")
+                : t("add_vehicle_type")
           }}
         </h1>
       </div>
@@ -46,8 +48,30 @@
                 ></app-input-field>
               </div>
 
+              <div class="sizing-selection-wrapper">
+                <p class="fw-semibold mb-2">
+                  {{ t("select_sizing_of_vehicle") }}
+                </p>
+                <mat-radio-group
+                  class="d-flex gap-3 align-items-center"
+                  [(ngModel)]="vehicleSizingType"
+                  [ngModelOptions]="{ standalone: true }"
+                  [disabled]="isViewMode"
+                  (change)="onVehicleSizingTypeChange()"
+                >
+                  <mat-radio-button value="dimension">{{
+                    t("dimension")
+                  }}</mat-radio-button>
+                  <mat-radio-button value="volume">{{
+                    t("volume")
+                  }}</mat-radio-button>
+                </mat-radio-group>
+              </div>
+
               <div class="access-points-wrapper">
-                <label class="form-label fw-semibold">{{ t("access_points") }}</label>
+                <label class="form-label fw-semibold">{{
+                  t("access_points")
+                }}</label>
                 <div class="row mt-1">
                   <div class="col-6" *ngFor="let option of accessPointOptions">
                     <mat-checkbox
@@ -68,7 +92,6 @@
                   {{ t("please_select_at_least_one_access_point") }}
                 </mat-error>
               </div>
-
 
               <div>
                 <app-input-field
@@ -194,6 +217,16 @@
                     ></app-input-field>
                   </div>
                 </div>
+              </div>
+
+              <div>
+                <app-input-field
+                  [placeholder]="t('volume')"
+                  type="number"
+                  [control]="formVehicleType.controls.maximumVolumeCapacity"
+                  [required]="vehicleSizingType === 'volume'"
+                  [disabled]="isViewMode || vehicleSizingType === 'dimension'"
+                ></app-input-field>
               </div>
 
               <div>
