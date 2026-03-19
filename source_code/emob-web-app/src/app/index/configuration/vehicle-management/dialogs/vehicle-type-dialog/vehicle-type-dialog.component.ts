@@ -474,8 +474,10 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     const formValue = this.formVehicleType.getRawValue();
     const toNum = (v: number | null | undefined): number | null =>
       v != null ? Number(v) : null;
+    const omitNull = (obj: Record<string, unknown>): Record<string, unknown> =>
+      Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== null && v !== undefined));
 
-    const payload = {
+    const rawPayload: Record<string, unknown> = {
       name: formValue.name || null,
       access: formValue.access || [],
       vehicleProfileType: formValue.vehicleProfileType as VehicleProfileTypeEnum,
@@ -483,11 +485,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
       maximumVolumeCapacity: toNum(formValue.maximumVolumeCapacity),
       timeWindowEarly: formValue.timeWindowEarly || null,
       timeWindowLate: formValue.timeWindowLate || null,
-      dimension: {
-        width: toNum(formValue.dimension?.width),
-        height: toNum(formValue.dimension?.height),
-        depth: toNum(formValue.dimension?.depth),
-      },
       vehicleGroupId: formValue.vehicleGroupId || null,
       maximumDistance: toNum(formValue.maximumDistance),
       maximumDuration: formValue.maximumDuration || null,
@@ -498,17 +495,27 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
       zone: formValue.zone || null,
     };
 
+    const dimensionFields = omitNull({
+      width: toNum(formValue.dimension?.width),
+      height: toNum(formValue.dimension?.height),
+      depth: toNum(formValue.dimension?.depth),
+    });
+    if (Object.keys(dimensionFields).length > 0) {
+      rawPayload['dimension'] = dimensionFields;
+    }
+
     if (this.allowedBreaks.length > 0) {
-      (payload as Record<string, unknown>)['allowedBreaks'] =
-        this.allowedBreaks.getRawValue().map((breakItem) => ({
+      rawPayload['allowedBreaks'] = this.allowedBreaks.getRawValue().map((breakItem) =>
+        omitNull({
           name: breakItem.name || null,
           duration: breakItem.duration || null,
           timeWindowEarly: breakItem.timeWindowEarly || null,
           timeWindowLate: breakItem.timeWindowLate || null,
-        }));
+        })
+      );
     }
 
-    return payload as unknown as Partial<VehicleType>;
+    return omitNull(rawPayload) as unknown as Partial<VehicleType>;
   }
 
   onTimeValueChange(
