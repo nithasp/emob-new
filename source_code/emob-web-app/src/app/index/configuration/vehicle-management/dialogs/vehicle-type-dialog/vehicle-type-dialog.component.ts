@@ -17,7 +17,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { NgbActiveModal, NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
@@ -88,6 +88,12 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   allowedBreaks!: FormArray<FormGroup<BreakFormControls>>;
   breakTimeObjects: BreakTimeObject[] = [];
 
+  private formValueSubscriptions: Subscription[] = [];
+  private readonly stringControlKeys = [
+    'name', 'timeWindowEarly', 'timeWindowLate',
+    'vehicleProfileType', 'vehicleGroupId', 'zone',
+  ] as const;
+
   constructor(
     private fb: FormBuilder,
     public activeModal: NgbActiveModal,
@@ -108,6 +114,8 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
       clearTimeout(this.scrollTimeoutId);
       this.scrollTimeoutId = undefined;
     }
+    this.formValueSubscriptions.forEach((sub) => sub.unsubscribe());
+    this.formValueSubscriptions = [];
   }
 
   private initializeMode(): void {
@@ -123,15 +131,15 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
 
     const formGroup = this.fb.group(
       {
-        name: ['', Validators.required],
+        name: [null as string | null, Validators.required],
         access: [[] as AccessTypeEnum[]],
         maximumWeightCapacity: [
           null as number | null,
           [Validators.required, Validators.min(0)],
         ],
         maximumVolumeCapacity: [null as number | null, Validators.min(0)],
-        timeWindowEarly: [''],
-        timeWindowLate: [''],
+        timeWindowEarly: [null as string | null],
+        timeWindowLate: [null as string | null],
         dimension: this.fb.group({
           width: [
             null as number | null,
@@ -147,7 +155,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
           ],
         }),
         vehicleProfileType: [null as string | null, Validators.required],
-        vehicleGroupId: ['', Validators.required],
+        vehicleGroupId: [null as string | null, Validators.required],
         maximumDistance: [null as number | null, Validators.min(0)],
         maximumDuration: [null as number | null, Validators.min(0)],
         unitDistanceCost: [null as number | null, Validators.min(0)],
@@ -172,6 +180,41 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     );
 
     this.formVehicleType = formGroup;
+    this.setupNullPreservation();
+  }
+
+  private setupNullPreservation(): void {
+    this.stringControlKeys.forEach((key) => {
+      const control = this.formVehicleType.get(key);
+      if (control) {
+        const sub = control.valueChanges.subscribe((value) => {
+          if (value === '') {
+            control.setValue(null, { emitEvent: false });
+          }
+        });
+        this.formValueSubscriptions.push(sub);
+      }
+    });
+  }
+
+  private preserveStringNulls(): void {
+    this.stringControlKeys.forEach((key) => {
+      const control = this.formVehicleType.get(key);
+      if (control && control.value === '') {
+        control.setValue(null, { emitEvent: false });
+      }
+    });
+
+    this.allowedBreaks.controls.forEach((breakGroup) => {
+      ['name', 'duration', 'timeWindowEarly', 'timeWindowLate'].forEach(
+        (key) => {
+          const control = breakGroup.get(key);
+          if (control && control.value === '') {
+            control.setValue(null, { emitEvent: false });
+          }
+        }
+      );
+    });
   }
 
   private loadEnumValuesAndVehicleTypeData(): void {
@@ -347,8 +390,8 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     this.formVehicleType.markAllAsTouched();
     this.allowedBreaks.markAsTouched();
     this.allowedBreaks.controls.forEach((control) => control.markAsTouched());
+    this.preserveStringNulls();
 
-    // Scroll to bottom if there's an error with allowed breaks
     if (this.allowedBreaks.hasError('required') && this.allowedBreaks.length === 0) {
       this.scrollToBottom();
     }
@@ -493,15 +536,15 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   }
 
   createBreakFormGroup(breakData?: VehicleBreak): FormGroup<BreakFormControls> {
-    return this.fb.group<BreakFormControls>(
+    const group = this.fb.group<BreakFormControls>(
       {
-        name: this.fb.control(breakData?.name || '', Validators.required),
-        duration: this.fb.control(breakData?.duration || '', Validators.required),
+        name: this.fb.control(breakData?.name ?? null, Validators.required),
+        duration: this.fb.control(breakData?.duration ?? null, Validators.required),
         timeWindowEarly: this.fb.control(
-          breakData?.timeWindowEarly || '',
+          breakData?.timeWindowEarly ?? null,
           Validators.required
         ),
-        timeWindowLate: this.fb.control(breakData?.timeWindowLate || '', Validators.required),
+        timeWindowLate: this.fb.control(breakData?.timeWindowLate ?? null, Validators.required),
       },
       {
         validators: createTimeRangeValidator({
@@ -516,6 +559,20 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
         }),
       }
     );
+
+    ['name', 'duration', 'timeWindowEarly', 'timeWindowLate'].forEach((key) => {
+      const control = group.get(key);
+      if (control) {
+        const sub = control.valueChanges.subscribe((value) => {
+          if (value === '') {
+            control.setValue(null, { emitEvent: false });
+          }
+        });
+        this.formValueSubscriptions.push(sub);
+      }
+    });
+
+    return group;
   }
 
   addBreak(): void {

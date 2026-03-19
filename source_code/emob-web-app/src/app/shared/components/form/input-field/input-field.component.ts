@@ -198,6 +198,11 @@ export class InputFieldComponent
   onBlur(): void {
     if (this.control) {
       this.control.markAsTouched();
+
+      if (this.control.value === null) {
+        return;
+      }
+
       if (this.type === 'thaiCitizenId') {
         const digitsOnly = String(this.control.value).replace(/\D/g, '');
         const formattedValue = this.formatThaiCitizenId(digitsOnly);
@@ -210,6 +215,10 @@ export class InputFieldComponent
         if (formattedValue !== currentValue) {
           this.control.setValue(formattedValue, { emitEvent: false });
         }
+      }
+
+      if (this.control.value === '') {
+        this.control.setValue(null, { emitEvent: false });
       }
     }
   }
