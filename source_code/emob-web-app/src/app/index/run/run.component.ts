@@ -4085,4 +4085,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     console.log('this.validateExperiment', this.validateExperiment)
  
   }
+
+  openTransformValidationDialog() {
+    
+  }
 }
