@@ -537,7 +537,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       await this.dataFromFileUrlToJson(
         experiment.fileUrls.validate.vrpConfig
       ).then((response: { customers: CustomerUpdated[] }) => {
-        this.updateCustomerGroup(response.customers);
+        this.updateCustomerGroup(response?.customers);
         this.dataService
           .getData(experiment.runId)
           .subscribe((data: CustomerUpdated[]) => {
@@ -572,6 +572,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
 
     if (experiment.fileUrls?.validate?.preVRPSolution) {
+      console.log('experiment.fileUrls?.validate?.preVRPSolution', experiment.fileUrls?.validate?.preVRPSolution)
       // load validation data
       this.toastr.info(
         this.transloco.translate('loading_validation_data', {}, 'index'),
@@ -583,7 +584,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         console.log('Result', response);
         this.validateExperiment = response.validate;
         this.ngbValidationTableCollectionSize =
-          this.validateExperiment.filters.order_data.invalid_coordinate.length;
+          this.validateExperiment?.filters?.order_data?.invalid_coordinate?.length ?? 0;
         this.refreshValidationTable();
         this.haveValidated = true;
         // Rebuild dynamic parameters so values reflect constraintsData when page initializes with historical validation
@@ -2163,8 +2164,8 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.constraintsData = mergedConstraint;
           this.validateExperiment = result.result?.validate || null;
           this.ngbValidationTableCollectionSize =
-            this.validateExperiment?.filters.order_data.invalid_coordinate
-              .length || 0;
+            this.validateExperiment?.filters?.order_data?.invalid_coordinate
+              ?.length ?? 0;
           this.dataService.clearData(this.experiment.runId);
           // Rebuild dynamic parameters so values reflect constraintsData when validated
           this.refreshDynamicParametersForSelectedDepot();
@@ -2370,6 +2371,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   updateCustomerGroup(customers: Array<CustomerUpdated>) {
     console.log('new value customer details', customers);
+    if (!customers?.length) return;
     customers.forEach((item) => {
       const existingIndex = this.customersLocationUpdated.findIndex(
         (i) => i.index === item.index && i.name === item.name
@@ -2483,8 +2485,8 @@ export class RunComponent implements OnInit, AfterViewInit {
       name: string;
     }> = [];
     if (
-      this.validateExperiment?.filters.order_data &&
-      this.validateExperiment?.filters.order_data.invalid_coordinate.length > 0
+      this.validateExperiment?.filters?.order_data &&
+      this.validateExperiment?.filters?.order_data?.invalid_coordinate?.length > 0
     ) {
       files.push({
         data:
@@ -4080,6 +4082,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     console.log(' this.isUpload', this.isUpload)
 
+    console.log('this.validateExperiment', this.validateExperiment)
  
   }
 }
