@@ -8,23 +8,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { VehicleService } from 'src/app/services/vehicle.service';
-import { MyVehicles, VehicleType } from 'src/app/models/vehicle.model';
+import { LicensePlateItem, LicensePlateSelectionResult, MyVehicles, VehicleType } from 'src/app/models/vehicle.model';
 import { TranslocoModule } from '@jsverse/transloco';
 import { InputFieldComponent } from 'src/app/shared/components/form/input-field/input-field.component';
-
-export interface LicensePlateItem {
-  vehicleId: string;
-  licensePlate: string;
-  isSelected: boolean;
-  startDepotName: string;
-  endDepotName: string;
-}
-
-export interface LicensePlateSelectionResult {
-  vehicleTypeId: string;
-  selectedLicensePlates: string[];
-  selectedVehicleIds: string[];
-}
 
 @Component({
   selector: 'app-license-plate-selection-dialog',

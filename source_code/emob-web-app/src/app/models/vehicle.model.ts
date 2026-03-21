@@ -195,3 +195,17 @@ export interface BreakTimeObject {
   timeWindowEarly: TimeObject;
   timeWindowLate: TimeObject;
 }
+
+export interface LicensePlateItem {
+  vehicleId: string;
+  licensePlate: string;
+  isSelected: boolean;
+  startDepotName: string;
+  endDepotName: string;
+}
+
+export interface LicensePlateSelectionResult {
+  vehicleTypeId: string;
+  selectedLicensePlates: string[];
+  selectedVehicleIds: string[];
+}
