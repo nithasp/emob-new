@@ -25,4 +25,3 @@ export interface OrderData {
 export interface WarningMessage {
     zeroWeight: ZeroWeight;
 }
-

@@ -41,6 +41,7 @@ import { ParametersDialogComponent } from './components/parameters-dialog/parame
 import { ConsumptionDialogComponent } from './components/consumption-dialog/consumption-dialog.component';
 import { ErrorDialogComponent } from './components/error-dialog/error-dialog.component';
 import { VehicleProfileTypeItemDialogComponent } from './components/vehicle-profile-type-item-dialog/vehicle-profile-type-item-dialog.component';
+import { TransformValidationDialogComponent } from './components/transform-validation-dialog/transform-validation-dialog.component';
 
 import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
 import { DynamicPopoverComponent } from '../shared/components/dynamic-popover/dynamic-popover.component';
@@ -75,7 +76,8 @@ import { InputFieldComponent } from '../shared/components/form/input-field/input
     ConsumptionDialogComponent,
     VehicleProfileTypeItemDialogComponent,
     ErrorDialogComponent,
-    FormatStringDatePipe
+    FormatStringDatePipe,
+    TransformValidationDialogComponent,
   ],
   imports: [
     CommonModule,

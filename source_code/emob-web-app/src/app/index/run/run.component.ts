@@ -92,6 +92,7 @@ import { VehicleProfileTypeItemDialogComponent } from '../components/vehicle-pro
 import { VehicleTypeDialogComponent } from '../configuration/vehicle-management/dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
 import { CustomerListComponent } from '../components/customer-list/customer-list.component';
 import { LicensePlateSelectionDialogComponent } from '../components/license-plate-selection-dialog/license-plate-selection-dialog.component';
+import { TransformValidationDialogComponent } from '../components/transform-validation-dialog/transform-validation-dialog.component';
 import { ValidateMessage } from 'src/app/models/validation-message';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { firstValueFrom, take } from 'rxjs';
@@ -4086,7 +4087,12 @@ export class RunComponent implements OnInit, AfterViewInit {
  
   }
 
-  openTransformValidationDialog() {
-    
+  openTransformValidationDialog(validationResponse?: any) {
+    const modalRef = this.ngbModal.open(TransformValidationDialogComponent, {
+      centered: true,
+      size: 'xl',
+      animation: true,
+    });
+    modalRef.componentInstance.validationResponse = validationResponse;
   }
 }
