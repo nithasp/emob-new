@@ -93,6 +93,7 @@ import { VehicleTypeDialogComponent } from '../configuration/vehicle-management/
 import { CustomerListComponent } from '../components/customer-list/customer-list.component';
 import { LicensePlateSelectionDialogComponent } from '../components/license-plate-selection-dialog/license-plate-selection-dialog.component';
 import { TransformValidationDialogComponent } from '../components/transform-validation-dialog/transform-validation-dialog.component';
+import mockPanderaError from './validationData/transform_pandera_error.json';
 import { ValidateMessage } from 'src/app/models/validation-message';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { firstValueFrom, take } from 'rxjs';
@@ -4093,6 +4094,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       size: 'xl',
       animation: true,
     });
-    modalRef.componentInstance.validationResponse = validationResponse;
+    // TODO: Replace mockPanderaError with real API response when available
+    modalRef.componentInstance.validationResponse = validationResponse || mockPanderaError;
   }
 }

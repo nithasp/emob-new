@@ -1,4 +1,8 @@
 {
+  "validation_dialog__title": "Validation Errors",
+  "validation_table_header_file_name": "File Name",
+  "validation_table_header_message": "Message",
+
   "val_column_in_dataframe": "Column {{location[1]}} is missing from the file",
   "val_missing": "{{location[1]}} is missing or null at row {{location[0]}}",
   "val_greater_than": "Value {{input}} in column {{location[1]}} must be greater than {{context.limitValue}}",
@@ -11,16 +15,13 @@
   "val_less_than_equal": "Field {{location[1]}} value {{input}} must be ≤ {{context.limitValue}}",
   "val_float_parsing": "Cannot parse {{input}} as a number for field {{location[1]}}",
   "val_value_error": "Invalid value for field {{location[1]}}: {{message}}",
-
   "bus_hard_constraint_weight": "Customer at row {{location[0]}} — order weight {{input}} exceeds all vehicle capacity limits (max: {{context.limits}})",
   "bus_hard_constraint_volume": "Customer at row {{location[0]}} — order volume {{input}} exceeds all vehicle volume limits (max: {{context.limits}})",
   "bus_hard_constraint_distance": "Customer at row {{location[0]}} — route distance {{input}} exceeds all vehicle max distance limits (max: {{context.limits}})",
   "bus_hard_constraint_duration": "Customer at row {{location[0]}} — route duration {{input}} exceeds all vehicle max duration limits (max: {{context.limits}})",
-
   "bus_soft_constraint_weight": "Warning: Customer at row {{location[0]}} — order weight {{input}} exceeds soft weight limit (max: {{context.limits}})",
   "bus_soft_constraint_volume": "Warning: Customer at row {{location[0]}} — order volume {{input}} exceeds soft volume limit (max: {{context.limits}})",
   "bus_soft_constraint_distance": "Warning: Customer at row {{location[0]}} — route distance {{input}} exceeds soft distance limit (max: {{context.limits}})",
   "bus_soft_constraint_duration": "Warning: Customer at row {{location[0]}} — route duration {{input}} exceeds soft duration limit (max: {{context.limits}})",
-
   "bus_missing_vehicle_groups": "Customer at row {{location[0]}} — required vehicle group {{input}} does not exist in the current vehicle configuration"
 }
