@@ -1,22 +1,62 @@
-.validation-table {
-  font-size: 0.875rem;
+::ng-deep .transform-validation-modal .modal-dialog {
+  min-width: 600px;
+  width: 100%;
+}
 
-  thead th {
-    font-weight: 600;
-    background-color: #f8f9fa;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-  }
+.validation-table-wrapper {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 13px;
+  background: #fff;
+  max-height: 60vh;
+  overflow-y: auto;
 
-  .file-name-cell {
-    white-space: nowrap;
-    font-weight: 500;
-    width: 160px;
-    min-width: 120px;
-  }
+  .validation-table {
+    margin-bottom: 0;
+    width: 100%;
 
-  tbody tr:hover {
-    background-color: #f5f5f5;
+    thead tr th {
+      background: #0e1547;
+      color: #fff;
+      font-weight: 600;
+      padding: 8px 14px;
+      border: none;
+      font-size: 12px;
+      letter-spacing: 0.3px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      &:nth-child(even) { background-color: #f4f6fb; }
+      &:nth-child(odd)  { background-color: #fff; }
+
+      &:hover { background-color: #edf0f7; }
+
+      td {
+        padding: 7px 14px;
+        border-bottom: 1px solid #dee2e6;
+        border-left: 1px solid #dee2e6;
+        border-right: none;
+        vertical-align: middle;
+        font-size: 13px;
+        color: #212529;
+
+        &:first-child { border-left: none; }
+      }
+
+      &:last-child td { border-bottom: none; }
+    }
+
+    .file-name-cell {
+      font-weight: 600;
+      color: #495057;
+      white-space: nowrap;
+      width: 1%;
+    }
   }
 }

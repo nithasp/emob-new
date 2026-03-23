@@ -1,9 +1,9 @@
 <ng-container *transloco="let t; read: 'validation'">
   <div class="modal-header">
     <div class="d-flex align-items-center gap-2">
-      <h5 class="modal-title text-danger m-0 fw-bold">
+      <h2 class="modal-title text-danger m-0 fw-bold">
         {{ t('validation_dialog__title') }}
-      </h5>
+      </h2>
     </div>
     <button
       type="button"
@@ -13,21 +13,23 @@
     ></button>
   </div>
 
-  <div class="modal-body" style="max-height: 65vh; overflow-y: auto">
-    <table class="table table-bordered validation-table" *ngIf="tableRows.length">
-      <thead>
-        <tr>
-          <th>{{ t('validation_table_header_file_name') }}</th>
-          <th>{{ t('validation_table_header_message') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let row of tableRows">
-          <td class="file-name-cell">{{ row.fileName }}</td>
-          <td>{{ t(row.type, row.params) }}</td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="modal-body">
+    <div class="validation-table-wrapper" *ngIf="tableRows.length">
+      <table class="table validation-table">
+        <thead>
+          <tr>
+            <th>{{ t('validation_table_header_file_name') }}</th>
+            <th>{{ t('validation_table_header_message') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of tableRows">
+            <td class="file-name-cell">{{ row.fileName }}</td>
+            <td>{{ t(row.type, row.params) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="modal-footer">

@@ -93,7 +93,6 @@ import { VehicleTypeDialogComponent } from '../configuration/vehicle-management/
 import { CustomerListComponent } from '../components/customer-list/customer-list.component';
 import { LicensePlateSelectionDialogComponent } from '../components/license-plate-selection-dialog/license-plate-selection-dialog.component';
 import { TransformValidationDialogComponent } from '../components/transform-validation-dialog/transform-validation-dialog.component';
-import mockPanderaError from './validationData/transform_pandera_error.json';
 import { ValidateMessage } from 'src/app/models/validation-message';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { firstValueFrom, take } from 'rxjs';
@@ -114,6 +113,10 @@ import {
 //import newOrderData from './newOrderData/newOrderData.json';
 //import newOrderData from './newOrderData/location17022026.json';
 import newOrderData from './newOrderData/location_with_productinfo.json';
+
+import mockPanderaError from './validationData/transform_pandera_error.json';
+import mockPydanticError from './validationData/transform_pydantic_error.json';
+ 
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -4091,8 +4094,8 @@ export class RunComponent implements OnInit, AfterViewInit {
   openTransformValidationDialog(validationResponse?: any) {
     const modalRef = this.ngbModal.open(TransformValidationDialogComponent, {
       centered: true,
-      size: 'xl',
       animation: true,
+      windowClass: 'transform-validation-modal',
     });
     // TODO: Replace mockPanderaError with real API response when available
     modalRef.componentInstance.validationResponse = validationResponse || mockPanderaError;
