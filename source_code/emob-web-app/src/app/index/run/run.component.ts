@@ -65,7 +65,7 @@ import {
   Validate,
   Company,
   MyDepot,
-  DepotInputRequirement,
+  DepotInputRequirement
 } from 'src/app/models/experiment.model';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import {
@@ -1332,7 +1332,14 @@ export class RunComponent implements OnInit, AfterViewInit {
 
           this.preOrderService
             .uploadPreOrder(this.experiment.runId, depotIds, newPayload)
-            .subscribe((response: Experiment) => {
+            .subscribe((response: any) => {
+              console.log('uploadPreOrder success response', response);
+              if (response.result?.isWarning && response.result?.warning) {
+                this.setTransformWarnings(response.result.warning);
+              } else {
+                this.setTransformWarnings([]);
+              }
+
               // Refresh experiment data first, then proceed with grouping to ensure latest depots exist
               this.experimentService
                 .getExperiment(this.experiment.runId)
