@@ -2,6 +2,7 @@
   <h1 (click)="log()">log</h1>
   <button mat-button (click)="openTransformValidationDialog()">openTransformValidationDialog</button>
   <button mat-button (click)="toggleTransformWarning()">Toggle Transform Warning (Mock)</button>
+  <button mat-button (click)="toggleValidationWarning()">Toggle Validation Warning</button>
   <div class="card mt-2 container-fluid" style="min-height: 100vh">
     <ngx-spinner name="run">
       <p class="h-3">{{ t("wait_a_moment") }} ...</p>
@@ -17,6 +18,40 @@
             </button>
             <ng-template ngbNavContent>
               <div class="row card-body">
+
+
+                <div class="container-validation-warning">
+                  <div class="validation-warning-item">
+                    <ngb-alert [dismissible]="false">
+                      <strong>title</strong>
+                      <button type="button" class="link link-primary link-opacity-75-hover"
+                        (click)="collapseValidationWarning.toggle()"
+                        [attr.aria-expanded]="!ngbValidationWarningCollapse">
+                        {{ t("show_details") }}
+                      </button>
+                    </ngb-alert>
+                    <div class="mb-3 overflow-x-auto" 
+                    #collapseValidationWarning="ngbCollapse"
+                    [ngbCollapse]="ngbValidationWarningCollapse">
+                      <table class="table table-striped">
+                        <thead>
+                          <tr>
+                            <th>file name</th>
+                            <th>message</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>file name</td>
+                            <td>message</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+
                 <div class="container-transform-warning" *ngIf="transformWarnings.length > 0">
                   <div class="transform-warning-item" *ngFor="let warning of transformWarnings; let wi = index">
                     <ngb-alert [dismissible]="false">

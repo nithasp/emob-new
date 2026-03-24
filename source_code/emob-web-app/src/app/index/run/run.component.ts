@@ -4146,4 +4146,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     };
     return titleMap[title] || title;
   }
+
+
+  ngbValidationWarningCollapse: boolean = true;
+  toggleValidationWarning() {
+    console.log('toggleValidationWarning');
+  }
 }
