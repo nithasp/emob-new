@@ -116,6 +116,7 @@ import newOrderData from './newOrderData/location_with_productinfo.json';
 
 import mockPanderaError from './validationData/transform_pandera_error.json';
 import mockPydanticError from './validationData/transform_pydantic_error.json';
+import mockMissingProductWarning from './validationData/transform_missing_product_warning.json';
  
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
@@ -248,10 +249,12 @@ export class RunComponent implements OnInit, AfterViewInit {
   validateDataTable: Customer[] = [];
 
   // Ngbcollapse
-  ngbOverDistanceCollapse = true;
-  ngbOverWeightCollapse = true;
-  ngbZeroWeightCollapse = true;
-  ngbUnverifyCollapse = true;
+  ngbOverDistanceCollapse: boolean = true;
+  ngbOverWeightCollapse: boolean = true;
+  ngbZeroWeightCollapse: boolean = true;
+  ngbUnverifyCollapse: boolean = true;
+  transformWarnings: any[] = [];
+  transformWarningCollapseStates: boolean[] = [];
 
   // Mat table
   @ViewChild(MatPaginator, { static: false })
@@ -269,7 +272,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isCreateMode: boolean = false;
   isFilePreview: boolean = false;
-
+  
   public depots: MyDepot[] = [];
   public selectedDepotIdName: string | null = null;
   public selectedDepotIds: string[] = [];
@@ -4099,5 +4102,41 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
     // TODO: Replace mockPanderaError with real API response when available
     modalRef.componentInstance.validationResponse = validationResponse || mockPanderaError;
+  }
+
+  toggleTransformWarning() {
+    if (this.transformWarnings.length > 0) {
+      this.setTransformWarnings([]);
+    } else {
+      this.setTransformWarnings((mockMissingProductWarning as any).warning);
+    }
+  }
+
+  setTransformWarnings(warnings: any[]) {
+    this.transformWarnings = warnings.map((warning) => ({
+      ...warning,
+      detail: this.deduplicateByInput(warning.detail),
+    }));
+    this.transformWarningCollapseStates = this.transformWarnings.map(() => false);
+  }
+
+  private deduplicateByInput(details: any[]): any[] {
+    const seenInputIds = new Set<string>();
+    return details.filter((detail) => {
+      if (seenInputIds.has(detail.input)) return false;
+      seenInputIds.add(detail.input);
+      return true;
+    });
+  }
+
+  toggleTransformWarningCollapse(index: number) {
+    this.transformWarningCollapseStates[index] = !this.transformWarningCollapseStates[index];
+  }
+
+  getWarningTitle(title: string): string {
+    const titleMap: Record<string, string> = {
+      'products': this.transloco.translate('product_missing', {}, 'index'),
+    };
+    return titleMap[title] || title;
   }
 }

@@ -1,55 +1,55 @@
 {
-    "statusCode": "200",
-    "message": "Success Transform",
-    "isSuccesses": true,
-    "isWarning": true,
-    "warning": [
+  "statusCode": "200",
+  "message": "Success Transform",
+  "isSuccesses": true,
+  "isWarning": true,
+  "warning": [
+    {
+      "code": "200",
+      "message": "2 validation warnings for missing information",
+      "errorCount": 2,
+      "errorType": "missing data",
+      "title": "products",
+      "detail": [
         {
-            "code": "200",
-            "message": "2 validation warnings for missing information",
-            "errorCount": 2,
-            "errorType": "missing data",
-            "title": "products",
-            "detail": [
-                {
-                    "location": [
-                        959,
-                        "missing_product_data"
-                    ],
-                    "message": "missing_product_data: SOL408 \u0e23\u0e31\u0e1a 1 \u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c \u0e25\u0e38\u0e49\u0e19\u0e23\u0e31\u0e1a Natural Wonders Box Set \u0e08\u0e33\u0e19\u0e27\u0e19 1 \u0e0a\u0e38\u0e14 (\u0e21\u0e39\u0e25\u0e04\u0e48\u0e32 3,990.-) box",
-                    "type": "bus_missing_product_data",
-                    "input": "SOL408-box",
-                    "inputType": "string",
-                    "context": {
-                        "missing_product_quantity": {
-                            "productId": "SOL408-box",
-                            "skuCode": "SOL408",
-                            "name": "\u0e23\u0e31\u0e1a 1 \u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c \u0e25\u0e38\u0e49\u0e19\u0e23\u0e31\u0e1a Natural Wonders Box Set \u0e08\u0e33\u0e19\u0e27\u0e19 1 \u0e0a\u0e38\u0e14 (\u0e21\u0e39\u0e25\u0e04\u0e48\u0e32 3,990.-)",
-                            "packagingType": "box",
-                            "productQuantity": 1
-                        }
-                    }
-                },
-                {
-                    "location": [
-                        976,
-                        "missing_product_data"
-                    ],
-                    "message": "missing_product_data: SOL408 \u0e23\u0e31\u0e1a 1 \u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c \u0e25\u0e38\u0e49\u0e19\u0e23\u0e31\u0e1a Natural Wonders Box Set \u0e08\u0e33\u0e19\u0e27\u0e19 1 \u0e0a\u0e38\u0e14 (\u0e21\u0e39\u0e25\u0e04\u0e48\u0e32 3,990.-) box",
-                    "type": "bus_missing_product_data",
-                    "input": "SOL408-box",
-                    "inputType": "string",
-                    "context": {
-                        "missing_product_quantity": {
-                            "productId": "SOL408-box",
-                            "skuCode": "SOL408",
-                            "name": "\u0e23\u0e31\u0e1a 1 \u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c \u0e25\u0e38\u0e49\u0e19\u0e23\u0e31\u0e1a Natural Wonders Box Set \u0e08\u0e33\u0e19\u0e27\u0e19 1 \u0e0a\u0e38\u0e14 (\u0e21\u0e39\u0e25\u0e04\u0e48\u0e32 3,990.-)",
-                            "packagingType": "box",
-                            "productQuantity": 1
-                        }
-                    }
-                }
-            ]
+          "location": [
+            959,
+            "missing_product_data"
+          ],
+          "message": "missing_product_data: SOL408 รับ 1 สิทธิ์ ลุ้นรับ Natural Wonders Box Set จำนวน 1 ชุด (มูลค่า 3,990.-) box",
+          "type": "bus_missing_product_data",
+          "input": "SOL408-box",
+          "inputType": "string",
+          "context": {
+            "missing_product_quantity": {
+              "productId": "SOL408-box",
+              "skuCode": "SOL408",
+              "name": "รับ 1 สิทธิ์ ลุ้นรับ Natural Wonders Box Set จำนวน 1 ชุด (มูลค่า 3,990.-)",
+              "packagingType": "box",
+              "productQuantity": 1
+            }
+          }
+        },
+        {
+          "location": [
+            976,
+            "missing_product_data"
+          ],
+          "message": "missing_product_data: SOL408 รับ 1 สิทธิ์ ลุ้นรับ Natural Wonders Box Set จำนวน 1 ชุด (มูลค่า 3,990.-) box",
+          "type": "bus_missing_product_data",
+          "input": "SOL408-box",
+          "inputType": "string",
+          "context": {
+            "missing_product_quantity": {
+              "productId": "SOL408-box",
+              "skuCode": "SOL408",
+              "name": "รับ 1 สิทธิ์ ลุ้นรับ Natural Wonders Box Set จำนวน 1 ชุด (มูลค่า 3,990.-)",
+              "packagingType": "box",
+              "productQuantity": 1
+            }
+          }
         }
-    ]
+      ]
+    }
+  ]
 }

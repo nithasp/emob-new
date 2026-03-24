@@ -1,6 +1,7 @@
 <ng-container *transloco="let t; read: 'index'">
   <h1 (click)="log()">log</h1>
   <button mat-button (click)="openTransformValidationDialog()">openTransformValidationDialog</button>
+  <button mat-button (click)="toggleTransformWarning()">Toggle Transform Warning (Mock)</button>
   <div class="card mt-2 container-fluid" style="min-height: 100vh">
     <ngx-spinner name="run">
       <p class="h-3">{{ t("wait_a_moment") }} ...</p>
@@ -16,30 +17,38 @@
             </button>
             <ng-template ngbNavContent>
               <div class="row card-body">
-                @if(validateExperiment &&
-                validateExperiment.filters.order_data.invalid_coordinate.length
-                > 0 && isValidateShowMessage.OrderData.invalidCoordinate){
-                <ngb-alert type="danger" [dismissible]="false">
-                  <strong>{{
-                    validateMessage.filtersMessage.orderData.invalidCoordinate
-                    .title
-                    }}
-                  </strong>
-                  {{
-                  validateMessage.filtersMessage.orderData.invalidCoordinate
-                  .message
-                  }}
-                </ngb-alert>
-                } @if(validateExperiment &&
-                validateExperiment.warning.zero_weight.length > 0){
-                <ngb-alert [dismissible]="false">
-                  <strong>{{ validateMessage.warningMessage.zeroWeight.title }}
-                  </strong>
-                  {{ validateMessage.warningMessage.zeroWeight.message
-                  }}<a target="_blank" [routerLink]="['/users/inventories']"
-                    class="text-primary link-underline-primary">{{ t("direct_to_inventory") }}.</a>
-                </ngb-alert>
-                }
+                <div class="container-transform-warning" *ngIf="transformWarnings.length > 0">
+                  <div class="transform-warning-item" *ngFor="let warning of transformWarnings; let wi = index">
+                    <ngb-alert [dismissible]="false">
+                      <strong>{{ getWarningTitle(warning.title) }}</strong>
+                      <button type="button" class="link link-primary link-opacity-75-hover"
+                        (click)="toggleTransformWarningCollapse(wi)"
+                        [attr.aria-expanded]="!transformWarningCollapseStates[wi]">
+                        {{ t("show_details") }}
+                      </button>
+                    </ngb-alert>
+                    <div class="mb-3 overflow-x-auto" [ngbCollapse]="transformWarningCollapseStates[wi]">
+                      <table class="table table-striped">
+                        <thead>
+                          <tr>
+                            <th scope="col">{{ t("product_id_missing") }}</th>
+                            <th scope="col">{{ t("sku_code") }}</th>
+                            <th scope="col">{{ t("product_name") }}</th>
+                            <th scope="col">{{ t("packaging_type") }}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let detail of warning.detail">
+                            <td>{{ detail.context?.missing_product_quantity?.productId }}</td>
+                            <td>{{ detail.context?.missing_product_quantity?.skuCode }}</td>
+                            <td>{{ detail.context?.missing_product_quantity?.name }}</td>
+                            <td>{{ detail.context?.missing_product_quantity?.packagingType }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
 
                 <div class="card p-3 mb-4">
                   <h4>
