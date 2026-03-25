@@ -117,7 +117,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   headersReport: string[] = [];
   dataSourceReport: ReportDataItem[] = [];
-  vrpStatsView: 'dashboard' | 'matrix' | 'keyvalue' = 'dashboard';
+  vrpStatsView: 'dashboard' | 'matrix' | 'keyvalue' | 'dashboard-raw' = 'dashboard-raw';
 
   vrpDashboardCards: {
     label: string;
@@ -126,6 +126,21 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }[] = [];
 
   vrpDashboardRows: {
+    index: number;
+    metric: string;
+    totalValue: number | null;
+    excessValue: number | null;
+    unit: string;
+    statusOk: boolean | null;
+  }[] = [];
+
+  vrpDashboardRawCards: {
+    label: string;
+    value: string | number;
+    isFeasible?: boolean;
+  }[] = [];
+
+  vrpDashboardRawRows: {
     index: number;
     metric: string;
     totalValue: number | null;
@@ -419,6 +434,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     this.dataSourceReport = rows;
     this.buildVrpStatsDashboard();
+    this.buildVrpStatsDashboardRaw();
   }
 
   private abbreviateUnit(unit: string): string {
@@ -518,6 +534,97 @@ export class ResultComponent implements OnInit, AfterViewInit {
         totalValue: null,
         excessValue: s['excessLateTime'] as number,
         unit: this.abbreviateUnit(units['timeUnit'] ?? ''),
+        statusOk: !(s['hasExcessLateTime'] as boolean),
+      },
+    ];
+  }
+
+  private buildVrpStatsDashboardRaw(): void {
+    const s = vrpStats as Record<string, unknown>;
+    const units = (s['dataUnits'] ?? {}) as Record<string, string>;
+
+    this.vrpDashboardRawCards = [
+      {
+        label: 'isSolutionFeasible',
+        value: s['isSolutionFeasible'] ? 'True' : 'False',
+        isFeasible: s['isSolutionFeasible'] as boolean,
+      },
+      { label: 'customerCount', value: s['customerCount'] as number },
+      { label: 'routeCount', value: s['routeCount'] as number },
+      { label: 'totalFitness', value: s['totalFitness'] as number },
+    ];
+
+    this.vrpDashboardRawRows = [
+      {
+        index: 1,
+        metric: 'totalWeight',
+        totalValue: s['totalWeight'] as number,
+        excessValue: s['excessWeight'] as number,
+        unit: units['weightUnit'] ?? '',
+        statusOk: !(s['hasExcessWeight'] as boolean),
+      },
+      {
+        index: 2,
+        metric: 'totalVolume',
+        totalValue: s['totalVolume'] as number,
+        excessValue: s['excessVolume'] as number,
+        unit: units['volumeUnit'] ?? '',
+        statusOk: !(s['hasExcessVolume'] as boolean),
+      },
+      {
+        index: 3,
+        metric: 'totalDistance',
+        totalValue: s['totalDistance'] as number,
+        excessValue: s['excessDistance'] as number,
+        unit: units['distanceUnit'] ?? '',
+        statusOk: !(s['hasExcessDistance'] as boolean),
+      },
+      {
+        index: 4,
+        metric: 'totalDuration',
+        totalValue: s['totalDuration'] as number,
+        excessValue: s['excessDuration'] as number,
+        unit: units['timeUnit'] ?? '',
+        statusOk: !(s['hasExcessDuration'] as boolean),
+      },
+      {
+        index: 5,
+        metric: 'totalTravelDuration',
+        totalValue: s['totalTravelDuration'] as number,
+        excessValue: null,
+        unit: units['timeUnit'] ?? '',
+        statusOk: null,
+      },
+      {
+        index: 6,
+        metric: 'totalServiceDuration',
+        totalValue: s['totalServiceDuration'] as number,
+        excessValue: null,
+        unit: units['timeUnit'] ?? '',
+        statusOk: null,
+      },
+      {
+        index: 7,
+        metric: 'totalBreakDuration',
+        totalValue: s['totalBreakDuration'] as number,
+        excessValue: null,
+        unit: units['timeUnit'] ?? '',
+        statusOk: null,
+      },
+      {
+        index: 8,
+        metric: 'excessEarlyTime',
+        totalValue: null,
+        excessValue: s['excessEarlyTime'] as number,
+        unit: units['timeUnit'] ?? '',
+        statusOk: !(s['hasExcessEarlyTime'] as boolean),
+      },
+      {
+        index: 9,
+        metric: 'excessLateTime',
+        totalValue: null,
+        excessValue: s['excessLateTime'] as number,
+        unit: units['timeUnit'] ?? '',
         statusOk: !(s['hasExcessLateTime'] as boolean),
       },
     ];

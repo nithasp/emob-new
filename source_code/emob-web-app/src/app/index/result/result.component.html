@@ -127,11 +127,17 @@
       </div>
       <div class="col-md-7 mb-3">
         <div class="vrp-stats-view-toggle mb-2">
-          <button
+          <!-- <button
             [class.active]="vrpStatsView === 'dashboard'"
             (click)="vrpStatsView = 'dashboard'"
           >
             <mat-icon>dashboard</mat-icon> Dashboard
+          </button> -->
+          <button
+            [class.active]="vrpStatsView === 'dashboard-raw'"
+            (click)="vrpStatsView = 'dashboard-raw'"
+          >
+            <mat-icon>data_object</mat-icon> Dashboard Raw
           </button>
           <button
             [class.active]="vrpStatsView === 'matrix'"
@@ -145,6 +151,80 @@
           >
             <mat-icon>list</mat-icon> Key-Value
           </button>
+        </div>
+
+        <div class="table-vrp-stats-dashboard table-vrp-stats-dashboard--raw mb-3" *ngIf="vrpStatsView === 'dashboard-raw'">
+          <div class="vrp-dashboard-header">VRP Statistics Dashboard Overview (Raw)</div>
+
+          <div class="vrp-dashboard-cards">
+            <div
+              *ngFor="let card of vrpDashboardRawCards"
+              class="vrp-dashboard-card"
+              [class.vrp-dashboard-card--feasible]="card.isFeasible === true"
+              [class.vrp-dashboard-card--infeasible]="card.isFeasible === false"
+            >
+              <div class="vrp-card-label">{{ card.label }}</div>
+              <div class="vrp-card-value">
+                <span>
+                  @if(isNumber(card.value)){
+                    {{ getNumberValue(card.value) | number : "1.0-2" }}
+                  }@else{
+                    {{ card.value }}
+                  }
+                </span>
+                @if(card.isFeasible === true){
+                  <mat-icon class="vrp-feasible-icon">check_circle</mat-icon>
+                }@else if(card.isFeasible === false){
+                  <mat-icon class="vrp-infeasible-icon">cancel</mat-icon>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="vrp-dashboard-info">
+            <table class="table vrp-dashboard-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>metric</th>
+                  <th class="text-right">totalValue</th>
+                  <th class="text-right">excessValue</th>
+                  <th class="text-center">unit</th>
+                  <th class="text-center">status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of vrpDashboardRawRows">
+                  <td class="vrp-row-index">{{ row.index }}</td>
+                  <td>{{ row.metric }}</td>
+                  <td class="text-right">
+                    @if(row.totalValue !== null){
+                      {{ row.totalValue | number : "1.0-2" }}
+                    }@else{
+                      <span class="vrp-dash">-</span>
+                    }
+                  </td>
+                  <td class="text-right">
+                    @if(row.excessValue !== null){
+                      {{ row.excessValue | number : "1.0-1" }}
+                    }@else{
+                      <span class="vrp-dash">-</span>
+                    }
+                  </td>
+                  <td class="text-center vrp-unit">{{ row.unit }}</td>
+                  <td class="text-center">
+                    @if(row.statusOk === true){
+                      <span class="vrp-badge vrp-badge--ok">OK</span>
+                    }@else if(row.statusOk === false){
+                      <span class="vrp-badge vrp-badge--warn">!</span>
+                    }@else{
+                      <span class="vrp-dash">-</span>
+                    }
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div class="table-vrp-stats mb-3" *ngIf="vrpStatsView === 'keyvalue'">
