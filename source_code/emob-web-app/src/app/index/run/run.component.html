@@ -20,36 +20,36 @@
               <div class="row card-body">
 
 
-                <div class="container-validation-warning">
-                  <div class="validation-warning-item">
-                    <ngb-alert [dismissible]="false">
-                      <strong>title</strong>
-                      <button type="button" class="link link-primary link-opacity-75-hover"
-                        (click)="collapseValidationWarning.toggle()"
-                        [attr.aria-expanded]="!ngbValidationWarningCollapse">
-                        {{ t("show_details") }}
-                      </button>
-                    </ngb-alert>
-                    <div class="mb-3 overflow-x-auto" 
-                    #collapseValidationWarning="ngbCollapse"
-                    [ngbCollapse]="ngbValidationWarningCollapse">
-                      <table class="table table-striped">
-                        <thead>
-                          <tr>
-                            <th>file name</th>
-                            <th>message</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>file name</td>
-                            <td>message</td>
-                          </tr>
-                        </tbody>
-                      </table>
+                <ng-container *transloco="let tv; scope: 'validation'; read: 'validation'">
+                  <div class="container-validation-warning" *ngIf="validationWarningTableRows.length > 0">
+                    <div class="validation-warning-item">
+                      <ngb-alert [dismissible]="false">
+                        <strong>Constraint Warning</strong>
+                        <button type="button" class="link link-primary link-opacity-75-hover"
+                          (click)="toggleValidationWarningCollapse()"
+                          [attr.aria-expanded]="!validationWarningCollapse">
+                          {{ t("show_details") }}
+                        </button>
+                      </ngb-alert>
+                      <div class="mb-3 overflow-x-auto" [ngbCollapse]="validationWarningCollapse">
+                        <table class="table table-striped">
+                          <thead>
+                            <tr>
+                              <th>{{ tv('validation_table_header_file_name') }}</th>
+                              <th>{{ tv('validation_table_header_message') }}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let row of validationWarningTableRows">
+                              <td>{{ row.fileName }}</td>
+                              <td>{{ tv(row.type, row.params) }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </ng-container>
 
 
                 <div class="container-transform-warning" *ngIf="transformWarnings.length > 0">

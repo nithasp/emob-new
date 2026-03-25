@@ -4,66 +4,66 @@
     "isSuccesses": true,
     "isWarning": true,
     "warning": [
-        {
-            "code": "200",
-            "message": "3 validation warnings for constraint",
-            "errorCount": 3,
-            "errorType": "constraint validation",
-            "title": "constraint",
-            "detail": [
-                {
-                    "location": [
-                        1,
-                        "allow_vehicle_groups"
-                    ],
-                    "message": "missing vehicle groups: 8-wheel",
-                    "type": "bus_missing_vehicle_groups",
-                    "input": "8-wheel",
-                    "inputType": "string",
-                    "context": {
-                        "allow_vehicle_groups": [
-                            "8-wheel"
-                        ]
-                    }
-                },
-                {
-                    "location": [
-                        3,
-                        "distance"
-                    ],
-                    "message": "hard_constraint: distance must be \u2264 200.0",
-                    "type": "bus_hard_constraint_distance",
-                    "input": 725.6053999999999,
-                    "inputType": "float",
-                    "context": {
-                        "limits": 200.0,
-                        "profile": [
-                            0
-                        ]
-                    }
-                },
-                {
-                    "location": [
-                        3,
-                        "duration"
-                    ],
-                    "message": "hard_constraint: duration must be \u2264 28800.0",
-                    "type": "bus_hard_constraint_duration",
-                    "input": 47838.2,
-                    "inputType": "float",
-                    "context": {
-                        "limits": 28800.0,
-                        "profile": [
-                            0
-                        ]
-                    }
-                }
-            ]
-        }
+      {
+        "code": "200",
+        "message": "3 validation warnings for constraint",
+        "errorCount": 3,
+        "errorType": "constraint validation",
+        "title": "constraint",
+        "detail": [
+          {
+            "location": [
+              1,
+              "allow_vehicle_groups"
+            ],
+            "message": "missing vehicle groups: 8-wheel",
+            "type": "bus_missing_vehicle_groups",
+            "input": "8-wheel",
+            "inputType": "string",
+            "context": {
+              "allow_vehicle_groups": [
+                "8-wheel"
+              ]
+            }
+          },
+          {
+            "location": [
+              3,
+              "distance"
+            ],
+            "message": "hard_constraint: distance must be ≤ 200.0",
+            "type": "bus_hard_constraint_distance",
+            "input": 725.6053999999999,
+            "inputType": "float",
+            "context": {
+              "limits": 200,
+              "profile": [
+                0
+              ]
+            }
+          },
+          {
+            "location": [
+              3,
+              "duration"
+            ],
+            "message": "hard_constraint: duration must be ≤ 28800.0",
+            "type": "bus_hard_constraint_duration",
+            "input": 47838.2,
+            "inputType": "float",
+            "context": {
+              "limits": 28800,
+              "profile": [
+                0
+              ]
+            }
+          }
+        ]
+      }
     ],
     "data": {
-        "outputPaths": {
-            "": ""
-        }
+      "outputPaths": {
+        "": ""
+      }
     }
-}
+  }
