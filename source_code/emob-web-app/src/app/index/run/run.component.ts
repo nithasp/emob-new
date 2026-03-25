@@ -118,12 +118,8 @@ import mockPanderaError from './validationData/transform_pandera_error.json';
 import mockPydanticError from './validationData/transform_pydantic_error.json';
 import mockMissingProductWarning from './validationData/transform_missing_product_warning.json';
 import mockValidationWarning from './validationData/validation_warning.json';
-
-export interface ValidationWarningTableRow {
-  fileName: string;
-  type: string;
-  params: Record<string, any>;
-}
+import { ValidationTableRow } from 'src/app/models/validation-table.model';
+import { buildTableRows } from 'src/app/shared/utils/validation-table.utils';
  
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
@@ -262,7 +258,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   ngbUnverifyCollapse: boolean = true;
   transformWarnings: any[] = [];
   transformWarningCollapseStates: boolean[] = [];
-  validationWarningTableRows: ValidationWarningTableRow[] = [];
+  validationWarningTableRows: ValidationTableRow[] = [];
   validationWarningCollapse: boolean = true;
 
   // Mat table
@@ -4166,72 +4162,11 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   setValidationWarnings(warnings: any[]) {
-    this.validationWarningTableRows = this.buildAllValidationWarningTableRows(warnings || []);
+    this.validationWarningTableRows = buildTableRows(warnings || []);
     this.validationWarningCollapse = true;
   }
 
   toggleValidationWarningCollapse() {
     this.validationWarningCollapse = !this.validationWarningCollapse;
-  }
-
-  private buildAllValidationWarningTableRows(warnings: any[]): ValidationWarningTableRow[] {
-    const rows: ValidationWarningTableRow[] = [];
-
-    for (const warning of warnings) {
-      if (!warning?.detail?.length) continue;
-      for (const detail of warning.detail) {
-        rows.push({
-          fileName: warning.title,
-          type: detail.type,
-          params: this.buildValidationTranslationParams(detail),
-        });
-      }
-    }
-
-    return rows;
-  }
-
-  private buildValidationTranslationParams(detail: any): Record<string, any> {
-    const params: Record<string, any> = {};
-
-    for (const [key, value] of Object.entries(detail)) {
-      if (Array.isArray(value)) {
-        value.forEach((item, index) => {
-          params[`${key}[${index}]`] = item ?? '';
-        });
-      } else if (key === 'input') {
-        params[key] = this.formatValidationInputValue(value, detail.inputType);
-      } else if (value !== null && typeof value === 'object') {
-        params[key] = this.formatValidationNestedValues(value as Record<string, any>);
-      } else {
-        params[key] = value ?? '';
-      }
-    }
-
-    return params;
-  }
-
-  private formatValidationInputValue(value: any, inputType?: string): string {
-    if (value === null || value === undefined) return '';
-    if (inputType === 'float' && typeof value === 'number') {
-      return Number.isInteger(value) ? value.toFixed(1) : String(value);
-    }
-    return String(value);
-  }
-
-  private formatValidationNestedValues(obj: Record<string, any>): Record<string, any> {
-    const result: Record<string, any> = {};
-
-    for (const [key, value] of Object.entries(obj)) {
-      if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-        result[key] = this.formatValidationNestedValues(value);
-      } else if (typeof value === 'number') {
-        result[key] = Number.isInteger(value) ? value.toFixed(1) : String(value);
-      } else {
-        result[key] = value ?? '';
-      }
-    }
-
-    return result;
   }
 }
