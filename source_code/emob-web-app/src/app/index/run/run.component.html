@@ -21,7 +21,7 @@
 
 
                 <ng-container *transloco="let tv; scope: 'validation'; read: 'validation'">
-                  <div class="container-validation-warning" *ngIf="validationWarningTableRows.length > 0">
+                  <div class="container-validation-warning new-warning-validation" *ngIf="validationWarningTableRows.length > 0">
                     <div class="validation-warning-item">
                       <ngb-alert [dismissible]="false">
                         <strong>Constraint Warning</strong>
@@ -753,43 +753,16 @@
             </ng-template>
           </li>
 
-          <li [ngbNavItem]="4" [disabled]="!isUpload || validateExperiment == null">
+          <li [ngbNavItem]="4" [disabled]="!isUpload || !haveValidated">
             <button ngbNavLink>
               <h3>{{ t("validation") }}</h3>
             </button>
             <ng-template ngbNavContent>
               <div style="min-height: 720px">
                 <div class="row mt-4">
+
                   <div class="col-md-12">
-                    @if(validateExperiment &&
-                    (validateExperiment.filters.constraints.over_weight.length >
-                    0 ||
-                    validateExperiment.filters.constraints.over_distance.length
-                    >0 ||
-                    validateExperiment.filters.order_data.invalid_coordinate.length
-                    > 0 || validateExperiment.warning.zero_weight.length > 0)){
-                    <ngb-alert type="info" [dismissible]="false">
-                      <strong class="h-2">{{ t("information") }}! </strong>
-                      <span>{{
-                        t(
-                        "if_you_do_not_change_or_adjust_the_order_data_or_the_parameters_of_the_constraints_please_proceed_to_plan_your_route"
-                        )
-                        }}.
-                      </span>
-                      <strong class="text-dark font-weight-bold">{{
-                        t(
-                        "the_validation_process_will_filter_and_eliminate_any_invalid_order_data"
-                        )
-                        }}
-                      </strong>
-                      <span>{{
-                        t(
-                        "before_the_ai_service_can_continue_with_route_planning"
-                        )
-                        }}
-                      </span>
-                    </ngb-alert>
-                    }@else {
+                    @if(!isValidationWarning) {
                     <ngb-alert type="success" [dismissible]="false" class="mt-5 mb-5">
                       <strong class="h-2">{{ t("verification_is_correct") }}!</strong>
                       <span>{{
@@ -799,262 +772,41 @@
                         }}
                       </span>
                     </ngb-alert>
-                    } @if(validateExperiment && (
-                    validateExperiment.filters.constraints.over_distance.length
-                    >0 ||
-                    validateExperiment.filters.constraints.over_weight.length >
-                    0 ||
-                    validateExperiment.filters.order_data.invalid_coordinate.length
-                    > 0) ){
-                    <p class="h-2 mb-2">
-                      {{ t("filter_and_eliminate_any_invalid_order_data") }}
-                    </p>
-                    }@else {
-                    <p class="mt-2 mb-2">
-                      {{ t("there_is_valid_order_data") }}.
-                    </p>
-                    } @if(validateExperiment &&
-                    validateExperiment.filters.constraints.over_distance.length
-                    >0 && isValidateShowMessage.validate.overDistance){
-                    <ngb-alert type="danger" [dismissible]="false">
-                      <strong>{{
-                        validateMessage.filtersMessage.constraints.overDistance
-                        .title
-                        }}</strong>
-                      {{
-                      validateMessage.filtersMessage.constraints.overDistance
-                      .message
-                      }}
-                      <button type="button" class="link link-primary link-opacity-75-hover"
-                        (click)="collapseOverDistance.toggle()" [attr.aria-expanded]="!ngbOverDistanceCollapse"
-                        aria-controls="collapseExample">
-                        {{ t("show_details") }}
-                      </button>
-                    </ngb-alert>
-                    <div class="mb-3" #collapseOverDistance="ngbCollapse" [(ngbCollapse)]="ngbOverDistanceCollapse">
-                      <div class="table-responsive">
-                        <table class="table table-striped">
-                          <thead>
-                            <tr>
-                              <th scope="col">{{ t("filter_type") }}</th>
-                              <th scope="col">{{ t("order_id") }}</th>
-                              <th scope="col">{{ t("distance") }}</th>
-                              <th scope="col">{{ t("address") }}</th>
-                              <th scope="col">
-                                {{ "sub_district" | transloco }}
-                              </th>
-                              <th scope="col">{{ "district" | transloco }}</th>
-                              <th scope="col">{{ "province" | transloco }}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr *ngFor="
-                                let item of validateExperiment.filters
-                                  .constraints.over_distance
-                              ">
-                              <th scope="row">{{ t("over_distance") }}</th>
-
-                              <td>{{ item.name }}</td>
-                              <td>
-                                <!-- {{
-                                item.metrics!.excess_distance / 100
-                                | number : "2.0-2"
-                                }} -->
-                                {{ "kilometer" | transloco }}
-                              </td>
-                              <td>
-                                {{
-                                (item.originalAddress?.address ?? '')
-                                | truncate:70:"..."
-                                }}
-                              </td>
-                              <td>{{ item.originalAddress?.subdistrict }}</td>
-                              <td>{{ item.originalAddress?.district }}</td>
-                              <td>{{ item.originalAddress?.province }}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                    } @if(validateExperiment &&
-                    validateExperiment.filters.constraints.over_weight.length >
-                    0 && isValidateShowMessage.validate.overWeight){
-                    <ngb-alert type="danger" [dismissible]="false">
-                      <strong>{{
-                        validateMessage.filtersMessage.constraints.overWeight
-                        .title
-                        }}</strong>
-                      {{
-                      validateMessage.filtersMessage.constraints.overWeight
-                      .message
-                      }}
-                      <button type="button" class="link link-primary link-opacity-75-hover"
-                        (click)="collapseOverWeight.toggle()" [attr.aria-expanded]="!ngbOverWeightCollapse"
-                        aria-controls="collapseExample">
-                        {{ t("show_details") }}
-                      </button>
-                    </ngb-alert>
-                    <div class="mb-3" #collapseOverWeight="ngbCollapse" [(ngbCollapse)]="ngbOverWeightCollapse">
-                      <div class="table-responsive">
-                        <table class="table table-striped">
-                          <thead>
-                            <tr>
-                              <th scope="col">{{ t("filter_type") }}</th>
-                              <th scope="col">{{ t("order_id") }}</th>
-                              <th scope="col">{{ t("weight") }}</th>
-                              <th scope="col">{{ t("address") }}</th>
-                              <th scope="col">
-                                {{ "sub_district" | transloco }}
-                              </th>
-                              <th scope="col">{{ "district" | transloco }}</th>
-                              <th scope="col">{{ "province" | transloco }}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr *ngFor="
-                                let item of validateExperiment.filters
-                                  .constraints.over_weight
-                              ">
-                              <th scope="row">{{ t("over_weight") }}</th>
-
-                              <td>{{ item.name }}</td>
-                              <td>
-                                <!-- {{
-                                item.metrics?.excess_weight | number : "2.0-2"
-                                }} -->
-                                {{ "kg" | transloco }}
-                              </td>
-
-                              <td>
-                                {{
-                                (item.originalAddress?.address ?? '')
-                                | truncate:70:"..."
-                                }}
-                              </td>
-                              <td>{{ item.originalAddress?.subdistrict }}</td>
-                              <td>{{ item.originalAddress?.district }}</td>
-                              <td>{{ item.originalAddress?.province }}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                    } @if(validateExperiment &&
-                    validateExperiment.filters.order_data.invalid_coordinate.length
-                    > 0 && isValidateShowMessage.validate.invalidCoordinate){
-                    <ngb-alert type="danger" [dismissible]="false">
-                      <strong>{{
-                        validateMessage.filtersMessage.orderData
-                        .invalidCoordinate.title
-                        }}
-                      </strong>
-                      {{
-                      validateMessage.filtersMessage.orderData
-                      .invalidCoordinate.message
-                      }}
-                      <button type="button" class="link link-primary link-opacity-75-hover"
-                        (click)="collapseUnverify.toggle()" [attr.aria-expanded]="!ngbUnverifyCollapse"
-                        aria-controls="collapseExample">
-                        {{ t("show_details") }}
-                      </button>
-                    </ngb-alert>
-                    <div class="mb-3" #collapseUnverify="ngbCollapse" [(ngbCollapse)]="ngbUnverifyCollapse">
-                      <div class="table-responsive">
-                        <table class="table table-striped">
-                          <thead>
-                            <tr>
-                              <th scope="col">{{ t("filter_type") }}</th>
-                              <th scope="col">{{ t("order_id") }}</th>
-                              <th scope="col">{{ t("address") }}</th>
-                              <th scope="col">
-                                {{ "sub_district" | transloco }}
-                              </th>
-                              <th scope="col">{{ "district" | transloco }}</th>
-                              <th scope="col">{{ "province" | transloco }}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr *ngFor="let item of validateDataTable" (click)="openCustomerOrderDetails(item)"
-                              style="cursor: pointer">
-                              <th scope="row">
-                                {{ t("unverify_coordinate") }}
-                              </th>
-
-                              <td>{{ item.name }}</td>
-                              <td>
-                                {{
-                                (item.originalAddress?.address ?? '')
-                                | truncate:70:"..."
-                                }}
-                              </td>
-                              <td>{{ item.originalAddress?.subdistrict }}</td>
-                              <td>{{ item.originalAddress?.district }}</td>
-                              <td>{{ item.originalAddress?.province }}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div class="d-flex justify-content-between p-2">
-                        <ngb-pagination [collectionSize]="ngbValidationTableCollectionSize" [(page)]="page"
-                          [pageSize]="pageSize" (pageChange)="refreshValidationTable()">
-                        </ngb-pagination>
-                      </div>
-                    </div>
-                    } @if(validateExperiment &&
-                    validateExperiment.warning.zero_weight.length > 0){
-
-                    <p class="h-2 text-capitalize">{{ t("order_data") }}</p>
-
-                    <ngb-alert [dismissible]="false">
-                      <strong>{{ validateMessage.warningMessage.zeroWeight.title }}
-                      </strong>
-                      {{ validateMessage.warningMessage.zeroWeight.message }}
-                      <a target="_blank" [routerLink]="['/users/inventories']"
-                        class="link link-primary link-opacity-75-hover">{{ t("direct_to_inventory") }}.</a>
-                      <button type="button" class="link link-primary link-opacity-75-hover"
-                        (click)="collapseZeroWeight.toggle()" [attr.aria-expanded]="!ngbZeroWeightCollapse"
-                        aria-controls="collapseExample">
-                        {{ t("show_details") }}
-                      </button>
-                    </ngb-alert>
-                    <div class="mb-3" #collapseZeroWeight="ngbCollapse" [(ngbCollapse)]="ngbZeroWeightCollapse">
-                      <div class="table-responsive">
-                        <table class="table table-striped">
-                          <thead>
-                            <tr>
-                              <th scope="col">{{ t("order_id") }}</th>
-                              <th scope="col">
-                                {{ t("product_id_zero_weight") }}
-                              </th>
-                              <th scope="col">{{ t("product_id_missing") }}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr *ngFor="
-                                let item of validateExperiment.warning
-                                  .zero_weight
-                              " (click)="openCustomerOrderDetails(item)" style="cursor: pointer">
-                              <td>{{ item.name }}</td>
-                              <td>
-                                {{ item.metrics?.productIds?.join(", ") }}
-                              </td>
-                              <td>
-                                {{
-                                item.metrics?.missingProductIds?.join(", ")
-                                }}
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div class="d-flex justify-content-between p-2">
-                        <ngb-pagination [collectionSize]="ngbValidationTableCollectionSize" [(page)]="page"
-                          [pageSize]="pageSize" (pageChange)="refreshValidationTable()">
-                        </ngb-pagination>
-                      </div>
-                    </div>
                     }
+
+                    <ng-container *transloco="let tv; scope: 'validation'; read: 'validation'">
+                      <div class="container-validation-warning new-warning-validation" *ngIf="isValidationWarning && validationWarningTableRows.length > 0">
+                        <div class="validation-warning-item">
+                          <ngb-alert [dismissible]="false">
+                            <strong>Constraint Warning</strong>
+                            <button type="button" class="link link-primary link-opacity-75-hover"
+                              (click)="toggleValidationWarningCollapse()"
+                              [attr.aria-expanded]="!validationWarningCollapse">
+                              {{ t("show_details") }}
+                            </button>
+                          </ngb-alert>
+                          <div class="mb-3 overflow-x-auto" [ngbCollapse]="validationWarningCollapse">
+                            <table class="table table-striped">
+                              <thead>
+                                <tr>
+                                  <th>{{ tv('validation_table_header_file_name') }}</th>
+                                  <th>{{ tv('validation_table_header_message') }}</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr *ngFor="let row of validationWarningTableRows">
+                                  <td>{{ row.fileName }}</td>
+                                  <td>{{ tv(row.type, row.params) }}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </ng-container>
                   </div>
+
+
                   <div class="col text-start">
                     <button mat-raised-button class="bg-custom-secondary" (click)="exportValidationData()">
                       <mat-icon>download</mat-icon>

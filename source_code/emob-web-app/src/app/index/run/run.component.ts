@@ -260,6 +260,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   transformWarningCollapseStates: boolean[] = [];
   validationWarningTableRows: ValidationTableRow[] = [];
   validationWarningCollapse: boolean = true;
+  isValidationWarning: boolean = false;
 
   // Mat table
   @ViewChild(MatPaginator, { static: false })
@@ -2175,6 +2176,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       )
       .subscribe({
         next: (result) => {
+          console.log('validateExperiment result', result);
           this.haveUpdateAfterValidated = false;
           // Sync constraints with the payload used for validation so UI reflects latest
           const mergedConstraint: Constraint = {
@@ -2193,6 +2195,14 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.navigateToTab(4); // Always navigate to validation tab after validation
           // Mark validation as completed and show corresponding messages (success path)
           this.haveValidated = true;
+
+          this.isValidationWarning = result.result?.isWarning || false;
+          if (this.isValidationWarning && result.result?.warning) {
+            this.setValidationWarnings(result.result.warning);
+          } else {
+            this.setValidationWarnings([]);
+          }
+
           this.isValidateShowMessage = {
             OrderData: {
               invalidCoordinate: true,

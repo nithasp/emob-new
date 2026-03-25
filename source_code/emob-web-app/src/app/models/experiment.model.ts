@@ -80,6 +80,8 @@ export interface Result {
   customers: Customer[];
   depots: Depot[];
   validate: Validate;
+  isWarning?: boolean;
+  warning?: any[];
 }
 
 export interface Validate {
