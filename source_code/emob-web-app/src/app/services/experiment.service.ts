@@ -126,12 +126,13 @@ export class ExperimentService {
               fileUrls {
                 transform {
                   locations
+                  warning
                 }
                 validate {
                   parameterFormats
                   vehicleTypes
                   preVRPSolution
-                  
+                  errorWarning
                 }
                 plan {
                   vrpSolutionLean

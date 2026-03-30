@@ -21,8 +21,8 @@ export interface Experiment {
   timeDuration: number | null;
   triggeredBy: string;
   triggeredByName: string;
-  status: StatusExperiment;
-  run: string;
+  status: ExperimentStatus;
+  run: Run;
   groupId: string;
   countGeocoding: number;
   countReroute: number;
@@ -30,7 +30,12 @@ export interface Experiment {
   result?: Result;
 }
 
-export enum StatusExperiment {
+export enum Run {
+  Original = 'Original',
+  Rerun = 'Rerun',
+}
+
+export enum ExperimentStatus {
   Initializing = 'Initializing',
   UploadCompleted = 'UploadCompleted',
   Succeeded = 'Succeeded',
@@ -38,6 +43,7 @@ export enum StatusExperiment {
   Queued = 'Queued',
   Failed = 'Failed',
   Canceled = 'Canceled',
+  Cancelled = 'Cancelled'
 }
 
 export interface ExperimentInputdata {
@@ -61,13 +67,14 @@ export interface FileUrlsGroup {
 
 export interface TransformState {
   locations: string | null;
+  warning: string | null;
 }
 
 export interface ValidateState {
   parameterFormats: string | null;
   vehicleTypes: string | null;
   preVRPSolution: string | null;
-  vrpConfig: string | null;
+  errorWarning: string | null;
 }
 
 export interface PlanState {

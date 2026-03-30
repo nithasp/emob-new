@@ -61,7 +61,8 @@ import {
   Experiment,
   InputDataItem,
   Result,
-  StatusExperiment,
+  ExperimentStatus,
+  Run,
   Validate,
   Company,
   MyDepot,
@@ -375,7 +376,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               .subscribe((response: Experiment) => {
                 this.experiment = { ...response };
                 console.log('experiment', this.experiment);
-                if (this.experiment.status !== StatusExperiment.Initializing) {
+                if (this.experiment.status !== ExperimentStatus.Initializing) {
                   this.spinner.hide();
                   this.openConfirmDialog(
                     this.transloco.translate('warning'),
@@ -1426,8 +1427,8 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
   deleteFileInList(index: number) {
     if (
-      this.experiment.run !== 'Original' &&
-      this.experiment.status !== StatusExperiment.Initializing
+      this.experiment.run !== Run.Original &&
+      this.experiment.status !== ExperimentStatus.Initializing
     ) {
       this.toastr.warning(
         this.transloco.translate('cannot_delete_file', {}, 'index'),
@@ -2490,7 +2491,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.isFileSelectionStep = false;
   }
   isOriginalExperiment(): boolean {
-    return this.experiment.run === 'Original';
+    return this.experiment.run === Run.Original;
   }
 
   onValueChange<K extends keyof Constraint>(
