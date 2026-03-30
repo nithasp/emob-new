@@ -260,7 +260,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   transformWarnings: any[] = [];
   transformWarningCollapseStates: boolean[] = [];
   validationWarningTableRows: ValidationTableRow[] = [];
-  validationWarningCollapse: boolean = true;
+  validationWarningCollapse: boolean = false;
   isValidationWarning: boolean = false;
 
   // Mat table
@@ -4140,7 +4140,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       ...warning,
       detail: this.deduplicateByInput(warning.detail),
     }));
-    this.transformWarningCollapseStates = this.transformWarnings.map(() => false);
+    this.transformWarningCollapseStates = this.transformWarnings.map(() => true);
   }
 
   private deduplicateByInput(details: any[]): any[] {
@@ -4174,7 +4174,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   setValidationWarnings(warnings: any[]) {
     this.validationWarningTableRows = buildTableRows(warnings || []);
-    this.validationWarningCollapse = true;
+    this.validationWarningCollapse = false;
   }
 
   toggleValidationWarningCollapse() {
