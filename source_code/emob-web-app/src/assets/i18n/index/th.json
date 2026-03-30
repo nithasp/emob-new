@@ -389,5 +389,10 @@
   "you_are_not_the_creator_of_this_experiment": "คุณไม่ใช่ผู้สร้างการทดลองนี้",
   "zero_weight_description": "โปรดตรวจสอบสินค้าคงคลัง หากคุณได้ทำการอัปเดตสินค้าคงคลังแล้ว",
   "zero_weight_warning": "คำเตือนน้ำหนักเป็นศูนย์",
-  "zone": "โซน"
+  "zone": "โซน",
+  "validation_dialog_title": "ข้อผิดพลาดการตรวจสอบ",
+  "validation_table_header_file_name": "ชื่อไฟล์",
+  "validation_table_header_message": "ข้อความ",
+  "validation_dialog_empty_error_title": "อัปโหลดล้มเหลว",
+  "validation_dialog_empty_error_desc": "การอัปโหลดถูกปฏิเสธ แต่ไม่มีรายละเอียดข้อผิดพลาดเพิ่มเติม กรุณาตรวจสอบไฟล์และลองอีกครั้ง"
 }

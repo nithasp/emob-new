@@ -1,4 +1,4 @@
-<ng-container *transloco="let t; read: 'validation'">
+<ng-container *transloco="let t; read: 'index'">
   <div class="modal-header">
     <div class="d-flex align-items-center gap-2">
       <h2 class="modal-title text-danger m-0 fw-bold">
@@ -15,20 +15,22 @@
 
   <div class="modal-body">
     <div class="validation-table-wrapper" *ngIf="tableRows.length; else emptyError">
-      <table class="table validation-table">
-        <thead>
-          <tr>
-            <th>{{ t('validation_table_header_file_name') }}</th>
-            <th>{{ t('validation_table_header_message') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let row of tableRows">
-            <td class="file-name-cell">{{ row.fileName }}</td>
-            <td>{{ t(row.type, row.params) }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <ng-container *transloco="let tVal; scope: 'validation'; read: 'validation'">
+        <table class="table validation-table">
+          <thead>
+            <tr>
+              <th>{{ t('validation_table_header_file_name') }}</th>
+              <th>{{ t('validation_table_header_message') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of tableRows">
+              <td class="file-name-cell">{{ row.fileName }}</td>
+              <td>{{ tVal(row.type, row.params) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
     </div>
 
     <ng-template #emptyError>

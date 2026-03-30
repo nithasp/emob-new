@@ -389,5 +389,10 @@
   "you_are_not_the_creator_of_this_experiment": "You are not the creator of this experiment",
   "zero_weight_description": "Please check the inventories. If you have updated inventories",
   "zero_weight_warning": "Zero weight Warning",
-  "zone": "Zone"
+  "zone": "Zone",
+  "validation_dialog_title": "Validation Errors",
+  "validation_table_header_file_name": "File Name",
+  "validation_table_header_message": "Message",
+  "validation_dialog_empty_error_title": "Upload Failed",
+  "validation_dialog_empty_error_desc": "The upload was rejected but no specific error details were provided. Please check your files and try again."
 }

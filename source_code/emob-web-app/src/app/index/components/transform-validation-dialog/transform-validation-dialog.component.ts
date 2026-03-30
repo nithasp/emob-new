@@ -8,7 +8,7 @@ import { buildTableRows } from 'src/app/shared/utils/validation-table.utils';
   selector: 'app-transform-validation-dialog',
   templateUrl: './transform-validation-dialog.component.html',
   styleUrls: ['./transform-validation-dialog.component.scss'],
-  providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'validation' }],
+  providers: [{ provide: TRANSLOCO_SCOPE, useValue: ['index', 'validation'] }],
 })
 export class TransformValidationDialogComponent implements OnInit {
   @Input() validationResponse: any;

@@ -1,10 +1,4 @@
 {
-  "validation_dialog_title": "Validation Errors",
-  "validation_table_header_file_name": "File Name",
-  "validation_table_header_message": "Message",
-  "validation_dialog_empty_error_title": "Upload Failed",
-  "validation_dialog_empty_error_desc": "The upload was rejected but no specific error details were provided. Please check your files and try again.",
-
   "val_column_in_dataframe": "Column {{location[1]}} is missing from the file",
   "val_missing": "{{location[1]}} is missing or null at row {{location[0]}}",
   "val_greater_than": "Value {{input}} in column {{location[1]}} must be greater than {{context.limitValue}}",
