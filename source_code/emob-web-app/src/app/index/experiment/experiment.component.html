@@ -9,13 +9,13 @@
         <button mat-raised-button class="ml-3 bg-custom-primary" [hidden]="
             !isSelectedStatusValue('InProgress') &&
             !isSelectedStatusValue('Succeeded') &&
-            !isSelectedStatusValue('Canceled')
+            !isSelectedStatusValue('Cancelled')
           " (click)="tryToRerunExperiment(selection.selected[0])">
           <mat-icon>content_copy</mat-icon>
           {{ t("try_to_rerun") }}
         </button>
         <button mat-raised-button class="ml-3 bg-custom-primary" [hidden]="
-            !isSelectedStatusValue('Canceled') &&
+            !isSelectedStatusValue('Cancelled') &&
             !isSelectedStatusValue('Failed')
           " (click)="retryExperiment(selection.selected[0])">
           <mat-icon>replay</mat-icon>
@@ -89,7 +89,7 @@
                     receipt_long</mat-icon>
                 </button>
                 <button mat-icon-button class="custom-icon-button ml-2" [hidden]="
-                    element.status !== 'Failed' && element.status !== 'Canceled'
+                    element.status !== 'Failed' && element.status !== 'Cancelled'
                   " placement="top" [ngbTooltip]="'Retry'" (click)="retryExperiment(element)">
                   <mat-icon class="icon-custom-primary" style="float: right">replay</mat-icon>
                 </button>
@@ -153,7 +153,7 @@
                     <mat-icon style="color: red; vertical-align: middle">cancel</mat-icon>
                     {{ t("status_failed") }}
                   </ng-container>
-                  <ng-container *ngSwitchCase="'Canceled'">
+                  <ng-container *ngSwitchCase="'Cancelled'">
                     <mat-icon style="color: gray; vertical-align: middle">block</mat-icon>
                     {{ t("status_canceled") }}
                   </ng-container>
