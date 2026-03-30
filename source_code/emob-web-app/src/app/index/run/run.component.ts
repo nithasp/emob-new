@@ -377,6 +377,17 @@ export class RunComponent implements OnInit, AfterViewInit {
                 this.experiment = { ...response };
                 console.log('experiment', this.experiment);
 
+                if (response.fileUrls?.validate?.errorWarning) {
+                  this.dataFromFileUrlToJson(response.fileUrls.validate.errorWarning).then((data) => {
+                    const warnings = data?.warnings || [];
+                    this.isValidationWarning = warnings.length > 0;
+                    this.setValidationWarnings(warnings);
+
+                  }).catch((err) => {
+                    console.error('error fetching validate warning data', err);
+                  });
+                }
+
                 if (response.fileUrls?.transform?.warning) {
                   this.dataFromFileUrlToJson(response.fileUrls.transform.warning).then((data) => {
                     console.log('transform warning data', data);

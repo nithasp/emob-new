@@ -20,7 +20,7 @@
               <div class="row card-body">
 
 
-                <ng-container *transloco="let tVal; scope: 'validation'; read: 'validation'">
+                <!-- <ng-container *transloco="let tVal; scope: 'validation'; read: 'validation'">
                   <div class="container-validation-warning new-warning-validation" *ngIf="validationWarningTableRows.length > 0">
                     <div class="validation-warning-item">
                       <ngb-alert [dismissible]="false">
@@ -49,7 +49,7 @@
                       </div>
                     </div>
                   </div>
-                </ng-container>
+                </ng-container> -->
 
 
                 <div class="container-transform-warning" *ngIf="transformWarnings.length > 0">
@@ -762,9 +762,9 @@
                 <div class="row mt-4">
 
                   <div class="col-md-12">
-                    @if(!isValidationWarning) {
-                    <ngb-alert type="success" [dismissible]="false" class="mt-5 mb-5">
-                      <strong class="h-2">{{ t("verification_is_correct") }}!</strong>
+                    <ngb-alert type="success" [dismissible]="false" class="mt-5 mb-5"
+                      *ngIf="haveValidated && !isValidationWarning">
+                      <strong class="h-2">{{ t("verification_is_correct") }}! </strong>
                       <span>{{
                         t(
                         "pre_order_verification_is_correct_you_can_continue_to_route_your_plan"
@@ -772,10 +772,9 @@
                         }}
                       </span>
                     </ngb-alert>
-                    }
 
                     <ng-container *transloco="let tVal; scope: 'validation'; read: 'validation'">
-                      <div class="container-validation-warning new-warning-validation" *ngIf="isValidationWarning && validationWarningTableRows.length > 0">
+                      <div class="container-validation-warning new-warning-validation" *ngIf="validationWarningTableRows.length > 0">
                         <div class="validation-warning-item">
                           <ngb-alert [dismissible]="false">
                             <strong>Constraint Warning</strong>
@@ -785,7 +784,7 @@
                               {{ t("show_details") }}
                             </button>
                           </ngb-alert>
-                          <div class="mb-3 overflow-x-auto" [ngbCollapse]="validationWarningCollapse">
+                          <div class="validation-warning-item-wrapper mb-3 overflow-x-auto" [ngbCollapse]="validationWarningCollapse">
                             <table class="table table-striped">
                               <thead>
                                 <tr>
