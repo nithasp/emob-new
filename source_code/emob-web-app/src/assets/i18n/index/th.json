@@ -200,6 +200,7 @@
   "no_report_available_to_load": "ไม่มีรายงานที่สามารถโหลดได้",
   "no_vehicle_types_found": "ไม่พบประเภทยานพาหนะ",
   "no_vehicles_found": "ไม่พบยานพาหนะสำหรับประเภทนี้",
+  "no_vehicle_selected": "กรุณาเลือกยานพาหนะอย่างน้อยหนึ่งคัน",
   "number_delivery_points": "จำนวนจุดส่งของ",
   "number_of_vehicle_available": "จำนวนยานพาหนะที่พร้อมใช้งาน",
   "number_of_vehicle_available_is_set_to": "จำนวนยานพาหนะที่มีอยู่ถูกตั้งไว้ที่",

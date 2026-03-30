@@ -200,6 +200,7 @@
   "no_report_available_to_load": "No report available to load",
   "no_vehicle_types_found": "No vehicle types found.",
   "no_vehicles_found": "No vehicles found for this vehicle type",
+  "no_vehicle_selected": "Please select at least one vehicle",
   "number_delivery_points": "Number of Delivery Points",
   "number_of_vehicle_available": "Number of vehicle available",
   "number_of_vehicle_available_is_set_to": "Number of vehicle available is set to",

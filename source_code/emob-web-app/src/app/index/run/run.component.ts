@@ -2154,6 +2154,13 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   validateExperimentPreOrder() {
+    if (this.selectedVehicleIds.length === 0) {
+      this.toastr.warning(
+        this.transloco.translate('no_vehicle_selected', {}, 'index')
+      );
+      return;
+    }
+
     const parameterPayload = this.buildValidateParameterFromDynamic();
     const vehiclesPayload = this.buildVehiclesPayload();
 
