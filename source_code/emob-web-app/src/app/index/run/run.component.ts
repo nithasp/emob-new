@@ -376,6 +376,16 @@ export class RunComponent implements OnInit, AfterViewInit {
               .subscribe((response: Experiment) => {
                 this.experiment = { ...response };
                 console.log('experiment', this.experiment);
+
+                if (response.fileUrls?.transform?.warning) {
+                  this.dataFromFileUrlToJson(response.fileUrls.transform.warning).then((data) => {
+                    console.log('transform warning data', data);
+                    this.setTransformWarnings(data);
+                  }).catch((err) => {
+                    console.error('error fetching transform warning data', err);
+                  });
+                }
+
                 if (this.experiment.status !== ExperimentStatus.Initializing) {
                   this.spinner.hide();
                   this.openConfirmDialog(
@@ -4122,6 +4132,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     console.log(' this.isUpload', this.isUpload)
 
     console.log('this.validateExperiment', this.validateExperiment)
+
+    console.log('this.transformWarnings', this.transformWarnings)
  
   }
 
@@ -4146,7 +4158,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   setTransformWarnings(warnings: any[]) {
     this.transformWarnings = warnings.map((warning) => ({
       ...warning,
-      detail: this.deduplicateByInput(warning.detail),
+      detail: this.deduplicateByInput(warning.detail)
     }));
     this.transformWarningCollapseStates = this.transformWarnings.map(() => true);
   }
