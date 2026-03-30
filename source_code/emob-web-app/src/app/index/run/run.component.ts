@@ -525,65 +525,65 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
 
     // load geocoding location
-    // if (experiment.fileUrls?.transform?.locations) {
-    //   console.log('experiment.fileUrls?.transform?.locations', experiment.fileUrls?.transform?.locations)
-    //   await this.dataFromFileUrlToJson(
-    //     experiment.fileUrls.transform.locations
-    //   ).then((response: Result) => {
-    //     console.log('Result', response);
-    //     console.log('newOrderData', newOrderData);
+    if (experiment.fileUrls?.transform?.locations) {
+      console.log('experiment.fileUrls?.transform?.locations', experiment.fileUrls?.transform?.locations)
+      await this.dataFromFileUrlToJson(
+        experiment.fileUrls.transform.locations
+      ).then((response: Result) => {
+        console.log('Result', response);
+        console.log('newOrderData', newOrderData);
 
-    //    //this.groupingCustomer(response.customers, response.depots);
+       //this.groupingCustomer(response.customers, response.depots);
 
-    //    this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
-    //   });
-    // }
+       this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
+      });
+    }
 
     // new load geocoding location, use hardcode temporary data
     this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
 
-    if (experiment.fileUrls?.validate?.vrpConfig) {
-      this.toastr.info(
-        this.transloco.translate('loading_geo_location_data', {}, 'index'),
-        `${this.transloco.translate('please_wait', {}, 'index')} ...`
-      );
-      // load geocoding location edited
-      await this.dataFromFileUrlToJson(
-        experiment.fileUrls.validate.vrpConfig
-      ).then((response: { customers: CustomerUpdated[] }) => {
-        this.updateCustomerGroup(response?.customers);
-        this.dataService
-          .getData(experiment.runId)
-          .subscribe((data: CustomerUpdated[]) => {
-            console.log('data user edited location', data);
-            if (data && data.length > 0) {
-              const newData = data.filter(
-                (newItem) =>
-                  !this.customersLocationUpdated.some(
-                    (existingItem) =>
-                      existingItem.index === newItem.index &&
-                      existingItem.name === newItem.name
-                  )
-              );
-              console.log(newData);
-              if (newData.length > 0) {
-                this.toastr.info(
-                  `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                    newData.length +
-                    ` ${this.transloco.translate(
-                      'new_edited_location_data_suffix',
-                      {},
-                      'index'
-                    )}`,
-                  `${this.transloco.translate('please_wait', {}, 'index')}...`
-                );
-                this.haveUpdateAfterValidated = true;
-              }
-              this.updateCustomerGroup(newData);
-            }
-          });
-      });
-    }
+    // if (experiment.fileUrls?.validate?.vrpConfig) {
+    //   this.toastr.info(
+    //     this.transloco.translate('loading_geo_location_data', {}, 'index'),
+    //     `${this.transloco.translate('please_wait', {}, 'index')} ...`
+    //   );
+    //   // load geocoding location edited
+    //   await this.dataFromFileUrlToJson(
+    //     experiment.fileUrls.validate.vrpConfig
+    //   ).then((response: { customers: CustomerUpdated[] }) => {
+    //     this.updateCustomerGroup(response?.customers);
+    //     this.dataService
+    //       .getData(experiment.runId)
+    //       .subscribe((data: CustomerUpdated[]) => {
+    //         console.log('data user edited location', data);
+    //         if (data && data.length > 0) {
+    //           const newData = data.filter(
+    //             (newItem) =>
+    //               !this.customersLocationUpdated.some(
+    //                 (existingItem) =>
+    //                   existingItem.index === newItem.index &&
+    //                   existingItem.name === newItem.name
+    //               )
+    //           );
+    //           console.log(newData);
+    //           if (newData.length > 0) {
+    //             this.toastr.info(
+    //               `${this.transloco.translate('please_wait', {}, 'index')} ` +
+    //                 newData.length +
+    //                 ` ${this.transloco.translate(
+    //                   'new_edited_location_data_suffix',
+    //                   {},
+    //                   'index'
+    //                 )}`,
+    //               `${this.transloco.translate('please_wait', {}, 'index')}...`
+    //             );
+    //             this.haveUpdateAfterValidated = true;
+    //           }
+    //           this.updateCustomerGroup(newData);
+    //         }
+    //       });
+    //   });
+    // }
 
     if (experiment.fileUrls?.validate?.preVRPSolution) {
       console.log('experiment.fileUrls?.validate?.preVRPSolution', experiment.fileUrls?.validate?.preVRPSolution)

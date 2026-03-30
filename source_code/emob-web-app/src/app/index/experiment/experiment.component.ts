@@ -88,6 +88,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     this.showSpinner();
     this.experimentService.getExperiments().subscribe({
       next: (response) => {
+        console.log('response', response);
         this.dataSource.data = response;
         this.dataSource.paginator = this.paginator;
         this.hiddenSpinner();

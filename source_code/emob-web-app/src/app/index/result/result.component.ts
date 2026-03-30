@@ -252,7 +252,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       .pipe(take(1))
       .subscribe((params: { [x: string]: string }) => {
         this.experimentService
-          .getExperimentResult(params['experimentId'])
+          .getExperiment(params['experimentId'])
           .subscribe((response: Experiment) => {
             console.log(response);
             this.experiment = { ...response };
