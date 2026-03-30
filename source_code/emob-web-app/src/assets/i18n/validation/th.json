@@ -1,7 +1,9 @@
 {
-  "validation_dialog__title": "ข้อผิดพลาดการตรวจสอบ",
+  "validation_dialog_title": "ข้อผิดพลาดการตรวจสอบ",
   "validation_table_header_file_name": "ชื่อไฟล์",
   "validation_table_header_message": "ข้อความ",
+  "validation_dialog_empty_error_title": "อัปโหลดล้มเหลว",
+  "validation_dialog_empty_error_desc": "การอัปโหลดถูกปฏิเสธ แต่ไม่มีรายละเอียดข้อผิดพลาดเพิ่มเติม กรุณาตรวจสอบไฟล์และลองอีกครั้ง",
 
   "val_column_in_dataframe": "ไม่พบคอลัมน์ {{location[1]}} ในไฟล์",
   "val_missing": "{{location[1]}} มีค่าว่าง (null) หรือไม่พบข้อมูล ที่แถว {{location[0]}}",

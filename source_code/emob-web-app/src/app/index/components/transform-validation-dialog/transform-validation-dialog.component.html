@@ -2,7 +2,7 @@
   <div class="modal-header">
     <div class="d-flex align-items-center gap-2">
       <h2 class="modal-title text-danger m-0 fw-bold">
-        {{ t('validation_dialog__title') }}
+        {{ t('validation_dialog_title') }}
       </h2>
     </div>
     <button
@@ -14,7 +14,7 @@
   </div>
 
   <div class="modal-body">
-    <div class="validation-table-wrapper" *ngIf="tableRows.length">
+    <div class="validation-table-wrapper" *ngIf="tableRows.length; else emptyError">
       <table class="table validation-table">
         <thead>
           <tr>
@@ -30,6 +30,14 @@
         </tbody>
       </table>
     </div>
+
+    <ng-template #emptyError>
+      <div class="empty-error-state">
+        <span class="empty-error-icon">&#9888;</span>
+        <p class="empty-error-title">{{ t('validation_dialog_empty_error_title') }}</p>
+        <p class="empty-error-desc">{{ t('validation_dialog_empty_error_desc') }}</p>
+      </div>
+    </ng-template>
   </div>
 
   <div class="modal-footer">

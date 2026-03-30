@@ -1341,12 +1341,20 @@ export class RunComponent implements OnInit, AfterViewInit {
             .uploadPreOrder(this.experiment.runId, depotIds, newPayload)
             .subscribe((response: any) => {
               console.log('uploadPreOrder success response', response);
+
+              if (response.result?.isSuccesses === false) {
+                this.spinner.hide();
+                this.openTransformValidationDialog(response.result);
+                return;
+              }
+
               if (response.result?.isWarning && response.result?.warning) {
                 this.setTransformWarnings(response.result.warning);
               } else {
                 this.setTransformWarnings([]);
               }
 
+              // getExperiment step
               // Refresh experiment data first, then proceed with grouping to ensure latest depots exist
               this.experimentService
                 .getExperiment(this.experiment.runId)
