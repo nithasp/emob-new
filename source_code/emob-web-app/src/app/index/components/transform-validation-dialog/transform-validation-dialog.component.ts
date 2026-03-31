@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { TRANSLOCO_SCOPE } from '@jsverse/transloco';
+import { TRANSLOCO_SCOPE, TranslocoService } from '@jsverse/transloco';
 import { ValidationTableRow } from 'src/app/models/validation-table.model';
-import { buildTableRows } from 'src/app/shared/utils/validation-table.utils';
+import { buildTableRows, getValidationMessage } from 'src/app/shared/utils/validation-table.utils';
 
 @Component({
   selector: 'app-transform-validation-dialog',
@@ -15,12 +15,19 @@ export class TransformValidationDialogComponent implements OnInit {
 
   tableRows: ValidationTableRow[] = [];
 
-  constructor(public activeModal: NgbActiveModal) {}
+  constructor(
+    public activeModal: NgbActiveModal,
+    private readonly transloco: TranslocoService,
+  ) {}
 
   ngOnInit(): void {
     if (this.validationResponse) {
       this.tableRows = buildTableRows(this.validationResponse?.error || []);
     }
+  }
+
+  getValidationMessage(type: string, params: any): string {
+    return getValidationMessage(this.transloco, type, params);
   }
 
   close(): void {

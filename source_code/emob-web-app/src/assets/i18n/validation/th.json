@@ -19,5 +19,6 @@
   "bus_soft_constraint_volume": "คำเตือน: ลูกค้าที่แถว {{location[0]}} — ปริมาตรสินค้า {{input}} เกินขีดจำกัดแบบ soft (สูงสุด: {{context.limits}})",
   "bus_soft_constraint_distance": "คำเตือน: ลูกค้าที่แถว {{location[0]}} — ระยะทาง {{input}} เกินขีดจำกัดแบบ soft (สูงสุด: {{context.limits}})",
   "bus_soft_constraint_duration": "คำเตือน: ลูกค้าที่แถว {{location[0]}} — เวลาเดินทาง {{input}} เกินขีดจำกัดแบบ soft (สูงสุด: {{context.limits}})",
-  "bus_missing_vehicle_groups": "ลูกค้าที่แถว {{location[0]}} — กลุ่มยานพาหนะ {{input}} ที่ต้องการไม่มีในระบบการกำหนดค่าปัจจุบัน"
+  "bus_missing_vehicle_groups": "ลูกค้าที่แถว {{location[0]}} — กลุ่มยานพาหนะ {{input}} ที่ต้องการไม่มีในระบบการกำหนดค่าปัจจุบัน",
+  "unknown_validation_error": "ขออภัย ระบบขัดข้องชั่วคราว (Reference Code: {{errorType}}) กรุณาแจ้งผู้ดูแลระบบ"
 }

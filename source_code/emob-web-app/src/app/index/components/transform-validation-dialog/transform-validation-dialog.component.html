@@ -15,22 +15,20 @@
 
   <div class="modal-body">
     <div class="validation-table-wrapper" *ngIf="tableRows.length; else emptyError">
-      <ng-container *transloco="let tVal; scope: 'validation'; read: 'validation'">
-        <table class="table validation-table">
-          <thead>
-            <tr>
-              <th>{{ t('validation_table_header_file_name') }}</th>
-              <th>{{ t('validation_table_header_message') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of tableRows">
-              <td class="file-name-cell">{{ row.fileName }}</td>
-              <td>{{ tVal(row.type, row.params) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </ng-container>
+      <table class="table validation-table">
+        <thead>
+          <tr>
+            <th>{{ t('validation_table_header_file_name') }}</th>
+            <th>{{ t('validation_table_header_message') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of tableRows">
+            <td class="file-name-cell">{{ row.fileName }}</td>
+            <td>{{ getValidationMessage(row.type, row.params) }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <ng-template #emptyError>

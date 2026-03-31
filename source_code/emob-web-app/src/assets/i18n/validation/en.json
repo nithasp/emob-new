@@ -19,5 +19,6 @@
   "bus_soft_constraint_volume": "Warning: Customer at row {{location[0]}} — order volume {{input}} exceeds soft volume limit (max: {{context.limits}})",
   "bus_soft_constraint_distance": "Warning: Customer at row {{location[0]}} — route distance {{input}} exceeds soft distance limit (max: {{context.limits}})",
   "bus_soft_constraint_duration": "Warning: Customer at row {{location[0]}} — route duration {{input}} exceeds soft duration limit (max: {{context.limits}})",
-  "bus_missing_vehicle_groups": "Customer at row {{location[0]}} — required vehicle group {{input}} does not exist in the current vehicle configuration"
+  "bus_missing_vehicle_groups": "Customer at row {{location[0]}} — required vehicle group {{input}} does not exist in the current vehicle configuration",
+  "unknown_validation_error": "An unexpected error occurred. Please provide this code to our team: {{errorType}}"
 }

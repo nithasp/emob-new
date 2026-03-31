@@ -51,8 +51,7 @@
                   </div>
                 </ng-container> -->
 
-
-                <div class="container-transform-warning" *ngIf="transformWarnings.length > 0">
+                <div class="container-transform-warning p-0" *ngIf="transformWarnings.length > 0">
                   <div class="transform-warning-item" *ngFor="let warning of transformWarnings; let wi = index">
                     <ngb-alert [dismissible]="false">
                       <strong>{{ getWarningTitle(warning.title) }}</strong>
@@ -795,7 +794,7 @@
                               <tbody>
                                 <tr *ngFor="let row of validationWarningTableRows">
                                   <td>{{ row.fileName }}</td>
-                                  <td>{{ tVal(row.type, row.params) }}</td>
+                                  <td>{{ getValidationMessage(row.type, row.params) }}</td>
                                 </tr>
                               </tbody>
                             </table>

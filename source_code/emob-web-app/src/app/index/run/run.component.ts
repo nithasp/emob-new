@@ -120,7 +120,7 @@ import mockPydanticError from './validationData/transform_pydantic_error.json';
 import mockMissingProductWarning from './validationData/transform_missing_product_warning.json';
 import mockValidationWarning from './validationData/validation_warning.json';
 import { ValidationTableRow } from 'src/app/models/validation-table.model';
-import { buildTableRows } from 'src/app/shared/utils/validation-table.utils';
+import { buildTableRows, getValidationMessage } from 'src/app/shared/utils/validation-table.utils';
  
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
@@ -4208,6 +4208,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     } else {
       this.setValidationWarnings((mockValidationWarning as any).warning);
     }
+  }
+
+  getValidationMessage(type: string, params: any): string {
+    return getValidationMessage(this.transloco, type, params);
   }
 
   setValidationWarnings(warnings: any[]) {

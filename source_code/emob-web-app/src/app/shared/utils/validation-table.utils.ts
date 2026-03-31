@@ -1,4 +1,18 @@
+import { TranslocoService } from '@jsverse/transloco';
 import { ValidationTableRow } from 'src/app/models/validation-table.model';
+
+export function getValidationMessage(
+  transloco: TranslocoService,
+  type: string,
+  params: any
+): string {
+  const scopedKey = `validation.${type}`;
+  const translated = transloco.translate(scopedKey, params);
+  if (!translated || translated === scopedKey || translated === type) {
+    return transloco.translate('validation.unknown_validation_error', { errorType: type });
+  }
+  return translated;
+}
 
 export function buildTableRows(items: any[]): ValidationTableRow[] {
   const rows: ValidationTableRow[] = [];
