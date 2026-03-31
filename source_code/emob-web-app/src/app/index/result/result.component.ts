@@ -114,7 +114,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   headersReport: string[] = [];
   dataSourceReport: ReportDataItem[] = [];
-  vrpStatsView: 'dashboard' | 'matrix' | 'keyvalue' | 'dashboard-raw' = 'dashboard-raw';
+  vrpStatsView: 'keyvalue' | 'dashboard' = 'dashboard';
 
   vrpDashboardCards: {
     label: string;
@@ -123,21 +123,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }[] = [];
 
   vrpDashboardRows: {
-    index: number;
-    metric: string;
-    totalValue: number | null;
-    excessValue: number | null;
-    unit: string;
-    statusOk: boolean | null;
-  }[] = [];
-
-  vrpDashboardRawCards: {
-    label: string;
-    value: string | number;
-    isFeasible?: boolean;
-  }[] = [];
-
-  vrpDashboardRawRows: {
     index: number;
     metric: string;
     totalValue: number | null;
@@ -467,18 +452,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     this.dataSourceReport = rows;
     this.buildVrpStatsDashboard();
-    this.buildVrpStatsDashboardRaw();
-  }
-
-  private abbreviateUnit(unit: string): string {
-    const map: Record<string, string> = {
-      kilometer: 'km',
-      minute: 'min',
-      kilogram: 'kg',
-      centimeter: 'cm',
-      'centimeter ** 3': 'cm³',
-    };
-    return map[unit] ?? unit;
   }
 
   private buildVrpStatsDashboard(): void {
@@ -486,97 +459,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const units = (s['dataUnits'] ?? {}) as Record<string, string>;
 
     this.vrpDashboardCards = [
-      {
-        label: 'Solution Feasible',
-        value: s['isSolutionFeasible'] ? 'True' : 'False',
-        isFeasible: s['isSolutionFeasible'] as boolean,
-      },
-      { label: 'Customer Count', value: s['customerCount'] as number },
-      { label: 'Route Count', value: s['routeCount'] as number },
-      { label: 'Total Fitness', value: s['totalFitness'] as number },
-    ];
-
-    this.vrpDashboardRows = [
-      {
-        index: 1,
-        metric: 'Weight',
-        totalValue: s['totalWeight'] as number,
-        excessValue: s['excessWeight'] as number,
-        unit: this.abbreviateUnit(units['weightUnit'] ?? ''),
-        statusOk: !(s['hasExcessWeight'] as boolean),
-      },
-      {
-        index: 2,
-        metric: 'Volume',
-        totalValue: s['totalVolume'] as number,
-        excessValue: s['excessVolume'] as number,
-        unit: this.abbreviateUnit(units['volumeUnit'] ?? ''),
-        statusOk: !(s['hasExcessVolume'] as boolean),
-      },
-      {
-        index: 3,
-        metric: 'Distance',
-        totalValue: s['totalDistance'] as number,
-        excessValue: s['excessDistance'] as number,
-        unit: this.abbreviateUnit(units['distanceUnit'] ?? ''),
-        statusOk: !(s['hasExcessDistance'] as boolean),
-      },
-      {
-        index: 4,
-        metric: 'Duration',
-        totalValue: s['totalDuration'] as number,
-        excessValue: s['excessDuration'] as number,
-        unit: this.abbreviateUnit(units['timeUnit'] ?? ''),
-        statusOk: !(s['hasExcessDuration'] as boolean),
-      },
-      {
-        index: 5,
-        metric: 'Travel Duration',
-        totalValue: s['totalTravelDuration'] as number,
-        excessValue: null,
-        unit: this.abbreviateUnit(units['timeUnit'] ?? ''),
-        statusOk: null,
-      },
-      {
-        index: 6,
-        metric: 'Service Duration',
-        totalValue: s['totalServiceDuration'] as number,
-        excessValue: null,
-        unit: this.abbreviateUnit(units['timeUnit'] ?? ''),
-        statusOk: null,
-      },
-      {
-        index: 7,
-        metric: 'Break Duration',
-        totalValue: s['totalBreakDuration'] as number,
-        excessValue: null,
-        unit: this.abbreviateUnit(units['timeUnit'] ?? ''),
-        statusOk: null,
-      },
-      {
-        index: 8,
-        metric: 'Early Time',
-        totalValue: null,
-        excessValue: s['excessEarlyTime'] as number,
-        unit: this.abbreviateUnit(units['timeUnit'] ?? ''),
-        statusOk: !(s['hasExcessEarlyTime'] as boolean),
-      },
-      {
-        index: 9,
-        metric: 'Late Time',
-        totalValue: null,
-        excessValue: s['excessLateTime'] as number,
-        unit: this.abbreviateUnit(units['timeUnit'] ?? ''),
-        statusOk: !(s['hasExcessLateTime'] as boolean),
-      },
-    ];
-  }
-
-  private buildVrpStatsDashboardRaw(): void {
-    const s = this.vrpStatsData;
-    const units = (s['dataUnits'] ?? {}) as Record<string, string>;
-
-    this.vrpDashboardRawCards = [
       {
         label: 'isSolutionFeasible',
         value: s['isSolutionFeasible'] ? 'True' : 'False',
@@ -588,7 +470,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       { label: 'totalCost', value: s['totalCost'] as number },
     ];
 
-    this.vrpDashboardRawRows = [
+    this.vrpDashboardRows = [
       {
         index: 1,
         metric: 'totalWeight',
