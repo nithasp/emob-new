@@ -49,7 +49,7 @@
               <input
                 type="text"
                 class="form-control bg-white"
-                [value]="t('status_' + (experiment?.run || '').toLowerCase())"
+                [value]="experiment?.run"
                 disabled
               />
             </div>
@@ -101,9 +101,7 @@
               <input
                 type="text"
                 class="form-control bg-white"
-                [value]="
-                  t('status_' + (experiment?.status || '').toLowerCase())
-                "
+                [value]="experiment?.status"
                 disabled
               />
             </div>
@@ -202,9 +200,9 @@
                   <td class="text-center vrp-unit">{{ row.unit }}</td>
                   <td class="text-center">
                     @if(row.statusOk === true){
-                      <span class="vrp-badge vrp-badge--ok">OK</span>
+                      <span class="badge bg-success">OK</span>
                     }@else if(row.statusOk === false){
-                      <span class="vrp-badge vrp-badge--warn">!</span>
+                      <span class="badge bg-danger">Excess</span>
                     }@else{
                       <span class="vrp-dash">-</span>
                     }

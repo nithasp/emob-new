@@ -378,7 +378,7 @@ mat-card.mb-4 {
     display: flex;
     gap: 0;
     border-bottom: 1px solid #dee2e6;
-
+    overflow: auto;
     .vrp-dashboard-card {
       flex: 1;
       padding: 14px 18px;
@@ -545,70 +545,6 @@ mat-card.mb-4 {
       }
 
       &:last-child td { border-bottom: none; }
-    }
-  }
-}
-
-// ─── VRP Stats Tabular Matrix View ───────────────────────────────────────────
-.table-vrp-stats-tabular-matrix {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  overflow: hidden;
-  font-size: 13px;
-  background: #fff;
-  overflow-x: auto;
-
-  table {
-    margin-bottom: 0;
-    width: 100%;
-
-    thead tr th {
-      background: #0e1547;
-      color: #fff;
-      font-weight: 600;
-      padding: 8px 14px;
-      border: none;
-      font-size: 12px;
-      letter-spacing: 0.3px;
-      text-align: center;
-      white-space: nowrap;
-    }
-
-    tbody tr td {
-      padding: 10px 14px;
-      border-bottom: none;
-      border-left: 1px solid #dee2e6;
-      border-right: none;
-      vertical-align: middle;
-      font-size: 13px;
-      font-weight: 600;
-      color: #0e1547;
-      text-align: center;
-      background-color: #f4f6fb;
-      white-space: nowrap;
-
-      &:first-child { border-left: none; }
-
-      &.text-success { color: #198754 !important; }
-      &.text-danger  { color: #dc3545 !important; }
-    }
-  }
-}
-
-.route-box {cursor: pointer;
-  &:not(:first-child):not(:last-child) {
-    transition: 0.1s;
-    cursor: pointer;
-
-    &:hover {
-      color: white;
-      background: #0606f4f0;
-
-      .route-node-distance {
-        transition: 0.1s;
-        color: white;
-      }
     }
   }
 }
