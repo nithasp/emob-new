@@ -293,7 +293,7 @@
   "start_time": "Start Time",
   "starts_with": "Starts With",
   "status": "Status",
-  "status_canceled": "Canceled",
+  "status_canceled": "Cancelled",
   "status_failed": "Failed",
   "status_in_progress": "In Progress",
   "status_initializing": "Initializing",
