@@ -91,6 +91,10 @@ export class CustomerListComponent implements OnInit {
   selectData() {
     const selected = this.customersToVerify[this.selectedIndex];
     const keyed = this.groupedDataPreOrder?.[selected?.name];
+    const products: any[] = (selected?.productQuantity?.length ? selected.productQuantity : null)
+      || selected?.extra?.productsInfo
+      || [];
+
     const fallback = keyed || {
       ORDERID_ORG: selected?.name,
       CHANNEL: selected?.extra?.channel || '',
@@ -100,12 +104,12 @@ export class CustomerListComponent implements OnInit {
       AUMPHER: selected?.originalAddress?.district || '',
       PROVINCE: selected?.originalAddress?.province || '',
       ZIPCODE: Number(selected?.originalAddress?.postalCode || 0),
-      details: (selected?.extra?.productsInfo || []).map((p) => ({
+      details: products.map((p: any) => ({
         PRODUCTID: String(p.productId || ''),
-        ORDER_ID: p.orderId || null,
-        PRODUCTNAME: p.productName || '',
-        QUANTITYMAIN: Number(p.quantityMajor || 0),
-        QUANTITYMINOR: Number(p.quantityMinor || 0),
+        ORDER_ID: p.skuCode || p.orderId || null,
+        PRODUCTNAME: p.name || p.productName || '',
+        QUANTITYMAIN: Number(p.productQuantity ?? p.quantityMajor ?? 0),
+        QUANTITYMINOR: Number(p.quantityMinor ?? 0),
         UserConfirm: p.userConfirm || null,
         DateConfirm: p.dateConfirm || null,
       })),

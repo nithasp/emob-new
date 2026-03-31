@@ -111,9 +111,6 @@ import {
   VehicleValidationInput,
   VehicleBlobData,
 } from 'src/app/models/vehicle.model';
-//import newOrderData from './newOrderData/newOrderData.json';
-//import newOrderData from './newOrderData/location17022026.json';
-import newOrderData from './newOrderData/location_with_productinfo.json';
 
 import mockPanderaError from './validationData/transform_pandera_error.json';
 import mockPydanticError from './validationData/transform_pydantic_error.json';
@@ -354,8 +351,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.spinner.show();
-
-    console.log('newOrderData', newOrderData)
   }
   ngAfterViewInit() {
     setTimeout(() => {
@@ -376,6 +371,17 @@ export class RunComponent implements OnInit, AfterViewInit {
               .subscribe((response: Experiment) => {
                 this.experiment = { ...response };
                 console.log('experiment', this.experiment);
+
+                if (response.fileUrls?.transform?.locations) {
+                  this.dataFromFileUrlToJson(response.fileUrls.transform.locations).then((data: any) => {
+                    console.log('transform locations data', data);
+                    if (data?.customers && data?.depots) {
+                      this.groupingCustomer(data.customers as Customer[], data.depots as Depot[]);
+                    }
+                  }).catch((err) => {
+                    console.error('error fetching transform locations data', err);
+                  });
+                }
 
                 if (response.fileUrls?.validate?.errorWarning) {
                   this.dataFromFileUrlToJson(response.fileUrls.validate.errorWarning).then((data) => {
@@ -551,18 +557,13 @@ export class RunComponent implements OnInit, AfterViewInit {
       console.log('experiment.fileUrls?.transform?.locations', experiment.fileUrls?.transform?.locations)
       await this.dataFromFileUrlToJson(
         experiment.fileUrls.transform.locations
-      ).then((response: Result) => {
-        console.log('Result', response);
-        console.log('newOrderData', newOrderData);
-
-       //this.groupingCustomer(response.customers, response.depots);
-
-       this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
+      ).then((response: any) => {
+        console.log('transform locations response', response);
+        if (response?.customers && response?.depots) {
+          this.groupingCustomer(response.customers as Customer[], response.depots as Depot[]);
+        }
       });
     }
-
-    // new load geocoding location, use hardcode temporary data
-    this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
 
     // if (experiment.fileUrls?.validate?.vrpConfig) {
     //   this.toastr.info(
@@ -1383,14 +1384,17 @@ export class RunComponent implements OnInit, AfterViewInit {
                 .subscribe(async (exp: Experiment) => {
 
                   this.experiment = { ...exp };
-                  // if (response.result) {
-                  //   this.groupingCustomer(
-                  //     response.result.customers,
-                  //     response.result.depots
-                  //   );
-                  // }
 
-                  this.groupingCustomer(newOrderData.customers as unknown as Customer[], newOrderData.depots as unknown as Depot[]);
+                  if (exp.fileUrls?.transform?.locations) {
+                    this.dataFromFileUrlToJson(exp.fileUrls.transform.locations).then((locationData: any) => {
+                      console.log('post-upload transform locations data', locationData);
+                      if (locationData?.customers && locationData?.depots) {
+                        this.groupingCustomer(locationData.customers as Customer[], locationData.depots as Depot[]);
+                      }
+                    }).catch((err) => {
+                      console.error('error fetching transform locations after upload', err);
+                    });
+                  }
 
                   this.experiment.name = response.name;
                   // Map inputdata to UI structure expected by template
@@ -1951,7 +1955,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
 
     this.dataSource.data = newData;
-   // this.dataSource.data = newOrderData;
+   // this.dataSource.data = newData;
   }
 
   displayDataInTable(locationType: LocationType) {
@@ -2010,6 +2014,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     //   })) || [],
     // };
 
+    const products = (customer.productQuantity?.length ? customer.productQuantity : null)
+      || customer.extra?.productsInfo
+      || [];
+
     const dataPreOder: DataPreOrder = {
       ORDERID_ORG: customer.name,
       CHANNEL: customer.extra?.channel || null,
@@ -2019,15 +2027,15 @@ export class RunComponent implements OnInit, AfterViewInit {
       AUMPHER: customer.originalAddress?.district || null,
       PROVINCE: customer.originalAddress?.province || null,
       ZIPCODE: customer.originalAddress?.postalCode || null,
-      details: customer.productQuantity?.map((product: any) => ({
+      details: products.map((product: any) => ({
         PRODUCTID: product.productId,
-        ORDER_ID: product.skuCode,
-        PRODUCTNAME: product.name,
-        QUANTITYMAIN: product.productQuantity,
-        QUANTITYMINOR: product?.quantityMinor,
-        UserConfirm: product?.userConfirm,
-        DateConfirm: product?.dateConfirm,
-      })) || [],
+        ORDER_ID: product.skuCode || product.orderId,
+        PRODUCTNAME: product.name || product.productName,
+        QUANTITYMAIN: product.productQuantity ?? product.quantityMajor,
+        QUANTITYMINOR: product.quantityMinor,
+        UserConfirm: product.userConfirm,
+        DateConfirm: product.dateConfirm,
+      })),
     };
 
     // Pass customer directly as dataCustomer (the component expects Customer type)
@@ -2483,10 +2491,11 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   groupingCustomer(customers: Customer[], depots: Depot[]) {
     this.countUploadedCustomers = customers.length;
-    // Sum all productsInfo lengths across customers for preOrderCount
     this.preOrderCount = customers.reduce((sum, customer) => {
-      const products = customer?.extra?.productsInfo;
-      return sum + (Array.isArray(products) ? products.length : 0);
+      const products = (customer.productQuantity?.length ? customer.productQuantity : null)
+        || customer.extra?.productsInfo
+        || [];
+      return sum + products.length;
     }, 0);
 
     const groupedCustomer = this.groupCustomers(customers);
@@ -4144,15 +4153,14 @@ export class RunComponent implements OnInit, AfterViewInit {
   log() {
     console.log('this.dataSource', this.dataSource)
     console.log('this.displayLocationType', this.displayLocationType)
-    console.log('newOrderData.depots.length', newOrderData.depots.length)
-    console.log('newOrderData.customers.length', newOrderData.customers.length)
+    console.log('this.depots.length', this.depots.length)
+    console.log('this.dataSource.data.length', this.dataSource.data.length)
 
-    console.log(' this.isUpload', this.isUpload)
+    console.log('this.isUpload', this.isUpload)
 
     console.log('this.validateExperiment', this.validateExperiment)
 
     console.log('this.transformWarnings', this.transformWarnings)
- 
   }
 
   openTransformValidationDialog(validationResponse?: any) {
