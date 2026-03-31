@@ -392,6 +392,11 @@ export class RunComponent implements OnInit, AfterViewInit {
                   }).catch((err) => {
                     console.error('error fetching validate warning data', err);
                   });
+                } else {
+                  this.isValidationWarning = false;
+                  this.setValidationWarnings([]);
+                  this.isUpload = true;
+                  this.haveValidated = true;
                 }
 
                 if (response.fileUrls?.transform?.warning) {
