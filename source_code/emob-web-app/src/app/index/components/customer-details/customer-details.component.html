@@ -220,9 +220,9 @@
       </div>
     </div>
 
-    <h3 mat-dialog-title class="text-center">{{ t("order_details") }}</h3>
     <div mat-dialog-content>
       <div class="modal-body" *ngIf="(dataPreOder?.details?.length || 0) > 0">
+        <h3 mat-dialog-title class="text-center my-3">{{ t("order_details") }}</h3>
         <div class="table-responsive">
           <table class="table table-striped">
             <thead>
