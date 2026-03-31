@@ -76,9 +76,6 @@ import { DownloadResultFile } from '../../models/experiment.model';
 import { TranslocoService } from '@jsverse/transloco';
 import { LanguageChangeService } from 'src/app/services/language-change.service';
 import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
-import vrpStats from './newData/vrpStats.json';
-import vrpSolution from './newData/vrpSolutionLean.json';
-import geoJsonData from './newData/geoJson.json';
 
 @Component({
   selector: 'app-result',
@@ -211,6 +208,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
   routeInfoDetails: RouteInfo | null = null;
   visibleRoutes = new Set<number>();
 
+  // API-fetched plan data
+  private vrpStatsData: Record<string, unknown> = {};
+  private vrpSolutionData: any = {};
+  private geoJsonRawData: any = {};
+
   // VRP routing nodes for data lookup
   private routingNodes: any[] = [];
   private routingNodesMap: Record<number, any> = {};
@@ -246,31 +248,62 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.initRoutingNodes();
-
     this.route.params
       .pipe(take(1))
       .subscribe((params: { [x: string]: string }) => {
         this.experimentService
           .getExperiment(params['experimentId'])
-          .subscribe((response: Experiment) => {
+          .subscribe(async (response: Experiment) => {
             console.log(response);
             this.experiment = { ...response };
             this.expandedElement = [];
 
-            this.buildVrpStatsReport();
-            this.buildRouteInfoFromVrpSolution();
+            try {
+              await this.loadPlanData(response);
 
-            this.spinner.hide();
-            this.loadAndProcessGeoJSON();
+              this.initRoutingNodes();
+              this.buildVrpStatsReport();
+              this.buildRouteInfoFromVrpSolution();
+              this.loadAndProcessGeoJSON();
 
-            this.dataRouteInfo.filterPredicate =
-              this.multiFilterPredicate.bind(this);
+              this.dataRouteInfo.filterPredicate =
+                this.multiFilterPredicate.bind(this);
 
-            this.checkFilterOverflowTwolinesWhenLanguageChange();
-            this.isLoading = false;
+              this.checkFilterOverflowTwolinesWhenLanguageChange();
+            } catch (error) {
+              console.error('Failed to load plan data from API:', error);
+              this.toastr.error(
+                this.transloco.translate('failed_to_load_plan_data', {}, 'index'),
+                this.transloco.translate('error', {}, 'index')
+              );
+            } finally {
+              this.spinner.hide();
+              this.isLoading = false;
+            }
           });
       });
+  }
+
+  private async loadPlanData(response: Experiment): Promise<void> {
+    const planUrls = response.fileUrls?.plan;
+
+    const [vrpStats, vrpSolution, geoJson] = await Promise.all([
+      planUrls?.vrpStats
+        ? this.dataFromFileUrlToJson(planUrls.vrpStats)
+        : Promise.resolve({}),
+      planUrls?.vrpSolutionLean
+        ? this.dataFromFileUrlToJson(planUrls.vrpSolutionLean)
+        : Promise.resolve({}),
+      planUrls?.geoJson
+        ? this.dataFromFileUrlToJson(planUrls.geoJson)
+        : Promise.resolve({}),
+    ]);
+
+    this.vrpStatsData = vrpStats as Record<string, unknown>;
+    this.vrpSolutionData = vrpSolution;
+    this.geoJsonRawData = geoJson;
+
+    console.log('vrpStats', this.vrpStatsData);
   }
 
   ngAfterViewInit(): void {
@@ -370,7 +403,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   private buildVrpStatsReport(): void {
     this.headersReport = ['property', 'value'];
 
-    const stats = vrpStats as Record<string, unknown>;
+    const stats = this.vrpStatsData;
     const rows: ReportDataItem[] = [];
 
     const propertyOrder = [
@@ -449,7 +482,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   private buildVrpStatsDashboard(): void {
-    const s = vrpStats as Record<string, unknown>;
+    const s = this.vrpStatsData;
     const units = (s['dataUnits'] ?? {}) as Record<string, string>;
 
     this.vrpDashboardCards = [
@@ -540,7 +573,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   private buildVrpStatsDashboardRaw(): void {
-    const s = vrpStats as Record<string, unknown>;
+    const s = this.vrpStatsData;
     const units = (s['dataUnits'] ?? {}) as Record<string, string>;
 
     this.vrpDashboardRawCards = [
@@ -631,7 +664,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   private initRoutingNodes(): void {
-    const vrpData = (vrpSolution as any)?.vrpData;
+    const vrpData = this.vrpSolutionData?.vrpData;
     this.routingNodes = vrpData?.routingNodes ?? [];
     this.routingNodes.forEach((node: any) => {
       if (node?.index != null) this.routingNodesMap[node.index] = node;
@@ -641,7 +674,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   private buildRouteDistancesMap(): Record<number, number[]> {
     const distancesMap: Record<number, number[]> = {};
-    const geoJson: any = geoJsonData;
+    const geoJson: any = this.geoJsonRawData;
     geoJson.routes?.forEach((route: any) => {
       route.features?.forEach((feature: any) => {
         if (feature.geometry?.type === 'LineString' && feature.properties?.distances) {
@@ -655,7 +688,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   private buildRouteInfoFromVrpSolution(): void {
     const routeMetrics =
-      (vrpSolution as any)?.solutionMetrics?.routeMetrics ?? [];
+      this.vrpSolutionData?.solutionMetrics?.routeMetrics ?? [];
     const routeDistancesMap = this.buildRouteDistancesMap();
 
     routeMetrics.forEach((route: any) => {
@@ -861,7 +894,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   private loadAndProcessGeoJSON(): void {
-    const geoJson: any = JSON.parse(JSON.stringify(geoJsonData));
+    const geoJson: any = JSON.parse(JSON.stringify(this.geoJsonRawData));
 
     this.enrichGeoJsonData(geoJson);
 
@@ -930,7 +963,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   private enrichGeoJsonData(geoJson: any): void {
     const routeMetricsMap: Record<number, any> = {};
-    ((vrpSolution as any)?.solutionMetrics?.routeMetrics ?? []).forEach(
+    (this.vrpSolutionData?.solutionMetrics?.routeMetrics ?? []).forEach(
       (rm: any) => {
         if (rm?.routeIndex != null) routeMetricsMap[rm.routeIndex] = rm;
       }
@@ -2030,7 +2063,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   logReport() {
     console.log('this.headersReport', this.headersReport);
     console.log('this.dataSourceReport', this.dataSourceReport);
-    console.log('vrpStats', vrpStats);
+    console.log('vrpStats', this.vrpStatsData);
 
     console.log('this.dataRouteInfo', this.dataRouteInfo);
  
