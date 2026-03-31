@@ -585,6 +585,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       { label: 'customerCount', value: s['customerCount'] as number },
       { label: 'routeCount', value: s['routeCount'] as number },
       { label: 'totalFitness', value: s['totalFitness'] as number },
+      { label: 'totalCost', value: s['totalCost'] as number },
     ];
 
     this.vrpDashboardRawRows = [
