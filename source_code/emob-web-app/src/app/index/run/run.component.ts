@@ -361,14 +361,16 @@ export class RunComponent implements OnInit, AfterViewInit {
           // First, ensure vehicle types are loaded
           this.vehicleService.getMyVehicleTypes().pipe(
             take(1)
-          ).subscribe((vehicleTypes: VehicleType[]) => {
+          ).subscribe({
+            next: (vehicleTypes: VehicleType[]) => {
             this.myVehicleTypes = vehicleTypes || [];
             this.cdr.detectChanges();
             
             // Now proceed with loading experiment data
             this.experimentService
               .getExperiment(params['runId'])
-              .subscribe((response: Experiment) => {
+              .subscribe({
+                next: (response: Experiment) => {
                 this.experiment = { ...response };
                 console.log('experiment', this.experiment);
 
@@ -457,6 +459,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                       } else if (!this.experiment.inputdata?.some(data => data.fileUrl)) {
                         this.getDynamicParameters();
                         this.isFilePreview = true;
+                        this.spinner.hide();
                       } else {
                         this.initializeDataFromExperiment(
                           this.experiment
@@ -480,7 +483,15 @@ export class RunComponent implements OnInit, AfterViewInit {
                         });
                       }
                     });
+              },
+                error: () => {
+                  this.spinner.hide();
+                }
               });
+          },
+            error: () => {
+              this.spinner.hide();
+            }
           });
         });
 
