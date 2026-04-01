@@ -4179,21 +4179,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     return invalidVehicles;
   }
 
-  log() {
-    console.log('this.dataSource', this.dataSource)
-    console.log('this.displayLocationType', this.displayLocationType)
-    console.log('this.depots.length', this.depots.length)
-    console.log('this.dataSource.data.length', this.dataSource.data.length)
-
-    console.log('this.isUpload', this.isUpload)
-
-    console.log('this.validateExperiment', this.validateExperiment)
-
-    console.log('this.transformWarnings', this.transformWarnings)
-
-    console.log('this.isFileSelectionStep', this.isFileSelectionStep)
-  }
-
   openTransformValidationDialog(validationResponse?: any) {
     const modalRef = this.ngbModal.open(TransformValidationDialogComponent, {
       centered: true,

@@ -1,8 +1,4 @@
 <ng-container *transloco="let t; read: 'index'">
-  <h1 (click)="log()">log</h1>
-  <button mat-button (click)="openTransformValidationDialog()">openTransformValidationDialog</button>
-  <button mat-button (click)="toggleTransformWarning()">Toggle Transform Warning (Mock)</button>
-  <button mat-button (click)="toggleValidationWarning()">Toggle Validation Warning</button>
   <div class="card mt-2 container-fluid" style="min-height: 100vh">
     <ngx-spinner name="run">
       <p class="h-3">{{ t("wait_a_moment") }} ...</p>
@@ -18,39 +14,6 @@
             </button>
             <ng-template ngbNavContent>
               <div class="row card-body">
-
-
-                <!-- <ng-container *transloco="let tVal; scope: 'validation'; read: 'validation'">
-                  <div class="container-validation-warning new-warning-validation" *ngIf="validationWarningTableRows.length > 0">
-                    <div class="validation-warning-item">
-                      <ngb-alert [dismissible]="false">
-                        <strong>Constraint Warning</strong>
-                        <button type="button" class="link link-primary link-opacity-75-hover"
-                          (click)="toggleValidationWarningCollapse()"
-                          [attr.aria-expanded]="!validationWarningCollapse">
-                          {{ t("show_details") }}
-                        </button>
-                      </ngb-alert>
-                      <div class="mb-3 overflow-x-auto" [ngbCollapse]="validationWarningCollapse">
-                        <table class="table table-striped">
-                          <thead>
-                            <tr>
-                              <th>{{ t('validation_table_header_file_name') }}</th>
-                              <th>{{ t('validation_table_header_message') }}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr *ngFor="let row of validationWarningTableRows">
-                              <td>{{ row.fileName }}</td>
-                              <td>{{ tVal(row.type, row.params) }}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </ng-container> -->
-
                 <div class="container-transform-warning p-0" *ngIf="transformWarnings.length > 0">
                   <div class="transform-warning-item" *ngFor="let warning of transformWarnings; let wi = index">
                     <ngb-alert [dismissible]="false">
