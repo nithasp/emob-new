@@ -118,7 +118,7 @@ import mockMissingProductWarning from './validationData/transform_missing_produc
 import mockValidationWarning from './validationData/validation_warning.json';
 import { ValidationTableRow } from 'src/app/models/validation-table.model';
 import { buildTableRows, getValidationMessage } from 'src/app/shared/utils/validation-table.utils';
- 
+
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -276,7 +276,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isCreateMode: boolean = false;
   isFilePreview: boolean = false;
-  
+
   public depots: MyDepot[] = [];
   public selectedDepotIdName: string | null = null;
   public selectedDepotIds: string[] = [];
@@ -289,7 +289,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }> = [];
 
   public canUpload: boolean = false;
-  
+
   // vehicles
   public myVehicleTypes: VehicleType[] = [];
   public selectedVehicleIds: string[] = [];
@@ -315,7 +315,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService,
     private readonly vehicleService: VehicleService
-  ) {}
+  ) { }
 
   public generateUniqueId(): string {
     return 'f-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
@@ -363,132 +363,139 @@ export class RunComponent implements OnInit, AfterViewInit {
             take(1)
           ).subscribe({
             next: (vehicleTypes: VehicleType[]) => {
-            this.myVehicleTypes = vehicleTypes || [];
-            this.cdr.detectChanges();
-            
-            // Now proceed with loading experiment data
-            this.experimentService
-              .getExperiment(params['runId'])
-              .subscribe({
-                next: (response: Experiment) => {
-                this.experiment = { ...response };
-                console.log('experiment', this.experiment);
+              this.myVehicleTypes = vehicleTypes || [];
+              this.cdr.detectChanges();
 
-                if (response.fileUrls?.transform?.locations) {
-                  this.dataFromFileUrlToJson(response.fileUrls.transform.locations).then((data: any) => {
-                    console.log('transform locations data', data);
-                    if (data?.customers && data?.depots) {
-                      this.groupingCustomer(data.customers as Customer[], data.depots as Depot[]);
+              // Now proceed with loading experiment data
+              this.experimentService
+                .getExperiment(params['runId'])
+                .subscribe({
+                  next: (response: Experiment) => {
+                    this.experiment = { ...response };
+                    console.log('experiment', this.experiment);
+
+                    if (response.fileUrls?.transform?.locations) {
+                      this.dataFromFileUrlToJson(response.fileUrls.transform.locations).then((data: any) => {
+                        console.log('transform locations data', data);
+                        if (data?.customers && data?.depots) {
+                          this.groupingCustomer(data.customers as Customer[], data.depots as Depot[]);
+                        }
+                      }).catch((err) => {
+                        console.error('error fetching transform locations data', err);
+                      });
                     }
-                  }).catch((err) => {
-                    console.error('error fetching transform locations data', err);
-                  });
-                }
 
-                if (response.fileUrls?.validate?.errorWarning) {
-                  this.dataFromFileUrlToJson(response.fileUrls.validate.errorWarning).then((data) => {
-                    console.log(data)
-                    const warnings = data?.warnings || [];
-                    this.isValidationWarning = warnings.length > 0;
-                    this.setValidationWarnings(warnings);
-
-                  }).catch((err) => {
-                    console.error('error fetching validate warning data', err);
-                  });
-                } else {
-                  this.isValidationWarning = false;
-                  this.setValidationWarnings([]);
-                  if (response.fileUrls?.validate?.preVRPSolution) {
-                    this.isUpload = true;
-                    this.haveValidated = true;
-                  }
-                }
-
-                if (response.fileUrls?.transform?.warning) {
-                  this.dataFromFileUrlToJson(response.fileUrls.transform.warning).then((data) => {
-                    console.log('transform warning data', data);
-                    this.setTransformWarnings(data);
-                  }).catch((err) => {
-                    console.error('error fetching transform warning data', err);
-                  });
-                }
-
-                if (this.experiment.status !== ExperimentStatus.Initializing) {
-                  this.spinner.hide();
-                  this.openConfirmDialog(
-                    this.transloco.translate('warning'),
-                    `${this.transloco.translate(
-                      'this_experiment_have_been',
-                      {},
-                      'index'
-                    )} ${this.experiment.status}`,
-                    `${this.transloco.translate(
-                      'we_will_to_go_back_to_the_experiments_page',
-                      {},
-                      'index'
-                    )}?`,
-                    this.transloco.translate('acknowledge', {}, 'index'),
-                    true
-                  ).result.then((confirmed) => {
-                    this.spinner.hide();
-                    this.router.navigate(['/users/experiments']);
-                  });
-                } else
-                  this.userMsGraphService
-                    .getUserId()
-                    .subscribe((userId: string | null) => {
-                      if (userId !== this.experiment.triggeredBy) {
-                        this.openConfirmDialog(
-                          this.transloco.translate('warning'),
-                          this.transloco.translate(
-                            'you_are_not_the_creator_of_this_experiment',
-                            {},
-                            'index'
-                          ),
-                          `${this.transloco.translate(
-                            'we_will_to_go_back_to_the_experiments_page',
-                            {},
-                            'index'
-                          )}?`,
-                          this.transloco.translate('acknowledge', {}, 'index'),
-                          true
-                        ).result.then((confirmed) => {
-                          this.spinner.hide();
-                          this.router.navigate(['/users/experiments']);
-                        });
-                      } else if (!this.experiment.inputdata?.some(data => data.fileUrl)) {
-                        this.getDynamicParameters();
-                        this.isFilePreview = true;
-                        this.spinner.hide();
+                    if (response.fileUrls?.validate?.parameterFormats
+                      && response.fileUrls?.validate?.vehicleTypes
+                      && response.fileUrls?.validate?.preVRPSolution
+                    ) {
+                      this.isUpload = true;
+                      this.haveValidated = true;
+                      if (!response.fileUrls?.validate?.errorWarning) {
+                        this.isValidationWarning = false;
+                        this.setValidationWarnings([]);
                       } else {
-                        this.initializeDataFromExperiment(
-                          this.experiment
-                        ).finally(() => {
-                          this.isFileSelectionStep = false;
-                          if (!response.fileUrls?.validate?.errorWarning) {
-                            this.isUpload = true;
-                            this.haveValidated = true;
-                          }
-                          setTimeout(() => {
-                            this.toastr.success(
+                        this.dataFromFileUrlToJson(response.fileUrls?.validate.errorWarning).then((data) => {
+                          console.log(data);
+                          const warnings = data?.warnings || [];
+                          this.isValidationWarning = warnings.length > 0;
+                          this.setValidationWarnings(warnings);
+                        }).catch((err) => {
+                          console.error('error fetching validate warning data', err);
+                        });
+                      }
+                    } else {
+                      this.isValidationWarning = false;
+                      this.setValidationWarnings([]);
+                    }
+
+                    if (response.fileUrls?.transform?.warning) {
+                      this.dataFromFileUrlToJson(response.fileUrls.transform.warning).then((data) => {
+                        console.log('transform warning data', data);
+                        this.setTransformWarnings(data);
+                      }).catch((err) => {
+                        console.error('error fetching transform warning data', err);
+                      });
+                    }
+
+                    if (this.experiment.status !== ExperimentStatus.Initializing) {
+                      this.spinner.hide();
+                      this.openConfirmDialog(
+                        this.transloco.translate('warning'),
+                        `${this.transloco.translate(
+                          'this_experiment_have_been',
+                          {},
+                          'index'
+                        )} ${this.experiment.status}`,
+                        `${this.transloco.translate(
+                          'we_will_to_go_back_to_the_experiments_page',
+                          {},
+                          'index'
+                        )}?`,
+                        this.transloco.translate('acknowledge', {}, 'index'),
+                        true
+                      ).result.then((confirmed) => {
+                        this.spinner.hide();
+                        this.router.navigate(['/users/experiments']);
+                      });
+                    } else
+                      this.userMsGraphService
+                        .getUserId()
+                        .subscribe((userId: string | null) => {
+                          if (userId !== this.experiment.triggeredBy) {
+                            this.openConfirmDialog(
+                              this.transloco.translate('warning'),
                               this.transloco.translate(
-                                'success_load_experiment',
+                                'you_are_not_the_creator_of_this_experiment',
                                 {},
                                 'index'
                               ),
-                              this.experiment.name
-                            );
+                              `${this.transloco.translate(
+                                'we_will_to_go_back_to_the_experiments_page',
+                                {},
+                                'index'
+                              )}?`,
+                              this.transloco.translate('acknowledge', {}, 'index'),
+                              true
+                            ).result.then((confirmed) => {
+                              this.spinner.hide();
+                              this.router.navigate(['/users/experiments']);
+                            });
+                          } else if (!this.experiment.inputdata?.some(data => data.fileUrl)) {
+                            this.getDynamicParameters();
+                            this.isFilePreview = true;
                             this.spinner.hide();
-                          }, 500);
+                          } else {
+                            this.initializeDataFromExperiment(
+                              this.experiment
+                            ).finally(() => {
+                              this.isFileSelectionStep = false;
+                              const v = response.fileUrls?.validate;
+                              const allFilesReady = !!(v?.parameterFormats && v?.vehicleTypes && v?.preVRPSolution);
+                              if (allFilesReady && !v?.errorWarning) {
+                                this.isUpload = true;
+                                this.haveValidated = true;
+                              }
+                              setTimeout(() => {
+                                this.toastr.success(
+                                  this.transloco.translate(
+                                    'success_load_experiment',
+                                    {},
+                                    'index'
+                                  ),
+                                  this.experiment.name
+                                );
+                                this.spinner.hide();
+                              }, 500);
+                            });
+                          }
                         });
-                      }
-                    });
-              },
-                error: () => {
-                  this.spinner.hide();
-                }
-              });
-          },
+                  },
+                  error: () => {
+                    this.spinner.hide();
+                  }
+                });
+            },
             error: () => {
               this.spinner.hide();
             }
@@ -701,7 +708,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         if (hasSpecificVehicles) {
           // Set to license-plate mode
           this.vehicleSelectionMode[vehicleTypeId] = 'license-plate';
-          
+
           // Load license plates for these vehicle IDs
           // Pass the numberOfVehiclesAvailable to use for count display
           await this.loadLicensePlatesForVehicleIds(
@@ -744,7 +751,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       // Update the component state
       this.selectedLicensePlates[vehicleTypeId] = licensePlates;
       this.selectedVehicleIdsByLicensePlate[vehicleTypeId] = vehicleIds;
-      
+
       // Use numberOfVehiclesAvailable from blob if provided
       // If it's 0 or not provided, default to 1
       if (numberOfVehiclesAvailable !== undefined && numberOfVehiclesAvailable !== null) {
@@ -759,7 +766,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       );
       // Fallback: just store the vehicle IDs
       this.selectedVehicleIdsByLicensePlate[vehicleTypeId] = vehicleIds;
-      
+
       // Use numberOfVehiclesAvailable if provided, otherwise default to 1
       if (numberOfVehiclesAvailable !== undefined && numberOfVehiclesAvailable !== null) {
         this.selectedVehicleCounts[vehicleTypeId] = numberOfVehiclesAvailable || 1;
@@ -871,9 +878,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       warningMessages.push(
         this.transloco.translate('duplicate_file_name', {}, 'index')
       );
-      
+
       const hasDuplicateFileSize = this.preOrderFiles.some(
-        (existingFile) => 
+        (existingFile) =>
           existingFile.file.name === file.name &&
           existingFile.file.size === file.size
       );
@@ -907,21 +914,21 @@ export class RunComponent implements OnInit, AfterViewInit {
     // Also check if any existing file has the same columnRequired
     const existingFileWithSameColumns = matchedItem
       ? this.preOrderFiles.find((fileItem) => {
-          const existingKeyName = this.isFileWithCategory(fileItem.file)
-            ? fileItem.file.keyName
-            : (fileItem.file as PreOrderFileDescriptor).keyName;
-          const existingItem = this.depotInputDataItems.find(
-            (item) => item.keyName === existingKeyName
-          );
-          if (!existingItem) return false;
-          return (
-            existingItem.columnRequired.length ===
-              matchedItem.columnRequired.length &&
-            existingItem.columnRequired.every((col) =>
-              matchedItem.columnRequired.includes(col)
-            )
-          );
-        })
+        const existingKeyName = this.isFileWithCategory(fileItem.file)
+          ? fileItem.file.keyName
+          : (fileItem.file as PreOrderFileDescriptor).keyName;
+        const existingItem = this.depotInputDataItems.find(
+          (item) => item.keyName === existingKeyName
+        );
+        if (!existingItem) return false;
+        return (
+          existingItem.columnRequired.length ===
+          matchedItem.columnRequired.length &&
+          existingItem.columnRequired.every((col) =>
+            matchedItem.columnRequired.includes(col)
+          )
+        );
+      })
       : undefined;
 
     if (index !== -1 || existingFileWithSameColumns) {
@@ -932,8 +939,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         index !== -1
           ? index
           : this.preOrderFiles.findIndex(
-              (f) => f.id === existingFileWithSameColumns?.id
-            );
+            (f) => f.id === existingFileWithSameColumns?.id
+          );
       const currentDisplayName =
         duplicatedFileIndex !== -1
           ? this.preOrderFiles[duplicatedFileIndex].file.displayName
@@ -985,12 +992,12 @@ export class RunComponent implements OnInit, AfterViewInit {
           (
             result:
               | {
-                  replace: boolean;
-                  category?: string;
-                  validationFailed?: boolean;
-                  missingColumns?: string[];
-                  targetDisplayName?: string;
-                }
+                replace: boolean;
+                category?: string;
+                validationFailed?: boolean;
+                missingColumns?: string[];
+                targetDisplayName?: string;
+              }
               | boolean
           ) => {
             // Handle both old boolean format and new object format for backwards compatibility
@@ -1014,15 +1021,14 @@ export class RunComponent implements OnInit, AfterViewInit {
                   'file_for',
                   {},
                   'index'
-                )} "${
-                  result.targetDisplayName || result.category
-                }" ${this.transloco.translate(
-                  'missing_columns_as_follows',
-                  {},
-                  'index'
-                )}</strong><span>:</span> <br/><ul>${result.missingColumns
-                  .map((col) => `<li>${col}</li>`)
-                  .join('')}</ul>`;
+                )} "${result.targetDisplayName || result.category
+                  }" ${this.transloco.translate(
+                    'missing_columns_as_follows',
+                    {},
+                    'index'
+                  )}</strong><span>:</span> <br/><ul>${result.missingColumns
+                    .map((col) => `<li>${col}</li>`)
+                    .join('')}</ul>`;
 
                 this.showInvalidModal(
                   `${this.transloco.translate(
@@ -1077,7 +1083,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         const itemsWithSameColumns = this.depotInputDataItems.filter((item) => {
           return (
             item.columnRequired.length ===
-              matchedItemForNew.columnRequired.length &&
+            matchedItemForNew.columnRequired.length &&
             item.columnRequired.every((col) =>
               matchedItemForNew.columnRequired.includes(col)
             )
@@ -1130,11 +1136,11 @@ export class RunComponent implements OnInit, AfterViewInit {
                 (
                   result:
                     | {
-                        category?: string;
-                        validationFailed?: boolean;
-                        missingColumns?: string[];
-                        targetDisplayName?: string;
-                      }
+                      category?: string;
+                      validationFailed?: boolean;
+                      missingColumns?: string[];
+                      targetDisplayName?: string;
+                    }
                     | boolean
                 ) => {
                   if (result && typeof result === 'object') {
@@ -1148,15 +1154,14 @@ export class RunComponent implements OnInit, AfterViewInit {
                         'file_for',
                         {},
                         'index'
-                      )} "${
-                        result.targetDisplayName || result.category
-                      }" ${this.transloco.translate(
-                        'missing_columns_as_follows',
-                        {},
-                        'index'
-                      )}</strong><span>:</span> <br/><ul>${result.missingColumns
-                        .map((col) => `<li>${col}</li>`)
-                        .join('')}</ul>`;
+                      )} "${result.targetDisplayName || result.category
+                        }" ${this.transloco.translate(
+                          'missing_columns_as_follows',
+                          {},
+                          'index'
+                        )}</strong><span>:</span> <br/><ul>${result.missingColumns
+                          .map((col) => `<li>${col}</li>`)
+                          .join('')}</ul>`;
 
                       this.showInvalidModal(
                         `${this.transloco.translate(
@@ -1611,8 +1616,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         typeof item.depotName === 'string'
           ? item.depotName
           : typeof item.name === 'string'
-          ? item.name
-          : '';
+            ? item.name
+            : '';
       const mapped: MyDepot = {
         depotId: (item.depotId || item.id || '') as string,
         depotName: nameKey,
@@ -1717,7 +1722,7 @@ export class RunComponent implements OnInit, AfterViewInit {
               });
               location.setStyle(
                 this.iconStyle[
-                  uploadDataGroupCustomers[key as keyof DataGroup].type
+                uploadDataGroupCustomers[key as keyof DataGroup].type
                 ]
               );
               this.vectorSource.addFeature(location);
@@ -1850,13 +1855,13 @@ export class RunComponent implements OnInit, AfterViewInit {
   private isPopupPayload(
     value:
       | {
-          data?:
-            | Customer
-            | Depot
-            | MyDepot
-            | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
-          isDepot?: boolean;
-        }
+        data?:
+        | Customer
+        | Depot
+        | MyDepot
+        | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
+        isDepot?: boolean;
+      }
       | null
       | undefined
   ): value is { data: Customer; isDepot: boolean } {
@@ -1874,7 +1879,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           customer.replaceType === ReplaceType.INPUT) &&
         (customer.validationType === ValidationType.SUBDISTRICT_LEVEL ||
           customer.validationType === ValidationType.DISTRICT_LEVEL) ||
-          customer.replaceType === ReplaceType.GEOCODE
+        customer.replaceType === ReplaceType.GEOCODE
       ) {
         verify.push(customer);
       } else if (
@@ -1979,7 +1984,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
 
     this.dataSource.data = newData;
-   // this.dataSource.data = newData;
+    // this.dataSource.data = newData;
   }
 
   displayDataInTable(locationType: LocationType) {
@@ -2552,7 +2557,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.uploadDataGroupCustomers
     );
     console.log('depots', depots)
-    
+
     this.reInitializeDataTable();
     this.loadLocation(this.uploadDataGroupCustomers);
     this.loadLocationDepot(depots);
@@ -2956,7 +2961,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     // Count how many files have the same file size AND same file name
     const count = this.preOrderFiles.filter(
-      (item) => 
+      (item) =>
         item.file.size === fileObj.file.size &&
         item.file.name === fileObj.file.name
     ).length;
@@ -2980,7 +2985,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       messages.push(
         this.transloco.translate('duplicate_file_name', {}, 'index')
       );
-      
+
       // Only check duplicate file size if file name is also duplicated
       if (this.hasDuplicateFileSize(fileObj)) {
         messages.push(
@@ -3004,13 +3009,13 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   getAllErrorMessages(fileObj: PreOrderFileItem): string {
     const messages: string[] = [];
-    
+
     // Add file warning messages if any (WARNING - displayed first)
     if (this.hasFileWarning(fileObj)) {
       const warningMessages = this.getFileWarningMessages(fileObj);
       messages.push(...warningMessages);
     }
-    
+
     // Add duplicate category message if applicable (ERROR - displayed after warnings)
     if (this.hasDuplicateCategory(fileObj)) {
       messages.push(
@@ -3021,7 +3026,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         )
       );
     }
-    
+
     return messages.join(', ');
   }
 
@@ -3789,28 +3794,28 @@ export class RunComponent implements OnInit, AfterViewInit {
       const originalItems = groupsMap[categoryKey];
       const items = useConstraintsValues
         ? originalItems.map((dynamicParameter) => {
-            const constraintKey =
-              this.getConstraintKeyForParam(dynamicParameter);
-            if (!constraintKey) return dynamicParameter;
-            const constraintValue = this.constraintsData[constraintKey];
-            if (constraintValue === undefined || constraintValue === null) {
-              if (this.isTimeType(dynamicParameter)) {
-                return { ...dynamicParameter, value: '00:00' };
-              }
-              return dynamicParameter;
+          const constraintKey =
+            this.getConstraintKeyForParam(dynamicParameter);
+          if (!constraintKey) return dynamicParameter;
+          const constraintValue = this.constraintsData[constraintKey];
+          if (constraintValue === undefined || constraintValue === null) {
+            if (this.isTimeType(dynamicParameter)) {
+              return { ...dynamicParameter, value: '00:00' };
             }
-            if (this.isNumberType(dynamicParameter)) {
-              return { ...dynamicParameter, value: Number(constraintValue) };
-            }
-            const trimmedValue = String(constraintValue).trim();
-            return {
-              ...dynamicParameter,
-              value:
-                trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
-                  ? '00:00'
-                  : trimmedValue,
-            };
-          })
+            return dynamicParameter;
+          }
+          if (this.isNumberType(dynamicParameter)) {
+            return { ...dynamicParameter, value: Number(constraintValue) };
+          }
+          const trimmedValue = String(constraintValue).trim();
+          return {
+            ...dynamicParameter,
+            value:
+              trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
+                ? '00:00'
+                : trimmedValue,
+          };
+        })
         : originalItems;
       return {
         key: categoryKey,
@@ -4112,18 +4117,18 @@ export class RunComponent implements OnInit, AfterViewInit {
     modalRef.componentInstance.preSelectedLicensePlates =
       this.selectedLicensePlates[vehicleId] || [];
 
-  modalRef.result.then(
-    (result) => {
-      if (result) {
-        // Store the selected license plates for this vehicle type
-        this.selectedLicensePlates[vehicleId] = result.selectedLicensePlates;
-        this.selectedVehicleIdsByLicensePlate[vehicleId] =
-          result.selectedVehicleIds;
-        this.cdr.detectChanges();
-      }
-    },
-    () => {}
-  );
+    modalRef.result.then(
+      (result) => {
+        if (result) {
+          // Store the selected license plates for this vehicle type
+          this.selectedLicensePlates[vehicleId] = result.selectedLicensePlates;
+          this.selectedVehicleIdsByLicensePlate[vehicleId] =
+            result.selectedVehicleIds;
+          this.cdr.detectChanges();
+        }
+      },
+      () => { }
+    );
   }
 
   getSelectedLicensePlatesCount(vehicleId: string): number {
@@ -4159,10 +4164,10 @@ export class RunComponent implements OnInit, AfterViewInit {
   // Check if any selected vehicle in 'license-plate' mode has no vehicle IDs selected
   getInvalidVehicleSelections(): string[] {
     const invalidVehicles: string[] = [];
-    
+
     for (const vehicleTypeId of this.selectedVehicleIds) {
       const mode = this.getVehicleSelectionMode(vehicleTypeId);
-      
+
       if (mode === 'license-plate') {
         const vehicleIds = this.selectedVehicleIdsByLicensePlate[vehicleTypeId];
         if (!vehicleIds || vehicleIds.length === 0) {
@@ -4170,7 +4175,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
       }
     }
-    
+
     return invalidVehicles;
   }
 
