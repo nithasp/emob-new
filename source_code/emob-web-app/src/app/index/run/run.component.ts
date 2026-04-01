@@ -395,8 +395,10 @@ export class RunComponent implements OnInit, AfterViewInit {
                 } else {
                   this.isValidationWarning = false;
                   this.setValidationWarnings([]);
-                  this.isUpload = true;
-                  this.haveValidated = true;
+                  if (response.fileUrls?.validate?.preVRPSolution) {
+                    this.isUpload = true;
+                    this.haveValidated = true;
+                  }
                 }
 
                 if (response.fileUrls?.transform?.warning) {
