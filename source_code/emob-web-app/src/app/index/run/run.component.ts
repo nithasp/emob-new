@@ -1857,7 +1857,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         (customer.replaceType === ReplaceType.NO_REPLACE ||
           customer.replaceType === ReplaceType.INPUT) &&
         (customer.validationType === ValidationType.SUBDISTRICT_LEVEL ||
-          customer.validationType === ValidationType.DISTRICT_LEVEL)
+          customer.validationType === ValidationType.DISTRICT_LEVEL) ||
+          customer.replaceType === ReplaceType.GEOCODE
       ) {
         verify.push(customer);
       } else if (
