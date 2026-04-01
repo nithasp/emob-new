@@ -96,7 +96,7 @@ export class CustomerListComponent implements OnInit {
       || [];
 
     const fallback = keyed || {
-      ORDERID_ORG: selected?.name,
+      ORDERID_ORG: selected?.nodeId,
       CHANNEL: selected?.extra?.channel || '',
       CUSTOMER_NAME: selected?.extra?.customerName || '',
       TEL: selected?.extra?.tel || '',

@@ -2002,7 +2002,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     // Create dataPreOder using primarily customer.extra data with new camelCase structure
     // const dataPreOder: DataPreOrder = {
-    //   ORDERID_ORG: customer.name,
+    //   ORDERID_ORG: customer.nodeId,
     //   CHANNEL: customer.extra?.channel || null,
     //   CUSTOMER_NAME: customer.extra?.customerName || '',
     //   TEL: customer.extra?.tel || null,
@@ -2026,7 +2026,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       || [];
 
     const dataPreOder: DataPreOrder = {
-      ORDERID_ORG: customer.name,
+      ORDERID_ORG: customer.nodeId,
       CHANNEL: customer.extra?.channel || null,
       CUSTOMER_NAME: customer.extra?.customerName || '',
       TEL: customer.extra?.tel || null,
