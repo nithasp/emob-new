@@ -1942,18 +1942,4 @@ export class ResultComponent implements OnInit, AfterViewInit {
       return [];
     }
   }
-
-  logReport() {
-    console.log('this.headersReport', this.headersReport);
-    console.log('this.dataSourceReport', this.dataSourceReport);
-    console.log('vrpStats', this.vrpStatsData);
-
-    console.log('this.dataRouteInfo', this.dataRouteInfo);
- 
-    console.log('this.featureDepots', this.featureDepots);
-    console.log('this.featureRoutes', this.featureRoutes);
-    console.log('this.featureCollections', this.featureCollections);
-
-    console.log('this.popupContent', this.popupContent);
-  }
 }
