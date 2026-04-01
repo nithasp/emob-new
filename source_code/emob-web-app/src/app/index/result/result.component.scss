@@ -322,229 +322,117 @@ mat-card.mb-4 {
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
  
-// ─── VRP Stats View Toggle ───────────────────────────────────────────────────
-.vrp-stats-view-toggle {
-  display: flex;
-  gap: 6px;
+// ─── VRP Toggle Buttons (custom active state for brand color) ────────────────
+.vrp-toggle-btn {
+  font-size: 12px;
 
-  button {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 5px 14px;
-    border: 1px solid #ced4da;
-    border-radius: 20px;
-    background: #fff;
-    color: #495057;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-
-    mat-icon { font-size: 15px; height: 15px; width: 15px; }
-
-    &:hover {
-      background: #e9ecef;
-      border-color: #adb5bd;
-    }
-
-    &.active {
-      background: #0e1547;
-      color: #fff;
-      border-color: #0e1547;
-    }
+  &.vrp-toggle-active {
+    background: #0e1547;
+    color: #fff;
+    border-color: #0e1547;
   }
 }
 
-// ─── VRP Statistics Dashboard New version ────────────────────────────────────────────────
-.table-vrp-stats-dashboard {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  overflow: hidden;
-  font-size: 13px;
-  background: #fff;
+.vrp-toggle-icon {
+  font-size: 15px;
+  height: 15px;
+  width: 15px;
+}
 
-  .vrp-dashboard-header {
+// ─── Shared VRP section base ─────────────────────────────────────────────────
+.vrp-section {
+  font-size: 13px;
+}
+
+.vrp-bg-primary {
+  background: #0e1547;
+}
+
+// ─── VRP Dashboard ───────────────────────────────────────────────────────────
+.vrp-dashboard-header {
+  font-size: 15px;
+  letter-spacing: 0.3px;
+}
+
+.vrp-card-label {
+  letter-spacing: 0.8px;
+}
+
+.vrp-card-value {
+  font-size: 22px;
+  color: #0e1547;
+}
+
+.vrp-status-icon {
+  font-size: 22px;
+}
+
+.vrp-dashboard-info {
+  height: 275px;
+}
+
+.vrp-dashboard-table {
+  thead tr th {
     background: #0e1547;
     color: #fff;
-    font-size: 15px;
     font-weight: 600;
-    padding: 12px 18px;
-    letter-spacing: 0.3px;
+    font-size: 12px;
+    padding: 8px 12px;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 1;
   }
 
-  .vrp-dashboard-cards {
-    display: flex;
-    gap: 0;
-    border-bottom: 1px solid #dee2e6;
-    overflow: auto;
-    .vrp-dashboard-card {
-      flex: 1;
-      padding: 14px 18px;
-      border-right: 1px solid #dee2e6;
+  tbody tr {
+    &:nth-child(even) { background-color: #f4f6fb; }
+    &:nth-child(odd)  { background-color: #fff; }
 
-      &:last-child { border-right: none; }
+    td {
+      padding: 7px 12px;
+      vertical-align: middle;
+      font-size: 13px;
 
-      .vrp-card-label {
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.8px;
-        color: #6c757d;
-        margin-bottom: 4px;
-      }
-
-      .vrp-card-value {
-        font-size: 22px;
-        font-weight: 700;
-        color: #0e1547;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      &.vrp-dashboard-card--feasible .vrp-card-value { color: #198754; }
-      &.vrp-dashboard-card--infeasible .vrp-card-value { color: #dc3545; }
-
-      .vrp-feasible-icon { color: #198754; font-size: 22px; }
-      .vrp-infeasible-icon { color: #dc3545; font-size: 22px; }
-    }
-  }
-
-  .vrp-dashboard-info {
-    height: 275px;
-    overflow: auto;
-  }
-
-  .vrp-dashboard-table {
-    margin-bottom: 0;
-    font-size: 13px;
-    width: 100%;
-
-    thead tr th {
-      background: #0e1547;
-      color: #fff;
-      font-weight: 600;
-      padding: 8px 12px;
-      border: none;
-      font-size: 12px;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    tbody tr {
-      &:nth-child(even) { background-color: #f4f6fb; }
-      &:nth-child(odd)  { background-color: #fff; }
-
-      td {
-        padding: 7px 12px;
-        border-bottom: 1px solid #dee2e6;
-        vertical-align: middle;
-        color: #212529;
-        text-align: right;
-        font-size: 13px;
-
-        &:first-child,
-        &:nth-child(2) { text-align: left; }
-
-        &:nth-child(5),
-        &:nth-child(6) { text-align: center; }
-      }
-    }
-
-    .vrp-row-index {
-      color: #6c757d;
-      font-weight: 600;
-      min-width: 30px;
-    }
-
-    .vrp-unit {
-      color: #6c757d;
-      font-size: 11px;
-    }
-
-    .vrp-dash {
-      color: #adb5bd;
-    }
-
-    .vrp-badge {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-
-      &--ok   { background: #198754; color: #fff; }
-      &--warn { background: #dc3545; color: #fff; }
+      &:first-child,
+      &:nth-child(2) { text-align: left; }
     }
   }
 }
 
 // ─── VRP Stats Key-Value View ────────────────────────────────────────────────
 .table-vrp-stats {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  overflow: hidden;
-  font-size: 13px;
-  background: #fff;
   height: 400px;
   overflow-y: auto;
 
-  table {
-    margin-bottom: 0;
-    width: 100%;
+  thead tr th {
+    background: #0e1547;
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 8px 14px;
+    letter-spacing: 0.3px;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    white-space: nowrap;
+  }
 
-      thead tr th {
-      background: #0e1547;
-      color: #fff;
-      font-weight: 600;
-      padding: 8px 14px;
-      border: none;
-      font-size: 12px;
-      letter-spacing: 0.3px;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      white-space: nowrap;
+  tbody tr {
+    &:nth-child(even) { background-color: #f4f6fb; }
+    &:nth-child(odd)  { background-color: #fff; }
 
-      &:last-child { text-align: right; }
-    }
+    td {
+      padding: 7px 14px;
+      vertical-align: middle;
+      font-size: 13px;
 
-    tbody tr {
-      &:nth-child(even) { background-color: #f4f6fb; }
-      &:nth-child(odd)  { background-color: #fff; }
-
-      &:hover { background-color: #edf0f7; }
-
-      td {
-        padding: 7px 14px;
-        border-bottom: 1px solid #dee2e6;
-        border-left: none;
-        border-right: none;
-        vertical-align: middle;
-        font-size: 13px;
-        color: #212529;
-
-        &:first-child {
-          font-weight: 600;
-          color: #495057;
-          text-align: left;
-          white-space: nowrap;
-          width: 1%;
-        }
-
-        &:last-child {
-          text-align: right;
-        }
-
-        &.text-success { color: #198754 !important; font-weight: 600; }
-        &.text-danger  { color: #dc3545 !important; font-weight: 600; }
+      &:first-child {
+        white-space: nowrap;
+        width: 1%;
       }
-
-      &:last-child td { border-bottom: none; }
     }
+
+    &:last-child td { border-bottom: none; }
   }
 }
