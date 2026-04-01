@@ -416,10 +416,10 @@ tr.mat-mdc-footer-row td {
     white-space: nowrap;
   }
   .transform-warning-item-wrapper {
-    height: 250px;
+    max-height: 250px;
   }
 }
 
 .validation-warning-item-wrapper {
-  height: 250px;
+  max-height: 250px;
 }
