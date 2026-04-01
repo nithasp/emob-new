@@ -385,6 +385,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
                 if (response.fileUrls?.validate?.errorWarning) {
                   this.dataFromFileUrlToJson(response.fileUrls.validate.errorWarning).then((data) => {
+                    console.log(data)
                     const warnings = data?.warnings || [];
                     this.isValidationWarning = warnings.length > 0;
                     this.setValidationWarnings(warnings);
@@ -461,6 +462,10 @@ export class RunComponent implements OnInit, AfterViewInit {
                           this.experiment
                         ).finally(() => {
                           this.isFileSelectionStep = false;
+                          if (!response.fileUrls?.validate?.errorWarning) {
+                            this.isUpload = true;
+                            this.haveValidated = true;
+                          }
                           setTimeout(() => {
                             this.toastr.success(
                               this.transloco.translate(
@@ -4169,6 +4174,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     console.log('this.validateExperiment', this.validateExperiment)
 
     console.log('this.transformWarnings', this.transformWarnings)
+
+    console.log('this.isFileSelectionStep', this.isFileSelectionStep)
   }
 
   openTransformValidationDialog(validationResponse?: any) {

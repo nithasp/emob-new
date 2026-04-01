@@ -762,7 +762,7 @@
 
                   <div class="col-md-12">
                     <ngb-alert type="success" [dismissible]="false" class="verification-correct-alert mt-5 mb-5"
-                      *ngIf="haveValidated && !isValidationWarning">
+                      *ngIf="haveValidated && !isValidationWarning && !isFileSelectionStep">
                       <strong class="h-2">{{ t("verification_is_correct") }}! </strong>
                       <span>{{
                         t(
