@@ -212,9 +212,11 @@ mat-icon {
   stroke: #242484 !important;
   /* Replace with your desired color */
 }
+
 ::ng-deep {
   ngb-modal-window {
     background: rgba(0, 0, 0, 0.5);
+
     .filter-modal {
       max-width: 480px;
       width: 100%;
@@ -293,11 +295,14 @@ mat-icon {
 .chip-outline.button-expand {
   border: none !important;
   outline: none !important;
+
   &:hover {
     background: unset !important;
+
     span {
       color: #3f51b5 !important;
     }
+
     mat-icon {
       color: #3f51b5 !important;
     }
@@ -316,12 +321,35 @@ mat-icon {
   border-radius: 16px;
 }
 
-
 mat-card.mb-4 {
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
- 
+
+.route-box {
+  cursor: pointer;
+}
+
+.route-box:not(:first-child):not(:last-child):hover {
+  color: white;
+  background: #0606F4F0;
+}
+
+.route-box:not(:first-child):not(:last-child) {
+  transition: 0.1s;
+  cursor: pointer;
+}
+
+.route-box:not(:first-child):not(:last-child):hover .route-node-distance {
+  transition: 0.1s;
+  color: white;
+}
+
+.route-node-distance {
+  font-size: 10px;
+  color: gray;
+}
+
 // ─── VRP Toggle Buttons (custom active state for brand color) ────────────────
 .vrp-toggle-btn {
   font-size: 12px;
@@ -384,8 +412,13 @@ mat-card.mb-4 {
   }
 
   tbody tr {
-    &:nth-child(even) { background-color: #f4f6fb; }
-    &:nth-child(odd)  { background-color: #fff; }
+    &:nth-child(even) {
+      background-color: #f4f6fb;
+    }
+
+    &:nth-child(odd) {
+      background-color: #fff;
+    }
 
     td {
       padding: 7px 12px;
@@ -393,7 +426,9 @@ mat-card.mb-4 {
       font-size: 13px;
 
       &:first-child,
-      &:nth-child(2) { text-align: left; }
+      &:nth-child(2) {
+        text-align: left;
+      }
     }
   }
 }
@@ -418,8 +453,13 @@ mat-card.mb-4 {
   }
 
   tbody tr {
-    &:nth-child(even) { background-color: #f4f6fb; }
-    &:nth-child(odd)  { background-color: #fff; }
+    &:nth-child(even) {
+      background-color: #f4f6fb;
+    }
+
+    &:nth-child(odd) {
+      background-color: #fff;
+    }
 
     td {
       padding: 7px 14px;
@@ -432,6 +472,8 @@ mat-card.mb-4 {
       }
     }
 
-    &:last-child td { border-bottom: none; }
+    &:last-child td {
+      border-bottom: none;
+    }
   }
 }
