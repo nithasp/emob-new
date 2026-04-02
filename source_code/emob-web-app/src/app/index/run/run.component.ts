@@ -112,10 +112,6 @@ import {
   VehicleBlobData,
 } from 'src/app/models/vehicle.model';
 
-import mockPanderaError from './validationData/transform_pandera_error.json';
-import mockPydanticError from './validationData/transform_pydantic_error.json';
-import mockMissingProductWarning from './validationData/transform_missing_product_warning.json';
-import mockValidationWarning from './validationData/validation_warning.json';
 import { ValidationTableRow } from 'src/app/models/validation-table.model';
 import { buildTableRows, getValidationMessage } from 'src/app/shared/utils/validation-table.utils';
 
@@ -4185,16 +4181,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       animation: true,
       windowClass: 'transform-validation-modal',
     });
-    // TODO: Replace mockPanderaError with real API response when available
-    modalRef.componentInstance.validationResponse = validationResponse || mockPanderaError;
-  }
-
-  toggleTransformWarning() {
-    if (this.transformWarnings.length > 0) {
-      this.setTransformWarnings([]);
-    } else {
-      this.setTransformWarnings((mockMissingProductWarning as any).warning);
-    }
+    modalRef.componentInstance.validationResponse = validationResponse;
   }
 
   setTransformWarnings(warnings: any[]) {
@@ -4225,14 +4212,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     return titleMap[title] || title;
   }
 
-
-  toggleValidationWarning() {
-    if (this.validationWarningTableRows.length > 0) {
-      this.setValidationWarnings([]);
-    } else {
-      this.setValidationWarnings((mockValidationWarning as any).warning);
-    }
-  }
 
   getValidationMessage(type: string, params: any): string {
     return getValidationMessage(this.transloco, type, params);
