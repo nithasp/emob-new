@@ -1502,17 +1502,31 @@ export class ResultComponent implements OnInit, AfterViewInit {
         this.spinner.show();
         this.experimentService
           .replicateExperiment(this.experiment!.runId)
-          .subscribe((response) => {
-            this.spinner.hide();
-            this.toastr.success(
-              this.transloco.translate(
-                'success_to_replicate_experiment',
-                {},
-                'index'
-              ),
-              this.transloco.translate('replicate_experiment', {}, 'index')
-            );
-            this.router.navigate(['/users/run', response.runId]);
+          .subscribe({
+            next: (response) => {
+              this.spinner.hide();
+              this.toastr.success(
+                this.transloco.translate(
+                  'success_to_replicate_experiment',
+                  {},
+                  'index'
+                ),
+                this.transloco.translate('replicate_experiment', {}, 'index')
+              );
+              this.router.navigate(['/users/run', response.runId]);
+            },
+            error: (err) => {
+              console.error('Failed to replicate experiment', err);
+              this.spinner.hide();
+              this.toastr.error(
+                this.transloco.translate(
+                  'failed_to_replicate_experiment',
+                  {},
+                  'index'
+                ),
+                this.transloco.translate('replicate_experiment', {}, 'index')
+              );
+            },
           });
       }
     });

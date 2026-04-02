@@ -437,54 +437,61 @@ export class RunComponent implements OnInit, AfterViewInit {
                     } else
                       this.userMsGraphService
                         .getUserId()
-                        .subscribe((userId: string | null) => {
-                          if (userId !== this.experiment.triggeredBy) {
-                            this.openConfirmDialog(
-                              this.transloco.translate('warning'),
-                              this.transloco.translate(
-                                'you_are_not_the_creator_of_this_experiment',
-                                {},
-                                'index'
-                              ),
-                              `${this.transloco.translate(
-                                'we_will_to_go_back_to_the_experiments_page',
-                                {},
-                                'index'
-                              )}?`,
-                              this.transloco.translate('acknowledge', {}, 'index'),
-                              true
-                            ).result.then((confirmed) => {
+                        .pipe(take(1))
+                        .subscribe({
+                          next: (userId: string | null) => {
+                            if (userId !== this.experiment.triggeredBy) {
                               this.spinner.hide();
-                              this.router.navigate(['/users/experiments']);
-                            });
-                          } else if (!this.experiment.inputdata?.some(data => data.fileUrl)) {
-                            this.getDynamicParameters();
-                            this.isFilePreview = true;
+                              this.openConfirmDialog(
+                                this.transloco.translate('warning'),
+                                this.transloco.translate(
+                                  'you_are_not_the_creator_of_this_experiment',
+                                  {},
+                                  'index'
+                                ),
+                                `${this.transloco.translate(
+                                  'we_will_to_go_back_to_the_experiments_page',
+                                  {},
+                                  'index'
+                                )}?`,
+                                this.transloco.translate('acknowledge', {}, 'index'),
+                                true
+                              ).result.then((confirmed) => {
+                                this.router.navigate(['/users/experiments']);
+                              });
+                            } else if (!this.experiment.inputdata?.some(data => data.fileUrl)) {
+                              this.getDynamicParameters();
+                              this.isFilePreview = true;
+                              this.spinner.hide();
+                            } else {
+                              this.initializeDataFromExperiment(
+                                this.experiment
+                              ).finally(() => {
+                                this.isFileSelectionStep = false;
+                                const v = response.fileUrls?.validate;
+                                const allFilesReady = !!(v?.parameterFormats && v?.vehicleTypes && v?.preVRPSolution);
+                                if (allFilesReady && !v?.errorWarning) {
+                                  this.isUpload = true;
+                                  this.haveValidated = true;
+                                }
+                                setTimeout(() => {
+                                  this.toastr.success(
+                                    this.transloco.translate(
+                                      'success_load_experiment',
+                                      {},
+                                      'index'
+                                    ),
+                                    this.experiment.name
+                                  );
+                                  this.spinner.hide();
+                                }, 500);
+                              });
+                            }
+                          },
+                          error: (err) => {
+                            console.error('Error getting user ID:', err);
                             this.spinner.hide();
-                          } else {
-                            this.initializeDataFromExperiment(
-                              this.experiment
-                            ).finally(() => {
-                              this.isFileSelectionStep = false;
-                              const v = response.fileUrls?.validate;
-                              const allFilesReady = !!(v?.parameterFormats && v?.vehicleTypes && v?.preVRPSolution);
-                              if (allFilesReady && !v?.errorWarning) {
-                                this.isUpload = true;
-                                this.haveValidated = true;
-                              }
-                              setTimeout(() => {
-                                this.toastr.success(
-                                  this.transloco.translate(
-                                    'success_load_experiment',
-                                    {},
-                                    'index'
-                                  ),
-                                  this.experiment.name
-                                );
-                                this.spinner.hide();
-                              }, 500);
-                            });
-                          }
+                          },
                         });
                   },
                   error: () => {

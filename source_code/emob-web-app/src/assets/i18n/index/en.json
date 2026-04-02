@@ -314,6 +314,7 @@
   "success_load_experiment": "Success to load route planning",
   "success_to_download_plan": "Success to download plan",
   "success_to_replicate_experiment": "Success to replicate route planning",
+  "failed_to_replicate_experiment": "Failed to replicate route planning",
   "sync_latitude_and_longitude_to_map": "Sync Latitude and Longitude to Map",
   "the_location_is": "The location is",
   "the_validation_process_will_filter_and_eliminate_any_invalid_order_data": "The validation process will filter and eliminate any invalid order data",

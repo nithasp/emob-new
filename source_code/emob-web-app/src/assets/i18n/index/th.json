@@ -314,6 +314,7 @@
   "success_load_experiment": "โหลดการวางแผนเส้นทางสำเร็จ",
   "success_to_download_plan": "ดาวน์โหลดแผนสำเร็จ",
   "success_to_replicate_experiment": "คัดลอกการวางแผนเส้นทางสำเร็จ",
+  "failed_to_replicate_experiment": "คัดลอกการวางแผนเส้นทางไม่สำเร็จ",
   "sync_latitude_and_longitude_to_map": "ซิงค์ละติจูดและลองจิจูดกับแผนที่",
   "the_location_is": "ตำแหน่งคือ",
   "the_validation_process_will_filter_and_eliminate_any_invalid_order_data": "กระบวนการตรวจสอบจะกรองและกำจัดข้อมูลคำสั่งซื้อที่ไม่ถูกต้อง",
