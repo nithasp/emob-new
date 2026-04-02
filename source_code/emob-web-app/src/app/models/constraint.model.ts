@@ -95,6 +95,11 @@ export interface UpdateDynamicParameter {
   results: DynamicParameter[];
 }
 
+export interface GroupedParameters {
+  category: string;
+  items: Array<{ displayName: string; formattedValue: string }>;
+}
+
 export interface Parameter {
   companyName: string;
   parameters: Constraint;

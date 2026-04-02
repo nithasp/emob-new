@@ -5,14 +5,7 @@ import {
   FormGroup,
 } from '@angular/forms';
 import { timeStringToMinutes } from 'src/app/directives/time-string-to-minutes.pipe';
-
-interface TimeRangeValidatorConfig {
-  startTimeField: string;
-  endTimeField: string;
-  startTimeErrorMessage?: string;
-  endTimeErrorMessage?: string;
-  errorKey?: string;
-}
+import { TimeRangeValidatorConfig } from 'src/app/models/time.model';
 
 export function createTimeRangeValidator(
   config: TimeRangeValidatorConfig

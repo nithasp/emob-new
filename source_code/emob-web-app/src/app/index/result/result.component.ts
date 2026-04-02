@@ -58,6 +58,7 @@ import { Workbook } from 'exceljs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import { Experiment } from 'src/app/models/experiment.model';
+import { FilterCriteria } from 'src/app/models/common.model';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import { firstValueFrom, take } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
@@ -1397,12 +1398,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   multiFilterPredicate(data: RouteInfo, filter: string): boolean {
     if (!filter) return true;
-    interface F {
-      column: string;
-      criteria: string;
-      value: string;
-    }
-    const filters = JSON.parse(filter) as F[];
+    const filters = JSON.parse(filter) as FilterCriteria[];
 
     return filters.some((f) =>
       this.evaluateFilter(
