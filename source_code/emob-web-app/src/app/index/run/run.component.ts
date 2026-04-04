@@ -300,6 +300,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   public vehicleSelectionMode: Record<string, 'count' | 'license-plate'> = {};
   public selectedLicensePlates: Record<string, string[]> = {};
   public selectedVehicleIdsByLicensePlate: Record<string, string[]> = {};
+  public vehicleSelectionError: boolean = false;
   private readonly defaultVehicleMaxCount = 1000;
 
   constructor(
@@ -2317,9 +2318,8 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   validateExperimentPreOrder() {
     if (this.selectedVehicleIds.length === 0) {
-      this.toastr.warning(
-        this.transloco.translate('no_vehicle_selected', {}, 'index'),
-      );
+      this.vehicleSelectionError = true;
+      this.navigateToTab(2);
       return;
     }
 
@@ -4082,12 +4082,12 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   onVehicleChecked(vehicleId: string, checked: boolean): void {
     if (checked) {
+      this.vehicleSelectionError = false;
       if (!this.selectedVehicleIds.includes(vehicleId)) {
         this.selectedVehicleIds = [...this.selectedVehicleIds, vehicleId];
         if (this.selectedVehicleCounts[vehicleId] == null) {
           this.selectedVehicleCounts[vehicleId] = 1;
         }
-        // Set default selection mode to 'count'
         if (this.vehicleSelectionMode[vehicleId] == null) {
           this.vehicleSelectionMode[vehicleId] = 'count';
         }

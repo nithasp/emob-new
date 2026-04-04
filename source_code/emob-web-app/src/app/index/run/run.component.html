@@ -1,5 +1,5 @@
 <ng-container *transloco="let t; read: 'index'">
-  <button (click)="forceDisplay()">force display</button>
+  <!-- <button (click)="forceDisplay()">force display</button> -->
   <div class="card mt-2 container-fluid" style="min-height: 100vh">
     <ngx-spinner name="run">
       <p class="h-3">{{ t("wait_a_moment") }} ...</p>
@@ -735,7 +735,7 @@
             [disabled]="!isUpload"
             *ngIf="hasMyVehicleTypes()"
           >
-            <button ngbNavLink>
+            <button ngbNavLink [class.nav-link-error]="vehicleSelectionError">
               <h3>{{ t("vehicle") }}</h3>
             </button>
             <ng-template ngbNavContent>
@@ -747,8 +747,15 @@
                   {{ "total" | transloco }}:
                   {{ this.selectedVehicleIds.length }}
                 </h4>
+                <p
+                  *ngIf="vehicleSelectionError"
+                  class="vehicle-selection-error-msg text-center text-danger mb-0"
+                >
+                  {{ t("no_vehicle_selected") }}
+                </p>
                 <div
                   class="vehicle-selection-container overflow-auto d-flex flex-column align-items-center mt-4"
+                  [class.vehicle-selection-error]="vehicleSelectionError"
                 >
                   <div
                     *ngFor="let vehicle of availableVehicleTypes; let i = index"
