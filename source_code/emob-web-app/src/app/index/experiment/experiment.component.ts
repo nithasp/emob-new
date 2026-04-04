@@ -34,6 +34,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     { def: 'select', label: 'select', visible: true },
     { def: 'Name', label: 'name', visible: true },
     { def: 'actions', label: 'actions', visible: true },
+    { def: 'DepotName', label: 'depot_name', visible: true },
     { def: 'TimeStamp', label: 'timestamp', visible: true },
     { def: 'TimeStart', label: 'run_start', visible: true },
     { def: 'TimeEnd', label: 'run_end', visible: true },

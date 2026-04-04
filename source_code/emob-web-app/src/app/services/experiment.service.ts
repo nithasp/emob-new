@@ -8,8 +8,8 @@ import {
   DownloadResultFile,
   Experiment,
   ExperimentState,
-  Company, 
-  MyDepot
+  Company,
+  MyDepot,
 } from '../models/experiment.model';
 import { Constraint, TimingAndCapacity } from '../models/constraint.model';
 import { Location } from '../models/location.model';
@@ -24,7 +24,7 @@ export class ExperimentService {
   constructor(
     private readonly apollo: Apollo,
     private readonly toastr: ToastrService,
-    private readonly errorHandlingService: ErrorHandlingService
+    private readonly errorHandlingService: ErrorHandlingService,
   ) {}
 
   getExperiments(): Observable<Array<Experiment>> {
@@ -46,6 +46,28 @@ export class ExperimentService {
               groupId
               countGeocoding
               countReroute
+              depots {
+                companyName
+                depotId
+                depotName
+                latitude
+                longitude
+                timeWindowEarly
+                timeWindowLate
+                createdAt
+                updatedAt
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  required
+                  createdAt
+                  modifiedAt
+                }
+              }
             }
           }
         `,
@@ -67,7 +89,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.createExperiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -152,7 +174,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data.experiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -176,7 +198,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data.downloadResultFile),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -184,7 +206,7 @@ export class ExperimentService {
     runId: string,
     parameter: TimingAndCapacity,
     locationUpdated: CustomerUpdated[],
-    vehicles?: VehicleValidationInput[]
+    vehicles?: VehicleValidationInput[],
   ): Observable<Experiment> {
     return this.apollo
       .mutate<Response>({
@@ -210,7 +232,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.validateExperiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
   submitExperiment(runId: string): Observable<Experiment> {
@@ -241,7 +263,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.submitExperiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -265,7 +287,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.rerunExperiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -289,7 +311,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.cancelExperiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -309,7 +331,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.replicateExperiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -328,7 +350,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data.myCompany),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -364,7 +386,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data.myDepots),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 }
