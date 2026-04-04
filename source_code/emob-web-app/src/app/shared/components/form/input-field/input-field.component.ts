@@ -5,10 +5,8 @@ import {
   EventEmitter,
   OnInit,
   OnDestroy,
-  AfterViewInit,
   OnChanges,
   SimpleChanges,
-  ViewChild,
   ElementRef,
   Renderer2,
 } from '@angular/core';
@@ -36,7 +34,7 @@ import { TranslocoService } from '@jsverse/transloco';
   styleUrls: ['./input-field.component.scss'],
 })
 export class InputFieldComponent
-  implements OnInit, OnDestroy, AfterViewInit, OnChanges
+  implements OnInit, OnDestroy, OnChanges
 {
   @Input() placeholder: string = 'Enter value';
   @Input() type: string = 'text';
@@ -55,8 +53,6 @@ export class InputFieldComponent
 
   @Output() valueChange: EventEmitter<string> = new EventEmitter<string>();
   @Output() suffixIconClick: EventEmitter<void> = new EventEmitter<void>(); // Event emitter for suffix icon clicks
-
-  @ViewChild('inputElement') inputElement!: ElementRef<HTMLInputElement>;
 
   private controlSubscription?: Subscription;
 
@@ -88,16 +84,6 @@ export class InputFieldComponent
     this.updateParentDisabledState();
   }
 
-  ngAfterViewInit(): void {
-    if (this.type === 'thaiCitizenId' && this.inputElement) {
-      this.renderer.setAttribute(
-        this.inputElement.nativeElement,
-        'maxLength',
-        '17'
-      );
-    }
-  }
-
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['disabled'] && this.control) {
       if (this.disabled) {
@@ -126,7 +112,7 @@ export class InputFieldComponent
   }
 
   get computedInputType(): string {
-    if (this.type === 'thaiCitizenId' || this.type === 'number') {
+    if (this.type === 'number') {
       return 'text';
     }
     if (this.type === 'password') {
@@ -135,31 +121,11 @@ export class InputFieldComponent
     return this.type;
   }
 
-  formatThaiCitizenId: (value: string) => string = (value: string): string => {
-    const groups = [1, 4, 5, 2, 1];
-    let result = '';
-    let pos = 0;
-
-    for (let i = 0; i < groups.length; i++) {
-      if (pos >= value.length) break;
-      const groupLen = groups[i];
-      const currentGroup = value.substring(pos, pos + groupLen);
-      result += (result.length ? '-' : '') + currentGroup;
-      pos += currentGroup.length;
-    }
-
-    return result;
-  };
-
   onKeyPress(event: KeyboardEvent): void {
     if (!this.control) {
       return;
     }
-    if (this.type === 'thaiCitizenId') {
-      if (!/[0-9]/.test(event.key)) {
-        event.preventDefault();
-      }
-    } else if (this.type === 'number') {
+    if (this.type === 'number') {
       if (/[0-9]/.test(event.key)) {
         return;
       }
@@ -178,14 +144,7 @@ export class InputFieldComponent
       return;
     }
     const input = event.target as HTMLInputElement;
-    if (this.type === 'thaiCitizenId') {
-      const digitsOnly = input.value.replace(/\D/g, '');
-      const formattedValue = this.formatThaiCitizenId(digitsOnly);
-      if (formattedValue !== input.value) {
-        this.control.setValue(formattedValue, { emitEvent: false });
-        this.value = formattedValue;
-      }
-    } else if (this.type === 'number') {
+    if (this.type === 'number') {
       const rawValue = input.value;
       const formattedValue = this.formatNumber(rawValue, this.decimal);
       if (formattedValue !== rawValue) {
@@ -203,13 +162,7 @@ export class InputFieldComponent
         return;
       }
 
-      if (this.type === 'thaiCitizenId') {
-        const digitsOnly = String(this.control.value).replace(/\D/g, '');
-        const formattedValue = this.formatThaiCitizenId(digitsOnly);
-        if (formattedValue !== this.control.value) {
-          this.control.setValue(formattedValue, { emitEvent: false });
-        }
-      } else if (this.type === 'number') {
+      if (this.type === 'number') {
         const currentValue = String(this.control.value);
         const formattedValue = this.formatNumber(currentValue, this.decimal);
         if (formattedValue !== currentValue) {
@@ -259,12 +212,6 @@ export class InputFieldComponent
     }
     if (this.control.hasError('email')) {
       return this.transloco.translate('form.error.email');
-    }
-    if (this.control.hasError('invalidCharacters')) {
-      return this.transloco.translate('form.error.thai_citizen_id_digits');
-    }
-    if (this.control.hasError('invalidLength')) {
-      return this.transloco.translate('form.error.thai_citizen_id_length');
     }
     if (this.control.hasError('timeRangeInvalid')) {
       return this.control.getError('timeRangeInvalid');

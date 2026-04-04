@@ -81,8 +81,6 @@
     "error": {
       "required": "จำเป็นต้องกรอกข้อมูลนี้",
       "email": "อีเมลไม่ถูกต้อง",
-      "thai_citizen_id_digits": "เลขบัตรประชาชนต้องเป็นตัวเลขเท่านั้น (0-9)",
-      "thai_citizen_id_length": "เลขบัตรประชาชนต้องมี 13 หลัก",
       "license_plates_empty": "กรุณาเพิ่มทะเบียนรถ",
       "license_plate_duplicate": "ทะเบียนรถนี้ถูกเพิ่มแล้ว",
       "invalid_input": "ข้อมูลไม่ถูกต้อง",
