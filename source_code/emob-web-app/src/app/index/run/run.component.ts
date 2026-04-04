@@ -3481,6 +3481,10 @@ export class RunComponent implements OnInit, AfterViewInit {
         this.dataPreOrder = [];
         this.resetComponentValue();
 
+        // Hide transform warnings
+        this.transformWarnings = [];
+        this.transformWarningCollapseStates = [];
+
         // Refresh depot list and input requirements from server with spinner
         this.getMyDepots(true);
 
