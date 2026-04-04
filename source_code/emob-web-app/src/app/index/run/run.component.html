@@ -1,4 +1,5 @@
 <ng-container *transloco="let t; read: 'index'">
+  <button (click)="forceDisplay()">force display</button>
   <div class="card mt-2 container-fluid" style="min-height: 100vh">
     <ngx-spinner name="run">
       <p class="h-3">{{ t("wait_a_moment") }} ...</p>
@@ -736,31 +737,53 @@
                     </ngb-alert>
 
                     <ng-container *transloco="let tVal; scope: 'validation'; read: 'validation'">
-                      <div class="container-validation-warning new-warning-validation" *ngIf="validationWarningTableRows.length > 0">
-                        <div class="validation-warning-item">
+                      <div class="container-validation-warning new-warning-validation" *ngIf="validationWarnings.length > 0">
+                        <div class="validation-warning-item" *ngFor="let warning of validationWarnings; let i = index">
                           <ngb-alert [dismissible]="false">
-                            <strong>Constraint Warning</strong>
+                            <strong>{{ warning.errorType }}</strong>
                             <button type="button" class="link link-primary link-opacity-75-hover"
-                              (click)="toggleValidationWarningCollapse()"
-                              [attr.aria-expanded]="!validationWarningCollapse">
+                              (click)="toggleValidationWarningCollapse(i)"
+                              [attr.aria-expanded]="!validationWarningCollapseStates[i]">
                               {{ t("show_details") }}
                             </button>
                           </ngb-alert>
-                          <div class="validation-warning-item-wrapper mb-3 overflow-x-auto" [ngbCollapse]="validationWarningCollapse">
-                            <table class="table table-striped">
-                              <thead>
-                                <tr>
-                                  <th>{{ t('validation_table_header_file_name') }}</th>
-                                  <th>{{ t('validation_table_header_message') }}</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr *ngFor="let row of validationWarningTableRows">
-                                  <td>{{ row.fileName }}</td>
-                                  <td>{{ getValidationMessage(row.type, row.params) }}</td>
-                                </tr>
-                              </tbody>
-                            </table>
+                          <div class="validation-warning-item-wrapper mb-3 overflow-x-auto" [ngbCollapse]="validationWarningCollapseStates[i]">
+                            <ng-container *ngIf="warning.errorType === 'missing_product'; else defaultWarningTable">
+                              <table class="table table-striped">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">{{ t("product_id_missing") }}</th>
+                                    <th scope="col">{{ t("sku_code") }}</th>
+                                    <th scope="col">{{ t("product_name") }}</th>
+                                    <th scope="col">{{ t("packaging_type") }}</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr *ngFor="let detail of warning.detail">
+                                    <td>{{ detail.context?.missing_product_quantity?.productId }}</td>
+                                    <td>{{ detail.context?.missing_product_quantity?.skuCode }}</td>
+                                    <td>{{ detail.context?.missing_product_quantity?.name }}</td>
+                                    <td>{{ detail.context?.missing_product_quantity?.packagingType }}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </ng-container>
+                            <ng-template #defaultWarningTable>
+                              <table class="table table-striped">
+                                <thead>
+                                  <tr>
+                                    <th>{{ t('validation_table_header_file_name') }}</th>
+                                    <th>{{ t('validation_table_header_message') }}</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr *ngFor="let row of getRowsForWarning(warning)">
+                                    <td>{{ row.fileName }}</td>
+                                    <td>{{ getValidationMessage(row.type, row.params) }}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </ng-template>
                           </div>
                         </div>
                       </div>
