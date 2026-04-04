@@ -14,6 +14,21 @@ export function getValidationMessage(
   return translated;
 }
 
+export function createCachedValidationMessageFn(transloco: TranslocoService) {
+  const cache = new Map<string, string>();
+
+  return (type: string, params: any): string => {
+    const cacheKey = `${type}::${JSON.stringify(params)}`;
+    const cached = cache.get(cacheKey);
+    if (cached !== undefined) {
+      return cached;
+    }
+    const message = getValidationMessage(transloco, type, params);
+    cache.set(cacheKey, message);
+    return message;
+  };
+}
+
 export function buildTableRows(items: any[]): ValidationTableRow[] {
   const rows: ValidationTableRow[] = [];
 

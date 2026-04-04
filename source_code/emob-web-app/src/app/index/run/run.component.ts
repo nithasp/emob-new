@@ -113,7 +113,7 @@ import {
 } from 'src/app/models/vehicle.model';
 
 import { ValidationTableRow } from 'src/app/models/validation-table.model';
-import { buildTableRows, getValidationMessage } from 'src/app/shared/utils/validation-table.utils';
+import { buildTableRows, createCachedValidationMessageFn } from 'src/app/shared/utils/validation-table.utils';
 
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
@@ -255,6 +255,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   validationWarningTableRows: ValidationTableRow[] = [];
   validationWarningCollapse: boolean = false;
   isValidationWarning: boolean = false;
+  private cachedGetValidationMessage!: ReturnType<typeof createCachedValidationMessageFn>;
 
   // Mat table
   @ViewChild(MatPaginator, { static: false })
@@ -512,8 +513,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     }, 100);
     this.dataSource.paginator = this.paginator; // For pagination
     this.dataSource.sort = this.sort; // For sort
+    this.cachedGetValidationMessage = createCachedValidationMessageFn(this.transloco);
     // react to language changes: only trigger change detection (no regroup)
     this.transloco.langChanges$.subscribe(() => {
+      this.cachedGetValidationMessage = createCachedValidationMessageFn(this.transloco);
       this.cdr.detectChanges();
     });
   }
@@ -4237,10 +4240,11 @@ export class RunComponent implements OnInit, AfterViewInit {
 
 
   getValidationMessage(type: string, params: any): string {
-    return getValidationMessage(this.transloco, type, params);
+    return this.cachedGetValidationMessage(type, params);
   }
 
   setValidationWarnings(warnings: any[]) {
+    this.cachedGetValidationMessage = createCachedValidationMessageFn(this.transloco);
     this.validationWarningTableRows = buildTableRows(warnings || []);
     this.validationWarningCollapse = false;
   }

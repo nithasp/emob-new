@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TRANSLOCO_SCOPE, TranslocoService } from '@jsverse/transloco';
 import { ValidationTableRow } from 'src/app/models/validation-table.model';
-import { buildTableRows, getValidationMessage } from 'src/app/shared/utils/validation-table.utils';
+import { buildTableRows, createCachedValidationMessageFn } from 'src/app/shared/utils/validation-table.utils';
 
 @Component({
   selector: 'app-transform-validation-dialog',
@@ -14,6 +14,7 @@ export class TransformValidationDialogComponent implements OnInit {
   @Input() validationResponse: any;
 
   tableRows: ValidationTableRow[] = [];
+  private cachedGetValidationMessage!: ReturnType<typeof createCachedValidationMessageFn>;
 
   constructor(
     public activeModal: NgbActiveModal,
@@ -21,13 +22,14 @@ export class TransformValidationDialogComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.cachedGetValidationMessage = createCachedValidationMessageFn(this.transloco);
     if (this.validationResponse) {
       this.tableRows = buildTableRows(this.validationResponse?.error || []);
     }
   }
 
   getValidationMessage(type: string, params: any): string {
-    return getValidationMessage(this.transloco, type, params);
+    return this.cachedGetValidationMessage(type, params);
   }
 
   close(): void {
