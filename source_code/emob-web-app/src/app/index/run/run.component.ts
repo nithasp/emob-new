@@ -2365,8 +2365,11 @@ export class RunComponent implements OnInit, AfterViewInit {
         }),
       )
       .subscribe({
-        next: (result) => {
+        next: (result: any) => {
           console.log('validateExperiment result', result);
+          if (result.result?.message) {
+            this.toastr.success(result.result.message);
+          }
           this.haveUpdateAfterValidated = false;
           // Sync constraints with the payload used for validation so UI reflects latest
           const mergedConstraint: Constraint = {
