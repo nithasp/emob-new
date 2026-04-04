@@ -57,7 +57,7 @@ import { set } from 'ol/transform';
 export class CustomerDetailsComponent
   implements OnInit, AfterViewInit, OnChanges
 {
-  @Input() dataPreOder!: DetailsPreOder | DataPreOrder;
+  @Input() dataPreOder: DetailsPreOder | DataPreOrder | null | undefined;
   @Input() dataCustomer!: Customer;
   @Input() locationType: LocationType = LocationType.Verify;
   @Input() isModal: boolean = true;

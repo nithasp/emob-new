@@ -2052,9 +2052,9 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     const dataPreOder: DataPreOrder = {
       ORDERID_ORG: customer.nodeId,
-      CHANNEL: customer.extra?.channel || null,
-      CUSTOMER_NAME: customer.extra?.customerName || '',
-      TEL: customer.extra?.tel || null,
+      CHANNEL: customer.additionalProperties?.channel || null,
+      CUSTOMER_NAME: customer.name || '',
+      TEL: customer.additionalProperties?.telephone || null,
       ADDRESS: customer.originalAddress?.address || '',
       AUMPHER: customer.originalAddress?.district || null,
       PROVINCE: customer.originalAddress?.province || null,
