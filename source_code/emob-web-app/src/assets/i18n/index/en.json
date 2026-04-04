@@ -247,7 +247,7 @@
   "product_id_zero_weight": "PRODUCT ID (ZERO WEIGHT)",
   "product_name": "PRODUCT NAME",
   "packaging_type": "PACKAGING TYPE",
-  "quantity_main": "QUANTITY MAIN",
+  "quantity_main": "QUANTITY",
   "quantity_minor": "QUANTITY MINOR",
   "refers_to_inputs_containing_invalid_or_missing_nan_values_highlighting_issues_in_data_integrity": "Refers to inputs containing invalid or missing (NaN) values, highlighting issues in data integrity.",
   "refresh": "Refresh",
