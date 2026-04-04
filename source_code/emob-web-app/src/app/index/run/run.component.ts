@@ -1392,76 +1392,88 @@ export class RunComponent implements OnInit, AfterViewInit {
 
           this.preOrderService
             .uploadPreOrder(this.experiment.runId, depotIds, newPayload)
-            .subscribe((response: any) => {
-              console.log('uploadPreOrder success response', response);
+            .subscribe({
+              next: (response: any) => {
+                console.log('uploadPreOrder success response', response);
 
-              if (response.result?.isSuccesses === false) {
-                this.spinner.hide();
-                this.openTransformValidationDialog(response.result);
-                return;
-              }
-
-              if (response.result?.isWarning && response.result?.warning) {
-                this.setTransformWarnings(response.result.warning);
-              } else {
-                this.setTransformWarnings([]);
-              }
-
-              // getExperiment step
-              // Refresh experiment data first, then proceed with grouping to ensure latest depots exist
-              this.experimentService
-                .getExperiment(this.experiment.runId)
-                .pipe(take(1))
-                .subscribe(async (exp: Experiment) => {
-
-                  this.experiment = { ...exp };
-
-                  if (exp.fileUrls?.transform?.locations) {
-                    this.dataFromFileUrlToJson(exp.fileUrls.transform.locations).then((locationData: any) => {
-                      console.log('post-upload transform locations data', locationData);
-                      if (locationData?.customers && locationData?.depots) {
-                        this.groupingCustomer(locationData.customers as Customer[], locationData.depots as Depot[]);
-                      }
-                    }).catch((err) => {
-                      console.error('error fetching transform locations after upload', err);
-                    });
-                  }
-
-                  this.experiment.name = response.name;
-                  // Map inputdata to UI structure expected by template
-                  this.preOrderFiles = (this.experiment.inputdata || []).map(
-                    (inputItem: InputDataItem) => {
-                      const mockFile = {
-                        keyName: inputItem.keyName,
-                        name: inputItem.filename,
-                        blobPath: inputItem.blobPath,
-                        displayName: inputItem.displayName,
-                        type: inputItem.fileFormatType,
-                        size: inputItem.fileSize,
-                      };
-                      return {
-                        id: this.generateUniqueId(),
-                        file: mockFile,
-                      };
-                    }
-                  );
-
-                  this.isFilePreview = false;
-                  this.isFileSelectionStep = false;
+                if (response.result?.isSuccesses === false) {
                   this.spinner.hide();
-                  this.toastr.success(
-                    `${this.transloco.translate(
-                      'upload_preorder_success',
-                      {},
-                      'index'
-                    )}.`
-                  );
-                  // Fetch latest dynamic parameters for the selected depot and rebuild UI
-                  this.getDynamicParameters();
+                  this.openTransformValidationDialog(response.result);
+                  return;
+                }
 
-                  // Update upload button state after successful upload
-                  this.updateCanUploadState();
-                });
+                if (response.result?.isWarning && response.result?.warning) {
+                  this.setTransformWarnings(response.result.warning);
+                } else {
+                  this.setTransformWarnings([]);
+                }
+
+                // getExperiment step
+                // Refresh experiment data first, then proceed with grouping to ensure latest depots exist
+                this.experimentService
+                  .getExperiment(this.experiment.runId)
+                  .pipe(take(1))
+                  .subscribe({
+                    next: async (exp: Experiment) => {
+                      this.experiment = { ...exp };
+
+                      if (exp.fileUrls?.transform?.locations) {
+                        try {
+                          const locationData: any = await this.dataFromFileUrlToJson(exp.fileUrls.transform.locations);
+                          console.log('post-upload transform locations data', locationData);
+                          if (locationData?.customers && locationData?.depots) {
+                            this.groupingCustomer(locationData.customers as Customer[], locationData.depots as Depot[]);
+                          }
+                        } catch (err) {
+                          console.error('error fetching transform locations after upload', err);
+                        }
+                      }
+
+                      this.experiment.name = response.name;
+                      // Map inputdata to UI structure expected by template
+                      this.preOrderFiles = (this.experiment.inputdata || []).map(
+                        (inputItem: InputDataItem) => {
+                          const mockFile = {
+                            keyName: inputItem.keyName,
+                            name: inputItem.filename,
+                            blobPath: inputItem.blobPath,
+                            displayName: inputItem.displayName,
+                            type: inputItem.fileFormatType,
+                            size: inputItem.fileSize,
+                          };
+                          return {
+                            id: this.generateUniqueId(),
+                            file: mockFile,
+                          };
+                        }
+                      );
+
+                      this.isFilePreview = false;
+                      this.isFileSelectionStep = false;
+                      this.toastr.success(
+                        `${this.transloco.translate(
+                          'upload_preorder_success',
+                          {},
+                          'index'
+                        )}.`
+                      );
+                      // Fetch latest dynamic parameters for the selected depot and rebuild UI
+                      this.getDynamicParameters();
+
+                      // Update upload button state after successful upload
+                      this.updateCanUploadState();
+                      this.spinner.hide();
+                    },
+                    error: (err) => {
+                      console.error('Error fetching experiment after upload:', err);
+                      this.spinner.hide();
+                    }
+                  });
+              },
+              error: (err) => {
+                console.error('Error uploading pre-order:', err);
+                this.spinner.hide();
+              }
             });
         }
       })
