@@ -5,6 +5,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { TranslocoService } from '@jsverse/transloco';
 import { ToastrService } from 'ngx-toastr';
 import {
   ActualLocation,
@@ -36,7 +37,8 @@ export class UploadFileComponent implements OnInit {
   constructor(
     private readonly toastr: ToastrService,
     public readonly activeModal: NgbActiveModal,
-    private readonly ngbModal: NgbModal
+    private readonly ngbModal: NgbModal,
+    private readonly transloco: TranslocoService
   ) {}
 
   ngOnInit(): void {}
@@ -128,14 +130,14 @@ export class UploadFileComponent implements OnInit {
       // );
 
       this.alertInvalidation(
-        'Header Columns are incorrect.',
+        this.transloco.translate('header_columns_incorrect', {}, 'index'),
         `<div>
           <div class="mb-1">
-            <p class="mb-0">Missing Columns:</p>
+            <p class="mb-0">${this.transloco.translate('missing_columns', {}, 'index')}</p>
             <p>${missingRaw.join(', ')}</p>
           </div>
           <div class="text-muted small">
-            <p class="mb-0">Expected Columns:</p>
+            <p class="mb-0">${this.transloco.translate('expected_columns', {}, 'index')}</p>
             <p>${rawExpected.join(', ')}</p>
           </div>
         </div>`
@@ -157,9 +159,9 @@ export class UploadFileComponent implements OnInit {
       centered: true,
       animation: true,
     });
-    dialogRef.componentInstance.title = 'Upload File Confirmation';
-    dialogRef.componentInstance.question = `Confirm uploading ${file.name} to category?`;
-    dialogRef.componentInstance.message = `If you upload ${file.name} to the incorrect category, it will affect your route planning AI service.`;
+    dialogRef.componentInstance.title = this.transloco.translate('upload_file_confirmation', {}, 'index');
+    dialogRef.componentInstance.question = this.transloco.translate('upload_file_confirmation_question', { fileName: file.name }, 'index');
+    dialogRef.componentInstance.message = this.transloco.translate('upload_file_confirmation_message', { fileName: file.name }, 'index');
 
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {
