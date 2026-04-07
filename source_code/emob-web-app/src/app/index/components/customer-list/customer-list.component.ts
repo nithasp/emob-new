@@ -95,28 +95,52 @@ export class CustomerListComponent implements OnInit {
       || selected?.extra?.productsInfo
       || [];
 
-    const fallback = keyed || {
-      ORDERID_ORG: selected?.nodeId,
-      CHANNEL: selected?.extra?.channel || '',
-      CUSTOMER_NAME: selected?.extra?.customerName || '',
-      TEL: selected?.extra?.tel || '',
-      ADDRESS: selected?.originalAddress?.address || '',
-      AUMPHER: selected?.originalAddress?.district || '',
-      PROVINCE: selected?.originalAddress?.province || '',
-      ZIPCODE: Number(selected?.originalAddress?.postalCode || 0),
-      details: products.map((p: any) => ({
-        PRODUCTID: String(p.productId || ''),
-        ORDER_ID: p.skuCode || p.orderId || null,
-        PRODUCTNAME: p.name || p.productName || '',
-        QUANTITYMAIN: Number(p.productQuantity ?? p.quantityMajor ?? 0),
-        QUANTITYMINOR: Number(p.quantityMinor ?? 0),
-        UserConfirm: p.userConfirm || null,
-        DateConfirm: p.dateConfirm || null,
-      })),
+    const base =
+      keyed ||
+      ({
+        ORDERID_ORG: selected?.nodeId,
+        CHANNEL: '',
+        CUSTOMER_NAME: '',
+        TEL: '',
+        ADDRESS: selected?.originalAddress?.address || '',
+        AUMPHER: selected?.originalAddress?.district || '',
+        PROVINCE: selected?.originalAddress?.province || '',
+        ZIPCODE: Number(selected?.originalAddress?.postalCode || 0),
+        details: products.map((p: any) => ({
+          PRODUCTID: String(p.productId || ''),
+          ORDER_ID: p.skuCode || p.orderId || null,
+          PRODUCTNAME: p.name || p.productName || '',
+          QUANTITYMAIN: Number(p.productQuantity ?? p.quantityMajor ?? 0),
+          QUANTITYMINOR: Number(p.quantityMinor ?? 0),
+          UserConfirm: p.userConfirm || null,
+          DateConfirm: p.dateConfirm || null,
+        })),
+      } as unknown as DetailsPreOder);
+
+    // Match openCustomerOrderDetails in run.component: runtime customers use
+    // additionalProperties + name, not only Excel-grouped rows or extra.*.
+    const channel =
+      selected?.additionalProperties?.channel ??
+      base.CHANNEL ??
+      selected?.extra?.channel ??
+      '';
+    const customerName =
+      selected?.name || base.CUSTOMER_NAME || selected?.extra?.customerName || '';
+    const tel =
+      selected?.additionalProperties?.telephone ??
+      base.TEL ??
+      selected?.extra?.tel ??
+      '';
+
+    const dataPreOder: DetailsPreOder = {
+      ...base,
+      CHANNEL: channel,
+      CUSTOMER_NAME: customerName,
+      TEL: tel,
     };
 
     this.customerSelected = {
-      dataPreOder: fallback,
+      dataPreOder,
       dataCustomer: selected,
       locationType: this.findLocationType(selected.name),
     };
@@ -137,8 +161,8 @@ export class CustomerListComponent implements OnInit {
     );
   }
   selectCustomer(customer: Customer) {
-    this.selectedIndex =
-      this.customersToVerify.findIndex((c) => c.name === customer.name) || 0;
+    const idx = this.customersToVerify.findIndex((c) => c.name === customer.name);
+    this.selectedIndex = idx >= 0 ? idx : 0;
     console.log('Selected customer:', this.selectedIndex);
     this.selectData();
   }
