@@ -231,7 +231,6 @@
                   <button
                     *ngIf="!isFileSelectionStep"
                     class="btn"
-                    [hidden]="!isOriginalExperiment()"
                     (click)="backToStep1()"
                   >
                     <mat-icon>delete</mat-icon>
@@ -1251,7 +1250,9 @@
                           "
                         >
                           <ngb-alert [dismissible]="false">
-                            <div class="d-flex align-items-center justify-content-between">
+                            <div
+                              class="d-flex align-items-center justify-content-between"
+                            >
                               <div>
                                 <strong>{{ warning.errorType }}</strong>
                                 <button
