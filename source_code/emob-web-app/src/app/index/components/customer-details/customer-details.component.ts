@@ -325,7 +325,10 @@ export class CustomerDetailsComponent
           this.locationType = LocationType.Edit;
           this.dataEmitter.emit(this.location);
           this.setLocation(this.dataCustomer, this.location);
-          this.toastr.success('Update Location', 'Succeed');
+          this.toastr.success(
+            this.transloco.translate('update_location', {}, 'index'),
+            'Succeed'
+          );
         }
       })
       .catch((error) => {
