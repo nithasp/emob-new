@@ -4349,6 +4349,15 @@ export class RunComponent implements OnInit, AfterViewInit {
     return titleMap[title] || title;
   }
 
+  getWarningTypeLabel(errorType: string): string {
+    const scopedKey = `validation.${errorType}`;
+    const translated = this.transloco.translate(scopedKey, { errorType });
+    if (translated === scopedKey) {
+      return this.transloco.translate('validation.unknown_validation_error', { errorType });
+    }
+    return translated;
+  }
+
   getValidationMessage(type: string, params: any): string {
     return this.cachedGetValidationMessage(type, params);
   }
