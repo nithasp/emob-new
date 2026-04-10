@@ -174,8 +174,8 @@
                         formVehicleType.controls.dimension.controls.width
                       "
                       [suffix]="'cm' | transloco"
-                      [disabled]="isViewMode"
-                      [required]="true"
+                      [disabled]="isViewMode || vehicleSizingType === 'volume'"
+                      [required]="vehicleSizingType === 'dimension'"
                       [decimal]="3"
                     ></app-input-field>
                   </div>
@@ -187,8 +187,8 @@
                         formVehicleType.controls.dimension.controls.height
                       "
                       [suffix]="'cm' | transloco"
-                      [disabled]="isViewMode"
-                      [required]="true"
+                      [disabled]="isViewMode || vehicleSizingType === 'volume'"
+                      [required]="vehicleSizingType === 'dimension'"
                       [decimal]="3"
                     ></app-input-field>
                   </div>
@@ -200,8 +200,8 @@
                         formVehicleType.controls.dimension.controls.depth
                       "
                       [suffix]="'cm' | transloco"
-                      [disabled]="isViewMode"
-                      [required]="true"
+                      [disabled]="isViewMode || vehicleSizingType === 'volume'"
+                      [required]="vehicleSizingType === 'dimension'"
                       [decimal]="3"
                     ></app-input-field>
                   </div>
