@@ -172,18 +172,6 @@ export interface VehicleValidationInput {
 }
 
 
-export interface VehicleTypePayload extends Partial<VehicleType> {
-  maximumVolumeCapacity?: number;
-  vehicleGroupId?: string;
-  allowedBreaks?: Break[];
-}
-
-export interface VehicleValidationInput {
-  vehicleTypeId: string;
-  vehicleId?: string[];
-  numberOfVehiclesAvailable?: number;
-}
-
 export interface VehicleBlobData {
   vehicleTypeId: string;
   numberOfVehiclesAvailable?: number;

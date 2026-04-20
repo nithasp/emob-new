@@ -81,14 +81,6 @@
                     </mat-checkbox>
                   </div>
                 </div>
-                <mat-error
-                  *ngIf="
-                    formVehicleType.get('access')?.hasError('minlength') &&
-                    formVehicleType.get('access')?.touched
-                  "
-                >
-                  {{ t("please_select_at_least_one_access_point") }}
-                </mat-error>
               </div>
 
               <div>

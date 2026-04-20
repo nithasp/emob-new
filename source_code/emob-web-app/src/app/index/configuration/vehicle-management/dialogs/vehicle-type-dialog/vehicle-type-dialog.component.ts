@@ -85,7 +85,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   maximumDurationObject: TimeObject = { hour: 0, minute: 0 };
 
   vehicleSizingType: 'dimension' | 'volume' = 'dimension';
-
   allowedBreaks!: FormArray<FormGroup<BreakFormControls>>;
   breakTimeObjects: BreakTimeObject[] = [];
 
@@ -198,26 +197,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     });
   }
 
-  private preserveStringNulls(): void {
-    this.stringControlKeys.forEach((key) => {
-      const control = this.formVehicleType.get(key);
-      if (control && control.value === '') {
-        control.setValue(null, { emitEvent: false });
-      }
-    });
-
-    this.allowedBreaks.controls.forEach((breakGroup) => {
-      ['name', 'duration', 'timeWindowEarly', 'timeWindowLate'].forEach(
-        (key) => {
-          const control = breakGroup.get(key);
-          if (control && control.value === '') {
-            control.setValue(null, { emitEvent: false });
-          }
-        }
-      );
-    });
-  }
-
   private loadEnumValuesAndVehicleTypeData(): void {
     this.isLoading = true;
 
@@ -242,10 +221,10 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
                 : 'dimension';
             this.onVehicleSizingTypeChange();
             const timeWindowEarly = this.formatTimeForDisplay(
-              data.timeWindowEarly ?? (data as { twEarly?: string | number }).twEarly
+              data.timeWindowEarly ?? data.twEarly
             );
             const timeWindowLate = this.formatTimeForDisplay(
-              data.timeWindowLate ?? (data as { twLate?: string | number }).twLate
+              data.timeWindowLate ?? data.twLate
             );
             const maximumDuration = this.formatTimeForDisplay(data.maximumDuration);
             this.formVehicleType.patchValue({
@@ -395,7 +374,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     this.formVehicleType.markAllAsTouched();
     this.allowedBreaks.markAsTouched();
     this.allowedBreaks.controls.forEach((control) => control.markAsTouched());
-    this.preserveStringNulls();
 
     if (this.allowedBreaks.hasError('required') && this.allowedBreaks.length === 0) {
       this.scrollToBottom();
