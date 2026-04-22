@@ -18,6 +18,9 @@ import { ActionMode } from 'src/app/models/common.model';
   styleUrl: './vehicle.component.scss',
 })
 export class VehicleComponent implements OnInit {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  
+  dataSource = new MatTableDataSource<MyVehicles>([]);
   displayedColumns: string[] = [
     'licensePlate',
     'vehicleType',
@@ -28,9 +31,6 @@ export class VehicleComponent implements OnInit {
     'isActive',
     'actions',
   ];
-
-  dataSource = new MatTableDataSource<MyVehicles>([]);
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
     private ngbModal: NgbModal,
