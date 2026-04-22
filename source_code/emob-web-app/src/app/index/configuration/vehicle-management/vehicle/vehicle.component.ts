@@ -93,8 +93,6 @@ export class VehicleComponent implements OnInit {
     modalRef.componentInstance.question = this.transloco.translate(
       'vehicleManagement.are_you_sure_delete_vehicle'
     );
-    modalRef.componentInstance.acceptButton =
-      this.transloco.translate('delete');
 
     modalRef.result.then(
       (confirmed: boolean) => {
