@@ -7,11 +7,6 @@ import {
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslocoService } from '@jsverse/transloco';
 import { ToastrService } from 'ngx-toastr';
-import {
-  ActualLocation,
-  Categories,
-  Configuration,
-} from 'src/app/models/configuration.model';
 import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
 import { DetailsDialogComponent } from '../../components/details-dialog/details-dialog.component';
 import * as ExcelJS from 'exceljs';
@@ -44,7 +39,6 @@ export class UploadFileComponent implements OnInit {
   ngOnInit(): void {}
 
   onFileSelected(files: FileList | Event): void {
-    console.log('onFileSelected', files);
     let file: File | undefined;
     let fileCount = 0;
 
@@ -113,21 +107,11 @@ export class UploadFileComponent implements OnInit {
     const actualNorm = rawActual.map(normalize);
     const expectedNorm = rawExpected.map(normalize);
 
-    console.log('actualNorm', actualNorm);
-    console.log('expectedNorm', expectedNorm);
-
     const missingNorm = expectedNorm.filter((exp) => !actualNorm.includes(exp));
     if (missingNorm.length) {
       const missingRaw = rawExpected.filter((h) =>
         missingNorm.includes(normalize(h))
       );
-
-      // this.alertInvalidation(
-      //   'Header Columns are incorrect.',
-      //   `Expected Columns:<br>${rawExpected.join(', ')}<br><br>` +
-      //     `Received Columns:<br>${rawActual.join(', ')}<br><br>` +
-      //     `Missing Columns:<br>${missingRaw.join(', ')}<br><br>`
-      // );
 
       this.alertInvalidation(
         this.transloco.translate('header_columns_incorrect', {}, 'index'),
@@ -142,17 +126,8 @@ export class UploadFileComponent implements OnInit {
           </div>
         </div>`
       );
-      
-      
 
       return;
-    }
-
-    const extraNorm = actualNorm.filter((act) => !expectedNorm.includes(act));
-    if (extraNorm.length) {
-      const extraRaw = rawActual.filter((h) =>
-        extraNorm.includes(normalize(h))
-      );
     }
 
     const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
@@ -175,19 +150,11 @@ export class UploadFileComponent implements OnInit {
     if (focusedElement) {
       focusedElement.blur();
     }
-    console.log(`alertInvalidation: title = ${title}, message = ${message}`);
     const dialogRef = this.ngbModal.open(DetailsDialogComponent, {
       centered: true,
       animation: true,
     });
     dialogRef.componentInstance.title = title;
     dialogRef.componentInstance.message = message;
-
-    dialogRef.result.then((confirmed: boolean) => {
-      console.log(`alertInvalidation: confirmed = ${confirmed}`);
-      if (confirmed) {
-        console.log('confirmed');
-      }
-    });
   }
 }

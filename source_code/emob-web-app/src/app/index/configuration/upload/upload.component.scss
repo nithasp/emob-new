@@ -72,16 +72,6 @@ tr:nth-child(even) {
   margin-top: 5px !important;
 }
 
-.configuration-year-wrapper {
-  padding-left: 50px !important;
-  margin-top: 5px !important;
-}
-
-.configuration-month-wrapper {
-  padding-left: 64px !important;
-  margin-top: 5px !important;
-}
-
 .configuration-name-wrapper {
   padding-left: 78px !important;
   &:hover {
@@ -109,13 +99,6 @@ tr:nth-child(even) {
   letter-spacing: 0;
 }
 
-#upload-button-overflow {
-  .dropdown-menu.show {
-    display: block;
-    height: 300px;
-    overflow: auto;
-  }
-}
 .dropdown-menu {
   width: 300px !important;
 }
