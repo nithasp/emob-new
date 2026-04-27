@@ -61,10 +61,16 @@ import { ToastrService } from 'ngx-toastr';
 import {
   RouteInfo,
   FeatureCollection,
+  GeoJSONFeature,
   ReportDataItem,
   PopupContent,
   NumberValue,
   MapPointerBrowserEvent,
+  RoutingNode,
+  RoutingNodeProductQuantity,
+  RouteMetric,
+  VrpSolutionData,
+  VrpGeoJsonData,
 } from 'src/app/models/location.model';
 import { FormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
@@ -93,6 +99,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('filterModal', { static: false, read: TemplateRef })
+  filterModal!: TemplateRef<unknown>;
   @ViewChild('chipListbox') chipListbox!: ElementRef<HTMLElement>;
 
   public activeFilters: Array<{
@@ -158,7 +165,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
   selectedSearchOption: string = 'routeLabel';
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: RouteInfo[] = [];
-  filterModal!: TemplateRef<unknown>;
   vectorLayer!: VectorLayer;
   clusterLayer!: VectorLayer;
 
@@ -173,13 +179,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   // API-fetched plan data
   private vrpStatsData: Record<string, unknown> = {};
-  private vrpSolutionData: any = {};
-  private geoJsonRawData: any = {};
+  private vrpSolutionData: VrpSolutionData = {};
+  private geoJsonRawData: VrpGeoJsonData = {};
 
   // VRP routing nodes for data lookup
-  private routingNodes: any[] = [];
-  private routingNodesMap: Record<number, any> = {};
-  private routingNodesByIdMap: Record<string, any> = {};
+  private routingNodes: RoutingNode[] = [];
+  private routingNodesMap: Record<number, RoutingNode> = {};
+  private routingNodesByIdMap: Record<string, RoutingNode> = {};
 
   constructor(
     private readonly spinner: NgxSpinnerService,
@@ -260,8 +266,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
     ]);
 
     this.vrpStatsData = vrpStats as Record<string, unknown>;
-    this.vrpSolutionData = vrpSolution;
-    this.geoJsonRawData = geoJson;
+    this.vrpSolutionData = vrpSolution as VrpSolutionData;
+    this.geoJsonRawData = geoJson as VrpGeoJsonData;
 
     console.log('vrpStats', this.vrpStatsData);
   }
@@ -493,7 +499,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   private initRoutingNodes(): void {
     const vrpData = this.vrpSolutionData?.vrpData;
     this.routingNodes = vrpData?.routingNodes ?? [];
-    this.routingNodes.forEach((node: any) => {
+    this.routingNodes.forEach((node: RoutingNode) => {
       if (node?.index != null) this.routingNodesMap[node.index] = node;
       if (node?.nodeId) this.routingNodesByIdMap[node.nodeId] = node;
     });
@@ -501,10 +507,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   private buildRouteDistancesMap(): Record<number, number[]> {
     const distancesMap: Record<number, number[]> = {};
-    const geoJson: any = this.geoJsonRawData;
-    geoJson.routes?.forEach((route: any) => {
-      route.features?.forEach((feature: any) => {
-        if (feature.geometry?.type === 'LineString' && feature.properties?.distances) {
+    const geoJson = this.geoJsonRawData;
+    geoJson.routes?.forEach((route: FeatureCollection) => {
+      route.features?.forEach((feature: GeoJSONFeature) => {
+        if (
+          feature.geometry?.type === 'LineString' &&
+          feature.properties?.distances
+        ) {
           const routeIdx = feature.properties.routeIndex ?? 0;
           distancesMap[routeIdx] = feature.properties.distances;
         }
@@ -518,15 +527,15 @@ export class ResultComponent implements OnInit, AfterViewInit {
       this.vrpSolutionData?.solutionMetrics?.routeMetrics ?? [];
     const routeDistancesMap = this.buildRouteDistancesMap();
 
-    routeMetrics.forEach((route: any) => {
+    routeMetrics.forEach((route: RouteMetric) => {
       const customerNodes = route.routeNodes?.slice(1, -1) ?? [];
       const zones = [
         ...new Set(
           customerNodes
             .map((idx: number) => this.routingNodesMap[idx]?.zone)
-            .filter((z: any) => !!z)
+            .filter((z: string | undefined): z is string => !!z)
         ),
-      ] as string[];
+      ];
 
       const routeIndex = route.routeIndex ?? 0;
 
@@ -560,22 +569,26 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   private loadAndProcessGeoJSON(): void {
-    const geoJson: any = JSON.parse(JSON.stringify(this.geoJsonRawData));
+    const geoJson: VrpGeoJsonData = JSON.parse(
+      JSON.stringify(this.geoJsonRawData)
+    );
 
     this.enrichGeoJsonData(geoJson);
 
-    this.featureCollections = geoJson.routes.map((rc: any) => ({
-      ...rc,
-      routeIndex: rc.features[0]?.properties?.routeIndex,
-    }));
+    this.featureCollections = (geoJson.routes ?? []).map(
+      (rc: FeatureCollection) => ({
+        ...rc,
+        routeIndex: rc.features[0]?.properties?.routeIndex,
+      })
+    );
 
-    this.featureDepots = geoJson.depots.map((depot: any) => ({
+    this.featureDepots = (geoJson.depots ?? []).map((depot: GeoJSONFeature) => ({
       type: 'FeatureCollection',
       features: [depot],
     }));
 
     const allFeatures: Feature<Geometry>[] = [];
-    geoJson.routes.forEach((item: FeatureCollection, index_: number) => {
+    (geoJson.routes ?? []).forEach((item: FeatureCollection) => {
       const itemFeatures = new GeoJSON().readFeatures(item, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
@@ -613,7 +626,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     });
 
     const depotFeatures: Feature<Geometry>[] = [];
-    geoJson.depots.forEach((depot: any) => {
+    (geoJson.depots ?? []).forEach((depot: GeoJSONFeature) => {
       const itemFeatures = new GeoJSON().readFeatures(depot, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
@@ -626,16 +639,17 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.mapAlreadyRendered = true;
   }
 
-  private enrichGeoJsonData(geoJson: any): void {
-    const routeMetricsMap: Record<number, any> = {};
+  private enrichGeoJsonData(geoJson: VrpGeoJsonData): void {
+    const routeMetricsMap: Record<number, RouteMetric> = {};
     (this.vrpSolutionData?.solutionMetrics?.routeMetrics ?? []).forEach(
-      (rm: any) => {
+      (rm: RouteMetric) => {
         if (rm?.routeIndex != null) routeMetricsMap[rm.routeIndex] = rm;
       }
     );
 
-    geoJson.depots?.forEach((depot: any) => {
-      const node = this.routingNodesByIdMap[depot.properties?.nodeId];
+    geoJson.depots?.forEach((depot: GeoJSONFeature) => {
+      const nodeId = depot.properties?.nodeId;
+      const node = nodeId ? this.routingNodesByIdMap[nodeId] : undefined;
       if (node) {
         depot.properties = {
           ...depot.properties,
@@ -647,10 +661,10 @@ export class ResultComponent implements OnInit, AfterViewInit {
       }
     });
 
-    geoJson.routes?.forEach((route: any) => {
-      let routeMetric: any = null;
+    geoJson.routes?.forEach((route: FeatureCollection) => {
+      let routeMetric: RouteMetric | undefined;
 
-      route.features?.forEach((feature: any) => {
+      route.features?.forEach((feature: GeoJSONFeature) => {
         if (feature.geometry?.type === 'LineString') {
           const routeIdx = feature.properties?.routeIndex ?? 0;
           routeMetric = routeMetricsMap[routeIdx];
@@ -660,9 +674,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
             ...new Set(
               customerNodes
                 .map((idx: number) => this.routingNodesMap[idx]?.zone)
-                .filter((z: any) => !!z)
+                .filter((z: string | undefined): z is string => !!z)
             ),
-          ] as string[];
+          ];
 
           feature.properties = {
             ...feature.properties,
@@ -677,10 +691,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
             travelDuration: routeMetric?.routeTravelDuration ?? 0,
           };
         } else if (feature.geometry?.type === 'Point') {
-          const node = this.routingNodesByIdMap[feature.properties?.nodeId];
+          const nodeId = feature.properties?.nodeId;
+          const node = nodeId ? this.routingNodesByIdMap[nodeId] : undefined;
           if (node) {
             let routeOrder = 0;
-            if (routeMetric?.routeNodes) {
+            if (routeMetric?.routeNodes && node.index != null) {
               routeOrder = routeMetric.routeNodes.indexOf(node.index);
               if (routeOrder < 0) routeOrder = 0;
             }
@@ -1199,7 +1214,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       this.dataRouteInfo.data.find((r) => r.routeIndex === routeIndex) || null;
 
     const collection = this.featureCollections.find(
-      (fc: any) => fc.routeIndex === routeIndex
+      (fc: FeatureCollection) => fc.routeIndex === routeIndex
     );
 
     if (!collection) {
@@ -1639,12 +1654,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
       latitude: matchedItem?.latitude ?? 0,
       longitude: matchedItem?.longitude ?? 0,
       details:
-        matchedItem?.productQuantity?.map((product: any) => ({
-          PRODUCTID: product?.productId ?? '',
-          ORDER_ID: product?.skuCode ?? '',
-          PRODUCTNAME: product?.name ?? '',
-          QUANTITYMAIN: product?.productQuantity ?? 0,
-        })) ?? [],
+        matchedItem?.productQuantity?.map(
+          (product: RoutingNodeProductQuantity) => ({
+            PRODUCTID: product?.productId ?? '',
+            ORDER_ID: product?.skuCode ?? '',
+            PRODUCTNAME: product?.name ?? '',
+            QUANTITYMAIN: product?.productQuantity ?? 0,
+          })
+        ) ?? [],
     };
 
     const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
@@ -1660,5 +1677,4 @@ export class ResultComponent implements OnInit, AfterViewInit {
     modalRef.componentInstance.dataCustomer = planDetails;
     modalRef.componentInstance.isGeolocationDisplay = false;
   }
-
 }
