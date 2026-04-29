@@ -3,21 +3,6 @@ a:visited {
   text-decoration: none;
 }
 
-.excerpt {
-  margin-bottom: 10px;
-  max-height: 4.6em;
-  overflow: hidden;
-}
-
-.gray-button {
-  background-color: gray;
-  color: white;
-}
-
-.mat-stepper-horizontal {
-  margin-top: 8px;
-}
-
 .mat-mdc-form-field {
   margin-top: 16px;
 }
@@ -108,12 +93,6 @@ button.link-verify {
 .fab-danger {
   background-color: #dc3545 !important;
   color: white;
-  min-width: 100px;
-}
-
-.fab-info {
-  background-color: #ffffff !important;
-  color: rgb(21, 20, 20);
   min-width: 100px;
 }
 
@@ -344,21 +323,6 @@ tr.mat-mdc-footer-row td {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.align-right {
-  margin-left: auto;
-}
-
-.table-responsive {
-  height: 200px;
-  width: 100%;
-  overflow: auto;
-}
-
-.disabled {
-  pointer-events: none;
-  opacity: 0.5;
 }
 
 .table-order-data {

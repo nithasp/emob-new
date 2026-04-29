@@ -631,15 +631,6 @@
                               element.originalAddress?.address ?? ""
                                 | truncate: 70 : "..."
                             }}</span>
-                            <!-- <button class="btn btn-sm align-right"
-                          *ngIf="isUnverified(element.name) || isUncertain(element.name)"
-                          mat-button
-                          [ngClass]="{
-                            'btn-outline-warning': isUncertain(element.name),
-                            'btn-outline-danger': isUnverified(element.name)
-                          }">
-                          Verify
-                        </button> -->
                           </div>
                         </td>
                       </ng-container>
@@ -675,13 +666,6 @@
                           {{ element?.extra?.productsInfo?.length || "" }}
                         </td>
                       </ng-container>
-                      <ng-container matColumnDef>
-                        <th mat-header-cell *matHeaderCellDef></th>
-                        <td mat-cell *matCellDef="let element">
-                          {{ countOrder(element.name) }}
-                        </td>
-                      </ng-container>
-
                       <tr
                         mat-header-row
                         *matHeaderRowDef="displayedColumns; sticky: true"
