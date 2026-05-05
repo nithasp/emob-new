@@ -51,6 +51,19 @@ export interface ProductInfo {
   dateConfirm: string | null;
 }
 
+export interface CustomerProduct {
+  productId?: string;
+  skuCode?: string;
+  orderId?: string | null;
+  name?: string;
+  productName?: string;
+  productQuantity?: number;
+  quantityMajor?: number;
+  quantityMinor?: number;
+  userConfirm?: string | null;
+  dateConfirm?: string | null;
+}
+
 export interface Extra {
   orderId: string | null;
   channel: string | null;

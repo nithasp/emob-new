@@ -33,6 +33,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import * as ExcelJS from 'exceljs';
 import {
   Customer,
+  CustomerProduct,
   CustomerUpdated,
   DataPreOrder,
   Depot,
@@ -57,7 +58,7 @@ import type { TimingAndCapacity } from 'src/app/models/constraint.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Experiment,
-  InputDataItem,
+  ExperimentInputdata,
   Result,
   ExperimentStatus,
   Run,
@@ -65,6 +66,13 @@ import {
   Company,
   MyDepot,
   DepotInputRequirement,
+  TransformLocationsData,
+  TransformWarning,
+  TransformResult,
+  ValidationWarningItem,
+  WarningDetail,
+  UploadPreOrderResponse,
+  ValidateExperimentResponse,
 } from 'src/app/models/experiment.model';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import {
@@ -237,9 +245,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   ];
   dataSource = new MatTableDataSource<Customer>();
 
-  transformWarnings: any[] = [];
+  transformWarnings: TransformWarning[] = [];
   transformWarningCollapseStates: boolean[] = [];
-  validationWarnings: any[] = [];
+  validationWarnings: ValidationWarningItem[] = [];
   validationWarningCollapseStates: boolean[] = [];
   isValidationWarning: boolean = false;
   private cachedGetValidationMessage!: ReturnType<
@@ -365,12 +373,12 @@ export class RunComponent implements OnInit, AfterViewInit {
                         this.dataFromFileUrlToJson(
                           response.fileUrls.transform.locations,
                         )
-                          .then((data: any) => {
+                          .then((data: TransformLocationsData) => {
                             console.log('transform locations data', data);
                             if (data?.customers && data?.depots) {
                               this.groupingCustomer(
-                                data.customers as Customer[],
-                                data.depots as Depot[],
+                                data.customers,
+                                data.depots,
                               );
                             }
                           })
@@ -596,7 +604,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
 
     this.preOrderFiles = (experiment.inputdata || []).map(
-      (inputItem: InputDataItem) => {
+      (inputItem: ExperimentInputdata) => {
         const mockFile = {
           keyName: inputItem.keyName,
           name: inputItem.filename,
@@ -629,13 +637,10 @@ export class RunComponent implements OnInit, AfterViewInit {
       );
       await this.dataFromFileUrlToJson(
         experiment.fileUrls.transform.locations,
-      ).then((response: any) => {
+      ).then((response: TransformLocationsData) => {
         console.log('transform locations response', response);
         if (response?.customers && response?.depots) {
-          this.groupingCustomer(
-            response.customers as Customer[],
-            response.depots as Depot[],
-          );
+          this.groupingCustomer(response.customers, response.depots);
         }
       });
     }
@@ -1361,7 +1366,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.preOrderService
             .uploadPreOrder(this.experiment.runId, depotIds, newPayload)
             .subscribe({
-              next: (response: any) => {
+              next: (response: UploadPreOrderResponse) => {
                 console.log('uploadPreOrder success response', response);
 
                 if (response.result?.isSuccesses === false) {
@@ -1387,7 +1392,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
                       if (exp.fileUrls?.transform?.locations) {
                         try {
-                          const locationData: any =
+                          const locationData: TransformLocationsData =
                             await this.dataFromFileUrlToJson(
                               exp.fileUrls.transform.locations,
                             );
@@ -1397,8 +1402,8 @@ export class RunComponent implements OnInit, AfterViewInit {
                           );
                           if (locationData?.customers && locationData?.depots) {
                             this.groupingCustomer(
-                              locationData.customers as Customer[],
-                              locationData.depots as Depot[],
+                              locationData.customers,
+                              locationData.depots,
                             );
                           }
                         } catch (err) {
@@ -1413,7 +1418,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                       // Map inputdata to UI structure expected by template
                       this.preOrderFiles = (
                         this.experiment.inputdata || []
-                      ).map((inputItem: InputDataItem) => {
+                      ).map((inputItem: ExperimentInputdata) => {
                         const mockFile = {
                           keyName: inputItem.keyName,
                           name: inputItem.filename,
@@ -2029,14 +2034,14 @@ export class RunComponent implements OnInit, AfterViewInit {
       AUMPHER: customer.originalAddress?.district || null,
       PROVINCE: customer.originalAddress?.province || null,
       ZIPCODE: customer.originalAddress?.postalCode || null,
-      details: products.map((product: any) => ({
-        PRODUCTID: product.productId,
-        ORDER_ID: product.skuCode || product.orderId,
-        PRODUCTNAME: product.name || product.productName,
-        QUANTITYMAIN: product.productQuantity ?? product.quantityMajor,
-        QUANTITYMINOR: product.quantityMinor,
-        UserConfirm: product.userConfirm,
-        DateConfirm: product.dateConfirm,
+      details: (products as CustomerProduct[]).map((product) => ({
+        PRODUCTID: product.productId ?? '',
+        ORDER_ID: product.skuCode ?? product.orderId ?? null,
+        PRODUCTNAME: product.name ?? product.productName ?? '',
+        QUANTITYMAIN: product.productQuantity ?? product.quantityMajor ?? 0,
+        QUANTITYMINOR: product.quantityMinor ?? 0,
+        UserConfirm: product.userConfirm ?? null,
+        DateConfirm: product.dateConfirm ?? null,
       })),
     };
 
@@ -2212,7 +2217,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         }),
       )
       .subscribe({
-        next: (result: any) => {
+        next: (result: ValidateExperimentResponse) => {
           console.log('validateExperiment result', result);
           if (result.result?.message) {
             this.toastr.success(result.result.message);
@@ -4056,7 +4061,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     return invalidVehicles;
   }
 
-  openTransformValidationDialog(validationResponse?: any) {
+  openTransformValidationDialog(validationResponse?: TransformResult) {
     const modalRef = this.ngbModal.open(TransformValidationDialogComponent, {
       centered: true,
       animation: true,
@@ -4065,7 +4070,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     modalRef.componentInstance.validationResponse = validationResponse;
   }
 
-  setTransformWarnings(warnings: any[]) {
+  setTransformWarnings(warnings: TransformWarning[]) {
     this.transformWarnings = warnings.map((warning) => ({
       ...warning,
       detail: this.deduplicateByInput(warning.detail),
@@ -4075,9 +4080,10 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
   }
 
-  private deduplicateByInput(details: any[]): any[] {
-    const seenInputIds = new Set<string>();
+  private deduplicateByInput(details: WarningDetail[]): WarningDetail[] {
+    const seenInputIds = new Set<string | number>();
     return details.filter((detail) => {
+      if (detail.input === undefined || detail.input === null) return true;
       if (seenInputIds.has(detail.input)) return false;
       seenInputIds.add(detail.input);
       return true;
@@ -4105,11 +4111,14 @@ export class RunComponent implements OnInit, AfterViewInit {
     return translated;
   }
 
-  getValidationMessage(type: string, params: any): string {
+  getValidationMessage(
+    type: string,
+    params: Record<string, unknown>,
+  ): string {
     return this.cachedGetValidationMessage(type, params);
   }
 
-  setValidationWarnings(warnings: any[]) {
+  setValidationWarnings(warnings: ValidationWarningItem[]) {
     this.cachedGetValidationMessage = createCachedValidationMessageFn(
       this.transloco,
     );
@@ -4122,7 +4131,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.validationWarningCollapseStates = safeWarnings.map(() => false);
   }
 
-  getRowsForWarning(warning: any): ValidationTableRow[] {
+  getRowsForWarning(warning: ValidationWarningItem): ValidationTableRow[] {
     return buildTableRows([warning]);
   }
 

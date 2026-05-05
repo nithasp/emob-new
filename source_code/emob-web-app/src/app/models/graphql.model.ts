@@ -10,7 +10,7 @@ import {
   DownloadResultFile,
   Experiment,
   ExperimentState,
-  MyDepot,
+  UploadPreOrderResponse,
 } from './experiment.model';
 import { MyVehicles, VehicleType, Depot } from './vehicle.model';
 
@@ -29,7 +29,7 @@ export interface Response {
   cancelExperiment: ExperimentState;
   replicateExperiment: Experiment;
   updateParameter: Constraint;
-  uploadPreOrder: Experiment;
+  uploadPreOrder: UploadPreOrderResponse;
   validateExperiment: Experiment;
   submitExperiment: Experiment;
   configurations: [Configuration];
