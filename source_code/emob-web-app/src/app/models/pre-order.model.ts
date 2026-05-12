@@ -1,3 +1,5 @@
+import type { LocationType } from './location.model';
+
 export interface PreOrder {
   ADDRESS: string;
   AUMPHER: string;
@@ -244,14 +246,28 @@ export interface DataCustomer {
   details: ProductDetail[];
 }
 
+export interface CustomerProduct {
+  productId?: string;
+  skuCode?: string;
+  orderId?: string | null;
+  name?: string;
+  productName?: string;
+  productQuantity?: number;
+  quantityMajor?: number;
+  quantityMinor?: number;
+  userConfirm?: string | null;
+  dateConfirm?: string | null;
+}
+
+export interface CustomerSelected {
+  dataPreOder: DetailsPreOder | DataPreOrder;
+  dataCustomer: Customer;
+  locationType: LocationType;
+}
+
 export interface Location {
   latitude: number;
   longitude: number;
-}
-
-export enum LocationType {
-  Edit = 'edit',
-  View = 'view',
 }
 
 export interface FileWithCategory extends File {
