@@ -25,7 +25,6 @@ import { Coordinate } from 'ol/coordinate';
 import { CustomerDetailsComponent } from '../customer-details/customer-details.component';
 import {
   RouteInfo,
-  PopupContent,
   GeoJSONFeatureCollection,
   PointDetail,
 } from 'src/app/models/experiment.model';
@@ -44,12 +43,10 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   @Input() routingNodes: any[] = [];
 
   private routingNodesMap: Record<number, any> = {};
-  private routingNodesByIdMap: Record<string, any> = {};
 
   private map!: Map;
   public popUp?: Overlay;
-  public popupContent?: PopupContent | FeatureProperties;
-  private highlightedFeatureCollectionId: number | null = null;
+  public popupContent?: FeatureProperties;
 
   public pointDetails: PointDetail[] = [];
 
@@ -61,7 +58,6 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.routingNodes.forEach((node: any) => {
       if (node?.index != null) this.routingNodesMap[node.index] = node;
-      if (node?.nodeId) this.routingNodesByIdMap[node.nodeId] = node;
     });
     this.getDepotDetailsPoint();
   }
@@ -159,7 +155,6 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     });
 
     this.map.on('pointermove', this.handlePointerMove.bind(this));
-    this.map.on('pointermove', (event) => this.pointMove(event));
 
     // Initialize overlay for popup
     const element = document.getElementById('popupMapDeatils')!;
@@ -169,17 +164,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     });
     this.map.addOverlay(this.popUp);
   }
-  private pointMove(evt: MapBrowserEvent<UIEvent>): void {
-    const target = this.map.getTargetElement();
-    const pixel = this.map.getEventPixel(evt.originalEvent);
-    const hit = this.map.hasFeatureAtPixel(pixel);
 
-    if (hit) {
-      target.style.cursor = 'pointer';
-    } else {
-      target.style.cursor = '';
-    }
-  }
   handlePointerMove(event: MapBrowserEvent<UIEvent>): void {
     let coordinates: Coordinate;
     const feature = this.map.forEachFeatureAtPixel(
@@ -188,6 +173,10 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
         return feature;
       }
     )!;
+
+    const target = this.map.getTargetElement();
+    target.style.cursor = feature ? 'pointer' : '';
+
     if (feature) {
       const geometry = feature.getGeometry();
       if (geometry instanceof LineString) {
@@ -215,15 +204,6 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     } else {
       this.popUp?.setPosition(undefined);
     }
-
-    if (feature && feature.getGeometry()?.getType() === 'LineString') {
-      const properties = feature.getProperties() as FeatureProperties;
-      this.highlightedFeatureCollectionId = properties.routeIndex || null;
-    } else {
-      this.highlightedFeatureCollectionId = null;
-    }
-    const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
-    vectorLayer.getSource()?.changed();
   }
   styleFunction(feature: FeatureLike): Style | Style[] | undefined {
     const geometryType = feature.getGeometry()!.getType();
