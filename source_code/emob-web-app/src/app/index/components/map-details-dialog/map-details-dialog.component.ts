@@ -28,7 +28,11 @@ import {
   GeoJSONFeatureCollection,
   PointDetail,
 } from 'src/app/models/experiment.model';
-import { FeatureProperties } from 'src/app/models/location.model';
+import {
+  FeatureProperties,
+  RoutingNode,
+  RoutingNodeProductQuantity,
+} from 'src/app/models/location.model';
 import { MapBrowserEvent } from 'ol';
 
 @Component({
@@ -40,9 +44,9 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   @Input() routeInfo!: RouteInfo;
   @Input() featureCollection: GeoJSONFeatureCollection | null = null;
   @Input() featureDepots: GeoJSONFeatureCollection[] = [];
-  @Input() routingNodes: any[] = [];
+  @Input() routingNodes: RoutingNode[] = [];
 
-  private routingNodesMap: Record<number, any> = {};
+  private routingNodesMap: Record<number, RoutingNode> = {};
 
   private map!: Map;
   public popUp?: Overlay;
@@ -56,7 +60,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    this.routingNodes.forEach((node: any) => {
+    this.routingNodes.forEach((node: RoutingNode) => {
       if (node?.index != null) this.routingNodesMap[node.index] = node;
     });
     this.getDepotDetailsPoint();
@@ -342,7 +346,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
       latitude: matchedItem?.latitude ?? 0,
       longitude: matchedItem?.longitude ?? 0,
       details:
-        matchedItem?.productQuantity?.map((product: any) => ({
+        matchedItem?.productQuantity?.map((product: RoutingNodeProductQuantity) => ({
           PRODUCTID: product?.productId ?? '',
           ORDER_ID: product?.skuCode ?? '',
           PRODUCTNAME: product?.name ?? '',
