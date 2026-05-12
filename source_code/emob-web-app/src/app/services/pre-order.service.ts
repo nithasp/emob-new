@@ -3,7 +3,7 @@ import { map, Observable, retry } from 'rxjs';
 import { Response } from '../models/graphql.model';
 import gql from 'graphql-tag';
 import { Apollo } from 'apollo-angular';
-import { Experiment } from '../models/experiment.model';
+import { UploadPreOrderResponse } from '../models/experiment.model';
 import { ErrorHandlingService } from './handle-error.service';
 
 @Injectable({
@@ -15,7 +15,7 @@ export class PreOrderService {
     private readonly errorHandlingService: ErrorHandlingService
     ) { }
 
-  uploadPreOrder(runId: string, depotIds: string[], preOrderFiles: { file: File, keyName: string }[]): Observable<Experiment> {
+  uploadPreOrder(runId: string, depotIds: string[], preOrderFiles: { file: File, keyName: string }[]): Observable<UploadPreOrderResponse> {
     return this.apollo.mutate<Response>({
       mutation: gql`
         mutation uploadPreOrder($input: PreOrderInput!) {

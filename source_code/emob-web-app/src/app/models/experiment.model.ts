@@ -56,8 +56,6 @@ export interface ExperimentInputdata {
   fileUrl: string;
 }
 
-/** @deprecated Use ExperimentInputdata instead */
-export type InputDataItem = ExperimentInputdata;
 
 export interface FileUrlsGroup {
   transform: TransformState;
@@ -88,12 +86,203 @@ export interface Result {
   depots: Depot[];
   validate: Validate;
   isWarning?: boolean;
-  warning?: any[];
+  warning?: ValidationWarningItem[];
 }
 
 export interface Validate {
   filters: Filters;
   warning: Warning;
+}
+
+export interface TransformLocationsData {
+  customers: Customer[];
+  depots: Depot[];
+}
+
+export interface MissingProductQuantity {
+  productId?: string;
+  skuCode?: string;
+  name?: string;
+  packagingType?: string;
+}
+
+export interface WarningDetailContext {
+  missing_product_quantity?: MissingProductQuantity;
+  [key: string]: unknown;
+}
+
+export interface WarningDetail {
+  input?: string | number | null;
+  type?: string;
+  inputType?: string;
+  context?: WarningDetailContext;
+  [key: string]: unknown;
+}
+
+export interface TransformWarning {
+  title: string;
+  detail: WarningDetail[];
+}
+
+export interface ValidationWarningItem {
+  errorType: string;
+  title?: string;
+  detail: WarningDetail[];
+}
+
+export interface TransformedAddress {
+  address: string;
+  subdistrict: string;
+  district: string;
+  province: string;
+  postalCode: number;
+}
+
+export interface TransformedProductQuantity {
+  productId: string;
+  skuCode: string;
+  name: string;
+  packagingType: string;
+  productQuantity: number;
+}
+
+export interface TransformedNodeMetrics {
+  excessWeight: number;
+  excessVolume: number;
+  excessDistance: number;
+  excessDuration: number;
+  associatedProductQuantity: TransformedProductQuantity[];
+  missingProductQuantity: TransformedProductQuantity[];
+  hasExcessWeight: boolean;
+  hasExcessVolume: boolean;
+  hasExcessDistance: boolean;
+  hasExcessDuration: boolean;
+  hasMissingProducts: boolean;
+  isNodeFeasible: boolean;
+}
+
+export interface TransformedNodeAdditionalProperties {
+  channel?: string;
+  telephone?: string;
+  is_missing?: boolean[];
+  product_ids?: string[];
+  [key: string]: unknown;
+}
+
+export interface TransformedNode {
+  latitude: number;
+  longitude: number;
+  grade: string;
+  validationType: string;
+  replaceType: string;
+  originalAddress: TransformedAddress;
+  processedAddress: TransformedAddress;
+  nodeId: string;
+  index: number;
+  name: string;
+  deliveryWeight: number;
+  pickupWeight: number;
+  deliveryVolume: number;
+  pickupVolume: number;
+  serviceDuration: number;
+  loadingDuration: number;
+  timeWindowEarly: number;
+  timeWindowLate: number;
+  priorityGroup: number;
+  priority: number;
+  prize: number;
+  zone: string;
+  isDepot: boolean;
+  required: boolean;
+  metrics: TransformedNodeMetrics;
+  productQuantity: TransformedProductQuantity[];
+  label: number;
+  allowVehicleGroupId: string[];
+  additionalProperties: TransformedNodeAdditionalProperties;
+}
+
+export interface TransformedProductAdditionalProperties {
+  inner_pack?: number;
+  type?: string;
+  [key: string]: unknown;
+}
+
+export interface TransformedProduct {
+  width: number;
+  height: number;
+  depth: number;
+  volume: number;
+  isdirectVolume: boolean;
+  productId: string;
+  skuCode: string;
+  name: string;
+  packagingType: string;
+  temperature: string;
+  weight: number;
+  value: number;
+  bomStructure: unknown | null;
+  additionalProperties: TransformedProductAdditionalProperties;
+}
+
+export interface GeoSourceStat {
+  source?: string;
+  count?: number;
+  successful?: number;
+  failed?: number;
+  [key: string]: unknown;
+}
+
+export interface GeoServiceStats {
+  totalGeocodeCount: number;
+  totalSuccessfulGeocode: number;
+  totalFailedGeocode: number;
+  sourceStats: GeoSourceStat[];
+}
+
+export interface TransformOutputPaths {
+  locations: string;
+  [key: string]: string;
+}
+
+export interface TransformInnerResult {
+  depots: TransformedNode[];
+  customers: TransformedNode[];
+  products: TransformedProduct[];
+}
+
+export interface TransformData {
+  geoServiceStats: GeoServiceStats;
+  outputPaths: TransformOutputPaths;
+  result: TransformInnerResult;
+}
+
+export interface TransformResult {
+  statusCode?: string;
+  message?: string;
+  isSuccesses?: boolean;
+  isWarning?: boolean;
+  warning?: TransformWarning[];
+  error?: TransformWarning[];
+  data?: TransformData;
+}
+
+export interface UploadPreOrderResponse {
+  name: string;
+  timestamp?: string;
+  groupId?: string;
+  status?: ExperimentStatus;
+  result?: TransformResult;
+}
+
+export interface ValidateResult {
+  message?: string;
+  validate?: Validate;
+  isWarning?: boolean;
+  warning?: ValidationWarningItem[];
+}
+
+export interface ValidateExperimentResponse {
+  result?: ValidateResult;
 }
 
 interface Filters {
