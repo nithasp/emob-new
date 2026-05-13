@@ -1,3 +1,4 @@
+import { Configuration } from './configuration.model';
 import { Customer, Depot } from './pre-order.model';
 
 export interface ExperimentState {
@@ -13,7 +14,7 @@ export interface Experiment {
   runId: string;
   name: string;
   timestamp: string;
-  configurations: any;
+  configurations: Configuration[];
   inputdata: ExperimentInputdata[];
   depots: ExperimentDepot[];
   timeStart: string | null;
@@ -318,7 +319,7 @@ export interface DepotInputRequirement {
   depotId: string;
   keyName: string;
   displayName: string;
-  columnRequired: any;
+  columnRequired: string[];
   fileFormatType: string;
   required: boolean;
   createdAt: string;
@@ -392,7 +393,7 @@ export interface DepotInputdata {
   depotId: string;
   keyName: string;
   displayName: string;
-  columnRequired: any;
+  columnRequired: string[];
   fileFormatType: string;
   required: boolean;
   createdAt: string;
