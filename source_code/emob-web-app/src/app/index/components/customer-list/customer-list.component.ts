@@ -12,8 +12,7 @@ import {
   CustomerUpdated,
   DataPreOrder,
   DetailsPreOder,
-  GroupedDataPreOrder,
-  ProductDetail,
+  GroupedDataPreOrder
 } from 'src/app/models/pre-order.model';
 
 @Component({
