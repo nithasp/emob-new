@@ -66,6 +66,12 @@ export interface CustomerProduct {
   dateConfirm?: string | null;
 }
 
+export interface NodeAdditionalProperties {
+  channel?: string;
+  telephone?: string;
+  [key: string]: unknown;
+}
+
 export interface Extra {
   orderId: string | null;
   channel: string | null;
@@ -75,7 +81,7 @@ export interface Extra {
 }
 
 export interface Customer {
-  deliveryWeight: number | string;
+  deliveryWeight: number;
   index: number;
   isDepot: boolean;
   latitude: number;
@@ -92,7 +98,7 @@ export interface Customer {
   timeWindowEarly: number;
   timeWindowLate: string | number;
   validationType: ValidationType;
-  deliveryVolume: number | string;
+  deliveryVolume: number;
   pickupVolume: number;
   zone: string;
   extra: Extra;
@@ -100,9 +106,9 @@ export interface Customer {
   priorityGroup?: number;
   priority?: number;
   prize?: number;
-  productQuantity?: any[];
+  productQuantity?: CustomerProduct[];
   allowVehicleGroupId?: string[];
-  additionalProperties?: any;
+  additionalProperties?: NodeAdditionalProperties;
 }
 
 export interface Metrics {
@@ -200,9 +206,9 @@ export interface Depot {
   priorityGroup?: number;
   priority?: number;
   prize?: number;
-  productQuantity?: any[];
+  productQuantity?: CustomerProduct[];
   allowVehicleGroupId?: string[];
-  additionalProperties?: any;
+  additionalProperties?: NodeAdditionalProperties;
 }
 
 export interface GroupedDataPreOrder {
@@ -254,8 +260,8 @@ export interface DataCustomer {
   ADDRESS: string;
   latitude: number;
   longitude: number;
-  validation_type: ValidationType;
-  replace_type: ReplaceType;
+  validationType: ValidationType;
+  replaceType: ReplaceType;
   details: ProductDetail[];
 }
 
@@ -263,11 +269,6 @@ export interface CustomerSelected {
   dataPreOrder: DetailsPreOrder | DataPreOrder;
   dataCustomer: Customer;
   locationType: LocationType;
-}
-
-export interface Location {
-  latitude: number;
-  longitude: number;
 }
 
 export interface FileWithCategory extends File {
