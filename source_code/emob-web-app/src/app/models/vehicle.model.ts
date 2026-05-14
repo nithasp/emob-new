@@ -6,7 +6,7 @@ export interface Vehicle {
   licensePlate: string;
   startDepotId: string;
   endDepotId: string;
-  vehicleType: any;
+  vehicleType: VehicleType;
   isActive: boolean;
   createdAt: string;
   modifiedAt: string;
