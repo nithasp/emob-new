@@ -131,6 +131,8 @@ export interface ValidationWarningItem {
   detail: WarningDetail[];
 }
 
+export type ValidationWarningInput = TransformWarning | ValidationWarningItem;
+
 export interface TransformedAddress {
   address: string;
   subdistrict: string;
