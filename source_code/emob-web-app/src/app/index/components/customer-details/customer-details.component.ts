@@ -17,7 +17,7 @@ import {
 } from 'src/app/models/location.model';
 import {
   Customer,
-  DetailsPreOder,
+  DetailsPreOrder,
   ReplaceType,
   ValidationType,
   getDescription,
@@ -57,7 +57,7 @@ import { set } from 'ol/transform';
 export class CustomerDetailsComponent
   implements OnInit, AfterViewInit, OnChanges
 {
-  @Input() dataPreOder: DetailsPreOder | DataPreOrder | null | undefined;
+  @Input() dataPreOrder: DetailsPreOrder | DataPreOrder | null | undefined;
   @Input() dataCustomer!: Customer;
   @Input() locationType: LocationType = LocationType.Verify;
   @Input() isModal: boolean = true;
@@ -103,7 +103,7 @@ export class CustomerDetailsComponent
     this.initIconStyle();
 
     console.log('this.dataCustomer', this.dataCustomer);
-    console.log('this.dataPreOder', this.dataPreOder);
+    console.log('this.dataPreOrder', this.dataPreOrder);
   }
 
   ngAfterViewInit(): void {
@@ -262,7 +262,7 @@ export class CustomerDetailsComponent
   }
   // Provide a unified iterable type for template to avoid NG2 union errors
   get detailRows(): Array<ProductDetail | PreOrder> {
-    const details = (this.dataPreOder as DetailsPreOder | DataPreOrder)?.details || [];
+    const details = (this.dataPreOrder as DetailsPreOrder | DataPreOrder)?.details || [];
     return details as Array<ProductDetail | PreOrder>;
   }
   convertDateString(dateString: string): Date {

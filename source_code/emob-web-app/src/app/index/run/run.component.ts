@@ -2025,7 +2025,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       customer.extra?.productsInfo ||
       [];
 
-    const dataPreOder: DataPreOrder = {
+    const dataPreOrder: DataPreOrder = {
       ORDERID_ORG: customer.nodeId,
       CHANNEL: customer.additionalProperties?.channel || null,
       CUSTOMER_NAME: customer.name || '',
@@ -2046,7 +2046,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     };
 
     // Pass customer directly as dataCustomer (the component expects Customer type)
-    modalRef.componentInstance.dataPreOder = dataPreOder;
+    modalRef.componentInstance.dataPreOrder = dataPreOrder;
     modalRef.componentInstance.dataCustomer = customer;
 
     modalRef.result.then((locationUpdated: Location) => {

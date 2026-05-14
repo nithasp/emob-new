@@ -11,7 +11,7 @@ import {
   CustomerSelected,
   CustomerUpdated,
   DataPreOrder,
-  DetailsPreOder,
+  DetailsPreOrder,
   GroupedDataPreOrder
 } from 'src/app/models/pre-order.model';
 
@@ -89,7 +89,7 @@ export class CustomerListComponent implements OnInit {
   }
   selectData(): void {
     const selected = this.customersToVerify[this.selectedIndex];
-    const keyed: DetailsPreOder | undefined = selected?.name
+    const keyed: DetailsPreOrder | undefined = selected?.name
       ? this.groupedDataPreOrder?.[selected.name]
       : undefined;
     const products: CustomerProduct[] =
@@ -99,7 +99,7 @@ export class CustomerListComponent implements OnInit {
       (selected?.extra?.productsInfo as CustomerProduct[] | undefined) ||
       [];
 
-    const base: DetailsPreOder | DataPreOrder =
+    const base: DetailsPreOrder | DataPreOrder =
       keyed ??
       ({
         ORDERID_ORG: selected?.nodeId ?? '',
@@ -139,7 +139,7 @@ export class CustomerListComponent implements OnInit {
       selected?.extra?.tel ??
       '';
 
-    const dataPreOder: DetailsPreOder | DataPreOrder = {
+    const dataPreOrder: DetailsPreOrder | DataPreOrder = {
       ...base,
       CHANNEL: channel,
       CUSTOMER_NAME: customerName,
@@ -147,7 +147,7 @@ export class CustomerListComponent implements OnInit {
     };
 
     this.customerSelected = {
-      dataPreOder,
+      dataPreOrder,
       dataCustomer: selected,
       locationType: this.findLocationType(selected.name),
     };

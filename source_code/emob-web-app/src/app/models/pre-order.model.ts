@@ -105,14 +105,14 @@ export interface Customer {
   additionalProperties?: any;
 }
 
-interface Metrics {
+export interface Metrics {
   excessDistance: number;
   excessDuration: number;
-  excessVolumn: number;
+  excessVolume: number;
   excessWeight: number;
   isExcessDistance: boolean;
   isExcessDuration: boolean;
-  isExcessVolumn: boolean;
+  isExcessVolume: boolean;
   isExcessWeight: boolean;
   isFeasible: boolean;
   isMissingProduct: boolean;
@@ -206,10 +206,10 @@ export interface Depot {
 }
 
 export interface GroupedDataPreOrder {
-  [ORDERID_ORG: string]: DetailsPreOder;
+  [ORDERID_ORG: string]: DetailsPreOrder;
 }
 
-export interface DetailsPreOder {
+export interface DetailsPreOrder {
   ORDERID_ORG: string;
   CHANNEL: string;
   CUSTOMER_NAME: string;
@@ -259,21 +259,8 @@ export interface DataCustomer {
   details: ProductDetail[];
 }
 
-export interface CustomerProduct {
-  productId?: string;
-  skuCode?: string;
-  orderId?: string | null;
-  name?: string;
-  productName?: string;
-  productQuantity?: number;
-  quantityMajor?: number;
-  quantityMinor?: number;
-  userConfirm?: string | null;
-  dateConfirm?: string | null;
-}
-
 export interface CustomerSelected {
-  dataPreOder: DetailsPreOder | DataPreOrder;
+  dataPreOrder: DetailsPreOrder | DataPreOrder;
   dataCustomer: Customer;
   locationType: LocationType;
 }

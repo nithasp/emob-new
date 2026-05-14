@@ -363,7 +363,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
       beforeDismiss: () => false,
     });
 
-    modalRef.componentInstance.dataPreOder = planDetails;
+    modalRef.componentInstance.dataPreOrder = planDetails;
     modalRef.componentInstance.dataCustomer = planDetails;
     modalRef.componentInstance.isGeolocationDisplay = false;
   }
