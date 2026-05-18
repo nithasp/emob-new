@@ -12,7 +12,13 @@ import {
   ExperimentState,
   UploadPreOrderResponse,
 } from './experiment.model';
-import { MyVehicles, VehicleType, Depot } from './vehicle.model';
+import {
+  MyVehicles,
+  VehicleType,
+  Depot,
+  VehicleEnumOption,
+  VehicleCreationResult,
+} from './vehicle.model';
 
 export interface Response {
   myDepots: [Depot];
@@ -49,14 +55,14 @@ export interface Response {
   myVehicleType: VehicleType;
   myVehicleTypes: [VehicleType];
 
-  createVehicle: MyVehicles;
+  createVehicle: VehicleCreationResult;
   updateVehicle: MyVehicles;
   deleteVehicle: boolean;
   softDeleteVehicle: MyVehicles;
   createVehicleType: VehicleType;
   updateVehicleType: VehicleType;
   deleteVehicleType: boolean;
-  getEnumValues: string[];
+  getEnumValues: VehicleEnumOption[];
 }
 
 export interface Error {

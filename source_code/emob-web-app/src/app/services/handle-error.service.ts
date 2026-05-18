@@ -12,14 +12,17 @@ import { ErrorDialogComponent } from '../index/components/error-dialog/error-dia
 export class ErrorHandlingService {
   constructor(private toastr: ToastrService, private spinner: NgxSpinnerService, private ngbModal: NgbModal,) {}
 
-  handleError = catchError((error: any): Observable<any> => {
-    console.error('Error occurred:', error.message);
-    this.toastr.error(error.message, 'Error');
-    this.showInvalidModal('Error', error.message);
-    this.spinner.hide();
-    
-    return throwError(() => new Error(error.message));
-  });
+  handleError = <T>(source: Observable<T>): Observable<T> =>
+    source.pipe(
+      catchError((error: Error): Observable<never> => {
+        console.error('Error occurred:', error.message);
+        this.toastr.error(error.message, 'Error');
+        this.showInvalidModal('Error', error.message);
+        this.spinner.hide();
+
+        return throwError(() => new Error(error.message));
+      }),
+    );
 
   showInvalidModal(title: string = '', message: string | string[] = ''): void {
       const focusedElement = document.activeElement as HTMLElement;
