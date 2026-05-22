@@ -430,3 +430,15 @@ tr.mat-mdc-footer-row td {
 .validation-warning-error-item-wrapper {
   max-height: 250px;
 }
+
+.validation-warning-error-item {
+  ngb-alert {
+    .mat-mdc-raised-button {
+      white-space: nowrap;
+
+      ::ng-deep .mdc-button__label {
+        white-space: nowrap;
+      }
+    }
+  }
+}
