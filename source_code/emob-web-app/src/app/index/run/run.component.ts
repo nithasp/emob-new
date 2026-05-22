@@ -250,6 +250,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   validationWarnings: ValidationWarningItem[] = [];
   validationWarningCollapseStates: boolean[] = [];
   isValidationWarning: boolean = false;
+  validationErrors: ValidationWarningItem[] = [];
+  validationErrorCollapseStates: boolean[] = [];
+  isValidationError: boolean = false;
   private cachedGetValidationMessage!: ReturnType<
     typeof createCachedValidationMessageFn
   >;
@@ -400,6 +403,8 @@ export class RunComponent implements OnInit, AfterViewInit {
                         if (!response.fileUrls?.validate?.errorWarning) {
                           this.isValidationWarning = false;
                           this.setValidationWarnings([]);
+                          this.isValidationError = false;
+                          this.setValidationErrors([]);
                         } else {
                           this.dataFromFileUrlToJson(
                             response.fileUrls?.validate.errorWarning,
@@ -407,8 +412,11 @@ export class RunComponent implements OnInit, AfterViewInit {
                             .then((data) => {
                               console.log(data);
                               const warnings = data?.warnings || [];
+                              const errors = data?.errors || [];
                               this.isValidationWarning = warnings.length > 0;
                               this.setValidationWarnings(warnings);
+                              this.isValidationError = errors.length > 0;
+                              this.setValidationErrors(errors);
                             })
                             .catch((err) => {
                               console.error(
@@ -420,6 +428,8 @@ export class RunComponent implements OnInit, AfterViewInit {
                       } else {
                         this.isValidationWarning = false;
                         this.setValidationWarnings([]);
+                        this.isValidationError = false;
+                        this.setValidationErrors([]);
                       }
 
                       if (response.fileUrls?.transform?.warning) {
@@ -2219,8 +2229,22 @@ export class RunComponent implements OnInit, AfterViewInit {
       .subscribe({
         next: (result: ValidateExperimentResponse) => {
           console.log('validateExperiment result', result);
-          if (result.result?.message) {
-            this.toastr.success(result.result.message);
+          const validateResult = result.result;
+          const errors = validateResult?.error || [];
+          const warnings = validateResult?.warning || [];
+          // Error case: backend explicitly returns isSuccesses=false, or sends an error[] payload
+          const hasError =
+            validateResult?.isSuccesses === false || errors.length > 0;
+          // Warning case: backend flags isWarning=true and there is no blocking error
+          const hasWarning =
+            !hasError && (validateResult?.isWarning === true || warnings.length > 0);
+
+          if (validateResult?.message) {
+            if (hasError) {
+              this.toastr.error(validateResult.message);
+            } else {
+              this.toastr.success(validateResult.message);
+            }
           }
           this.haveUpdateAfterValidated = false;
           // Sync constraints with the payload used for validation so UI reflects latest
@@ -2229,7 +2253,7 @@ export class RunComponent implements OnInit, AfterViewInit {
             ...(parameterPayload as Partial<Constraint>),
           };
           this.constraintsData = mergedConstraint;
-          this.validateExperiment = result.result?.validate || null;
+          this.validateExperiment = validateResult?.validate || null;
           this.dataService.clearData(this.experiment.runId);
           // Rebuild dynamic parameters so values reflect constraintsData when validated
           this.refreshDynamicParametersForSelectedDepot();
@@ -2237,11 +2261,18 @@ export class RunComponent implements OnInit, AfterViewInit {
           // Mark validation as completed and show corresponding messages (success path)
           this.haveValidated = true;
 
-          this.isValidationWarning = result.result?.isWarning || false;
-          if (this.isValidationWarning && result.result?.warning) {
-            this.setValidationWarnings(result.result.warning);
+          this.isValidationWarning = hasWarning;
+          if (hasWarning) {
+            this.setValidationWarnings(warnings);
           } else {
             this.setValidationWarnings([]);
+          }
+
+          this.isValidationError = hasError;
+          if (hasError) {
+            this.setValidationErrors(errors);
+          } else {
+            this.setValidationErrors([]);
           }
 
           this.isValidateShowMessage = {
@@ -4103,10 +4134,17 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   getWarningTypeLabel(errorType: string): string {
-    const scopedKey = `validation.${errorType}`;
+    const normalizedKey = (errorType || '')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[\s-]+/g, '_');
+    const scopedKey = `validation.${normalizedKey}`;
     const translated = this.transloco.translate(scopedKey, { errorType });
-    if (translated === scopedKey) {
-      return this.transloco.translate('validation.unknown_validation_error', { errorType });
+    if (!translated || translated === scopedKey) {
+      return this.transloco.translate('validation.unknown_validation_error', {
+        errorType,
+      });
     }
     return translated;
   }
@@ -4138,5 +4176,23 @@ export class RunComponent implements OnInit, AfterViewInit {
   toggleValidationWarningCollapse(index: number) {
     this.validationWarningCollapseStates[index] =
       !this.validationWarningCollapseStates[index];
+  }
+
+  setValidationErrors(errors: ValidationWarningItem[]) {
+    this.cachedGetValidationMessage = createCachedValidationMessageFn(
+      this.transloco,
+    );
+    const safeErrors = errors || [];
+    this.validationErrors = safeErrors;
+    this.validationErrorCollapseStates = safeErrors.map(() => false);
+  }
+
+  getRowsForError(error: ValidationWarningItem): ValidationTableRow[] {
+    return buildTableRows([error]);
+  }
+
+  toggleValidationErrorCollapse(index: number) {
+    this.validationErrorCollapseStates[index] =
+      !this.validationErrorCollapseStates[index];
   }
 }

@@ -280,8 +280,10 @@ export interface UploadPreOrderResponse {
 export interface ValidateResult {
   message?: string;
   validate?: Validate;
+  isSuccesses?: boolean;
   isWarning?: boolean;
   warning?: ValidationWarningItem[];
+  error?: ValidationWarningItem[];
 }
 
 export interface ValidateExperimentResponse {

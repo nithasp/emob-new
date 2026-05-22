@@ -1199,6 +1199,7 @@
                       *ngIf="
                         haveValidated &&
                         !isValidationWarning &&
+                        !isValidationError &&
                         !isFileSelectionStep
                       "
                     >
@@ -1349,6 +1350,81 @@
                           </div>
                         </div>
                       </div>
+
+                      <div
+                        class="container-validation-error new-error-validation"
+                        *ngIf="validationErrors.length > 0"
+                      >
+                        <div
+                          class="validation-error-item"
+                          *ngFor="
+                            let error of validationErrors;
+                            let i = index
+                          "
+                        >
+                          <ngb-alert type="danger" [dismissible]="false">
+                            <div
+                              class="d-flex align-items-center justify-content-between"
+                            >
+                              <div>
+                                <strong>{{ getWarningTypeLabel(error.errorType) }}</strong>
+                                <button
+                                  type="button"
+                                  class="link link-primary link-opacity-75-hover"
+                                  (click)="toggleValidationErrorCollapse(i)"
+                                  [attr.aria-expanded]="
+                                    !validationErrorCollapseStates[i]
+                                  "
+                                >
+                                  {{ t("show_details") }}
+                                </button>
+                              </div>
+                              <button
+                                mat-raised-button
+                                class="bg-custom-primary"
+                                (click)="validateExperimentPreOrder()"
+                              >
+                                <mat-icon>rule</mat-icon>
+                                {{ t("revalidate") }}
+                              </button>
+                            </div>
+                          </ngb-alert>
+                          <div
+                            class="validation-error-item-wrapper mb-3 overflow-x-auto"
+                            [ngbCollapse]="validationErrorCollapseStates[i]"
+                          >
+                            <table class="table table-striped">
+                              <thead>
+                                <tr>
+                                  <th>
+                                    {{
+                                      t("validation_table_header_file_name")
+                                    }}
+                                  </th>
+                                  <th>
+                                    {{ t("validation_table_header_message") }}
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  *ngFor="let row of getRowsForError(error)"
+                                >
+                                  <td>{{ row.fileName }}</td>
+                                  <td>
+                                    {{
+                                      getValidationMessage(
+                                        row.type,
+                                        row.params
+                                      )
+                                    }}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
                     </ng-container>
                   </div>
 
@@ -1376,7 +1452,11 @@
                       mat-raised-button
                       class="bg-custom-primary"
                       (click)="routePlanning()"
-                      *ngIf="!haveUpdateAfterValidated && haveValidated"
+                      *ngIf="
+                        !haveUpdateAfterValidated &&
+                        haveValidated &&
+                        !isValidationError
+                      "
                     >
                       <mat-icon>route</mat-icon>
                       {{ t("plan_my_route") }}
@@ -1385,7 +1465,10 @@
                       mat-raised-button
                       class="bg-custom-primary pr-3"
                       (click)="validateExperimentPreOrder()"
-                      *ngIf="haveUpdateAfterValidated && haveValidated"
+                      *ngIf="
+                        (haveUpdateAfterValidated && haveValidated) ||
+                        isValidationError
+                      "
                     >
                       <mat-icon>rule</mat-icon>
                       {{ t("revalidate") }}
