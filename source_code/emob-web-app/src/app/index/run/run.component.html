@@ -1223,11 +1223,11 @@
                       "
                     >
                       <div
-                        class="container-validation-warning new-warning-validation"
+                        class="container-validation-warning-error new-warning-error-validation"
                         *ngIf="validationWarnings.length > 0"
                       >
                         <div
-                          class="validation-warning-item"
+                          class="validation-warning-error-item"
                           *ngFor="
                             let warning of validationWarnings;
                             let i = index
@@ -1262,7 +1262,7 @@
                             </div>
                           </ngb-alert>
                           <div
-                            class="validation-warning-item-wrapper mb-3 overflow-x-auto"
+                            class="validation-warning-error-item-wrapper mb-3 overflow-x-auto"
                             [ngbCollapse]="validationWarningCollapseStates[i]"
                           >
                             <ng-container
@@ -1352,11 +1352,11 @@
                       </div>
 
                       <div
-                        class="container-validation-error new-error-validation"
+                        class="container-validation-warning-error new-warning-error-validation"
                         *ngIf="validationErrors.length > 0"
                       >
                         <div
-                          class="validation-error-item"
+                          class="validation-warning-error-item"
                           *ngFor="
                             let error of validationErrors;
                             let i = index
@@ -1390,7 +1390,7 @@
                             </div>
                           </ngb-alert>
                           <div
-                            class="validation-error-item-wrapper mb-3 overflow-x-auto"
+                            class="validation-warning-error-item-wrapper mb-3 overflow-x-auto"
                             [ngbCollapse]="validationErrorCollapseStates[i]"
                           >
                             <table class="table table-striped">
