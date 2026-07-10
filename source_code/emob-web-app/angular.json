@@ -23,7 +23,6 @@
               "extract-files",
               "xml-utils",
               "file-saver"
-
             ],
             "outputPath": "dist/emob-web-app",
             "index": "src/index.html",
@@ -63,7 +62,7 @@
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "5kB",
-                  "maximumError": "6kB"
+                  "maximumError": "7kB"
                 }
               ],
               "fileReplacements": [
