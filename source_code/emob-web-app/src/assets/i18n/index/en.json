@@ -283,6 +283,7 @@
   "select_category": "Select category",
   "select_category_and_add_as_new_file": "Select category and add as new file",
   "select_excel_file": "Please select an Excel file (.xlsx or .xls)",
+  "select_file_with_extension": "Please select file {{ extension }}",
   "select_sizing_of_vehicle": "Select sizing of vehicle",
   "select_vehicle_and_input_number": "Please select Vehicle and Input number for car have use it",
   "selected": "Selected",

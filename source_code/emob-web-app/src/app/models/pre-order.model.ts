@@ -280,6 +280,7 @@ export interface DepotInputDataItem {
   displayName: string;
   columnRequired: string[];
   required?: boolean;
+  fileFormatType?: string;
 }
 
 export interface CategoryValidationResult {

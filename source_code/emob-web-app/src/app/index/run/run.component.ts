@@ -163,6 +163,11 @@ export class RunComponent implements OnInit, AfterViewInit {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
   ];
+  private readonly extensionMimeMap: Record<string, string[]> = {
+    '.xlsx': ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+    '.xls': ['application/vnd.ms-excel', 'application/octet-stream'],
+    '.csv': ['text/csv', 'application/csv', 'application/vnd.ms-excel'],
+  };
 
   private requiredColumns: Array<string> = [];
   private depotInputDataItems: DepotInputDataItem[] = [];
@@ -327,6 +332,67 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   get requiredFileTypes(): string[] {
     return this.depotInputDataItems.map((item) => item.displayName);
+  }
+
+  private normalizeFileExtension(fileFormatType?: string | null): string {
+    const raw = (fileFormatType || '').trim().toLowerCase();
+    if (!raw) return '';
+    return raw.startsWith('.') ? raw : `.${raw}`;
+  }
+
+  private getAllowedFileExtensionsFromDepot(depot?: MyDepot): string[] {
+    if (!depot?.inputdata?.length) {
+      return ['.xlsx', '.xls'];
+    }
+
+    const prioritized: string[] = [];
+    for (const inputItem of depot.inputdata) {
+      const extension = this.normalizeFileExtension(inputItem.fileFormatType);
+      if (!extension) continue;
+
+      const candidates =
+        extension === '.xlsx'
+          ? ['.xlsx', '.xls']
+          : extension === '.xls'
+            ? ['.xls', '.xlsx']
+            : [extension];
+
+      for (const candidate of candidates) {
+        if (!prioritized.includes(candidate)) {
+          prioritized.push(candidate);
+        }
+      }
+    }
+
+    return prioritized.length ? prioritized : ['.xlsx', '.xls'];
+  }
+
+  private getRequiredFileTypeDisplay(extensions: string[]): string {
+    return extensions.join(', ');
+  }
+
+  private updateRequiredFileTypeByDepot(depot?: MyDepot): void {
+    const allowedExtensions = this.getAllowedFileExtensionsFromDepot(depot);
+    this.requiredFileType = this.getRequiredFileTypeDisplay(allowedExtensions);
+  }
+
+  private isFileMatchingRequiredType(file: File): boolean {
+    const selectedDepot = this.getSelectedDepotObject();
+    const allowedExtensions = this.getAllowedFileExtensionsFromDepot(selectedDepot);
+    const normalizedFileName = (file.name || '').toLowerCase();
+    const fileExtension =
+      normalizedFileName.lastIndexOf('.') >= 0
+        ? normalizedFileName.slice(normalizedFileName.lastIndexOf('.'))
+        : '';
+    const normalizedMimeType = (file.type || '').toLowerCase();
+
+    return allowedExtensions.some((extension) => {
+      if (fileExtension === extension) {
+        return true;
+      }
+      const allowedMimeTypes = this.extensionMimeMap[extension] || [];
+      return !!normalizedMimeType && allowedMimeTypes.includes(normalizedMimeType);
+    });
   }
 
   isFileTypeRequired(displayName: string): boolean {
@@ -907,14 +973,22 @@ export class RunComponent implements OnInit, AfterViewInit {
       }
     }
     if (!file) return;
-    if (!this.validTypes.includes(file.type)) {
+    if (!this.isFileMatchingRequiredType(file)) {
       this.showInvalidModal(
         this.transloco.translate('file_invalid', {}, 'index'),
-        this.transloco.translate('select_excel_file', {}, 'index'),
+        this.transloco.translate(
+          'select_file_with_extension',
+          { extension: this.requiredFileType },
+          'index',
+        ),
       );
       this.toastr.error(
-        `${this.transloco.translate('file_invalid', {}, 'index')}:`,
-        file.type,
+        this.transloco.translate(
+          'select_file_with_extension',
+          { extension: this.requiredFileType },
+          'index',
+        ),
+        this.transloco.translate('file_invalid', {}, 'index'),
       );
       return;
     }
@@ -1775,11 +1849,17 @@ export class RunComponent implements OnInit, AfterViewInit {
           : this.depots[0].depotName) || this.depots[0].depotName;
       this.selectedDepotIdName = defaultDepotName;
       this.selectedDepotIds = [];
+      const selectedDepot =
+        this.depots.find((d) => d.depotName === this.selectedDepotIdName) ||
+        this.depots[0];
+      this.updateInputDataKeysFromDepot(selectedDepot);
+      this.updateRequiredFileTypeByDepot(selectedDepot);
     } else {
       this.selectedDepotIdName = null;
       this.selectedDepotIds = [];
       this.inputDataKeys = [];
       this.depotInputDataItems = [];
+      this.updateRequiredFileTypeByDepot(undefined);
     }
 
     // Plot all depots on the map
@@ -2816,9 +2896,11 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (depot) {
       this.updateDepot([depot]);
       this.updateInputDataKeysFromDepot(depot);
+      this.updateRequiredFileTypeByDepot(depot);
     } else {
       this.inputDataKeys = [];
       this.depotInputDataItems = [];
+      this.updateRequiredFileTypeByDepot(undefined);
     }
     await this.validateUploadedFilesAgainstDepot();
     // refresh dynamic parameters render when depot changes
@@ -2900,6 +2982,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
           // Update input data keys from the first depot
           this.updateInputDataKeysFromDepot(this.depots[0]);
+          this.updateRequiredFileTypeByDepot(this.depots[0]);
           // refresh dynamic parameters view for selected depot
           this.refreshDynamicParametersForSelectedDepot();
 
@@ -3393,6 +3476,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         displayName: item.displayName,
         columnRequired: item.columnRequired || [],
         required: item.required,
+        fileFormatType: item.fileFormatType,
       })) || [];
 
     const uniqueItems = this.depotInputDataItems.filter(
