@@ -395,6 +395,131 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
+  private parseCsvHeaderColumnNames(csvText: string): string[] {
+    const text = (csvText || '').replace(/^\uFEFF/, '');
+    const firstLine = text.split(/\r\n|\n|\r/)[0] || '';
+    if (!firstLine.trim()) return [];
+
+    const delimiters = [',', ';', '\t', '|'];
+    const count = (line: string, ch: string) =>
+      Array.from(line).filter((c) => c === ch).length;
+    const delimiter =
+      delimiters
+        .map((d) => ({ d, n: count(firstLine, d) }))
+        .sort((a, b) => b.n - a.n)[0]?.d || ',';
+
+    const cols: string[] = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < firstLine.length; i++) {
+      const ch = firstLine[i];
+      if (ch === '"') {
+        const next = firstLine[i + 1];
+        if (inQuotes && next === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+        continue;
+      }
+      if (!inQuotes && ch === delimiter) {
+        cols.push(cur.trim().replace(/^"+|"+$/g, ''));
+        cur = '';
+        continue;
+      }
+      cur += ch;
+    }
+    cols.push(cur.trim().replace(/^"+|"+$/g, ''));
+
+    return cols.filter(Boolean);
+  }
+
+  private detectCsvDelimiter(firstLine: string): string {
+    const delimiters = [',', ';', '\t', '|'];
+    const count = (line: string, ch: string) =>
+      Array.from(line).filter((c) => c === ch).length;
+    return (
+      delimiters
+        .map((d) => ({ d, n: count(firstLine, d) }))
+        .sort((a, b) => b.n - a.n)[0]?.d || ','
+    );
+  }
+
+  private parseCsvRows(csvText: string): string[][] {
+    const text = (csvText || '').replace(/^\uFEFF/, '');
+    const firstLine = text.split(/\r\n|\n|\r/)[0] || '';
+    const delimiter = this.detectCsvDelimiter(firstLine);
+
+    const rows: string[][] = [];
+    let row: string[] = [];
+    let field = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      const next = text[i + 1];
+
+      if (ch === '"') {
+        if (inQuotes && next === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+        continue;
+      }
+
+      if (!inQuotes && ch === delimiter) {
+        row.push(field.trim().replace(/^"+|"+$/g, ''));
+        field = '';
+        continue;
+      }
+
+      if (!inQuotes && (ch === '\n' || ch === '\r')) {
+        if (ch === '\r' && next === '\n') i++;
+        row.push(field.trim().replace(/^"+|"+$/g, ''));
+        field = '';
+        if (row.some((v) => v !== '')) rows.push(row);
+        row = [];
+        continue;
+      }
+
+      field += ch;
+    }
+
+    if (field.length > 0 || row.length > 0) {
+      row.push(field.trim().replace(/^"+|"+$/g, ''));
+      if (row.some((v) => v !== '')) rows.push(row);
+    }
+
+    return rows;
+  }
+
+  private async prepareFileForUpload(file: FileWithCategory): Promise<File> {
+    const fileName = (file?.name || '').toLowerCase();
+    if (!fileName.endsWith('.csv')) {
+      return file;
+    }
+
+    // Backend currently validates "csv" by filename but parses payload as Excel.
+    // Workaround: keep .csv filename while converting content to xlsx binary.
+    const csvText = await file.text();
+    const rows = this.parseCsvRows(csvText);
+    if (!rows.length) {
+      return file;
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
+    rows.forEach((row) => worksheet.addRow(row));
+
+    const xlsxBuffer = await workbook.xlsx.writeBuffer();
+    return new File([xlsxBuffer], file.name, {
+      type: file.type || 'text/csv',
+    });
+  }
+
   isFileTypeRequired(displayName: string): boolean {
     return (
       this.depotInputDataItems.find((item) => item.displayName === displayName)
@@ -1393,44 +1518,56 @@ export class RunComponent implements OnInit, AfterViewInit {
       reader.onload = async (e: ProgressEvent<FileReader>) => {
         try {
           const result = e.target?.result;
-          if (!(result instanceof ArrayBuffer)) {
-            resolve({ isValid: false });
-            return;
+          const fileName = (file?.name || '').toLowerCase();
+          const isCsv = fileName.endsWith('.csv');
+
+          let columnNames: string[] = [];
+          if (isCsv) {
+            if (typeof result !== 'string') {
+              resolve({ isValid: false });
+              return;
+            }
+            columnNames = this.parseCsvHeaderColumnNames(result);
+          } else {
+            if (!(result instanceof ArrayBuffer)) {
+              resolve({ isValid: false });
+              return;
+            }
+            const arrayBuffer = result;
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(arrayBuffer);
+
+            let worksheet: ExcelJS.Worksheet | undefined =
+              workbook.getWorksheet(1);
+            if (!worksheet) {
+              const normalize = (name: string) =>
+                name
+                  .trim()
+                  .toLowerCase()
+                  .replace(/[\s_\-]/g, '');
+
+              const allSheets = workbook.worksheets.map(
+                (ws: ExcelJS.Worksheet) => ({
+                  name: ws.name,
+                  normalized: normalize(ws.name),
+                }),
+              );
+
+              console.log(
+                'Detected sheets:',
+                allSheets.map((sheet) => sheet.name),
+              );
+
+              worksheet =
+                workbook.worksheets.find(
+                  (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0,
+                ) || workbook.worksheets[0];
+            }
+
+            columnNames = (
+              worksheet!.getRow(1).values as (string | undefined)[]
+            ).filter((value) => typeof value === 'string') as string[];
           }
-          const arrayBuffer = result;
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(arrayBuffer);
-
-          let worksheet: ExcelJS.Worksheet | undefined =
-            workbook.getWorksheet(1);
-          if (!worksheet) {
-            const normalize = (name: string) =>
-              name
-                .trim()
-                .toLowerCase()
-                .replace(/[\s_\-]/g, '');
-
-            const allSheets = workbook.worksheets.map(
-              (ws: ExcelJS.Worksheet) => ({
-                name: ws.name,
-                normalized: normalize(ws.name),
-              }),
-            );
-
-            console.log(
-              'Detected sheets:',
-              allSheets.map((sheet) => sheet.name),
-            );
-
-            worksheet =
-              workbook.worksheets.find(
-                (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0,
-              ) || workbook.worksheets[0];
-          }
-
-          const columnNames = (
-            worksheet!.getRow(1).values as (string | undefined)[]
-          ).filter((value) => typeof value === 'string') as string[];
 
           // Cache column names for later validation if fileId is provided
           if (fileId) {
@@ -1504,18 +1641,16 @@ export class RunComponent implements OnInit, AfterViewInit {
           resolve({ isValid: false });
         }
       };
-      reader.readAsArrayBuffer(file);
+      const fileName = (file?.name || '').toLowerCase();
+      if (fileName.endsWith('.csv')) {
+        reader.readAsText(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
     });
   }
 
   handleUploadSubmit() {
-    // Transform preOrderFiles to newPayload format (send actual File object)
-    const newPayload = this.preOrderFiles
-      .filter((item): item is { id: string; file: FileWithCategory } =>
-        this.isFileWithCategory(item.file),
-      )
-      .map(({ file }) => ({ file, keyName: file.keyName || '' }));
-
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -1536,9 +1671,21 @@ export class RunComponent implements OnInit, AfterViewInit {
     )} ?`;
 
     dialogRef.result
-      .then((confirmed: boolean) => {
+      .then(async (confirmed: boolean) => {
         if (confirmed) {
           this.spinner.show();
+
+          const uploadItems = this.preOrderFiles.filter(
+            (item): item is { id: string; file: FileWithCategory } =>
+              this.isFileWithCategory(item.file),
+          );
+          const newPayload = await Promise.all(
+            uploadItems.map(async ({ file }) => ({
+              file: await this.prepareFileForUpload(file),
+              keyName: file.keyName || '',
+            })),
+          );
+
           // Prepare depotIds (single or multiple selection)
           let depotIds: string[] = [];
           if (this.selectedDepotIdName) {
@@ -3313,29 +3460,42 @@ export class RunComponent implements OnInit, AfterViewInit {
       reader.onload = async (e: ProgressEvent<FileReader>) => {
         try {
           const result = e.target?.result;
-          if (!(result instanceof ArrayBuffer)) {
-            console.error('Result is not ArrayBuffer');
-            resolve(false);
-            return;
+          const fileName = (fileObj.file?.name || '').toLowerCase();
+          const isCsv = fileName.endsWith('.csv');
+
+          let columnNames: string[] = [];
+          if (isCsv) {
+            if (typeof result !== 'string') {
+              console.error('CSV result is not string');
+              resolve(false);
+              return;
+            }
+            columnNames = this.parseCsvHeaderColumnNames(result);
+          } else {
+            if (!(result instanceof ArrayBuffer)) {
+              console.error('Result is not ArrayBuffer');
+              resolve(false);
+              return;
+            }
+
+            console.log('File loaded, parsing Excel...');
+            const arrayBuffer = result;
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(arrayBuffer);
+
+            let worksheet: ExcelJS.Worksheet | undefined =
+              workbook.getWorksheet(1);
+            if (!worksheet) {
+              worksheet =
+                workbook.worksheets.find(
+                  (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0,
+                ) || workbook.worksheets[0];
+            }
+
+            columnNames = (
+              worksheet!.getRow(1).values as (string | undefined)[]
+            ).filter((value) => typeof value === 'string') as string[];
           }
-
-          console.log('File loaded, parsing Excel...');
-          const arrayBuffer = result;
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(arrayBuffer);
-
-          let worksheet: ExcelJS.Worksheet | undefined =
-            workbook.getWorksheet(1);
-          if (!worksheet) {
-            worksheet =
-              workbook.worksheets.find(
-                (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0,
-              ) || workbook.worksheets[0];
-          }
-
-          const columnNames = (
-            worksheet!.getRow(1).values as (string | undefined)[]
-          ).filter((value) => typeof value === 'string') as string[];
 
           // Cache these columns for future validations
           this.fileColumnsCache[fileObj.id] = columnNames;
@@ -3356,7 +3516,12 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
       };
 
-      reader.readAsArrayBuffer(file);
+      const fileName = (file?.name || '').toLowerCase();
+      if (fileName.endsWith('.csv')) {
+        reader.readAsText(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
     });
   }
 
@@ -3517,44 +3682,56 @@ export class RunComponent implements OnInit, AfterViewInit {
       reader.onload = async (e: ProgressEvent<FileReader>) => {
         try {
           const result = e.target?.result;
-          if (!(result instanceof ArrayBuffer)) {
-            resolve(false);
-            return;
+          const fileName = (file.file?.name || '').toLowerCase();
+          const isCsv = fileName.endsWith('.csv');
+
+          let columnNames: string[] = [];
+          if (isCsv) {
+            if (typeof result !== 'string') {
+              resolve(false);
+              return;
+            }
+            columnNames = this.parseCsvHeaderColumnNames(result);
+          } else {
+            if (!(result instanceof ArrayBuffer)) {
+              resolve(false);
+              return;
+            }
+            const arrayBuffer = result;
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(arrayBuffer);
+
+            let worksheet: ExcelJS.Worksheet | undefined =
+              workbook.getWorksheet(1);
+            if (!worksheet) {
+              const normalize = (name: string) =>
+                name
+                  .trim()
+                  .toLowerCase()
+                  .replace(/[\s_\-]/g, '');
+
+              const allSheets = workbook.worksheets.map(
+                (ws: ExcelJS.Worksheet) => ({
+                  name: ws.name,
+                  normalized: normalize(ws.name),
+                }),
+              );
+
+              console.log(
+                'Detected sheets:',
+                allSheets.map((sheet) => sheet.name),
+              );
+
+              worksheet =
+                workbook.worksheets.find(
+                  (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0,
+                ) || workbook.worksheets[0];
+            }
+
+            columnNames = (
+              worksheet!.getRow(1).values as (string | undefined)[]
+            ).filter((value) => typeof value === 'string') as string[];
           }
-          const arrayBuffer = result;
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(arrayBuffer);
-
-          let worksheet: ExcelJS.Worksheet | undefined =
-            workbook.getWorksheet(1);
-          if (!worksheet) {
-            const normalize = (name: string) =>
-              name
-                .trim()
-                .toLowerCase()
-                .replace(/[\s_\-]/g, '');
-
-            const allSheets = workbook.worksheets.map(
-              (ws: ExcelJS.Worksheet) => ({
-                name: ws.name,
-                normalized: normalize(ws.name),
-              }),
-            );
-
-            console.log(
-              'Detected sheets:',
-              allSheets.map((sheet) => sheet.name),
-            );
-
-            worksheet =
-              workbook.worksheets.find(
-                (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0,
-              ) || workbook.worksheets[0];
-          }
-
-          const columnNames = (
-            worksheet!.getRow(1).values as (string | undefined)[]
-          ).filter((value) => typeof value === 'string');
 
           // Check if file matches any of the depot's input data requirements
           const matchingInputDataItem =
@@ -3576,7 +3753,12 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
       };
       if (this.isFileWithCategory(file.file)) {
-        reader.readAsArrayBuffer(file.file);
+        const fileName = (file.file?.name || '').toLowerCase();
+        if (fileName.endsWith('.csv')) {
+          reader.readAsText(file.file);
+        } else {
+          reader.readAsArrayBuffer(file.file);
+        }
       } else {
         // For descriptor items (loaded from server), consider them valid
         resolve(true);
