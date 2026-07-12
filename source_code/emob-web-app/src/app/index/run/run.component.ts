@@ -435,91 +435,6 @@ export class RunComponent implements OnInit, AfterViewInit {
     return cols.filter(Boolean);
   }
 
-  private detectCsvDelimiter(firstLine: string): string {
-    const delimiters = [',', ';', '\t', '|'];
-    const count = (line: string, ch: string) =>
-      Array.from(line).filter((c) => c === ch).length;
-    return (
-      delimiters
-        .map((d) => ({ d, n: count(firstLine, d) }))
-        .sort((a, b) => b.n - a.n)[0]?.d || ','
-    );
-  }
-
-  private parseCsvRows(csvText: string): string[][] {
-    const text = (csvText || '').replace(/^\uFEFF/, '');
-    const firstLine = text.split(/\r\n|\n|\r/)[0] || '';
-    const delimiter = this.detectCsvDelimiter(firstLine);
-
-    const rows: string[][] = [];
-    let row: string[] = [];
-    let field = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < text.length; i++) {
-      const ch = text[i];
-      const next = text[i + 1];
-
-      if (ch === '"') {
-        if (inQuotes && next === '"') {
-          field += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-        continue;
-      }
-
-      if (!inQuotes && ch === delimiter) {
-        row.push(field.trim().replace(/^"+|"+$/g, ''));
-        field = '';
-        continue;
-      }
-
-      if (!inQuotes && (ch === '\n' || ch === '\r')) {
-        if (ch === '\r' && next === '\n') i++;
-        row.push(field.trim().replace(/^"+|"+$/g, ''));
-        field = '';
-        if (row.some((v) => v !== '')) rows.push(row);
-        row = [];
-        continue;
-      }
-
-      field += ch;
-    }
-
-    if (field.length > 0 || row.length > 0) {
-      row.push(field.trim().replace(/^"+|"+$/g, ''));
-      if (row.some((v) => v !== '')) rows.push(row);
-    }
-
-    return rows;
-  }
-
-  private async prepareFileForUpload(file: FileWithCategory): Promise<File> {
-    const fileName = (file?.name || '').toLowerCase();
-    if (!fileName.endsWith('.csv')) {
-      return file;
-    }
-
-    // Backend currently validates "csv" by filename but parses payload as Excel.
-    // Workaround: keep .csv filename while converting content to xlsx binary.
-    const csvText = await file.text();
-    const rows = this.parseCsvRows(csvText);
-    if (!rows.length) {
-      return file;
-    }
-
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Sheet1');
-    rows.forEach((row) => worksheet.addRow(row));
-
-    const xlsxBuffer = await workbook.xlsx.writeBuffer();
-    return new File([xlsxBuffer], file.name, {
-      type: file.type || 'text/csv',
-    });
-  }
-
   isFileTypeRequired(displayName: string): boolean {
     return (
       this.depotInputDataItems.find((item) => item.displayName === displayName)
@@ -1675,16 +1590,14 @@ export class RunComponent implements OnInit, AfterViewInit {
         if (confirmed) {
           this.spinner.show();
 
-          const uploadItems = this.preOrderFiles.filter(
-            (item): item is { id: string; file: FileWithCategory } =>
+          // Send the file exactly as the user picked it. The backend parses each
+          // upload according to its inputdata fileFormatType, so a .csv must stay
+          // real CSV bytes — the AI service reads it back with pandas.read_csv.
+          const newPayload = this.preOrderFiles
+            .filter((item): item is { id: string; file: FileWithCategory } =>
               this.isFileWithCategory(item.file),
-          );
-          const newPayload = await Promise.all(
-            uploadItems.map(async ({ file }) => ({
-              file: await this.prepareFileForUpload(file),
-              keyName: file.keyName || '',
-            })),
-          );
+            )
+            .map(({ file }) => ({ file, keyName: file.keyName || '' }));
 
           // Prepare depotIds (single or multiple selection)
           let depotIds: string[] = [];
