@@ -3272,6 +3272,19 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
   }
 
+  getFileTypeDisplay(fileObj: PreOrderFileItem): string {
+    // Derive from the extension: a .csv on Windows may report the Excel MIME
+    // type ('application/vnd.ms-excel'), so the MIME type alone is unreliable.
+    const fileName = (fileObj.file?.name || '').toLowerCase();
+    const dotIndex = fileName.lastIndexOf('.');
+    if (dotIndex > -1) {
+      return fileName.slice(dotIndex + 1);
+    }
+    return this.validTypes.includes(fileObj.file?.type)
+      ? 'xlsx'
+      : fileObj.file?.type || '';
+  }
+
   getAllErrorMessages(fileObj: PreOrderFileItem): string {
     const messages: string[] = [];
 
