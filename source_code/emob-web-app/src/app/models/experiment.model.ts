@@ -13,70 +13,82 @@ export interface Experiment {
   runId: string;
   name: string;
   timestamp: string;
-  preOrderBlobPath: string;
-  groupZoneBlobPath: string;
-  productMat1BlobPath: string;
-  productMat7BlobPath: string;
-  locationBlobPath: string;
-  locationUpdateBlobPath: string | null;
-  validatedBlobPath: string | null;
-  parameterBlobPath: string | null;
-  outputRouteOptimizationBlobPath: string | null;
-  configurations: ExperimentConfigurations;
-  inputdata: InputDataItem[];
+  configurations: any;
+  inputdata: ExperimentInputdata[];
   depots: ExperimentDepot[];
   timeStart: string | null;
   timeEnd: string | null;
   timeDuration: number | null;
   triggeredBy: string;
   triggeredByName: string;
-  status: StatusExperiment;
-  run: string;
+  status: ExperimentStatus;
+  run: Run;
   groupId: string;
   countGeocoding: number;
   countReroute: number;
-  fileUrl: FileUrl;
+  fileUrls: FileUrlsGroup;
   result?: Result;
 }
 
-export enum StatusExperiment {
+export enum Run {
+  Original = 'Original',
+  Rerun = 'Rerun',
+}
+
+export enum ExperimentStatus {
+  Initializing = 'Initializing',
+  UploadCompleted = 'UploadCompleted',
   Succeeded = 'Succeeded',
   InProgress = 'InProgress',
   Queued = 'Queued',
   Failed = 'Failed',
   Canceled = 'Canceled',
-  Initializing = 'Initializing',
+  Cancelled = 'Cancelled'
 }
 
-export interface ExperimentConfigurations {
-  groupZone: string;
-  productMat1: string;
-  productMat7: string;
-}
-
-export interface InputDataItem {
+export interface ExperimentInputdata {
   keyName: string;
   filename: string;
   blobPath: string;
   displayName: string;
   fileFormatType: string;
   fileSize: number;
+  fileUrl: string;
 }
 
-export interface FileUrl {
-  parameterUrl: string | null;
-  preOrderUrl: string | null;
-  LocationBlobPathUrl: string | null;
-  locationUpdateBlobPathUrl: string | null;
-  validatedBlobPathUrl: string | null;
-  outputGeoJsonUrl: string | null;
-  outputReportUrl: string | null;
-  outputPlanDetailUrl: string | null;
+/** @deprecated Use ExperimentInputdata instead */
+export type InputDataItem = ExperimentInputdata;
+
+export interface FileUrlsGroup {
+  transform: TransformState;
+  validate: ValidateState;
+  plan: PlanState;
 }
+
+export interface TransformState {
+  locations: string | null;
+  warning: string | null;
+}
+
+export interface ValidateState {
+  parameterFormats: string | null;
+  vehicleTypes: string | null;
+  preVRPSolution: string | null;
+  errorWarning: string | null;
+}
+
+export interface PlanState {
+  vrpSolutionLean: string | null;
+  geoJson: string | null;
+  vrpStats: string | null;
+}
+
 export interface Result {
   customers: Customer[];
   depots: Depot[];
   validate: Validate;
+  isWarning?: boolean;
+  warning?: any[];
 }
 
 export interface Validate {
@@ -100,7 +112,6 @@ interface Warning {
   zero_weight: Customer[];
 }
 
-
 export interface DownloadResultFile {
   resultFileBlobPath: string;
   fileUrl: {
@@ -118,8 +129,9 @@ export interface DepotInputRequirement {
   depotId: string;
   keyName: string;
   displayName: string;
-  columnRequired: string[];
+  columnRequired: any;
   fileFormatType: string;
+  required: boolean;
   createdAt: string;
   modifiedAt: string;
 }
@@ -129,8 +141,8 @@ export interface MyDepot {
   depotName: string;
   latitude: number | string;
   longitude: number | string;
-  tw_early: string;
-  tw_late: string;
+  timeWindowEarly: string;
+  timeWindowLate: string;
   createdAt: string;
   updatedAt: string;
   inputdata: DepotInputRequirement[];
@@ -145,7 +157,8 @@ export interface myDepots {
   updatedAt: string;
 }
 
-export interface ExperimentCounts extends Pick<Experiment, 'countGeocoding' | 'countReroute'> {}
+export interface ExperimentCounts
+  extends Pick<Experiment, 'countGeocoding' | 'countReroute'> {}
 
 export interface PlanDetail {
   TripNo: number;
@@ -177,21 +190,137 @@ export interface ExperimentDepot {
   depotName: string;
   latitude: number;
   longitude: number;
-  tw_early: string;
-  tw_late: string;
+  timeWindowEarly: string;
+  timeWindowLate: string;
   createdAt: string;
   updatedAt: string;
   columns?: string[];
-  inputdata?: InputDataItem[];
+  inputdata?: DepotInputdata[];
+}
+
+export interface DepotInputdata {
+  companyName: string;
+  depotId: string;
+  keyName: string;
+  displayName: string;
+  columnRequired: any;
+  fileFormatType: string;
+  required: boolean;
+  createdAt: string;
+  modifiedAt: string;
 }
 
 export interface NodeSheet {
-  node_label: number;
-  node_index: number;
-  node_name: string;
+  nodeLabel: number;
+  nodeIndex: number;
+  nodeName: string;
   latitude: number;
   longitude: number;
-  validation_type: string;
-  replace_type: string;
+  validationType: string;
+  replaceType: string;
   address: string;
 }
+
+export interface RouteInfo {
+  routeLabel: string;
+  numberDeliveryPoints: number;
+  weight?: number;
+  travelDistance?: number;
+  travelDuration?: number;
+  serviceTime?: number;
+  [key: string]: string | number | undefined;
+}
+
+export interface PopupContent {
+  routeLabel?: string;
+  nodeIndex?: number;
+  routeOrder?: number;
+  name?: string;
+  isDepot?: boolean;
+  numCustomers?: number;
+  distance?: number;
+  duration?: number;
+  weight?: number;
+  zone?: string;
+  customers?: string[];
+  serviceDuration?: number;
+  travelDuration?: number;
+  originalAddress?: {
+    address?: string;
+    district?: string;
+    province?: string;
+    postalCode?: string;
+  };
+  extra?: {
+    channel?: string;
+    customerName?: string;
+    tel?: string;
+    productsInfo?: ProductInfo[];
+  };
+  [key: string]: string | number | boolean | string[] | object | undefined;
+}
+
+export interface ProductInfo {
+  productId: string;
+  orderId: string;
+  productName: string;
+  quantityMajor: number;
+  quantityMinor: number;
+  userConfirm?: string;
+  dateConfirm?: string;
+}
+
+export interface PreOrderData {
+  ORDERID?: string;
+  PROVICE?: string;
+  PROVINCE?: string;
+  CHANNEL?: string;
+  CUSTOMER_NAME?: string;
+  TEL?: string;
+  AUMPHER?: string;
+  ZIPCODE?: string;
+  ADDRESS?: string;
+  latitude?: number;
+  longitude?: number;
+  LatLng?: string;
+  validationType?: string;
+  replaceType?: string;
+}
+
+export interface GeoJSONFeatureCollection {
+  type: string;
+  features: GeoJSONFeature[];
+}
+
+export interface GeoJSONFeature {
+  type: string;
+  properties: {
+    nodeIndex?: number;
+    name?: string;
+    routeOrder?: number;
+    weight?: number;
+    color?: string;
+    isDepot?: boolean;
+    extra?: PopupContent['extra'];
+    originalAddress?: PopupContent['originalAddress'];
+    [key: string]: unknown;
+  };
+  geometry: {
+    type: string;
+    coordinates: number[] | number[][];
+  };
+}
+
+export interface PlanDetailsData extends PreOrderData {
+  ORDERID_ORG?: string;
+  details?: Array<PreOrderData & ProductInfo>;
+  validationType?: string;
+  replaceType?: string;
+}
+
+export interface PointDetail {
+  name: string;
+  weight: number;
+  routeOrder: number;
+}
+

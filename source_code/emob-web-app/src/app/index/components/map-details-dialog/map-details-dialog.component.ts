@@ -1,11 +1,10 @@
 import { Component, Input, OnInit, AfterViewInit } from '@angular/core';
-import { fromLonLat } from 'ol/proj';
-import { OSM, Vector as VectorSource, XYZ } from 'ol/source';
+import { OSM, Vector as VectorSource } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { GeoJSON } from 'ol/format';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Map, Overlay, View } from 'ol';
-import { Circle, LineString, Point } from 'ol/geom';
+import { LineString, Point } from 'ol/geom';
 import {
   Attribution,
   FullScreen,
@@ -23,29 +22,47 @@ import { FeatureLike } from 'ol/Feature';
 import { Fill, Icon, Stroke, Style, Text } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
 import { Coordinate } from 'ol/coordinate';
+import { CustomerDetailsComponent } from '../customer-details/customer-details.component';
+import {
+  RouteInfo,
+  PopupContent,
+  GeoJSONFeatureCollection,
+  PointDetail,
+} from 'src/app/models/experiment.model';
+import { FeatureProperties } from 'src/app/models/location.model';
+import { MapBrowserEvent } from 'ol';
+
 @Component({
   selector: 'app-map-details-dialog',
   templateUrl: './map-details-dialog.component.html',
   styleUrl: './map-details-dialog.component.scss',
 })
 export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
-  @Input() routeInfo!: any;
-  @Input() featureCollection: any;
-  @Input() featureDepots: any[] = [];
+  @Input() routeInfo!: RouteInfo;
+  @Input() featureCollection: GeoJSONFeatureCollection | null = null;
+  @Input() featureDepots: GeoJSONFeatureCollection[] = [];
+  @Input() routingNodes: any[] = [];
+
+  private routingNodesMap: Record<number, any> = {};
+  private routingNodesByIdMap: Record<string, any> = {};
+
   private map!: Map;
   public popUp?: Overlay;
-  public popupContent?: any;
+  public popupContent?: PopupContent | FeatureProperties;
   private highlightedFeatureCollectionId: number | null = null;
 
-  public pointDetails: Array<{
-    name: string;
-    weight: number;
-    route_order: number;
-  }> = [];
+  public pointDetails: PointDetail[] = [];
 
-  constructor(private readonly ngbActiveModal: NgbActiveModal) {}
+  constructor(
+    private readonly ngbActiveModal: NgbActiveModal,
+    private readonly ngbModal: NgbModal
+  ) {}
 
   ngOnInit(): void {
+    this.routingNodes.forEach((node: any) => {
+      if (node?.index != null) this.routingNodesMap[node.index] = node;
+      if (node?.nodeId) this.routingNodesByIdMap[node.nodeId] = node;
+    });
     this.getDepotDetailsPoint();
   }
 
@@ -55,7 +72,14 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     });
   }
 
-  loadAndProcessGeoJSON(item: any, depots: any[]): void {
+  loadAndProcessGeoJSON(
+    item: GeoJSONFeatureCollection | null,
+    depots: GeoJSONFeatureCollection[]
+  ): void {
+    if (!item) {
+      return;
+    }
+
     const itemFeatures = new GeoJSON().readFeatures(item, {
       dataProjection: 'EPSG:4326',
       featureProjection: 'EPSG:3857',
@@ -84,7 +108,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     });
 
     // mapping depots for features
-    depots.forEach((depot: any) => {
+    depots.forEach((depot: GeoJSONFeatureCollection) => {
       const features = new GeoJSON().readFeatures(depot, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
@@ -145,7 +169,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     });
     this.map.addOverlay(this.popUp);
   }
-  private pointMove(evt: any): void {
+  private pointMove(evt: MapBrowserEvent<UIEvent>): void {
     const target = this.map.getTargetElement();
     const pixel = this.map.getEventPixel(evt.originalEvent);
     const hit = this.map.hasFeatureAtPixel(pixel);
@@ -156,7 +180,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
       target.style.cursor = '';
     }
   }
-  handlePointerMove(event: any): void {
+  handlePointerMove(event: MapBrowserEvent<UIEvent>): void {
     let coordinates: Coordinate;
     const feature = this.map.forEachFeatureAtPixel(
       event.pixel,
@@ -179,11 +203,11 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
         coordinates = [];
       }
       this.popUp?.setPosition(coordinates);
-      const properties = feature.getProperties();
-      if (properties['features'] && properties['features'].length > 0) {
+      const properties = feature.getProperties() as FeatureProperties;
+      if (properties.features && properties.features.length > 0) {
         const nestedFeatureProperties =
-          properties['features'][0].getProperties();
-        this.popupContent = nestedFeatureProperties;
+          properties.features[0].getProperties();
+        this.popupContent = nestedFeatureProperties as FeatureProperties;
       } else {
         this.popupContent = properties;
       }
@@ -193,8 +217,8 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     }
 
     if (feature && feature.getGeometry()?.getType() === 'LineString') {
-      this.highlightedFeatureCollectionId =
-        feature.getProperties()['route_index'];
+      const properties = feature.getProperties() as FeatureProperties;
+      this.highlightedFeatureCollectionId = properties.routeIndex || null;
     } else {
       this.highlightedFeatureCollectionId = null;
     }
@@ -203,9 +227,8 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   }
   styleFunction(feature: FeatureLike): Style | Style[] | undefined {
     const geometryType = feature.getGeometry()!.getType();
-    const color = feature.getProperties()['color'] as string;
-    const text = feature.getProperties()['route_order'] as string;
-    const isDepot = feature.getProperties()['is_depot'] as boolean;
+    const text = String(feature.getProperties()['routeOrder'] ?? '');
+    const isDepot = feature.getProperties()['isDepot'] as boolean;
 
     switch (geometryType) {
       case 'Point':
@@ -258,6 +281,10 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
   }
 
   getDepotDetailsPoint(): void {
+    if (!this.featureCollection) {
+      return;
+    }
+
     const allFeatures = new GeoJSON().readFeatures(this.featureCollection, {
       dataProjection: 'EPSG:4326',
       featureProjection: 'EPSG:3857',
@@ -268,16 +295,92 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     );
 
     this.pointDetails = pointFeatures.map((f) => {
-      const props = f.getProperties();
+      const props = f.getProperties() as FeatureProperties;
       return {
-        route_order: props['route_order'],
-        name: props['name'],
-        weight: props['weight'],
+        routeOrder: props.routeOrder || 0,
+        name: props.name || '',
+        weight: props.weight || 0,
       };
     });
   }
 
   sortedPointDetails() {
-    return [...this.pointDetails].sort((a, b) => a.route_order - b.route_order);
+    return [...this.pointDetails].sort((a, b) => a.routeOrder - b.routeOrder).filter((point) => point.routeOrder !== 0);
+  }
+
+  handlePointClick(pointDetail: PointDetail): void {
+    if (!this.featureCollection) {
+      return;
+    }
+
+    // Find the nodeIndex from the featureCollection based on the point name
+    const allFeatures = new GeoJSON().readFeatures(this.featureCollection, {
+      dataProjection: 'EPSG:4326',
+      featureProjection: 'EPSG:3857',
+    });
+
+    const pointFeature = allFeatures.find((f) => {
+      if (f.getGeometry()?.getType() === 'Point') {
+        const props = f.getProperties();
+        return (
+          props['name'] === pointDetail.name &&
+          props['routeOrder'] === pointDetail.routeOrder
+        );
+      }
+      return false;
+    });
+
+    if (!pointFeature) {
+      console.warn('Point feature not found for:', pointDetail);
+      return;
+    }
+
+    const nodeIndex = pointFeature.getProperties()['nodeIndex'];
+    if (!nodeIndex) {
+      console.warn('nodeIndex not found for point:', pointDetail);
+      return;
+    }
+
+    this.handleDistance(nodeIndex);
+  }
+
+  handleDistance(nodeIndex: number): void {
+    if (!nodeIndex) return;
+
+    const matchedItem = this.routingNodesMap[nodeIndex];
+    if (!matchedItem) return;
+
+    const planDetails = {
+      ORDERID_ORG: matchedItem?.nodeId ?? '',
+      CHANNEL: matchedItem?.additionalProperties?.channel ?? '',
+      CUSTOMER_NAME: matchedItem?.name ?? '',
+      TEL: matchedItem?.additionalProperties?.telephone?.toString() ?? '',
+      AUMPHER: matchedItem?.originalAddress?.district ?? '',
+      PROVINCE: matchedItem?.originalAddress?.province ?? '',
+      ZIPCODE: matchedItem?.originalAddress?.postalCode ?? '',
+      ADDRESS: matchedItem?.originalAddress?.address ?? '',
+      latitude: matchedItem?.latitude ?? 0,
+      longitude: matchedItem?.longitude ?? 0,
+      details:
+        matchedItem?.productQuantity?.map((product: any) => ({
+          PRODUCTID: product?.productId ?? '',
+          ORDER_ID: product?.skuCode ?? '',
+          PRODUCTNAME: product?.name ?? '',
+          QUANTITYMAIN: product?.productQuantity ?? 0,
+        })) ?? [],
+    };
+
+    const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
+      centered: true,
+      size: 'xl',
+      animation: true,
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => false,
+    });
+
+    modalRef.componentInstance.dataPreOder = planDetails;
+    modalRef.componentInstance.dataCustomer = planDetails;
+    modalRef.componentInstance.isGeolocationDisplay = false;
   }
 }

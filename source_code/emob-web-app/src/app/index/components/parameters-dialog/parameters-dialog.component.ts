@@ -1,12 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { DynamicParameter, LocalizedText } from 'src/app/models/constraint.model';
+import { DynamicParameter, GroupedParameters, LocalizedText } from 'src/app/models/constraint.model';
 import { TranslocoService } from '@jsverse/transloco';
-
-interface GroupedParameters {
-  category: string;
-  items: Array<{ displayName: string; formattedValue: string }>;
-}
 
 @Component({
   selector: 'app-parameters-dialog',

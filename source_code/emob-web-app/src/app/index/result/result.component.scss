@@ -175,7 +175,7 @@ mat-icon {
   /* Adjust size as needed */
 }
 
-.text {
+.route-node-distance {
   font-size: 10px;
   color: gray;
 }
@@ -212,9 +212,11 @@ mat-icon {
   stroke: #242484 !important;
   /* Replace with your desired color */
 }
+
 ::ng-deep {
   ngb-modal-window {
     background: rgba(0, 0, 0, 0.5);
+
     .filter-modal {
       max-width: 480px;
       width: 100%;
@@ -293,11 +295,14 @@ mat-icon {
 .chip-outline.button-expand {
   border: none !important;
   outline: none !important;
+
   &:hover {
     background: unset !important;
+
     span {
       color: #3f51b5 !important;
     }
+
     mat-icon {
       color: #3f51b5 !important;
     }
@@ -316,25 +321,159 @@ mat-icon {
   border-radius: 16px;
 }
 
-
 mat-card.mb-4 {
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
- 
-.route-box {cursor: pointer;
-  &:not(:first-child):not(:last-child) {
-    transition: 0.1s;
-    cursor: pointer;
 
-    &:hover {
-      color: white;
-      background: #0606f4f0;
+.route-box {
+  cursor: pointer;
+}
 
-      .text {
-        transition: 0.1s;
-        color: white;
+.route-box:not(:first-child):not(:last-child):hover {
+  color: white;
+  background: #0606F4F0;
+}
+
+.route-box:not(:first-child):not(:last-child) {
+  transition: 0.1s;
+  cursor: pointer;
+}
+
+.route-box:not(:first-child):not(:last-child):hover .route-node-distance {
+  transition: 0.1s;
+  color: white;
+}
+
+.route-node-distance {
+  font-size: 10px;
+  color: gray;
+}
+
+// ─── VRP Toggle Buttons (custom active state for brand color) ────────────────
+.vrp-toggle-btn {
+  font-size: 12px;
+
+  &.vrp-toggle-active {
+    background: #0e1547;
+    color: #fff;
+    border-color: #0e1547;
+  }
+}
+
+.vrp-toggle-icon {
+  font-size: 15px;
+  height: 15px;
+  width: 15px;
+}
+
+// ─── Shared VRP section base ─────────────────────────────────────────────────
+.vrp-section {
+  font-size: 13px;
+}
+
+.vrp-bg-primary {
+  background: #0e1547;
+}
+
+// ─── VRP Dashboard ───────────────────────────────────────────────────────────
+.vrp-dashboard-header {
+  font-size: 15px;
+  letter-spacing: 0.3px;
+}
+
+.vrp-card-label {
+  letter-spacing: 0.8px;
+}
+
+.vrp-card-value {
+  color: #0e1547;
+}
+
+.vrp-status-icon {
+  font-size: 22px;
+}
+
+.vrp-dashboard-info {
+  height: 275px;
+}
+
+.vrp-dashboard-table {
+  thead tr th {
+    background: #0e1547;
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 8px 12px;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  tbody tr {
+    &:nth-child(even) {
+      background-color: #f4f6fb;
+    }
+
+    &:nth-child(odd) {
+      background-color: #fff;
+    }
+
+    td {
+      padding: 7px 12px;
+      vertical-align: middle;
+      font-size: 13px;
+
+      &:first-child,
+      &:nth-child(2) {
+        text-align: left;
       }
+    }
+  }
+}
+
+// ─── VRP Stats Key-Value View ────────────────────────────────────────────────
+.table-vrp-stats {
+  height: 400px;
+  overflow-y: auto;
+
+  thead tr th {
+    background: #0e1547;
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 8px 14px;
+    letter-spacing: 0.3px;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    &:nth-child(even) {
+      background-color: #f4f6fb;
+    }
+
+    &:nth-child(odd) {
+      background-color: #fff;
+    }
+
+    td {
+      padding: 7px 14px;
+      vertical-align: middle;
+      font-size: 13px;
+
+      &:first-child {
+        white-space: nowrap;
+        width: 1%;
+      }
+    }
+
+    &:last-child td {
+      border-bottom: none;
     }
   }
 }

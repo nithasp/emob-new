@@ -36,6 +36,7 @@ import {
   CustomerUpdated,
   DataPreOrder,
   Depot,
+  DepotInputDataItem,
   FileWithCategory,
   GroupedDataPreOrder,
   PreOrder,
@@ -60,7 +61,8 @@ import {
   Experiment,
   InputDataItem,
   Result,
-  StatusExperiment,
+  ExperimentStatus,
+  Run,
   Validate,
   Company,
   MyDepot,
@@ -73,6 +75,7 @@ import {
   NgbModal,
 } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDepotUploadFileDialogComponent } from '../components/confirmation-depot-upload-file-dialog/confirmation-depot-upload-file-dialog.component';
 import { ToastrService } from 'ngx-toastr';
 import { PreOrderService } from 'src/app/services/pre-order.service';
 import { ChangeDetectorRef } from '@angular/core';
@@ -86,7 +89,11 @@ import {
 } from 'src/app/models/location.model';
 import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
 import { DetailsDialogComponent } from '../components/details-dialog/details-dialog.component';
+import { VehicleProfileTypeItemDialogComponent } from '../components/vehicle-profile-type-item-dialog/vehicle-profile-type-item-dialog.component';
+import { VehicleTypeDialogComponent } from '../configuration/vehicle-management/dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
 import { CustomerListComponent } from '../components/customer-list/customer-list.component';
+import { LicensePlateSelectionDialogComponent } from '../components/license-plate-selection-dialog/license-plate-selection-dialog.component';
+import { TransformValidationDialogComponent } from '../components/transform-validation-dialog/transform-validation-dialog.component';
 import { ValidateMessage } from 'src/app/models/validation-message';
 import { UserMSGraphService } from 'src/app/services/user.service';
 import { firstValueFrom, take } from 'rxjs';
@@ -98,6 +105,18 @@ import Text from 'ol/style/Text';
 import Fill from 'ol/style/Fill';
 import Stroke from 'ol/style/Stroke';
 import { TranslocoService } from '@jsverse/transloco';
+import { VehicleService } from 'src/app/services/vehicle.service';
+import {
+  VehicleType,
+  VehicleValidationInput,
+  VehicleBlobData,
+} from 'src/app/models/vehicle.model';
+
+import { ValidationTableRow } from 'src/app/models/validation-table.model';
+import {
+  buildTableRows,
+  createCachedValidationMessageFn,
+} from 'src/app/shared/utils/validation-table.utils';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -137,20 +156,21 @@ export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
 export class RunComponent implements OnInit, AfterViewInit {
   // Condition
   public activeNavId = 1;
-  public isUpload!: boolean;
+  public isUpload: boolean = false;
   public isFileSelectionStep: boolean = true;
   public requiredFileType: string = '.xlsx, .xls';
   readonly validTypes = [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
   ];
+  private readonly extensionMimeMap: Record<string, string[]> = {
+    '.xlsx': ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+    '.xls': ['application/vnd.ms-excel', 'application/octet-stream'],
+    '.csv': ['text/csv', 'application/csv', 'application/vnd.ms-excel'],
+  };
 
   private requiredColumns: Array<string> = [];
-  private depotInputDataItems: Array<{
-    keyName: string;
-    displayName: string;
-    columnRequired: string[];
-  }> = [];
+  private depotInputDataItems: DepotInputDataItem[] = [];
 
   public haveUpdateAfterValidated: boolean = false;
   haveValidated = false;
@@ -183,6 +203,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   // store data
   public experiment = <Experiment>{};
   public preOrderFiles: PreOrderFileItem[] = [];
+  private fileDisplayNameBeforeChange: { [fileId: string]: string } = {};
+  // Store file columns when first uploaded for later validation
+  private fileColumnsCache: { [fileId: string]: string[] } = {};
   public popupContent?: { data: Customer; isDepot: boolean } | null;
   private dataPreOrder: Array<PreOrder> = [];
   public groupedDataPreOrder: Partial<GroupedDataPreOrder> = {};
@@ -230,10 +253,20 @@ export class RunComponent implements OnInit, AfterViewInit {
   validateDataTable: Customer[] = [];
 
   // Ngbcollapse
-  ngbOverDistanceCollapse = true;
-  ngbOverWeightCollapse = true;
-  ngbZeroWeightCollapse = true;
-  ngbUnverifyCollapse = true;
+  ngbOverDistanceCollapse: boolean = true;
+  ngbOverWeightCollapse: boolean = true;
+  ngbZeroWeightCollapse: boolean = true;
+  ngbUnverifyCollapse: boolean = true;
+  transformWarnings: any[] = [];
+  transformWarningCollapseStates: boolean[] = [];
+  validationWarnings: any[] = [];
+  validationWarningCollapseStates: boolean[] = [];
+  validationWarningTableRows: ValidationTableRow[] = [];
+  validationWarningCollapse: boolean = false;
+  isValidationWarning: boolean = false;
+  private cachedGetValidationMessage!: ReturnType<
+    typeof createCachedValidationMessageFn
+  >;
 
   // Mat table
   @ViewChild(MatPaginator, { static: false })
@@ -253,7 +286,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   isFilePreview: boolean = false;
 
   public depots: MyDepot[] = [];
-  public selectedDepotId: string | null = null;
+  public selectedDepotIdName: string | null = null;
   public selectedDepotIds: string[] = [];
   public inputDataKeys: string[] = [];
   // dynamic parameters rendering
@@ -262,6 +295,18 @@ export class RunComponent implements OnInit, AfterViewInit {
     key: string;
     items: DynamicParameter[];
   }> = [];
+
+  public canUpload: boolean = false;
+
+  // vehicles
+  public myVehicleTypes: VehicleType[] = [];
+  public selectedVehicleIds: string[] = [];
+  public selectedVehicleCounts: Record<string, number> = {};
+  public vehicleSelectionMode: Record<string, 'count' | 'license-plate'> = {};
+  public selectedLicensePlates: Record<string, string[]> = {};
+  public selectedVehicleIdsByLicensePlate: Record<string, string[]> = {};
+  public vehicleSelectionError: boolean = false;
+  private readonly defaultVehicleMaxCount = 1000;
 
   constructor(
     private readonly spinner: NgxSpinnerService,
@@ -277,7 +322,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly configurationService: ConfigurationService,
     private readonly dataService: DataService,
     private readonly exportService: ExportFileService,
-    private readonly transloco: TranslocoService
+    private readonly transloco: TranslocoService,
+    private readonly vehicleService: VehicleService,
   ) {}
 
   public generateUniqueId(): string {
@@ -288,10 +334,124 @@ export class RunComponent implements OnInit, AfterViewInit {
     return this.depotInputDataItems.map((item) => item.displayName);
   }
 
+  private normalizeFileExtension(fileFormatType?: string | null): string {
+    const raw = (fileFormatType || '').trim().toLowerCase();
+    if (!raw) return '';
+    return raw.startsWith('.') ? raw : `.${raw}`;
+  }
+
+  private getAllowedFileExtensionsFromDepot(depot?: MyDepot): string[] {
+    if (!depot?.inputdata?.length) {
+      return ['.xlsx', '.xls'];
+    }
+
+    const prioritized: string[] = [];
+    for (const inputItem of depot.inputdata) {
+      const extension = this.normalizeFileExtension(inputItem.fileFormatType);
+      if (!extension) continue;
+
+      const candidates =
+        extension === '.xlsx'
+          ? ['.xlsx', '.xls']
+          : extension === '.xls'
+            ? ['.xls', '.xlsx']
+            : [extension];
+
+      for (const candidate of candidates) {
+        if (!prioritized.includes(candidate)) {
+          prioritized.push(candidate);
+        }
+      }
+    }
+
+    return prioritized.length ? prioritized : ['.xlsx', '.xls'];
+  }
+
+  private getRequiredFileTypeDisplay(extensions: string[]): string {
+    return extensions.join(', ');
+  }
+
+  private updateRequiredFileTypeByDepot(depot?: MyDepot): void {
+    const allowedExtensions = this.getAllowedFileExtensionsFromDepot(depot);
+    this.requiredFileType = this.getRequiredFileTypeDisplay(allowedExtensions);
+  }
+
+  private isFileMatchingRequiredType(file: File): boolean {
+    const selectedDepot = this.getSelectedDepotObject();
+    const allowedExtensions = this.getAllowedFileExtensionsFromDepot(selectedDepot);
+    const normalizedFileName = (file.name || '').toLowerCase();
+    const fileExtension =
+      normalizedFileName.lastIndexOf('.') >= 0
+        ? normalizedFileName.slice(normalizedFileName.lastIndexOf('.'))
+        : '';
+    const normalizedMimeType = (file.type || '').toLowerCase();
+
+    return allowedExtensions.some((extension) => {
+      if (fileExtension === extension) {
+        return true;
+      }
+      const allowedMimeTypes = this.extensionMimeMap[extension] || [];
+      return !!normalizedMimeType && allowedMimeTypes.includes(normalizedMimeType);
+    });
+  }
+
+  private parseCsvHeaderColumnNames(csvText: string): string[] {
+    const text = (csvText || '').replace(/^\uFEFF/, '');
+    const firstLine = text.split(/\r\n|\n|\r/)[0] || '';
+    if (!firstLine.trim()) return [];
+
+    const delimiters = [',', ';', '\t', '|'];
+    const count = (line: string, ch: string) =>
+      Array.from(line).filter((c) => c === ch).length;
+    const delimiter =
+      delimiters
+        .map((d) => ({ d, n: count(firstLine, d) }))
+        .sort((a, b) => b.n - a.n)[0]?.d || ',';
+
+    const cols: string[] = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < firstLine.length; i++) {
+      const ch = firstLine[i];
+      if (ch === '"') {
+        const next = firstLine[i + 1];
+        if (inQuotes && next === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+        continue;
+      }
+      if (!inQuotes && ch === delimiter) {
+        cols.push(cur.trim().replace(/^"+|"+$/g, ''));
+        cur = '';
+        continue;
+      }
+      cur += ch;
+    }
+    cols.push(cur.trim().replace(/^"+|"+$/g, ''));
+
+    return cols.filter(Boolean);
+  }
+
+  isFileTypeRequired(displayName: string): boolean {
+    return (
+      this.depotInputDataItems.find((item) => item.displayName === displayName)
+        ?.required ?? false
+    );
+  }
+
+  isFileTypeAlreadyAdded(displayName: string): boolean {
+    return this.preOrderFiles.some(
+      (fileItem) => fileItem.file.displayName === displayName,
+    );
+  }
+
   // trackBy helpers to keep accordion stable across change detection/language swaps
   trackByGroup(
     index: number,
-    group: { key: string; items: DynamicParameter[] }
+    group: { key: string; items: DynamicParameter[] },
   ): string {
     return group.key;
   }
@@ -308,76 +468,194 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.route.params
         .pipe(take(1))
         .subscribe((params: { [x: string]: string }) => {
-          this.experimentService
-            .getExperiment(params['runId'])
-            .subscribe((response: Experiment) => {
-              this.experiment = { ...response };
-              console.log('experiment', this.experiment);
-              if (this.experiment.status !== StatusExperiment.Initializing) {
-                this.spinner.hide();
-                this.openConfirmDialog(
-                  this.transloco.translate('warning'),
-                  `${this.transloco.translate(
-                    'this_experiment_have_been',
-                    {},
-                    'index'
-                  )} ${this.experiment.status}`,
-                  `${this.transloco.translate(
-                    'we_will_to_go_back_to_the_experiments_page',
-                    {},
-                    'index'
-                  )}?`,
-                  this.transloco.translate('acknowledge', {}, 'index'),
-                  true
-                ).result.then((confirmed) => {
-                  this.spinner.hide();
-                  this.router.navigate(['/users/experiments']);
-                });
-              } else
-                this.userMsGraphService
-                  .getUserId()
-                  .subscribe((userId: string | null) => {
-                    if (userId !== this.experiment.triggeredBy) {
-                      this.openConfirmDialog(
-                        this.transloco.translate('warning'),
-                        this.transloco.translate(
-                          'you_are_not_the_creator_of_this_experiment',
-                          {},
-                          'index'
-                        ),
-                        `${this.transloco.translate(
-                          'we_will_to_go_back_to_the_experiments_page',
-                          {},
-                          'index'
-                        )}?`,
-                        this.transloco.translate('acknowledge', {}, 'index'),
-                        true
-                      ).result.then((confirmed) => {
+          // First, ensure vehicle types are loaded
+          this.vehicleService
+            .getMyVehicleTypes()
+            .pipe(take(1))
+            .subscribe({
+              next: (vehicleTypes: VehicleType[]) => {
+                this.myVehicleTypes = vehicleTypes || [];
+                this.cdr.detectChanges();
+
+                // Now proceed with loading experiment data
+                this.experimentService
+                  .getExperiment(params['runId'])
+                  .subscribe({
+                    next: (response: Experiment) => {
+                      this.experiment = { ...response };
+                      console.log('experiment', this.experiment);
+
+                      if (response.fileUrls?.transform?.locations) {
+                        this.dataFromFileUrlToJson(
+                          response.fileUrls.transform.locations,
+                        )
+                          .then((data: any) => {
+                            console.log('transform locations data', data);
+                            if (data?.customers && data?.depots) {
+                              this.groupingCustomer(
+                                data.customers as Customer[],
+                                data.depots as Depot[],
+                              );
+                            }
+                          })
+                          .catch((err) => {
+                            console.error(
+                              'error fetching transform locations data',
+                              err,
+                            );
+                          });
+                      }
+
+                      if (
+                        response.fileUrls?.validate?.parameterFormats &&
+                        response.fileUrls?.validate?.vehicleTypes &&
+                        response.fileUrls?.validate?.preVRPSolution
+                      ) {
+                        this.isUpload = true;
+                        this.haveValidated = true;
+                        if (!response.fileUrls?.validate?.errorWarning) {
+                          this.isValidationWarning = false;
+                          this.setValidationWarnings([]);
+                        } else {
+                          this.dataFromFileUrlToJson(
+                            response.fileUrls?.validate.errorWarning,
+                          )
+                            .then((data) => {
+                              console.log(data);
+                              const warnings = data?.warnings || [];
+                              this.isValidationWarning = warnings.length > 0;
+                              this.setValidationWarnings(warnings);
+                            })
+                            .catch((err) => {
+                              console.error(
+                                'error fetching validate warning data',
+                                err,
+                              );
+                            });
+                        }
+                      } else {
+                        this.isValidationWarning = false;
+                        this.setValidationWarnings([]);
+                      }
+
+                      if (response.fileUrls?.transform?.warning) {
+                        this.dataFromFileUrlToJson(
+                          response.fileUrls.transform.warning,
+                        )
+                          .then((data) => {
+                            console.log('transform warning data', data);
+                            this.setTransformWarnings(data);
+                          })
+                          .catch((err) => {
+                            console.error(
+                              'error fetching transform warning data',
+                              err,
+                            );
+                          });
+                      }
+
+                      if (
+                        this.experiment.status !== ExperimentStatus.Initializing
+                      ) {
                         this.spinner.hide();
-                        this.router.navigate(['/users/experiments']);
-                      });
-                    } else if (!this.experiment.preOrderBlobPath) {
-                      this.getDynamicParameters();
-                      this.isFilePreview = true;
-                    } else {
-                      this.initializeDataFromExperiment(
-                        this.experiment
-                      ).finally(() => {
-                        this.isFileSelectionStep = false;
-                        setTimeout(() => {
-                          this.toastr.success(
-                            this.transloco.translate(
-                              'success_load_experiment',
-                              {},
-                              'index'
-                            ),
-                            this.experiment.name
-                          );
+                        this.openConfirmDialog(
+                          this.transloco.translate('warning'),
+                          `${this.transloco.translate(
+                            'this_experiment_have_been',
+                            {},
+                            'index',
+                          )} ${this.experiment.status}`,
+                          `${this.transloco.translate(
+                            'we_will_to_go_back_to_the_experiments_page',
+                            {},
+                            'index',
+                          )}?`,
+                          this.transloco.translate('acknowledge', {}, 'index'),
+                          true,
+                        ).result.then((confirmed) => {
                           this.spinner.hide();
-                        }, 500);
-                      });
-                    }
+                          this.router.navigate(['/users/experiments']);
+                        });
+                      } else
+                        this.userMsGraphService
+                          .getUserId()
+                          .pipe(take(1))
+                          .subscribe({
+                            next: (userId: string | null) => {
+                              if (userId !== this.experiment.triggeredBy) {
+                                this.spinner.hide();
+                                this.openConfirmDialog(
+                                  this.transloco.translate('warning'),
+                                  this.transloco.translate(
+                                    'you_are_not_the_creator_of_this_experiment',
+                                    {},
+                                    'index',
+                                  ),
+                                  `${this.transloco.translate(
+                                    'we_will_to_go_back_to_the_experiments_page',
+                                    {},
+                                    'index',
+                                  )}?`,
+                                  this.transloco.translate(
+                                    'acknowledge',
+                                    {},
+                                    'index',
+                                  ),
+                                  true,
+                                ).result.then((confirmed) => {
+                                  this.router.navigate(['/users/experiments']);
+                                });
+                              } else if (
+                                !this.experiment.inputdata?.some(
+                                  (data) => data.fileUrl,
+                                )
+                              ) {
+                                this.getDynamicParameters();
+                                this.isFilePreview = true;
+                                this.spinner.hide();
+                              } else {
+                                this.initializeDataFromExperiment(
+                                  this.experiment,
+                                ).finally(() => {
+                                  this.isFileSelectionStep = false;
+                                  const v = response.fileUrls?.validate;
+                                  const allFilesReady = !!(
+                                    v?.parameterFormats &&
+                                    v?.vehicleTypes &&
+                                    v?.preVRPSolution
+                                  );
+                                  if (allFilesReady && !v?.errorWarning) {
+                                    this.isUpload = true;
+                                    this.haveValidated = true;
+                                  }
+                                  setTimeout(() => {
+                                    this.toastr.success(
+                                      this.transloco.translate(
+                                        'success_load_experiment',
+                                        {},
+                                        'index',
+                                      ),
+                                      this.experiment.name,
+                                    );
+                                    this.spinner.hide();
+                                  }, 500);
+                                });
+                              }
+                            },
+                            error: (err) => {
+                              console.error('Error getting user ID:', err);
+                              this.spinner.hide();
+                            },
+                          });
+                    },
+                    error: () => {
+                      this.spinner.hide();
+                    },
                   });
+              },
+              error: () => {
+                this.spinner.hide();
+              },
             });
         });
 
@@ -388,8 +666,14 @@ export class RunComponent implements OnInit, AfterViewInit {
     }, 100);
     this.dataSource.paginator = this.paginator; // For pagination
     this.dataSource.sort = this.sort; // For sort
+    this.cachedGetValidationMessage = createCachedValidationMessageFn(
+      this.transloco,
+    );
     // react to language changes: only trigger change detection (no regroup)
     this.transloco.langChanges$.subscribe(() => {
+      this.cachedGetValidationMessage = createCachedValidationMessageFn(
+        this.transloco,
+      );
       this.cdr.detectChanges();
     });
   }
@@ -397,28 +681,42 @@ export class RunComponent implements OnInit, AfterViewInit {
   async initializeDataFromExperiment(experiment: Experiment) {
     console.log("initialize Data From Experiment's historical", experiment);
     // Load Parameter
-    if (experiment.parameterBlobPath && experiment.fileUrl.parameterUrl) {
-      this.dataFromFileUrlToJson(experiment.fileUrl.parameterUrl).then(
-        (response: Constraint) => {
-          console.log('Constraint', response);
-          this.constraintsData = { ...response };
-          this.constraintsFromFileLoaded = true;
-          // Ensure UI reflects constraint values on init
-          if (this.allDynamicParameters?.length) {
-            this.refreshDynamicParametersForSelectedDepot();
-          }
-          console.log(this.constraintsData);
+    if (experiment.fileUrls?.validate?.parameterFormats) {
+      this.dataFromFileUrlToJson(
+        experiment.fileUrls.validate.parameterFormats,
+      ).then((response: Constraint) => {
+        console.log('Constraint', response);
+        this.constraintsData = { ...response };
+        this.constraintsFromFileLoaded = true;
+        // Ensure UI reflects constraint values on init
+        if (this.allDynamicParameters?.length) {
+          this.refreshDynamicParametersForSelectedDepot();
         }
-      );
+        console.log(this.constraintsData);
+      });
     } else {
       this.getDynamicParameters();
     }
     // ensure dynamic parameter metadata for rendering is loaded too
     this.getDynamicParameters();
 
+    // Load Vehicles data
+    if (experiment.fileUrls?.validate?.vehicleTypes) {
+      this.toastr.info(
+        this.transloco.translate('loading_vehicle_data', {}, 'index'),
+        `${this.transloco.translate('please_wait', {}, 'index')} ...`,
+      );
+      await this.dataFromFileUrlToJson(
+        experiment.fileUrls.validate.vehicleTypes,
+      ).then((response: VehicleBlobData[]) => {
+        console.log('Vehicles Data from vehiclesBlobPathUrl:', response);
+        this.loadVehicleDataFromBlob(response);
+      });
+    }
+
     this.toastr.info(
       this.transloco.translate('loading_preorder_data', {}, 'index'),
-      `${this.transloco.translate('please_wait', {}, 'index')} ...`
+      `${this.transloco.translate('please_wait', {}, 'index')} ...`,
     );
 
     this.preOrderFiles = (experiment.inputdata || []).map(
@@ -436,79 +734,97 @@ export class RunComponent implements OnInit, AfterViewInit {
           id: this.generateUniqueId(),
           file: mockFile,
         };
-      }
+      },
     );
+
+    // Update upload button state after loading files
+    this.updateCanUploadState();
 
     this.toastr.info(
       this.transloco.translate('loading_geo_location_data', {}, 'index'),
-      `${this.transloco.translate('please_wait', {}, 'index')} ...`
+      `${this.transloco.translate('please_wait', {}, 'index')} ...`,
     );
 
     // load geocoding location
-    if (experiment.fileUrl.LocationBlobPathUrl) {
-      await this.dataFromFileUrlToJson(
-        experiment.fileUrl.LocationBlobPathUrl
-      ).then((response: Result) => {
-        console.log('Result', response);
-        this.groupingCustomer(response.customers, response.depots);
-      });
-    }
-    if (experiment.fileUrl.locationUpdateBlobPathUrl) {
-      this.toastr.info(
-        this.transloco.translate('loading_geo_location_data', {}, 'index'),
-        `${this.transloco.translate('please_wait', {}, 'index')} ...`
+    if (experiment.fileUrls?.transform?.locations) {
+      console.log(
+        'experiment.fileUrls?.transform?.locations',
+        experiment.fileUrls?.transform?.locations,
       );
-      // load geocoding location edited
       await this.dataFromFileUrlToJson(
-        experiment.fileUrl.locationUpdateBlobPathUrl
-      ).then((response: { customers: CustomerUpdated[] }) => {
-        this.updateCustomerGroup(response.customers);
-        this.dataService
-          .getData(experiment.runId)
-          .subscribe((data: CustomerUpdated[]) => {
-            console.log('data user edited location', data);
-            if (data && data.length > 0) {
-              const newData = data.filter(
-                (newItem) =>
-                  !this.customersLocationUpdated.some(
-                    (existingItem) =>
-                      existingItem.index === newItem.index &&
-                      existingItem.name === newItem.name
-                  )
-              );
-              console.log(newData);
-              if (newData.length > 0) {
-                this.toastr.info(
-                  `${this.transloco.translate('please_wait', {}, 'index')} ` +
-                  newData.length +
-                  ` ${this.transloco.translate(
-                    'new_edited_location_data_suffix',
-                    {},
-                    'index'
-                  )}`,
-                  `${this.transloco.translate('please_wait', {}, 'index')}...`
-                );
-                this.haveUpdateAfterValidated = true;
-              }
-              this.updateCustomerGroup(newData);
-            }
-          });
+        experiment.fileUrls.transform.locations,
+      ).then((response: any) => {
+        console.log('transform locations response', response);
+        if (response?.customers && response?.depots) {
+          this.groupingCustomer(
+            response.customers as Customer[],
+            response.depots as Depot[],
+          );
+        }
       });
     }
 
-    if (experiment.fileUrl.validatedBlobPathUrl) {
+    // if (experiment.fileUrls?.validate?.vrpConfig) {
+    //   this.toastr.info(
+    //     this.transloco.translate('loading_geo_location_data', {}, 'index'),
+    //     `${this.transloco.translate('please_wait', {}, 'index')} ...`
+    //   );
+    //   // load geocoding location edited
+    //   await this.dataFromFileUrlToJson(
+    //     experiment.fileUrls.validate.vrpConfig
+    //   ).then((response: { customers: CustomerUpdated[] }) => {
+    //     this.updateCustomerGroup(response?.customers);
+    //     this.dataService
+    //       .getData(experiment.runId)
+    //       .subscribe((data: CustomerUpdated[]) => {
+    //         console.log('data user edited location', data);
+    //         if (data && data.length > 0) {
+    //           const newData = data.filter(
+    //             (newItem) =>
+    //               !this.customersLocationUpdated.some(
+    //                 (existingItem) =>
+    //                   existingItem.index === newItem.index &&
+    //                   existingItem.name === newItem.name
+    //               )
+    //           );
+    //           console.log(newData);
+    //           if (newData.length > 0) {
+    //             this.toastr.info(
+    //               `${this.transloco.translate('please_wait', {}, 'index')} ` +
+    //                 newData.length +
+    //                 ` ${this.transloco.translate(
+    //                   'new_edited_location_data_suffix',
+    //                   {},
+    //                   'index'
+    //                 )}`,
+    //               `${this.transloco.translate('please_wait', {}, 'index')}...`
+    //             );
+    //             this.haveUpdateAfterValidated = true;
+    //           }
+    //           this.updateCustomerGroup(newData);
+    //         }
+    //       });
+    //   });
+    // }
+
+    if (experiment.fileUrls?.validate?.preVRPSolution) {
+      console.log(
+        'experiment.fileUrls?.validate?.preVRPSolution',
+        experiment.fileUrls?.validate?.preVRPSolution,
+      );
       // load validation data
       this.toastr.info(
         this.transloco.translate('loading_validation_data', {}, 'index'),
-        `${this.transloco.translate('please_wait', {}, 'index')} ...`
+        `${this.transloco.translate('please_wait', {}, 'index')} ...`,
       );
       await this.dataFromFileUrlToJson(
-        experiment.fileUrl.validatedBlobPathUrl
+        experiment.fileUrls.validate.preVRPSolution,
       ).then((response: Result) => {
         console.log('Result', response);
         this.validateExperiment = response.validate;
         this.ngbValidationTableCollectionSize =
-          this.validateExperiment.filters.order_data.invalid_coordinate.length;
+          this.validateExperiment?.filters?.order_data?.invalid_coordinate
+            ?.length ?? 0;
         this.refreshValidationTable();
         this.haveValidated = true;
         // Rebuild dynamic parameters so values reflect constraintsData when page initializes with historical validation
@@ -532,6 +848,128 @@ export class RunComponent implements OnInit, AfterViewInit {
       });
     }
   }
+
+  async loadVehicleDataFromBlob(
+    vehiclesData: VehicleBlobData[],
+  ): Promise<void> {
+    if (!Array.isArray(vehiclesData)) {
+      console.warn('Invalid vehicles data format:', vehiclesData);
+      return;
+    }
+
+    for (const vehicle of vehiclesData) {
+      const vehicleTypeId = vehicle.vehicleTypeId;
+      if (!vehicleTypeId) continue;
+
+      // Check if this vehicle type exists in myVehicleTypes
+      const vehicleTypeExists = this.myVehicleTypes.some(
+        (v) => v.vehicleTypeId === vehicleTypeId,
+      );
+      if (!vehicleTypeExists) {
+        console.warn(
+          `Vehicle type ${vehicleTypeId} not found in myVehicleTypes`,
+        );
+        continue;
+      }
+
+      // Determine selection mode based on data
+      const hasCount =
+        vehicle.numberOfVehiclesAvailable &&
+        vehicle.numberOfVehiclesAvailable > 0;
+      const hasSpecificVehicles =
+        vehicle.specificVehicleIds &&
+        Array.isArray(vehicle.specificVehicleIds) &&
+        vehicle.specificVehicleIds.length > 0;
+
+      if (hasCount || hasSpecificVehicles) {
+        // Mark vehicle as selected
+        if (!this.selectedVehicleIds.includes(vehicleTypeId)) {
+          this.selectedVehicleIds.push(vehicleTypeId);
+        }
+
+        if (hasSpecificVehicles) {
+          // Set to license-plate mode
+          this.vehicleSelectionMode[vehicleTypeId] = 'license-plate';
+
+          // Load license plates for these vehicle IDs
+          // Pass the numberOfVehiclesAvailable to use for count display
+          await this.loadLicensePlatesForVehicleIds(
+            vehicleTypeId,
+            vehicle.specificVehicleIds!,
+            vehicle.numberOfVehiclesAvailable,
+          );
+        } else if (hasCount) {
+          // Set to count mode
+          this.vehicleSelectionMode[vehicleTypeId] = 'count';
+          this.selectedVehicleCounts[vehicleTypeId] =
+            vehicle.numberOfVehiclesAvailable!;
+        }
+      }
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  async loadLicensePlatesForVehicleIds(
+    vehicleTypeId: string,
+    vehicleIds: string[],
+    numberOfVehiclesAvailable?: number,
+  ): Promise<void> {
+    try {
+      // Fetch all vehicles for this vehicle type
+      const vehicles = await firstValueFrom(
+        this.vehicleService.getMyVehicles(
+          this.experiment.depots[0].depotId,
+          vehicleTypeId,
+        ),
+      );
+
+      // Filter to only the specific vehicle IDs
+      const selectedVehicles = vehicles.filter((v) =>
+        vehicleIds.includes(v.vehicleId),
+      );
+
+      // Extract license plates
+      const licensePlates = selectedVehicles
+        .filter((v) => v.licensePlate)
+        .map((v) => v.licensePlate);
+
+      // Update the component state
+      this.selectedLicensePlates[vehicleTypeId] = licensePlates;
+      this.selectedVehicleIdsByLicensePlate[vehicleTypeId] = vehicleIds;
+
+      // Use numberOfVehiclesAvailable from blob if provided
+      // If it's 0 or not provided, default to 1
+      if (
+        numberOfVehiclesAvailable !== undefined &&
+        numberOfVehiclesAvailable !== null
+      ) {
+        this.selectedVehicleCounts[vehicleTypeId] =
+          numberOfVehiclesAvailable || 1;
+      } else {
+        this.selectedVehicleCounts[vehicleTypeId] = licensePlates.length || 1;
+      }
+    } catch (error) {
+      console.error(
+        `Error loading license plates for vehicle type ${vehicleTypeId}:`,
+        error,
+      );
+      // Fallback: just store the vehicle IDs
+      this.selectedVehicleIdsByLicensePlate[vehicleTypeId] = vehicleIds;
+
+      // Use numberOfVehiclesAvailable if provided, otherwise default to 1
+      if (
+        numberOfVehiclesAvailable !== undefined &&
+        numberOfVehiclesAvailable !== null
+      ) {
+        this.selectedVehicleCounts[vehicleTypeId] =
+          numberOfVehiclesAvailable || 1;
+      } else {
+        this.selectedVehicleCounts[vehicleTypeId] = vehicleIds.length || 1;
+      }
+    }
+  }
+
   initializeDefaultParameter() {
     this.constraintService
       .getMyParameter()
@@ -550,7 +988,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         .map((customer, i) => ({ id: i + 1, ...customer }))
         .slice(
           (this.page - 1) * this.pageSize,
-          (this.page - 1) * this.pageSize + this.pageSize
+          (this.page - 1) * this.pageSize + this.pageSize,
         ) || [];
   }
   onFileSelected(eventOrFiles: Event | FileList) {
@@ -560,7 +998,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       file = eventOrFiles[0];
       if (eventOrFiles.length > 1) {
         this.toastr.warning(
-          this.transloco.translate('cannot_use_multiple_files', {}, 'index')
+          this.transloco.translate('cannot_use_multiple_files', {}, 'index'),
         );
       }
     } else {
@@ -570,19 +1008,27 @@ export class RunComponent implements OnInit, AfterViewInit {
       file = files[0];
       if (files.length > 1) {
         this.toastr.warning(
-          this.transloco.translate('cannot_use_multiple_files', {}, 'index')
+          this.transloco.translate('cannot_use_multiple_files', {}, 'index'),
         );
       }
     }
     if (!file) return;
-    if (!this.validTypes.includes(file.type)) {
+    if (!this.isFileMatchingRequiredType(file)) {
       this.showInvalidModal(
         this.transloco.translate('file_invalid', {}, 'index'),
-        this.transloco.translate('select_excel_file', {}, 'index')
+        this.transloco.translate(
+          'select_file_with_extension',
+          { extension: this.requiredFileType },
+          'index',
+        ),
       );
       this.toastr.error(
-        `${this.transloco.translate('file_invalid', {}, 'index')}:`,
-        file.type
+        this.transloco.translate(
+          'select_file_with_extension',
+          { extension: this.requiredFileType },
+          'index',
+        ),
+        this.transloco.translate('file_invalid', {}, 'index'),
       );
       return;
     }
@@ -624,92 +1070,425 @@ export class RunComponent implements OnInit, AfterViewInit {
   async uploadFile(file: FileWithCategory) {
     const id = this.generateUniqueId();
 
-    const { isValid, keyName, displayName } =
-      await this.validateSingleFileAgainstDepot(file);
+    // Check for duplicate file size and name before proceeding
+    const warningMessages: string[] = [];
+
+    const hasDuplicateFileName = this.preOrderFiles.some(
+      (existingFile) => existingFile.file.name === file.name,
+    );
+    if (hasDuplicateFileName) {
+      warningMessages.push(
+        this.transloco.translate('duplicate_file_name', {}, 'index'),
+      );
+
+      const hasDuplicateFileSize = this.preOrderFiles.some(
+        (existingFile) =>
+          existingFile.file.name === file.name &&
+          existingFile.file.size === file.size,
+      );
+      if (hasDuplicateFileSize) {
+        warningMessages.push(
+          this.transloco.translate('duplicate_file_size', {}, 'index'),
+        );
+      }
+    }
+
+    const { isValid, keyName, displayName, columnNames } =
+      await this.validateSingleFileAgainstDepot(file, id);
 
     if (!isValid || !keyName || !displayName) return;
 
-    // Find if a file of this type already exists
-    const index = this.preOrderFiles.findIndex(
-      (f) => f.file.keyName === keyName
+    if (columnNames) {
+      this.fileColumnsCache[id] = columnNames;
+      console.log('Columns cached for file:', id, columnNames);
+    }
+
+    // Find the matched item for the new file
+    const matchedItem = this.depotInputDataItems.find(
+      (item) => item.keyName === keyName,
     );
 
-    if (index !== -1) {
+    // Find if a file of this type already exists (by keyName)
+    const index = this.preOrderFiles.findIndex(
+      (f) => f.file.keyName === keyName,
+    );
+
+    // Also check if any existing file has the same columnRequired
+    const existingFileWithSameColumns = matchedItem
+      ? this.preOrderFiles.find((fileItem) => {
+          const existingKeyName = this.isFileWithCategory(fileItem.file)
+            ? fileItem.file.keyName
+            : (fileItem.file as PreOrderFileDescriptor).keyName;
+          const existingItem = this.depotInputDataItems.find(
+            (item) => item.keyName === existingKeyName,
+          );
+          if (!existingItem) return false;
+          return (
+            existingItem.columnRequired.length ===
+              matchedItem.columnRequired.length &&
+            existingItem.columnRequired.every((col) =>
+              matchedItem.columnRequired.includes(col),
+            )
+          );
+        })
+      : undefined;
+
+    if (index !== -1 || existingFileWithSameColumns) {
+      // duplicate file logic here (either same keyName OR same columnRequired)
+
+      // Determine which file is being duplicated
+      const duplicatedFileIndex =
+        index !== -1
+          ? index
+          : this.preOrderFiles.findIndex(
+              (f) => f.id === existingFileWithSameColumns?.id,
+            );
+      const currentDisplayName =
+        duplicatedFileIndex !== -1
+          ? this.preOrderFiles[duplicatedFileIndex].file.displayName
+          : displayName;
+
       // Show confirmation dialog before replacing
-      const currentDisplayName = this.preOrderFiles[index].file.displayName;
-      const confirmDialog = this.openConfirmDialog(
-        this.transloco.translate('replace_data_confirmation', {}, 'index'),
-        '',
-        `${this.transloco.translate(
-          'want_to_replace_data_type',
-          {},
-          'index'
-        )} ${currentDisplayName} ${this.transloco.translate(
-          'with_the_new_data',
-          {},
-          'index'
-        )}?`,
-        this.transloco.translate('confirm', {}, 'index'),
-        false
+      const focusedElement = document.activeElement as HTMLElement;
+      if (focusedElement) {
+        focusedElement.blur();
+      }
+      const dialogRef = this.ngbModal.open(
+        ConfirmationDepotUploadFileDialogComponent,
+        {
+          centered: true,
+          animation: true,
+        },
       );
-      confirmDialog.result.then((confirmed: boolean) => {
-        if (confirmed) {
-          file.keyName = keyName;
-          file.displayName = displayName;
-          file.isFirstOfType = true;
-          this.preOrderFiles[index] = { id, file };
-          this.isFilePreview = true;
-        }
-        // If not confirmed, do nothing
-      });
+      dialogRef.componentInstance.title = this.transloco.translate(
+        'replace_data_confirmation',
+        {},
+        'index',
+      );
+      dialogRef.componentInstance.question = `${this.transloco.translate(
+        'want_to_replace_data_type',
+        {},
+        'index',
+      )} ${currentDisplayName} ${this.transloco.translate(
+        'with_the_new_data',
+        {},
+        'index',
+      )}?`;
+      dialogRef.componentInstance.message = '';
+      dialogRef.componentInstance.acceptButton = this.transloco.translate(
+        'confirm',
+        {},
+        'index',
+      );
+      dialogRef.componentInstance.disableCancelButton = false;
+      dialogRef.componentInstance.showRadioOptions = true;
+      dialogRef.componentInstance.inputDataKeys = this.inputDataKeys;
+      dialogRef.componentInstance.preOrderFiles = this.preOrderFiles;
+      // Pass data for column validation
+      dialogRef.componentInstance.depotInputDataItems =
+        this.depotInputDataItems;
+      dialogRef.componentInstance.fileColumns = columnNames || [];
+
+      dialogRef.result
+        .then(
+          (
+            result:
+              | {
+                  replace: boolean;
+                  category?: string;
+                  validationFailed?: boolean;
+                  missingColumns?: string[];
+                  targetDisplayName?: string;
+                }
+              | boolean,
+          ) => {
+            // Handle both old boolean format and new object format for backwards compatibility
+            if (typeof result === 'boolean') {
+              if (result && duplicatedFileIndex !== -1) {
+                file.keyName = keyName;
+                file.displayName = displayName;
+                file.isFirstOfType = true;
+                this.preOrderFiles[duplicatedFileIndex] = { id, file };
+                this.isFilePreview = true;
+                this.updateCanUploadState();
+              }
+            } else if (result && typeof result === 'object') {
+              // Check if validation failed - show invalid modal and don't add file
+              if (
+                result.validationFailed &&
+                result.missingColumns &&
+                result.missingColumns.length > 0
+              ) {
+                const validationError = `<strong>${this.transloco.translate(
+                  'file_for',
+                  {},
+                  'index',
+                )} "${
+                  result.targetDisplayName || result.category
+                }" ${this.transloco.translate(
+                  'missing_columns_as_follows',
+                  {},
+                  'index',
+                )}</strong><span>:</span> <br/><ul>${result.missingColumns
+                  .map((col) => `<li>${col}</li>`)
+                  .join('')}</ul>`;
+
+                this.showInvalidModal(
+                  `${this.transloco.translate(
+                    'column_name_mismatch_template',
+                    {},
+                    'index',
+                  )}`,
+                  [validationError],
+                );
+                console.log('Validation FAILED from dialog - missing columns');
+                return; // Don't add the file
+              }
+
+              if (result.replace && duplicatedFileIndex !== -1) {
+                // Replace existing file
+                file.keyName = keyName;
+                file.displayName = displayName;
+                file.isFirstOfType = true;
+                this.preOrderFiles[duplicatedFileIndex] = { id, file };
+                this.isFilePreview = true;
+                this.updateCanUploadState();
+              } else if (result.category) {
+                // Add as new file with selected category
+                const selectedItem = this.depotInputDataItems.find(
+                  (item) => item.displayName === result.category,
+                );
+                if (selectedItem) {
+                  file.keyName = selectedItem.keyName;
+                  file.displayName = selectedItem.displayName;
+                  file.isFirstOfType = true;
+                  this.preOrderFiles.push({ id, file });
+                  this.isFilePreview = true;
+                  this.updateCanUploadState();
+                }
+              }
+            }
+          },
+        )
+        .catch(() => {
+          // Dialog dismissed
+        });
     } else {
+      // no duplicate file logic here
+      // Check if columnRequired is duplicated AND none of the duplicate files are in preOrderFiles yet
+      // Find the matched item for the current file
+      const matchedItemForNew = this.depotInputDataItems.find(
+        (item) => item.keyName === keyName,
+      );
+
+      if (matchedItemForNew) {
+        // Check if there are other items with the same columnRequired
+        const itemsWithSameColumns = this.depotInputDataItems.filter((item) => {
+          return (
+            item.columnRequired.length ===
+              matchedItemForNew.columnRequired.length &&
+            item.columnRequired.every((col) =>
+              matchedItemForNew.columnRequired.includes(col),
+            )
+          );
+        });
+
+        if (itemsWithSameColumns.length > 1) {
+          // Duplicate columnRequired found - now check if ANY of them are already in preOrderFiles
+          const anyDuplicateInPreOrderFiles = itemsWithSameColumns.some(
+            (item) => {
+              return this.preOrderFiles.some((fileItem) => {
+                const existingKeyName = this.isFileWithCategory(fileItem.file)
+                  ? fileItem.file.keyName
+                  : (fileItem.file as PreOrderFileDescriptor).keyName;
+                return existingKeyName === item.keyName;
+              });
+            },
+          );
+
+          if (!anyDuplicateInPreOrderFiles) {
+            // None of the duplicate columnRequired files are in preOrderFiles yet - show dialog
+            const focusedElement = document.activeElement as HTMLElement;
+            if (focusedElement) {
+              focusedElement.blur();
+            }
+            const dialogRef = this.ngbModal.open(
+              ConfirmationDepotUploadFileDialogComponent,
+              {
+                centered: true,
+                animation: true,
+              },
+            );
+            dialogRef.componentInstance.title = this.transloco.translate(
+              'select_category',
+              {},
+              'index',
+            );
+            dialogRef.componentInstance.showRadioOptions = false;
+            dialogRef.componentInstance.showCategorySelectOnly = true;
+            dialogRef.componentInstance.inputDataKeys =
+              itemsWithSameColumns.map((item) => item.displayName);
+            dialogRef.componentInstance.preOrderFiles = this.preOrderFiles;
+            // Pass data for column validation
+            dialogRef.componentInstance.depotInputDataItems =
+              this.depotInputDataItems;
+            dialogRef.componentInstance.fileColumns = columnNames || [];
+
+            dialogRef.result
+              .then(
+                (
+                  result:
+                    | {
+                        category?: string;
+                        validationFailed?: boolean;
+                        missingColumns?: string[];
+                        targetDisplayName?: string;
+                      }
+                    | boolean,
+                ) => {
+                  if (result && typeof result === 'object') {
+                    // Check if validation failed - show invalid modal and don't add file
+                    if (
+                      result.validationFailed &&
+                      result.missingColumns &&
+                      result.missingColumns.length > 0
+                    ) {
+                      const validationError = `<strong>${this.transloco.translate(
+                        'file_for',
+                        {},
+                        'index',
+                      )} "${
+                        result.targetDisplayName || result.category
+                      }" ${this.transloco.translate(
+                        'missing_columns_as_follows',
+                        {},
+                        'index',
+                      )}</strong><span>:</span> <br/><ul>${result.missingColumns
+                        .map((col) => `<li>${col}</li>`)
+                        .join('')}</ul>`;
+
+                      this.showInvalidModal(
+                        `${this.transloco.translate(
+                          'column_name_mismatch_template',
+                          {},
+                          'index',
+                        )}`,
+                        [validationError],
+                      );
+                      console.log(
+                        'Validation FAILED from dialog - missing columns',
+                      );
+                      return; // Don't add the file
+                    }
+
+                    if (result.category) {
+                      const selectedItem = this.depotInputDataItems.find(
+                        (item) => item.displayName === result.category,
+                      );
+                      if (selectedItem) {
+                        file.keyName = selectedItem.keyName;
+                        file.displayName = selectedItem.displayName;
+                        file.isFirstOfType = true;
+                        this.preOrderFiles.push({ id, file });
+                        this.isFilePreview = true;
+                        this.updateCanUploadState();
+                      }
+                    }
+                  }
+                },
+              )
+              .catch(() => {
+                // Dialog dismissed
+              });
+            return; // Exit early to prevent default behavior
+          }
+        }
+      }
+
+      // Default behavior: no duplicate columnRequired OR at least one duplicate is already in preOrderFiles
+      // Just add the file normally
       file.keyName = keyName;
       file.displayName = displayName;
       file.isFirstOfType = true;
       this.preOrderFiles.push({ id, file });
       this.isFilePreview = true;
     }
+
+    // Update upload button state after file changes
+    this.updateCanUploadState();
   }
 
-  async validateSingleFileAgainstDepot(file: FileWithCategory): Promise<{
+  async validateSingleFileAgainstDepot(
+    file: FileWithCategory,
+    fileId?: string,
+  ): Promise<{
     isValid: boolean;
     keyName?: string;
     displayName?: string;
     isFirstOfType?: boolean;
+    columnNames?: string[];
   }> {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = async (e: ProgressEvent<FileReader>) => {
         try {
           const result = e.target?.result;
-          if (!(result instanceof ArrayBuffer)) {
-            resolve({ isValid: false });
-            return;
+          const fileName = (file?.name || '').toLowerCase();
+          const isCsv = fileName.endsWith('.csv');
+
+          let columnNames: string[] = [];
+          if (isCsv) {
+            if (typeof result !== 'string') {
+              resolve({ isValid: false });
+              return;
+            }
+            columnNames = this.parseCsvHeaderColumnNames(result);
+          } else {
+            if (!(result instanceof ArrayBuffer)) {
+              resolve({ isValid: false });
+              return;
+            }
+            const arrayBuffer = result;
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(arrayBuffer);
+
+            let worksheet: ExcelJS.Worksheet | undefined =
+              workbook.getWorksheet(1);
+            if (!worksheet) {
+              const normalize = (name: string) =>
+                name
+                  .trim()
+                  .toLowerCase()
+                  .replace(/[\s_\-]/g, '');
+
+              const allSheets = workbook.worksheets.map(
+                (ws: ExcelJS.Worksheet) => ({
+                  name: ws.name,
+                  normalized: normalize(ws.name),
+                }),
+              );
+
+              console.log(
+                'Detected sheets:',
+                allSheets.map((sheet) => sheet.name),
+              );
+
+              worksheet =
+                workbook.worksheets.find(
+                  (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0,
+                ) || workbook.worksheets[0];
+            }
+
+            columnNames = (
+              worksheet!.getRow(1).values as (string | undefined)[]
+            ).filter((value) => typeof value === 'string') as string[];
           }
-          const arrayBuffer = result;
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(arrayBuffer);
 
-          let worksheet: ExcelJS.Worksheet | undefined = workbook.getWorksheet(1);
-          if (!worksheet) {
-            const normalize = (name: string) =>
-              name.trim().toLowerCase().replace(/[\s_\-]/g, '');
-
-            const allSheets = workbook.worksheets.map((ws: ExcelJS.Worksheet) => ({
-              name: ws.name,
-              normalized: normalize(ws.name),
-            }));
-
-            console.log('Detected sheets:', allSheets.map((sheet) => sheet.name));
-
-            worksheet = workbook.worksheets.find(
-              (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
-            ) || workbook.worksheets[0];
+          // Cache column names for later validation if fileId is provided
+          if (fileId) {
+            this.fileColumnsCache[fileId] = columnNames;
+            console.log('Cached columns for file:', fileId, columnNames);
           }
-
-          const columnNames = (
-            worksheet!.getRow(1).values as (string | undefined)[]
-          ).filter((value) => typeof value === 'string');
 
           const matchingInputDataItem =
             this.findMatchingInputDataItem(columnNames);
@@ -719,13 +1498,14 @@ export class RunComponent implements OnInit, AfterViewInit {
               keyName: matchingInputDataItem.keyName,
               displayName: matchingInputDataItem.displayName,
               isFirstOfType: true,
+              columnNames: columnNames,
             });
           } else {
             // Show missing columns for each required input data type
             const validationErrors = [];
             for (const item of this.depotInputDataItems) {
               const missingColumns = item.columnRequired.filter(
-                (col) => !columnNames.includes(col)
+                (col) => !columnNames.includes(col),
               );
               if (missingColumns.length === item.columnRequired.length) {
                 // All required columns are missing
@@ -733,14 +1513,14 @@ export class RunComponent implements OnInit, AfterViewInit {
                   `<strong>${this.transloco.translate(
                     'file_for',
                     {},
-                    'index'
+                    'index',
                   )} "${item.displayName}" ${this.transloco.translate(
                     'missing_columns_as_follows',
                     {},
-                    'index'
+                    'index',
                   )}</strong><span>:</span> <br/><ul>${item.columnRequired
                     .map((col) => `<li>${col}</li>`)
-                    .join('')}</ul>`
+                    .join('')}</ul>`,
                 );
               } else if (missingColumns.length > 0) {
                 // Some columns are missing
@@ -748,44 +1528,44 @@ export class RunComponent implements OnInit, AfterViewInit {
                   `<strong>${this.transloco.translate(
                     'file_for',
                     {},
-                    'index'
+                    'index',
                   )}" ${item.displayName}" ${this.transloco.translate(
                     'missing_columns_as_follows',
                     {},
-                    'index'
+                    'index',
                   )}</strong><span>:</span> <ul>${missingColumns
                     .map((col) => `<li>${col}</li>`)
-                    .join('')}</ul>`
+                    .join('')}</ul>`,
                 );
               }
             }
+            console.log('column_name_mismatch_template 1');
             this.showInvalidModal(
               `${this.transloco.translate(
                 'column_name_mismatch_template',
                 {},
-                'index'
+                'index',
               )}`,
-              validationErrors
+              validationErrors,
             );
-            resolve({ isValid: false });
+            resolve({ isValid: false, columnNames: columnNames });
+            console.log('column_name_mismatch_template 2');
           }
         } catch (error) {
           console.error('Error validating file:', error);
           resolve({ isValid: false });
         }
       };
-      reader.readAsArrayBuffer(file);
+      const fileName = (file?.name || '').toLowerCase();
+      if (fileName.endsWith('.csv')) {
+        reader.readAsText(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
     });
   }
 
   handleUploadSubmit() {
-    // Transform preOrderFiles to newPayload format (send actual File object)
-    const newPayload = this.preOrderFiles
-      .filter((item): item is { id: string; file: FileWithCategory } =>
-        this.isFileWithCategory(item.file)
-      )
-      .map(({ file }) => ({ file, keyName: file.keyName || '' }));
-
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
       focusedElement.blur();
@@ -797,23 +1577,33 @@ export class RunComponent implements OnInit, AfterViewInit {
     dialogRef.componentInstance.title = this.transloco.translate(
       'upload_file_confirmation',
       {},
-      'index'
+      'index',
     );
     dialogRef.componentInstance.question = `${this.transloco.translate(
       'do_you_want_to_upload_file',
       {},
-      'index'
+      'index',
     )} ?`;
 
     dialogRef.result
-      .then((confirmed: boolean) => {
+      .then(async (confirmed: boolean) => {
         if (confirmed) {
           this.spinner.show();
+
+          // Send the file exactly as the user picked it. The backend parses each
+          // upload according to its inputdata fileFormatType, so a .csv must stay
+          // real CSV bytes — the AI service reads it back with pandas.read_csv.
+          const newPayload = this.preOrderFiles
+            .filter((item): item is { id: string; file: FileWithCategory } =>
+              this.isFileWithCategory(item.file),
+            )
+            .map(({ file }) => ({ file, keyName: file.keyName || '' }));
+
           // Prepare depotIds (single or multiple selection)
           let depotIds: string[] = [];
-          if (this.selectedDepotId) {
+          if (this.selectedDepotIdName) {
             const found = this.depots.find(
-              (d) => d.depotName === this.selectedDepotId
+              (d) => d.depotName === this.selectedDepotIdName,
             );
             if (found && found.depotId) {
               depotIds = [found.depotId];
@@ -823,52 +1613,103 @@ export class RunComponent implements OnInit, AfterViewInit {
 
           this.preOrderService
             .uploadPreOrder(this.experiment.runId, depotIds, newPayload)
-            .subscribe((response: Experiment) => {
-              // Refresh experiment data first, then proceed with grouping to ensure latest depots exist
-              this.experimentService
-                .getExperiment(this.experiment.runId)
-                .pipe(take(1))
-                .subscribe(async (exp: Experiment) => {
-                  this.experiment = { ...exp };
-                  if (response.result) {
-                    this.groupingCustomer(
-                      response.result.customers,
-                      response.result.depots
-                    );
-                  }
+            .subscribe({
+              next: (response: any) => {
+                console.log('uploadPreOrder success response', response);
 
-                  this.experiment.name = response.name;
-                  // Map inputdata to UI structure expected by template
-                  this.preOrderFiles = (this.experiment.inputdata || []).map(
-                    (inputItem: InputDataItem) => {
-                      const mockFile = {
-                        keyName: inputItem.keyName,
-                        name: inputItem.filename,
-                        blobPath: inputItem.blobPath,
-                        displayName: inputItem.displayName,
-                        type: inputItem.fileFormatType,
-                        size: inputItem.fileSize,
-                      };
-                      return {
-                        id: this.generateUniqueId(),
-                        file: mockFile,
-                      };
-                    }
-                  );
-
-                  this.isFilePreview = false;
-                  this.isFileSelectionStep = false;
+                if (response.result?.isSuccesses === false) {
                   this.spinner.hide();
-                  this.toastr.success(
-                    `${this.transloco.translate(
-                      'upload_preorder_success',
-                      {},
-                      'index'
-                    )}.`
-                  );
-                  // Fetch latest dynamic parameters for the selected depot and rebuild UI
-                  this.getDynamicParameters();
-                });
+                  this.openTransformValidationDialog(response.result);
+                  return;
+                }
+
+                if (response.result?.isWarning && response.result?.warning) {
+                  this.setTransformWarnings(response.result.warning);
+                } else {
+                  this.setTransformWarnings([]);
+                }
+
+                // getExperiment step
+                // Refresh experiment data first, then proceed with grouping to ensure latest depots exist
+                this.experimentService
+                  .getExperiment(this.experiment.runId)
+                  .pipe(take(1))
+                  .subscribe({
+                    next: async (exp: Experiment) => {
+                      this.experiment = { ...exp };
+
+                      if (exp.fileUrls?.transform?.locations) {
+                        try {
+                          const locationData: any =
+                            await this.dataFromFileUrlToJson(
+                              exp.fileUrls.transform.locations,
+                            );
+                          console.log(
+                            'post-upload transform locations data',
+                            locationData,
+                          );
+                          if (locationData?.customers && locationData?.depots) {
+                            this.groupingCustomer(
+                              locationData.customers as Customer[],
+                              locationData.depots as Depot[],
+                            );
+                          }
+                        } catch (err) {
+                          console.error(
+                            'error fetching transform locations after upload',
+                            err,
+                          );
+                        }
+                      }
+
+                      this.experiment.name = response.name;
+                      // Map inputdata to UI structure expected by template
+                      this.preOrderFiles = (
+                        this.experiment.inputdata || []
+                      ).map((inputItem: InputDataItem) => {
+                        const mockFile = {
+                          keyName: inputItem.keyName,
+                          name: inputItem.filename,
+                          blobPath: inputItem.blobPath,
+                          displayName: inputItem.displayName,
+                          type: inputItem.fileFormatType,
+                          size: inputItem.fileSize,
+                        };
+                        return {
+                          id: this.generateUniqueId(),
+                          file: mockFile,
+                        };
+                      });
+
+                      this.isFilePreview = false;
+                      this.isFileSelectionStep = false;
+                      this.toastr.success(
+                        `${this.transloco.translate(
+                          'upload_preorder_success',
+                          {},
+                          'index',
+                        )}.`,
+                      );
+                      // Fetch latest dynamic parameters for the selected depot and rebuild UI
+                      this.getDynamicParameters();
+
+                      // Update upload button state after successful upload
+                      this.updateCanUploadState();
+                      this.spinner.hide();
+                    },
+                    error: (err) => {
+                      console.error(
+                        'Error fetching experiment after upload:',
+                        err,
+                      );
+                      this.spinner.hide();
+                    },
+                  });
+              },
+              error: (err) => {
+                console.error('Error uploading pre-order:', err);
+                this.spinner.hide();
+              },
             });
         }
       })
@@ -898,18 +1739,18 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
   deleteFileInList(index: number) {
     if (
-      this.experiment.run !== 'Original' &&
-      this.experiment.status !== StatusExperiment.Initializing
+      this.experiment.run !== Run.Original &&
+      this.experiment.status !== ExperimentStatus.Initializing
     ) {
       this.toastr.warning(
         this.transloco.translate('cannot_delete_file', {}, 'index'),
-        this.transloco.translate('original_experiment_warning', {}, 'index')
+        this.transloco.translate('original_experiment_warning', {}, 'index'),
       );
       this.openConfirmDialog(
         this.transloco.translate('cannot_delete_file', {}, 'index'),
         this.transloco.translate('original_experiment_warning', {}, 'index'),
         `${this.transloco.translate('rewrite_file_instruction', {}, 'index')}.`,
-        this.transloco.translate('acknowledge', {}, 'index')
+        this.transloco.translate('acknowledge', {}, 'index'),
       );
       return;
     }
@@ -923,6 +1764,9 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.spinner.hide();
     }, 1000);
     this.resetComponentValue();
+
+    // Update upload button state after file deletion
+    this.updateCanUploadState();
   }
   private resetComponentValue() {
     this.popupContent = null;
@@ -946,17 +1790,17 @@ export class RunComponent implements OnInit, AfterViewInit {
     dialogRef.componentInstance.title = this.transloco.translate(
       'update_parameter_confirmation',
       {},
-      'index'
+      'index',
     );
     dialogRef.componentInstance.question = `${this.transloco.translate(
       'confirm_to_set_default_parameter',
       {},
-      'index'
+      'index',
     )} ?`;
     dialogRef.componentInstance.message = `${this.transloco.translate(
       'to_set_a_default_parameter_you_can_use_it_to_submit_an_experiment_in_the_future',
       {},
-      'index'
+      'index',
     )}.`;
 
     dialogRef.result
@@ -1007,12 +1851,14 @@ export class RunComponent implements OnInit, AfterViewInit {
       longitude?: number | string;
       columns?: string[];
       inputdata?: DepotInputRequirement[];
-      tw_early?: string | number;
-      tw_late?: string | number;
+      timeWindowEarly?: string | number;
+      timeWindowLate?: string | number;
       createdAt?: string;
       updatedAt?: string;
-    }>
+    }>,
   ) {
+    console.log('loadLocationDepot incoming', incoming);
+
     // Always use the incoming depots array for default selection and display
     const normalizedIncoming: MyDepot[] = incoming.map((item) => {
       const nameKey =
@@ -1028,8 +1874,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         longitude: Number(item.longitude),
         columns: item.columns || [],
         inputdata: item.inputdata || [],
-        tw_early: String(item.tw_early ?? ''),
-        tw_late: String(item.tw_late ?? ''),
+        timeWindowEarly: String(item.timeWindowEarly ?? ''),
+        timeWindowLate: String(item.timeWindowLate ?? ''),
         createdAt: item.createdAt || '',
         updatedAt: item.updatedAt || '',
       };
@@ -1038,6 +1884,8 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     this.depots = normalizedIncoming;
 
+    console.log('this.depots', this.depots);
+
     if (!this.experiment.depots || this.experiment.depots.length === 0) {
       this.experiment.depots = normalizedIncoming.map((depot: MyDepot) => ({
         companyName: this.experiment.companyName,
@@ -1045,8 +1893,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         depotName: depot.depotName,
         latitude: Number(depot.latitude),
         longitude: Number(depot.longitude),
-        tw_early: depot.tw_early || '',
-        tw_late: depot.tw_late || '',
+        timeWindowEarly: depot.timeWindowEarly || '',
+        timeWindowLate: depot.timeWindowLate || '',
         createdAt: depot.createdAt || '',
         updatedAt: depot.updatedAt || '',
         columns: depot.columns || [],
@@ -1059,13 +1907,19 @@ export class RunComponent implements OnInit, AfterViewInit {
         (this.experiment && this.experiment.depots && this.experiment.depots[0]
           ? this.experiment.depots[0].depotName
           : this.depots[0].depotName) || this.depots[0].depotName;
-      this.selectedDepotId = defaultDepotName;
+      this.selectedDepotIdName = defaultDepotName;
       this.selectedDepotIds = [];
+      const selectedDepot =
+        this.depots.find((d) => d.depotName === this.selectedDepotIdName) ||
+        this.depots[0];
+      this.updateInputDataKeysFromDepot(selectedDepot);
+      this.updateRequiredFileTypeByDepot(selectedDepot);
     } else {
-      this.selectedDepotId = null;
+      this.selectedDepotIdName = null;
       this.selectedDepotIds = [];
       this.inputDataKeys = [];
       this.depotInputDataItems = [];
+      this.updateRequiredFileTypeByDepot(undefined);
     }
 
     // Plot all depots on the map
@@ -1115,19 +1969,19 @@ export class RunComponent implements OnInit, AfterViewInit {
                   OlProj.fromLonLat([
                     Number(customer.longitude),
                     Number(customer.latitude),
-                  ])
+                  ]),
                 ),
 
                 data: { data: customer, isDepot: false },
               });
               location.setStyle(
                 this.iconStyle[
-                uploadDataGroupCustomers[key as keyof DataGroup].type
-                ]
+                  uploadDataGroupCustomers[key as keyof DataGroup].type
+                ],
               );
               this.vectorSource.addFeature(location);
             }
-          }
+          },
         );
       }
     });
@@ -1177,7 +2031,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         center: OlProj.transform(
           [100.53139488523458, 13.786463255129673],
           'EPSG:4326',
-          'EPSG:3857'
+          'EPSG:3857',
         ),
         zoom: 10,
         maxZoom: 20,
@@ -1209,7 +2063,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   private pointMove(
-    evt: MapBrowserEvent<PointerEvent | KeyboardEvent | WheelEvent>
+    evt: MapBrowserEvent<PointerEvent | KeyboardEvent | WheelEvent>,
   ): void {
     const target = this.map.getTargetElement();
     const pixel = this.map.getEventPixel(evt.originalEvent);
@@ -1224,12 +2078,12 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   private popupShow(
     evt: MapBrowserEvent<PointerEvent | KeyboardEvent | WheelEvent>,
-    element: HTMLElement
+    element: HTMLElement,
   ) {
     let coordinates: Coordinate = [];
     const feature = this.map.forEachFeatureAtPixel(
       evt.pixel,
-      (f: FeatureLike) => f
+      (f: FeatureLike) => f,
     );
     if (feature) {
       const geometry = feature.getGeometry();
@@ -1255,15 +2109,15 @@ export class RunComponent implements OnInit, AfterViewInit {
   private isPopupPayload(
     value:
       | {
-        data?:
-        | Customer
-        | Depot
-        | MyDepot
-        | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
-        isDepot?: boolean;
-      }
+          data?:
+            | Customer
+            | Depot
+            | MyDepot
+            | Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>;
+          isDepot?: boolean;
+        }
       | null
-      | undefined
+      | undefined,
   ): value is { data: Customer; isDepot: boolean } {
     if (!value || typeof value !== 'object') return false;
     return 'data' in value && 'isDepot' in value;
@@ -1275,54 +2129,29 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     customers.forEach((customer) => {
       if (
-        (customer.replace_type === ReplaceType.NO_REPLACE ||
-          customer.replace_type === ReplaceType.INPUT) &&
-        (customer.validation_type === ValidationType.SUBDISTRICT_LEVEL ||
-          customer.validation_type === ValidationType.DISTRICT_LEVEL)
+        ((customer.replaceType === ReplaceType.NO_REPLACE ||
+          customer.replaceType === ReplaceType.INPUT) &&
+          (customer.validationType === ValidationType.SUBDISTRICT_LEVEL ||
+            customer.validationType === ValidationType.DISTRICT_LEVEL)) ||
+        customer.replaceType === ReplaceType.GEOCODE
       ) {
         verify.push(customer);
       } else if (
-        customer.replace_type === ReplaceType.SUBDISTRICT_LEVEL ||
-        customer.replace_type === ReplaceType.DISTRICT_LEVEL
+        customer.replaceType === ReplaceType.SUBDISTRICT_LEVEL ||
+        customer.replaceType === ReplaceType.DISTRICT_LEVEL
       ) {
         uncertain.push(customer);
       } else if (
-        customer.replace_type === ReplaceType.PROVINCE_LEVEL ||
-        customer.validation_type === ValidationType.NO_VALID ||
-        customer.validation_type === ValidationType.NAN_INPUT ||
-        customer.validation_type === ValidationType.NON_VALIDATED
+        customer.replaceType === ReplaceType.PROVINCE_LEVEL ||
+        customer.validationType === ValidationType.NO_VALID ||
+        customer.validationType === ValidationType.NAN_INPUT ||
+        customer.validationType === ValidationType.NON_VALIDATED
       ) {
         unverify.push(customer);
       }
     });
 
     return { verify, uncertain, unverify };
-  }
-  private validateData(columnNames: Array<string>): boolean {
-    const missingColumns = this.requiredColumns.filter(
-      (col) => !columnNames.includes(col)
-    );
-
-    if (missingColumns.length > 0) {
-      this.showInvalidModal(
-        `${this.transloco.translate(
-          'column_name_mismatch_template',
-          {},
-          'index'
-        )}`,
-        missingColumns
-      );
-      this.toastr.error(
-        `${this.transloco.translate(
-          'column_name_mismatch_template',
-          {},
-          'index'
-        )}`,
-        missingColumns.join(',')
-      );
-      return false;
-    }
-    return true;
   }
 
   applyFilter(event: Event) {
@@ -1344,6 +2173,52 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
   }
 
+  getNextTab(currentTab: number): number {
+    switch (currentTab) {
+      case 1: // Orders Data
+        if (this.hasMyVehicleTypes()) return 2;
+        if (this.hasDynamicParameters()) return 3;
+        return 4;
+      case 2: // Vehicle
+        if (this.hasDynamicParameters()) return 3;
+        return 4;
+      case 3: // Parameters
+        return 4;
+      case 4: // Validation
+        return 4; // Already at the last tab
+      default:
+        return currentTab;
+    }
+  }
+
+  getPreviousTab(currentTab: number): number {
+    switch (currentTab) {
+      case 4: // Validation
+        if (this.hasDynamicParameters()) return 3;
+        if (this.hasMyVehicleTypes()) return 2;
+        return 1;
+      case 3: // Parameters
+        if (this.hasMyVehicleTypes()) return 2;
+        return 1;
+      case 2: // Vehicle
+        return 1;
+      case 1: // Orders Data
+        return 1; // Already at the first tab
+      default:
+        return currentTab;
+    }
+  }
+
+  navigateToNextTab(): void {
+    const nextTab = this.getNextTab(this.activeNavId);
+    this.navigateToTab(nextTab);
+  }
+
+  navigateToPreviousTab(): void {
+    const prevTab = this.getPreviousTab(this.activeNavId);
+    this.navigateToTab(prevTab);
+  }
+
   private reInitializeDataTable(): void {
     if (!this.uploadDataGroupCustomers) {
       this.dataSource.data = [];
@@ -1357,12 +2232,13 @@ export class RunComponent implements OnInit, AfterViewInit {
     for (const key of keys) {
       if (this.displayLocationType[key as keyof DisplayLocationType]) {
         newData.push(
-          ...this.uploadDataGroupCustomers[key as keyof DataGroup].customers
+          ...this.uploadDataGroupCustomers[key as keyof DataGroup].customers,
         );
       }
     }
 
     this.dataSource.data = newData;
+    // this.dataSource.data = newData;
   }
 
   displayDataInTable(locationType: LocationType) {
@@ -1379,6 +2255,8 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   openCustomerOrderDetails(customer: Customer) {
+    console.log('openCustomerOrderDetails customer', customer);
+
     const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
       centered: true,
       size: 'xl',
@@ -1391,31 +2269,56 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
 
     const existingIndex = this.customersLocationUpdated.findIndex(
-      (item) => item.index === customer.index && item.name === customer.name
+      (item) => item.index === customer.index && item.name === customer.name,
     );
 
     if (existingIndex !== -1) {
       modalRef.componentInstance.locationType = LocationType.Edit;
     }
 
-    // Create dataPreOder using primarily customer.extra data
+    // Create dataPreOder using primarily customer.extra data with new camelCase structure
+    // const dataPreOder: DataPreOrder = {
+    //   ORDERID_ORG: customer.nodeId,
+    //   CHANNEL: customer.extra?.channel || null,
+    //   CUSTOMER_NAME: customer.extra?.customerName || '',
+    //   TEL: customer.extra?.tel || null,
+    //   ADDRESS: customer.originalAddress?.address || '',
+    //   AUMPHER: customer.originalAddress?.district || null,
+    //   PROVINCE: customer.originalAddress?.province || null,
+    //   ZIPCODE: customer.originalAddress?.postalCode || null,
+    //   details: customer.extra?.productsInfo?.map((product: ProductInfo) => ({
+    //     PRODUCTID: product.productId,
+    //     ORDER_ID: product.orderId,
+    //     PRODUCTNAME: product.productName,
+    //     QUANTITYMAIN: product.quantityMajor,
+    //     QUANTITYMINOR: product.quantityMinor,
+    //     UserConfirm: product.userConfirm,
+    //     DateConfirm: product.dateConfirm,
+    //   })) || [],
+    // };
+
+    const products =
+      (customer.productQuantity?.length ? customer.productQuantity : null) ||
+      customer.extra?.productsInfo ||
+      [];
+
     const dataPreOder: DataPreOrder = {
-      ORDERID_ORG: customer.name,
-      CHANNEL: customer.extra.channel,
-      CUSTOMER_NAME: customer.extra.customer_name,
-      TEL: customer.extra.tel,
-      ADDRESS: customer.original_address.address,
-      AUMPHER: customer.original_address.district,
-      PROVINCE: customer.original_address.province,
-      ZIPCODE: customer.original_address.postal_code,
-      details: customer.extra.products_info.map((product: ProductInfo) => ({
-        PRODUCTID: product.product_id,
-        ORDER_ID: product.order_id,
-        PRODUCTNAME: product.product_name,
-        QUANTITYMAIN: product.quantity_major,
-        QUANTITYMINOR: product.quantity_minor,
-        UserConfirm: product.user_confirm,
-        DateConfirm: product.date_confirm,
+      ORDERID_ORG: customer.nodeId,
+      CHANNEL: customer.additionalProperties?.channel || null,
+      CUSTOMER_NAME: customer.name || '',
+      TEL: customer.additionalProperties?.telephone || null,
+      ADDRESS: customer.originalAddress?.address || '',
+      AUMPHER: customer.originalAddress?.district || null,
+      PROVINCE: customer.originalAddress?.province || null,
+      ZIPCODE: customer.originalAddress?.postalCode || null,
+      details: products.map((product: any) => ({
+        PRODUCTID: product.productId,
+        ORDER_ID: product.skuCode || product.orderId,
+        PRODUCTNAME: product.name || product.productName,
+        QUANTITYMAIN: product.productQuantity ?? product.quantityMajor,
+        QUANTITYMINOR: product.quantityMinor,
+        UserConfirm: product.userConfirm,
+        DateConfirm: product.dateConfirm,
       })),
     };
 
@@ -1429,7 +2332,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         Number(customer.latitude) !== Number(locationUpdated.latitude)
       ) {
         const updatedCustomer = {
-          node_id: customer.node_id,
+          nodeId: customer.nodeId,
           index: customer.index,
           name: customer.name,
           latitude: locationUpdated.latitude,
@@ -1446,7 +2349,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         this.haveUpdateAfterValidated = true;
         this.dataService.saveData(
           this.experiment.runId,
-          this.customersLocationUpdated
+          this.customersLocationUpdated,
         );
       }
     });
@@ -1475,7 +2378,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
       this.dataService.saveData(
         this.experiment.runId,
-        this.customersLocationUpdated
+        this.customersLocationUpdated,
       );
     });
   }
@@ -1484,18 +2387,18 @@ export class RunComponent implements OnInit, AfterViewInit {
     // Find and remove the customer from uncertain
     const uncertainIndex =
       this.uploadDataGroupCustomers!.uncertain.customers.findIndex(
-        (c) => c.name === customer.name
+        (c) => c.name === customer.name,
       );
     // Find and remove the customer from unverify
     const unverifyIndex =
       this.uploadDataGroupCustomers!.unverify.customers.findIndex(
-        (c) => c.name === customer.name
+        (c) => c.name === customer.name,
       );
     if (uncertainIndex !== -1) {
       const _customer =
         this.uploadDataGroupCustomers!.uncertain.customers.splice(
           uncertainIndex,
-          1
+          1,
         )[0];
       _customer.latitude = locationUpdated.latitude;
       _customer.longitude = locationUpdated.longitude;
@@ -1504,7 +2407,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       const _customer =
         this.uploadDataGroupCustomers!.unverify.customers.splice(
           unverifyIndex,
-          1
+          1,
         )[0];
       _customer.latitude = locationUpdated.latitude;
       _customer.longitude = locationUpdated.longitude;
@@ -1516,13 +2419,13 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.customersLocationUpdated.push(customersLocationUpdated);
     this.toastr.info(
       this.transloco.translate('updating_customer_location', {}, 'index'),
-      `${this.transloco.translate('location_in_memory', {}, 'index')}.`
+      `${this.transloco.translate('location_in_memory', {}, 'index')}.`,
     );
   }
   isVerified(orderId: string): boolean {
     return (
       this.uploadDataGroupCustomers?.verify.customers.some(
-        (customer) => customer.name === orderId
+        (customer) => customer.name === orderId,
       ) ?? false
     );
   }
@@ -1530,7 +2433,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   isUncertain(orderId: string): boolean {
     return (
       this.uploadDataGroupCustomers?.uncertain.customers.some(
-        (customer) => customer.name === orderId
+        (customer) => customer.name === orderId,
       ) ?? false
     );
   }
@@ -1538,14 +2441,14 @@ export class RunComponent implements OnInit, AfterViewInit {
   isUnverified(orderId: string): boolean {
     return (
       this.uploadDataGroupCustomers?.unverify.customers.some(
-        (customer) => customer.name === orderId
+        (customer) => customer.name === orderId,
       ) ?? false
     );
   }
   isEdited(orderId: string): boolean {
     return (
       this.uploadDataGroupCustomers?.edit.customers.some(
-        (customer) => customer.name === orderId
+        (customer) => customer.name === orderId,
       ) ?? false
     );
   }
@@ -1554,7 +2457,15 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   validateExperimentPreOrder() {
+    if (this.selectedVehicleIds.length === 0) {
+      this.vehicleSelectionError = true;
+      this.navigateToTab(2);
+      return;
+    }
+
     const parameterPayload = this.buildValidateParameterFromDynamic();
+    const vehiclesPayload = this.buildVehiclesPayload();
+
     // proceed with validation using constructed parameterPayload
     if (
       (parameterPayload.earlyDeliveryTime || '') >
@@ -1562,24 +2473,43 @@ export class RunComponent implements OnInit, AfterViewInit {
     ) {
       this.showInvalidModal(
         'INVALID : Early Delivery Time',
-        'Early Delivery Time must be less than Back to Depot Time'
+        'Early Delivery Time must be less than Back to Depot Time',
       );
       return;
     }
+
+    // Validate vehicles payload - check if license-plate mode has selections
+    const invalidVehicles = this.getInvalidVehicleSelections();
+    if (invalidVehicles.length > 0) {
+      const vehicleNames = invalidVehicles
+        .map((v) => this.getVehicleName(v))
+        .join(', ');
+      this.toastr.error(
+        `${this.transloco.translate('please_select_at_least_one_vehicle', {}, 'index')}: ${vehicleNames}`,
+        this.transloco.translate('error', {}, 'index'),
+      );
+      return;
+    }
+
     this.showSpinner();
     this.experimentService
       .validateExperiment(
         this.experiment.runId,
         parameterPayload as Constraint,
-        this.customersLocationUpdated
+        this.customersLocationUpdated,
+        vehiclesPayload,
       )
       .pipe(
         finalize(() => {
           this.hiddenSpinner();
-        })
+        }),
       )
       .subscribe({
-        next: (result) => {
+        next: (result: any) => {
+          console.log('validateExperiment result', result);
+          if (result.result?.message) {
+            this.toastr.success(result.result.message);
+          }
           this.haveUpdateAfterValidated = false;
           // Sync constraints with the payload used for validation so UI reflects latest
           const mergedConstraint: Constraint = {
@@ -1589,15 +2519,23 @@ export class RunComponent implements OnInit, AfterViewInit {
           this.constraintsData = mergedConstraint;
           this.validateExperiment = result.result?.validate || null;
           this.ngbValidationTableCollectionSize =
-            this.validateExperiment?.filters.order_data.invalid_coordinate
-              .length || 0;
+            this.validateExperiment?.filters?.order_data?.invalid_coordinate
+              ?.length ?? 0;
           this.dataService.clearData(this.experiment.runId);
           // Rebuild dynamic parameters so values reflect constraintsData when validated
           this.refreshDynamicParametersForSelectedDepot();
           this.refreshValidationTable();
-          this.navigateToTab(3);
+          this.navigateToTab(4); // Always navigate to validation tab after validation
           // Mark validation as completed and show corresponding messages (success path)
           this.haveValidated = true;
+
+          this.isValidationWarning = result.result?.isWarning || false;
+          if (this.isValidationWarning && result.result?.warning) {
+            this.setValidationWarnings(result.result.warning);
+          } else {
+            this.setValidationWarnings([]);
+          }
+
           this.isValidateShowMessage = {
             OrderData: {
               invalidCoordinate: true,
@@ -1646,6 +2584,37 @@ export class RunComponent implements OnInit, AfterViewInit {
     return payload as TimingAndCapacity;
   }
 
+  // Build vehicles payload for validation
+  buildVehiclesPayload(): VehicleValidationInput[] {
+    const vehiclesPayload: VehicleValidationInput[] = [];
+
+    // Loop through all selected vehicle IDs
+    for (const vehicleTypeId of this.selectedVehicleIds) {
+      const mode = this.getVehicleSelectionMode(vehicleTypeId);
+      const vehicleItem: VehicleValidationInput = {
+        vehicleTypeId: vehicleTypeId,
+      };
+
+      if (mode === 'count') {
+        // Add numberOfVehiclesAvailable for count mode
+        const count = this.getVehicleCount(vehicleTypeId);
+        if (count > 0) {
+          vehicleItem.numberOfVehiclesAvailable = count;
+        }
+      } else if (mode === 'license-plate') {
+        // Add vehicleId array for license-plate mode
+        const vehicleIds = this.selectedVehicleIdsByLicensePlate[vehicleTypeId];
+        if (vehicleIds && vehicleIds.length > 0) {
+          vehicleItem.vehicleId = vehicleIds;
+        }
+      }
+
+      vehiclesPayload.push(vehicleItem);
+    }
+
+    return vehiclesPayload;
+  }
+
   private normalizeKeyName(rawKey: string | null | undefined): string {
     const trimmedKey = String(rawKey ?? '').trim();
     if (!trimmedKey) return '';
@@ -1676,17 +2645,17 @@ export class RunComponent implements OnInit, AfterViewInit {
     dialogRef.componentInstance.title = this.transloco.translate(
       'experiment_confirmation',
       {},
-      'index'
+      'index',
     );
     dialogRef.componentInstance.question = `${this.transloco.translate(
       'confirm_to_submit_experiment',
       {},
-      'index'
+      'index',
     )} ?`;
     dialogRef.componentInstance.message = `${this.transloco.translate(
       'submitting_an_experiment_to_the_ai_service_will_start_the_planning_process',
       {},
-      'index'
+      'index',
     )}.`;
 
     dialogRef.result
@@ -1700,14 +2669,14 @@ export class RunComponent implements OnInit, AfterViewInit {
                 console.log(result);
                 this.toastr.success(
                   this.transloco.translate('submit_experiment', {}, 'index'),
-                  this.transloco.translate('succeed', {}, 'index')
+                  this.transloco.translate('succeed', {}, 'index'),
                 );
                 this.router.navigate(['/users/experiments']);
               },
               error: (err) => {
                 this.toastr.error(
                   this.transloco.translate('submit_experiment', {}, 'index'),
-                  this.transloco.translate('failed', {}, 'index')
+                  this.transloco.translate('failed', {}, 'index'),
                 );
               },
               complete: () => {
@@ -1726,7 +2695,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     message: string,
     question: string,
     acceptButton: string = 'Confirm',
-    disableCancelButton: boolean = true
+    disableCancelButton: boolean = true,
   ) {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
@@ -1747,7 +2716,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   async fetchDataFromFileUrl(url: string) {
     const blob = await firstValueFrom(
-      this.configurationService.getDatafromUrl(url)
+      this.configurationService.getDatafromUrl(url),
     );
     const arrayBuffer = await blob.arrayBuffer();
     return arrayBuffer;
@@ -1765,9 +2734,10 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   updateCustomerGroup(customers: Array<CustomerUpdated>) {
     console.log('new value customer details', customers);
+    if (!customers?.length) return;
     customers.forEach((item) => {
       const existingIndex = this.customersLocationUpdated.findIndex(
-        (i) => i.index === item.index && i.name === item.name
+        (i) => i.index === item.index && i.name === item.name,
       );
       if (existingIndex !== -1) {
         // Replace the existing entry
@@ -1780,12 +2750,12 @@ export class RunComponent implements OnInit, AfterViewInit {
       // Find and remove the customer from uncertain
       const uncertainIndex =
         this.uploadDataGroupCustomers!.uncertain.customers.findIndex(
-          (c) => c.name === item.name
+          (c) => c.name === item.name,
         );
       // Find and remove the customer from unverify
       const unverifyIndex =
         this.uploadDataGroupCustomers!.unverify.customers.findIndex(
-          (c) => c.name === item.name
+          (c) => c.name === item.name,
         );
       if (uncertainIndex !== -1) {
         this.moveCustomerToEdit(
@@ -1793,7 +2763,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           {
             longitude: Number(item.longitude),
             latitude: Number(item.latitude),
-          }
+          },
         );
       } else if (unverifyIndex !== -1) {
         this.moveCustomerToEdit(
@@ -1801,19 +2771,27 @@ export class RunComponent implements OnInit, AfterViewInit {
           {
             longitude: Number(item.longitude),
             latitude: Number(item.latitude),
-          }
+          },
         );
       }
     });
   }
+
   groupingCustomer(customers: Customer[], depots: Depot[]) {
     this.countUploadedCustomers = customers.length;
-    // Sum all products_info lengths across customers for preOrderCount
     this.preOrderCount = customers.reduce((sum, customer) => {
-      const products = customer?.extra?.products_info;
-      return sum + (Array.isArray(products) ? products.length : 0);
+      const products =
+        (customer.productQuantity?.length ? customer.productQuantity : null) ||
+        customer.extra?.productsInfo ||
+        [];
+      return sum + products.length;
     }, 0);
+
     const groupedCustomer = this.groupCustomers(customers);
+
+    console.log('groupingCustomer customers', customers);
+    console.log('groupingCustomer depots', depots);
+
     this.uploadDataGroupCustomers = {
       verify: {
         customers: groupedCustomer.verify,
@@ -1832,10 +2810,10 @@ export class RunComponent implements OnInit, AfterViewInit {
         type: LocationType.Edit,
       },
     };
-    console.log(
-      'prepared uploadDataGroupCustomers',
-      this.uploadDataGroupCustomers
-    );
+
+    console.log('this.uploadDataGroupCustomers', this.uploadDataGroupCustomers);
+    console.log('depots', depots);
+
     this.reInitializeDataTable();
     this.loadLocation(this.uploadDataGroupCustomers);
     this.loadLocationDepot(depots);
@@ -1843,12 +2821,12 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.isFileSelectionStep = false;
   }
   isOriginalExperiment(): boolean {
-    return this.experiment.run === 'Original';
+    return this.experiment.run === Run.Original;
   }
 
   onValueChange<K extends keyof Constraint>(
     newValue: Constraint[K],
-    property: K
+    property: K,
   ): void {
     this.updateConstraint(this.constraintsData, property, newValue);
     this.haveUpdateAfterValidated = true;
@@ -1857,7 +2835,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   updateConstraint<K extends keyof Constraint>(
     obj: Constraint,
     key: K,
-    value: Constraint[K]
+    value: Constraint[K],
   ): void {
     obj[key] = value;
   }
@@ -1868,18 +2846,19 @@ export class RunComponent implements OnInit, AfterViewInit {
       name: string;
     }> = [];
     if (
-      this.validateExperiment?.filters.order_data &&
-      this.validateExperiment?.filters.order_data.invalid_coordinate.length > 0
+      this.validateExperiment?.filters?.order_data &&
+      this.validateExperiment?.filters?.order_data?.invalid_coordinate?.length >
+        0
     ) {
       files.push({
         data:
           this.validateExperiment?.warning.zero_weight.map((customer, i) => ({
             index: i + 1,
             ORDER_ID: customer.name,
-            ADDRESS: customer.original_address.address ?? '',
-            SUBDISTRICT: customer.original_address.subdistrict ?? '',
-            DISTRICT: customer.original_address.district ?? '',
-            PROVINCE: customer.original_address.province ?? '',
+            ADDRESS: customer.originalAddress?.address ?? '',
+            SUBDISTRICT: customer.originalAddress?.subdistrict ?? '',
+            DISTRICT: customer.originalAddress?.district ?? '',
+            PROVINCE: customer.originalAddress?.province ?? '',
           })) || [],
         name:
           'Remove_Order_' + this.experiment.name + '_' + this.experiment.runId,
@@ -1895,9 +2874,9 @@ export class RunComponent implements OnInit, AfterViewInit {
             index: i + 1,
             ORDER_ID: customer.name,
             PRODUCT_ID_ZERO_WEIGHT:
-              (customer.metrics?.product_ids || []).join(',') ?? '',
+              (customer.metrics?.productIds || []).join(',') ?? '',
             PRODUCT_ID_MISSING:
-              (customer.metrics?.missing_product_ids || []).join(',') ?? '',
+              (customer.metrics?.missingProductIds || []).join(',') ?? '',
           })) || [],
         name:
           'Zero_Weight_' + this.experiment.name + '_' + this.experiment.runId,
@@ -1905,7 +2884,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
     this.exportService.exportMultipleCsv(
       files.map((file) => file.data),
-      files.map((file) => file.name)
+      files.map((file) => file.name),
     );
   }
 
@@ -1921,19 +2900,19 @@ export class RunComponent implements OnInit, AfterViewInit {
                 message: `${this.transloco.translate(
                   'over_distance_description',
                   {},
-                  'index'
+                  'index',
                 )}.`,
               },
               overWeight: {
                 title: `${this.transloco.translate(
                   'over_weight_warning',
                   {},
-                  'index'
+                  'index',
                 )}!`,
                 message: `${this.transloco.translate(
                   'over_weight_description',
                   {},
-                  'index'
+                  'index',
                 )}.`,
               },
             },
@@ -1942,12 +2921,12 @@ export class RunComponent implements OnInit, AfterViewInit {
                 title: `${this.transloco.translate(
                   'unverify_coordinate_danger',
                   {},
-                  'index'
+                  'index',
                 )}!`,
                 message: `${this.transloco.translate(
                   'unverify_coordinate_description',
                   {},
-                  'index'
+                  'index',
                 )}.`,
               },
             },
@@ -1957,12 +2936,12 @@ export class RunComponent implements OnInit, AfterViewInit {
               title: `${this.transloco.translate(
                 'zero_weight_warning',
                 {},
-                'index'
+                'index',
               )}!`,
               message: `${this.transloco.translate(
                 'zero_weight_description',
                 {},
-                'index'
+                'index',
               )}.`,
             },
           },
@@ -1971,21 +2950,28 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   async onDepotSelectionChange() {
-    const depot = this.depots.find((d) => d.depotName === this.selectedDepotId);
+    const depot = this.depots.find(
+      (d) => d.depotName === this.selectedDepotIdName,
+    );
     if (depot) {
       this.updateDepot([depot]);
       this.updateInputDataKeysFromDepot(depot);
+      this.updateRequiredFileTypeByDepot(depot);
     } else {
       this.inputDataKeys = [];
       this.depotInputDataItems = [];
+      this.updateRequiredFileTypeByDepot(undefined);
     }
     await this.validateUploadedFilesAgainstDepot();
     // refresh dynamic parameters render when depot changes
     this.refreshDynamicParametersForSelectedDepot();
+
+    // Update upload button state after depot change
+    this.updateCanUploadState();
   }
 
   updateDepot(
-    depots: Array<Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>>
+    depots: Array<Pick<MyDepot, 'depotName' | 'latitude' | 'longitude'>>,
   ) {
     this.preOrderFiles = [];
     this.vectorSourceDepot.clear();
@@ -2051,17 +3037,24 @@ export class RunComponent implements OnInit, AfterViewInit {
           inputdata: depot.inputdata || [],
         }));
         if (this.depots && this.depots.length > 0) {
-          this.selectedDepotId = this.depots[0].depotName;
+          this.selectedDepotIdName = this.depots[0].depotName;
           this.selectedDepotIds = [];
 
           // Update input data keys from the first depot
           this.updateInputDataKeysFromDepot(this.depots[0]);
+          this.updateRequiredFileTypeByDepot(this.depots[0]);
           // refresh dynamic parameters view for selected depot
           this.refreshDynamicParametersForSelectedDepot();
 
-          if (this.selectedDepotId) {
-            localStorage.setItem('selectedDepotId', this.selectedDepotId);
+          if (this.selectedDepotIdName) {
+            localStorage.setItem(
+              'selectedDepotIdName',
+              this.selectedDepotIdName,
+            );
           }
+
+          // Initialize upload button state
+          this.updateCanUploadState();
         }
       },
       error: (error) => {
@@ -2079,15 +3072,93 @@ export class RunComponent implements OnInit, AfterViewInit {
     });
   }
 
-  handleInputDataKeyChange(
+  onCategoryDropdownOpened(fileObj: PreOrderFileItem, isOpened: boolean): void {
+    console.log('=== onCategoryDropdownOpened ===', {
+      isOpened,
+      fileId: fileObj.id,
+      fileName: fileObj.file.name,
+    });
+
+    if (isOpened) {
+      // Capture current displayName before user makes a selection
+      const currentDisplayName = this.isFileWithCategory(fileObj.file)
+        ? fileObj.file.displayName || ''
+        : (fileObj.file as PreOrderFileDescriptor).displayName || '';
+      this.fileDisplayNameBeforeChange[fileObj.id] = currentDisplayName;
+
+      console.log('Captured current displayName:', currentDisplayName);
+      console.log('All tracked values:', this.fileDisplayNameBeforeChange);
+    }
+  }
+
+  async handleInputDataKeyChange(
     fileObj: PreOrderFileItem,
-    event: { value: string }
+    event: { value: string },
   ) {
+    console.log('=== handleInputDataKeyChange START ===');
+    console.log('Event value:', event.value);
+    console.log('File object:', {
+      id: fileObj.id,
+      currentDisplayName: fileObj.file.displayName,
+      fileName: fileObj.file.name,
+      isFile: this.isFileWithCategory(fileObj.file),
+    });
+
     const selectedDisplayName = event.value;
+
+    // Get the previous displayName from our tracked object
+    const previousDisplayName =
+      this.fileDisplayNameBeforeChange[fileObj.id] || '';
+
+    console.log('Previous displayName from tracking:', previousDisplayName);
+
+    if (selectedDisplayName) {
+      // First: Validate if file columns match the new category requirements
+      console.log('Starting column validation...');
+      const isValid = await this.validateFileColumnsForCategory(
+        fileObj,
+        selectedDisplayName,
+      );
+      console.log('Validation result:', isValid);
+
+      if (!isValid) {
+        // Validation failed, modal already shown, revert to previous value
+        console.log('Validation failed, reverting...');
+        this.revertFileDisplayName(fileObj, previousDisplayName);
+        console.log('=== handleInputDataKeyChange END (validation failed) ===');
+        return;
+      }
+
+      // Second: Check if this category already exists in other files (for warning only)
+      const isDuplicate = this.preOrderFiles.some(
+        (item) =>
+          item.id !== fileObj.id &&
+          item.file.displayName === selectedDisplayName,
+      );
+
+      if (isDuplicate) {
+        console.log(
+          'Category already exists in another file, showing warning...',
+        );
+        // Show warning toast but allow the change
+        // hasDuplicateCategory will show red border (2px solid #dc3545)
+        this.toastr.warning(
+          this.transloco.translate(
+            'a_file_with_this_category_is_already_added',
+            {},
+            'index',
+          ),
+        );
+      }
+    }
+
+    console.log('Validation passed, updating file properties...');
     const found = this.depotInputDataItems.find(
-      (item) => item.displayName === selectedDisplayName
+      (item) => item.displayName === selectedDisplayName,
     );
+
     if (found) {
+      console.log('Found matching depot item:', found.keyName);
       if (this.isFileWithCategory(fileObj.file)) {
         fileObj.file.keyName = found.keyName;
         fileObj.file.displayName = found.displayName;
@@ -2097,6 +3168,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           found.displayName;
       }
     } else {
+      console.log('No matching depot item found, clearing values');
       if (this.isFileWithCategory(fileObj.file)) {
         fileObj.file.keyName = '';
         fileObj.file.displayName = '';
@@ -2105,6 +3177,374 @@ export class RunComponent implements OnInit, AfterViewInit {
         (fileObj.file as PreOrderFileDescriptor).displayName = '';
       }
     }
+
+    // Update our tracked object with the new confirmed value
+    this.fileDisplayNameBeforeChange[fileObj.id] = selectedDisplayName;
+    console.log('Updated tracking with new value:', selectedDisplayName);
+
+    // Update upload button state after category change
+    this.updateCanUploadState();
+    console.log('=== handleInputDataKeyChange END (success) ===');
+  }
+
+  hasDuplicateCategory(fileObj: PreOrderFileItem): boolean {
+    if (!fileObj.file.displayName) return false;
+
+    // Count how many files have the same displayName
+    const count = this.preOrderFiles.filter(
+      (item) => item.file.displayName === fileObj.file.displayName,
+    ).length;
+
+    // If count > 1, this category is duplicated
+    return count > 1;
+  }
+
+  hasDuplicateFileName(fileObj: PreOrderFileItem): boolean {
+    if (!fileObj.file.name) return false;
+
+    // Count how many files have the same file name
+    const count = this.preOrderFiles.filter(
+      (item) => item.file.name === fileObj.file.name,
+    ).length;
+
+    // If count > 1, this file name is duplicated
+    return count > 1;
+  }
+
+  hasAnyDuplicateFileNames(): boolean {
+    // Check if any file in preOrderFiles has a duplicate file name
+    return this.preOrderFiles.some((fileObj) =>
+      this.hasDuplicateFileName(fileObj),
+    );
+  }
+
+  hasDuplicateFileSize(fileObj: PreOrderFileItem): boolean {
+    if (!fileObj.file.size) return false;
+
+    // Only check for duplicate file size if file name is also duplicated
+    if (!this.hasDuplicateFileName(fileObj)) return false;
+
+    // Count how many files have the same file size AND same file name
+    const count = this.preOrderFiles.filter(
+      (item) =>
+        item.file.size === fileObj.file.size &&
+        item.file.name === fileObj.file.name,
+    ).length;
+
+    // If count > 1, this file size is duplicated (with matching name)
+    return count > 1;
+  }
+
+  hasAnyDuplicateFileSizes(): boolean {
+    // Check if any file in preOrderFiles has a duplicate file size
+    return this.preOrderFiles.some((fileObj) =>
+      this.hasDuplicateFileSize(fileObj),
+    );
+  }
+
+  getFileWarningMessages(fileObj: PreOrderFileItem): string[] {
+    const messages: string[] = [];
+
+    // Check duplicate file name first
+    if (this.hasDuplicateFileName(fileObj)) {
+      messages.push(
+        this.transloco.translate('duplicate_file_name', {}, 'index'),
+      );
+
+      // Only check duplicate file size if file name is also duplicated
+      if (this.hasDuplicateFileSize(fileObj)) {
+        messages.push(
+          this.transloco.translate('duplicate_file_size', {}, 'index'),
+        );
+      }
+    }
+
+    return messages;
+  }
+
+  getFileWarningMessage(fileObj: PreOrderFileItem): string {
+    return this.getFileWarningMessages(fileObj).join(', ');
+  }
+
+  hasFileWarning(fileObj: PreOrderFileItem): boolean {
+    return (
+      this.hasDuplicateFileName(fileObj) || this.hasDuplicateFileSize(fileObj)
+    );
+  }
+
+  getAllErrorMessages(fileObj: PreOrderFileItem): string {
+    const messages: string[] = [];
+
+    // Add file warning messages if any (WARNING - displayed first)
+    if (this.hasFileWarning(fileObj)) {
+      const warningMessages = this.getFileWarningMessages(fileObj);
+      messages.push(...warningMessages);
+    }
+
+    // Add duplicate category message if applicable (ERROR - displayed after warnings)
+    if (this.hasDuplicateCategory(fileObj)) {
+      messages.push(
+        this.transloco.translate(
+          'a_file_with_this_category_is_already_added',
+          {},
+          'index',
+        ),
+      );
+    }
+
+    return messages.join(', ');
+  }
+
+  async validateFileColumnsForCategory(
+    fileObj: PreOrderFileItem,
+    selectedDisplayName: string,
+  ): Promise<boolean> {
+    console.log('validateFileColumnsForCategory called', {
+      fileId: fileObj.id,
+      selectedDisplayName,
+      isFileWithCategory: this.isFileWithCategory(fileObj.file),
+      fileName: fileObj.file.name,
+      hasCachedColumns: !!this.fileColumnsCache[fileObj.id],
+    });
+
+    // Find the required columns for the selected category
+    const targetItem = this.depotInputDataItems.find(
+      (item) => item.displayName === selectedDisplayName,
+    );
+
+    if (!targetItem) {
+      console.error(
+        'Target item not found for displayName:',
+        selectedDisplayName,
+      );
+      return false;
+    }
+
+    console.log('Target item found:', {
+      keyName: targetItem.keyName,
+      displayName: targetItem.displayName,
+      columnRequired: targetItem.columnRequired,
+    });
+
+    // First, try to use cached columns (from when file was first uploaded)
+    const cachedColumns = this.fileColumnsCache[fileObj.id];
+    if (cachedColumns && cachedColumns.length > 0) {
+      console.log('Using cached columns for validation:', cachedColumns);
+      return this.validateColumnsAgainstCategory(
+        cachedColumns,
+        targetItem,
+        fileObj.file.name,
+      );
+    }
+
+    // If this is a PreOrderFileDescriptor (loaded from server), we cannot validate actual file columns
+    // In this case, we'll assume it's valid
+    if (!this.isFileWithCategory(fileObj.file)) {
+      console.log(
+        'File is PreOrderFileDescriptor and no cached columns, skipping validation',
+      );
+      return true;
+    }
+
+    // Check if the file is a valid File object
+    const file = fileObj.file as FileWithCategory;
+    if (!file || !(file instanceof File)) {
+      console.error('File is not a valid File object:', file);
+      this.toastr.error(
+        this.transloco.translate('error_reading_file', {}, 'index'),
+      );
+      return false;
+    }
+
+    console.log('Starting file read for validation:', file.name);
+
+    // Read the file and get its columns
+    return new Promise<boolean>((resolve) => {
+      const reader = new FileReader();
+
+      reader.onerror = () => {
+        console.error('FileReader error:', reader.error);
+        this.toastr.error(
+          this.transloco.translate('error_reading_file', {}, 'index'),
+        );
+        resolve(false);
+      };
+
+      reader.onload = async (e: ProgressEvent<FileReader>) => {
+        try {
+          const result = e.target?.result;
+          const fileName = (fileObj.file?.name || '').toLowerCase();
+          const isCsv = fileName.endsWith('.csv');
+
+          let columnNames: string[] = [];
+          if (isCsv) {
+            if (typeof result !== 'string') {
+              console.error('CSV result is not string');
+              resolve(false);
+              return;
+            }
+            columnNames = this.parseCsvHeaderColumnNames(result);
+          } else {
+            if (!(result instanceof ArrayBuffer)) {
+              console.error('Result is not ArrayBuffer');
+              resolve(false);
+              return;
+            }
+
+            console.log('File loaded, parsing Excel...');
+            const arrayBuffer = result;
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(arrayBuffer);
+
+            let worksheet: ExcelJS.Worksheet | undefined =
+              workbook.getWorksheet(1);
+            if (!worksheet) {
+              worksheet =
+                workbook.worksheets.find(
+                  (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0,
+                ) || workbook.worksheets[0];
+            }
+
+            columnNames = (
+              worksheet!.getRow(1).values as (string | undefined)[]
+            ).filter((value) => typeof value === 'string') as string[];
+          }
+
+          // Cache these columns for future validations
+          this.fileColumnsCache[fileObj.id] = columnNames;
+          console.log('Cached columns for future use:', columnNames);
+
+          const isValid = this.validateColumnsAgainstCategory(
+            columnNames,
+            targetItem,
+            fileObj.file.name,
+          );
+          resolve(isValid);
+        } catch (error) {
+          console.error('Error validating file columns:', error);
+          this.toastr.error(
+            this.transloco.translate('error_reading_file', {}, 'index'),
+          );
+          resolve(false);
+        }
+      };
+
+      const fileName = (file?.name || '').toLowerCase();
+      if (fileName.endsWith('.csv')) {
+        reader.readAsText(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
+    });
+  }
+
+  private validateColumnsAgainstCategory(
+    columnNames: string[],
+    targetItem: {
+      keyName: string;
+      displayName: string;
+      columnRequired: string[];
+    },
+    fileName: string,
+  ): boolean {
+    console.log('validateColumnsAgainstCategory:', {
+      fileName,
+      targetDisplayName: targetItem.displayName,
+      fileColumns: columnNames,
+      requiredColumns: targetItem.columnRequired,
+    });
+
+    // Check if all required columns are present
+    const missingColumns = targetItem.columnRequired.filter(
+      (col) => !columnNames.includes(col),
+    );
+
+    console.log('Missing columns:', missingColumns);
+
+    if (missingColumns.length > 0) {
+      // Show error modal with missing columns
+      const validationError = `<strong>${this.transloco.translate(
+        'file_for',
+        {},
+        'index',
+      )} "${targetItem.displayName}" ${this.transloco.translate(
+        'missing_columns_as_follows',
+        {},
+        'index',
+      )}</strong><span>:</span> <br/><ul>${missingColumns
+        .map((col) => `<li>${col}</li>`)
+        .join('')}</ul>`;
+
+      this.showInvalidModal(
+        `${this.transloco.translate(
+          'column_name_mismatch_template',
+          {},
+          'index',
+        )}`,
+        [validationError],
+      );
+      console.log('Validation FAILED - missing columns');
+      return false; // Validation failed - missing columns
+    } else {
+      // All required columns are present
+      console.log('Validation PASSED - all columns present');
+      return true; // Validation passed
+    }
+  }
+
+  revertFileDisplayName(
+    fileObj: PreOrderFileItem,
+    previousDisplayName: string,
+  ): void {
+    console.log('Reverting file displayName', {
+      fileId: fileObj.id,
+      currentDisplayName: fileObj.file.displayName,
+      previousDisplayName,
+    });
+
+    const previousItem = this.depotInputDataItems.find(
+      (item) => item.displayName === previousDisplayName,
+    );
+
+    if (this.isFileWithCategory(fileObj.file)) {
+      fileObj.file.displayName = previousDisplayName;
+      if (previousItem) {
+        fileObj.file.keyName = previousItem.keyName;
+      } else {
+        fileObj.file.keyName = '';
+      }
+    } else {
+      (fileObj.file as PreOrderFileDescriptor).displayName =
+        previousDisplayName;
+      if (previousItem) {
+        (fileObj.file as PreOrderFileDescriptor).keyName = previousItem.keyName;
+      } else {
+        (fileObj.file as PreOrderFileDescriptor).keyName = '';
+      }
+    }
+
+    // Force update the specific file in the array to trigger change detection
+    const index = this.preOrderFiles.findIndex((f) => f.id === fileObj.id);
+    if (index !== -1) {
+      this.preOrderFiles[index] = { ...fileObj };
+    }
+
+    // Trigger change detection to update the UI
+    this.cdr.detectChanges();
+
+    console.log('File reverted successfully', {
+      newDisplayName: fileObj.file.displayName,
+      newKeyName: this.isFileWithCategory(fileObj.file)
+        ? fileObj.file.keyName
+        : (fileObj.file as PreOrderFileDescriptor).keyName,
+    });
+  }
+
+  hasAnyDuplicateCategories(): boolean {
+    // Check if any file in preOrderFiles has a duplicate category
+    return this.preOrderFiles.some((fileObj) =>
+      this.hasDuplicateCategory(fileObj),
+    );
   }
 
   updateInputDataKeysFromDepot(depot: MyDepot) {
@@ -2113,14 +3553,19 @@ export class RunComponent implements OnInit, AfterViewInit {
         keyName: item.keyName,
         displayName: item.displayName,
         columnRequired: item.columnRequired || [],
+        required: item.required,
+        fileFormatType: item.fileFormatType,
       })) || [];
 
     const uniqueItems = this.depotInputDataItems.filter(
       (item, index, self) =>
         index ===
-        self.findIndex((existingItem) => existingItem.keyName === item.keyName)
+        self.findIndex((existingItem) => existingItem.keyName === item.keyName),
     );
     this.inputDataKeys = uniqueItems.map((item) => item.displayName);
+
+    // Update upload button state when depot requirements change
+    this.updateCanUploadState();
   }
 
   async validateUploadedFilesAgainstDepot() {
@@ -2131,15 +3576,18 @@ export class RunComponent implements OnInit, AfterViewInit {
         validFiles.push(file);
       } else {
         this.toastr.warning(
-          `File ${file.file.name} does not match current depot requirements and has been removed.`
+          `File ${file.file.name} does not match current depot requirements and has been removed.`,
         );
       }
     }
     this.preOrderFiles = validFiles;
+
+    // Update upload button state after validation
+    this.updateCanUploadState();
   }
 
   validateFileAgainstDepotRequirements(
-    file: PreOrderFileItem
+    file: PreOrderFileItem,
   ): Promise<boolean> {
     // Read the file to get column names
     return new Promise<boolean>((resolve) => {
@@ -2147,34 +3595,56 @@ export class RunComponent implements OnInit, AfterViewInit {
       reader.onload = async (e: ProgressEvent<FileReader>) => {
         try {
           const result = e.target?.result;
-          if (!(result instanceof ArrayBuffer)) {
-            resolve(false);
-            return;
+          const fileName = (file.file?.name || '').toLowerCase();
+          const isCsv = fileName.endsWith('.csv');
+
+          let columnNames: string[] = [];
+          if (isCsv) {
+            if (typeof result !== 'string') {
+              resolve(false);
+              return;
+            }
+            columnNames = this.parseCsvHeaderColumnNames(result);
+          } else {
+            if (!(result instanceof ArrayBuffer)) {
+              resolve(false);
+              return;
+            }
+            const arrayBuffer = result;
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(arrayBuffer);
+
+            let worksheet: ExcelJS.Worksheet | undefined =
+              workbook.getWorksheet(1);
+            if (!worksheet) {
+              const normalize = (name: string) =>
+                name
+                  .trim()
+                  .toLowerCase()
+                  .replace(/[\s_\-]/g, '');
+
+              const allSheets = workbook.worksheets.map(
+                (ws: ExcelJS.Worksheet) => ({
+                  name: ws.name,
+                  normalized: normalize(ws.name),
+                }),
+              );
+
+              console.log(
+                'Detected sheets:',
+                allSheets.map((sheet) => sheet.name),
+              );
+
+              worksheet =
+                workbook.worksheets.find(
+                  (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0,
+                ) || workbook.worksheets[0];
+            }
+
+            columnNames = (
+              worksheet!.getRow(1).values as (string | undefined)[]
+            ).filter((value) => typeof value === 'string') as string[];
           }
-          const arrayBuffer = result;
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(arrayBuffer);
-
-          let worksheet: ExcelJS.Worksheet | undefined = workbook.getWorksheet(1);
-          if (!worksheet) {
-            const normalize = (name: string) =>
-              name.trim().toLowerCase().replace(/[\s_\-]/g, '');
-
-            const allSheets = workbook.worksheets.map((ws: ExcelJS.Worksheet) => ({
-              name: ws.name,
-              normalized: normalize(ws.name),
-            }));
-
-            console.log('Detected sheets:', allSheets.map((sheet) => sheet.name));
-
-            worksheet = workbook.worksheets.find(
-              (ws: ExcelJS.Worksheet) => ws.getRow(1)?.cellCount > 0
-            ) || workbook.worksheets[0];
-          }
-
-          const columnNames = (
-            worksheet!.getRow(1).values as (string | undefined)[]
-          ).filter((value) => typeof value === 'string');
 
           // Check if file matches any of the depot's input data requirements
           const matchingInputDataItem =
@@ -2196,7 +3666,12 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
       };
       if (this.isFileWithCategory(file.file)) {
-        reader.readAsArrayBuffer(file.file);
+        const fileName = (file.file?.name || '').toLowerCase();
+        if (fileName.endsWith('.csv')) {
+          reader.readAsText(file.file);
+        } else {
+          reader.readAsArrayBuffer(file.file);
+        }
       } else {
         // For descriptor items (loaded from server), consider them valid
         resolve(true);
@@ -2205,7 +3680,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   isFileWithCategory(
-    value: File | (Partial<FileWithCategory> & object) | null | undefined
+    value: File | (Partial<FileWithCategory> & object) | null | undefined,
   ): value is FileWithCategory {
     return (
       !!value &&
@@ -2215,31 +3690,50 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   findMatchingInputDataItem(
-    columnNames: string[]
+    columnNames: string[],
   ): { keyName: string; displayName: string; columnRequired: string[] } | null {
     return (
       this.depotInputDataItems.find((item) => {
         return item.columnRequired.every((requiredCol) =>
-          columnNames.includes(requiredCol)
+          columnNames.includes(requiredCol),
         );
       }) || null
     );
   }
 
-  canExecuteHandleUploadSubmit(): boolean {
-    if (this.preOrderFiles.length === 0) return false;
-    const requiredDisplayNames = this.depotInputDataItems.map(
-      (item) => item.displayName
-    );
+  updateCanUploadState(): void {
+    if (this.preOrderFiles.length === 0) {
+      this.canUpload = false;
+      return;
+    }
+
+    // Check for duplicate categories
+    if (this.hasAnyDuplicateCategories()) {
+      this.canUpload = false;
+      return;
+    }
+
+    // Note: Duplicate file names and file sizes only show warnings but don't disable submit
+
+    // Get only required file types (where required === true)
+    const requiredDisplayNames = this.depotInputDataItems
+      .filter((item) => item.required === true)
+      .map((item) => item.displayName);
+
     const uploadedDisplayNames = this.preOrderFiles
       .map(
         (preOrderFileItem) =>
-          (preOrderFileItem.file as FileWithCategory).displayName
+          (preOrderFileItem.file as FileWithCategory).displayName,
       )
       .filter((displayName) => !!displayName);
-    return requiredDisplayNames.every((required) =>
-      uploadedDisplayNames.includes(required)
+
+    // Check if all required files are uploaded
+    // If no files are required, every() returns true (allowing optional-only uploads)
+    const allRequiredUploaded = requiredDisplayNames.every((required) =>
+      uploadedDisplayNames.includes(required),
     );
+
+    this.canUpload = allRequiredUploaded;
   }
 
   backToStep1() {
@@ -2255,12 +3749,12 @@ export class RunComponent implements OnInit, AfterViewInit {
     dialogRef.componentInstance.title = this.transloco.translate(
       'back_to_upload_step_confirmation',
       {},
-      'index'
+      'index',
     );
     dialogRef.componentInstance.question = this.transloco.translate(
       'do_you_want_to_back_to_upload_step',
       {},
-      'index'
+      'index',
     );
 
     dialogRef.result
@@ -2285,8 +3779,15 @@ export class RunComponent implements OnInit, AfterViewInit {
         this.dataPreOrder = [];
         this.resetComponentValue();
 
+        // Hide transform warnings
+        this.transformWarnings = [];
+        this.transformWarningCollapseStates = [];
+
         // Refresh depot list and input requirements from server with spinner
         this.getMyDepots(true);
+
+        // Reset upload button state
+        this.updateCanUploadState();
       })
       .catch(() => {
         // dismissed: do nothing
@@ -2294,11 +3795,11 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   getDynamicParameters() {
-    const selectedDepotId =
+    const selectedDepotIdName =
       this.getSelectedDepotObject()?.depotId ||
       this.experiment.depots?.[0]?.depotId;
     this.constraintService
-      .getDynamicParameters(selectedDepotId)
+      .getDynamicParameters(selectedDepotIdName)
       .subscribe((response: DynamicParameter[]) => {
         this.allDynamicParameters = response || [];
         if (!this.constraintsFromFileLoaded) {
@@ -2314,7 +3815,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   transformDynamicParametersToConstraint(
-    dynamicParameters: DynamicParameter[]
+    dynamicParameters: DynamicParameter[],
   ): Constraint {
     const constraint: Constraint = {
       earlyDeliveryTime: '',
@@ -2329,7 +3830,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     const chooseTime = (
       value: string | number | null | undefined,
-      defaultValue: string | number | null | undefined
+      defaultValue: string | number | null | undefined,
     ): string => {
       const inputValueTrimmed = String(value ?? '').trim();
       const defaultValueTrimmed = String(defaultValue ?? '').trim();
@@ -2349,7 +3850,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     };
     const chooseNumber = (
       value: string | number | null | undefined,
-      defaultValue: string | number | null | undefined
+      defaultValue: string | number | null | undefined,
     ): number => {
       const numericValue = Number(value);
       const defaultNumericValue = Number(defaultValue);
@@ -2379,7 +3880,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   getConstraintValue(
-    dynamicParameter: DynamicParameter
+    dynamicParameter: DynamicParameter,
   ): string | number | null {
     const key = this.getConstraintKeyForParam(dynamicParameter);
     if (!key) return null;
@@ -2399,7 +3900,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   onParamValueChange(
     dynamicParameter: DynamicParameter,
-    newValue: string | number | null | undefined
+    newValue: string | number | null | undefined,
   ): void {
     const key = this.getConstraintKeyForParam(dynamicParameter);
 
@@ -2457,14 +3958,14 @@ export class RunComponent implements OnInit, AfterViewInit {
       next: (res) => {
         this.toastr.success(
           this.transloco.translate('success', {}, 'index'),
-          this.transloco.translate('set_default_parameter', {}, 'index')
+          this.transloco.translate('set_default_parameter', {}, 'index'),
         );
       },
       error: (err) => {
         console.error(err);
         this.toastr.error(
           this.transloco.translate('failed', {}, 'index'),
-          this.transloco.translate('set_default_parameter_failed', {}, 'index')
+          this.transloco.translate('set_default_parameter_failed', {}, 'index'),
         );
       },
       complete: () => this.hiddenSpinner(),
@@ -2491,7 +3992,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   coerceLocalizedText(
-    value: LocalizedText | string | null | undefined
+    value: LocalizedText | string | null | undefined,
   ): LocalizedText | null {
     if (!value) return null;
     if (typeof value === 'string') {
@@ -2505,9 +4006,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   getSelectedDepotObject(): MyDepot | undefined {
-    if (!this.selectedDepotId) return undefined;
+    if (!this.selectedDepotIdName) return undefined;
     return this.depots.find(
-      (depot) => depot.depotName === this.selectedDepotId
+      (depot) => depot.depotName === this.selectedDepotIdName,
     );
   }
 
@@ -2520,7 +4021,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     let scoped = base;
     if (selectedDepot?.depotId) {
       scoped = base.filter(
-        (dynamicParameter) => dynamicParameter.depotId === selectedDepot.depotId
+        (dynamicParameter) =>
+          dynamicParameter.depotId === selectedDepot.depotId,
       );
     }
     if (!scoped.length) {
@@ -2549,16 +4051,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       }
     }
     const scopedUnique = Object.values(dedupMap);
-
     const defaultLocalized: LocalizedText = { th_TH: '', en_US: '' };
-    type DynamicParameterRaw = Omit<
-      DynamicParameter,
-      'category' | 'displayName' | 'description'
-    > & {
-      category: LocalizedText | string | null | undefined;
-      displayName: LocalizedText | string | null | undefined;
-      description: LocalizedText | string | null | undefined;
-    };
     const normalized: DynamicParameter[] = scopedUnique.map(
       (dynamicParameter) => {
         return {
@@ -2573,7 +4066,7 @@ export class RunComponent implements OnInit, AfterViewInit {
             this.coerceLocalizedText(dynamicParameter.description) ??
             defaultLocalized,
         };
-      }
+      },
     );
 
     const groupsMap: Record<string, DynamicParameter[]> = {};
@@ -2607,28 +4100,28 @@ export class RunComponent implements OnInit, AfterViewInit {
       const originalItems = groupsMap[categoryKey];
       const items = useConstraintsValues
         ? originalItems.map((dynamicParameter) => {
-          const constraintKey =
-            this.getConstraintKeyForParam(dynamicParameter);
-          if (!constraintKey) return dynamicParameter;
-          const constraintValue = this.constraintsData[constraintKey];
-          if (constraintValue === undefined || constraintValue === null) {
-            if (this.isTimeType(dynamicParameter)) {
-              return { ...dynamicParameter, value: '00:00' };
+            const constraintKey =
+              this.getConstraintKeyForParam(dynamicParameter);
+            if (!constraintKey) return dynamicParameter;
+            const constraintValue = this.constraintsData[constraintKey];
+            if (constraintValue === undefined || constraintValue === null) {
+              if (this.isTimeType(dynamicParameter)) {
+                return { ...dynamicParameter, value: '00:00' };
+              }
+              return dynamicParameter;
             }
-            return dynamicParameter;
-          }
-          if (this.isNumberType(dynamicParameter)) {
-            return { ...dynamicParameter, value: Number(constraintValue) };
-          }
-          const trimmedValue = String(constraintValue).trim();
-          return {
-            ...dynamicParameter,
-            value:
-              trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
-                ? '00:00'
-                : trimmedValue,
-          };
-        })
+            if (this.isNumberType(dynamicParameter)) {
+              return { ...dynamicParameter, value: Number(constraintValue) };
+            }
+            const trimmedValue = String(constraintValue).trim();
+            return {
+              ...dynamicParameter,
+              value:
+                trimmedValue === '' || trimmedValue.toLowerCase() === 'null'
+                  ? '00:00'
+                  : trimmedValue,
+            };
+          })
         : originalItems;
       return {
         key: categoryKey,
@@ -2681,7 +4174,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   getConstraintKeyForParam(
-    dynamicParameter: DynamicParameter
+    dynamicParameter: DynamicParameter,
   ): keyof Constraint | null {
     const keyName = (dynamicParameter.keyName || '').trim();
     switch (keyName) {
@@ -2737,5 +4230,342 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   isOverDistanceKey(dynamicParameter: DynamicParameter): boolean {
     return dynamicParameter.keyName === 'MaximumTravelDistance';
+  }
+
+  getMyVehicleTypes() {
+    this.vehicleService
+      .getMyVehicleTypes()
+      .pipe(take(1))
+      .subscribe((res: VehicleType[]) => {
+        this.myVehicleTypes = res || [];
+        this.cdr.detectChanges();
+      });
+  }
+
+  get availableVehicleTypes(): VehicleType[] {
+    return this.myVehicleTypes.filter(
+      (vehicle) => vehicle.isVehicleAvailable ?? false,
+    );
+  }
+
+  isVehicleSelected(vehicleId: string): boolean {
+    return this.selectedVehicleIds.includes(vehicleId);
+  }
+
+  isVehicleAvailable(vehicleId: string): boolean {
+    const vehicle = this.myVehicleTypes.find(
+      (v) => v.vehicleTypeId === vehicleId,
+    );
+    return vehicle ? (vehicle.isVehicleAvailable ?? false) : false;
+  }
+
+  onVehicleChecked(vehicleId: string, checked: boolean): void {
+    if (checked) {
+      this.vehicleSelectionError = false;
+      if (!this.selectedVehicleIds.includes(vehicleId)) {
+        this.selectedVehicleIds = [...this.selectedVehicleIds, vehicleId];
+        if (this.selectedVehicleCounts[vehicleId] == null) {
+          this.selectedVehicleCounts[vehicleId] = 1;
+        }
+        if (this.vehicleSelectionMode[vehicleId] == null) {
+          this.vehicleSelectionMode[vehicleId] = 'count';
+        }
+      }
+    } else {
+      this.selectedVehicleIds = this.selectedVehicleIds.filter(
+        (id) => id !== vehicleId,
+      );
+      if (this.selectedVehicleCounts[vehicleId] != null) {
+        delete this.selectedVehicleCounts[vehicleId];
+      }
+      if (this.vehicleSelectionMode[vehicleId] != null) {
+        delete this.vehicleSelectionMode[vehicleId];
+      }
+      // Clear selected license plates when vehicle is unchecked
+      if (this.selectedLicensePlates[vehicleId] != null) {
+        delete this.selectedLicensePlates[vehicleId];
+      }
+      if (this.selectedVehicleIdsByLicensePlate[vehicleId] != null) {
+        delete this.selectedVehicleIdsByLicensePlate[vehicleId];
+      }
+    }
+    this.cdr.detectChanges();
+  }
+
+  getVehicleName(vehicleId: string): string {
+    const vehicle = this.myVehicleTypes.find(
+      (v) => v.vehicleTypeId === vehicleId,
+    );
+    return vehicle ? vehicle.name : '';
+  }
+
+  getVehicleCount(vehicleId: string): number {
+    const value = this.selectedVehicleCounts[vehicleId];
+    return typeof value === 'number' && !isNaN(value) ? value : 1;
+  }
+
+  onVehicleCountChange(vehicleId: string, value: number): void {
+    const normalized = Number(value);
+    const min = this.getVehicleMinCount();
+    const max = this.getVehicleMaxCount(vehicleId);
+    let clamped = isNaN(normalized) ? min : Math.trunc(normalized);
+    if (clamped < min) {
+      clamped = min;
+    } else if (clamped > max) {
+      clamped = max;
+    }
+
+    this.selectedVehicleCounts[vehicleId] = clamped;
+    this.cdr.detectChanges();
+  }
+
+  openVehicleItemModal(vehicleId: string) {
+    const vehicleType = this.myVehicleTypes.find(
+      (v) => v.vehicleTypeId === vehicleId,
+    );
+
+    if (!vehicleType) {
+      this.toastr.warning(
+        this.transloco.translate('vehicle_not_found', {}, 'index'),
+      );
+      return;
+    }
+
+    const modalRef = this.ngbModal.open(VehicleTypeDialogComponent, {
+      centered: true,
+      size: 'lg',
+      animation: true,
+      backdrop: 'static',
+      keyboard: false,
+    });
+    modalRef.componentInstance.mode = 'view';
+    modalRef.componentInstance.vehicleType = vehicleType;
+  }
+
+  getVehicleMaxCount(vehicleId: string): number {
+    const maxByConstraint = Number(
+      this.constraintsData?.numberOfVehicleAvailable,
+    );
+    if (!isNaN(maxByConstraint) && maxByConstraint > 0) {
+      return maxByConstraint;
+    }
+    return this.defaultVehicleMaxCount;
+  }
+
+  getVehicleMinCount(): number {
+    return 0;
+  }
+
+  getVehicleSelectionMode(vehicleId: string): 'count' | 'license-plate' {
+    return this.vehicleSelectionMode[vehicleId] || 'count';
+  }
+
+  onVehicleSelectionModeChange(
+    vehicleId: string,
+    mode: 'count' | 'license-plate',
+  ): void {
+    const previousMode = this.vehicleSelectionMode[vehicleId];
+    this.vehicleSelectionMode[vehicleId] = mode;
+
+    // Only update mode, preserve existing count values
+    if (previousMode !== mode) {
+      if (mode === 'count') {
+        // Switching to count mode - keep existing count, ensure it has a minimum value of 1
+        if (
+          this.selectedVehicleCounts[vehicleId] == null ||
+          this.selectedVehicleCounts[vehicleId] === 0
+        ) {
+          this.selectedVehicleCounts[vehicleId] = 1;
+        }
+        // Note: We don't delete selectedLicensePlates or selectedVehicleIdsByLicensePlate
+        // so user can switch back without losing their selection
+      } else {
+        // Switching to license-plate mode - preserve existing count value
+        // Count will only update when user actually selects/deselects license plates
+        if (
+          this.selectedVehicleCounts[vehicleId] == null ||
+          this.selectedVehicleCounts[vehicleId] === 0
+        ) {
+          this.selectedVehicleCounts[vehicleId] = 1;
+        }
+      }
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  openLicensePlateSelectionDialog(event: Event, vehicleId: string): void {
+    // Prevent the radio button from being triggered
+    event.stopPropagation();
+
+    const vehicleType = this.myVehicleTypes.find(
+      (v) => v.vehicleTypeId === vehicleId,
+    );
+
+    if (!vehicleType) {
+      this.toastr.warning(
+        this.transloco.translate('vehicle_not_found', {}, 'index'),
+      );
+      return;
+    }
+
+    // Get the depot ID from the selected depot or experiment depots
+    const depotId =
+      this.getSelectedDepotObject()?.depotId ||
+      this.experiment.depots?.[0]?.depotId;
+
+    const modalRef = this.ngbModal.open(LicensePlateSelectionDialogComponent, {
+      centered: true,
+      size: 'lg',
+      animation: true,
+    });
+
+    modalRef.componentInstance.vehicleType = vehicleType;
+    modalRef.componentInstance.vehicleId = vehicleId;
+    modalRef.componentInstance.depotId = depotId;
+    modalRef.componentInstance.preSelectedLicensePlates =
+      this.selectedLicensePlates[vehicleId] || [];
+
+    modalRef.result.then(
+      (result) => {
+        if (result) {
+          // Store the selected license plates for this vehicle type
+          this.selectedLicensePlates[vehicleId] = result.selectedLicensePlates;
+          this.selectedVehicleIdsByLicensePlate[vehicleId] =
+            result.selectedVehicleIds;
+          this.cdr.detectChanges();
+        }
+      },
+      () => {},
+    );
+  }
+
+  getSelectedLicensePlatesCount(vehicleId: string): number {
+    return this.selectedLicensePlates[vehicleId]?.length || 0;
+  }
+
+  getSelectedLicensePlatesDisplay(vehicleId: string): string {
+    const plates = this.selectedLicensePlates[vehicleId];
+    if (!plates || plates.length === 0) {
+      return this.transloco.translate(
+        'no_license_plates_selected',
+        {},
+        'index',
+      );
+    }
+    if (plates.length <= 3) {
+      return plates.join(', ');
+    }
+    return `${plates.slice(0, 3).join(', ')} +${plates.length - 3}`;
+  }
+
+  hasDynamicParameters(): boolean {
+    return (
+      this.dynamicParametersByCategory &&
+      this.dynamicParametersByCategory.length > 0
+    );
+  }
+
+  hasMyVehicleTypes(): boolean {
+    return this.myVehicleTypes && this.myVehicleTypes.length > 0;
+  }
+
+  // Check if any selected vehicle in 'license-plate' mode has no vehicle IDs selected
+  getInvalidVehicleSelections(): string[] {
+    const invalidVehicles: string[] = [];
+
+    for (const vehicleTypeId of this.selectedVehicleIds) {
+      const mode = this.getVehicleSelectionMode(vehicleTypeId);
+
+      if (mode === 'license-plate') {
+        const vehicleIds = this.selectedVehicleIdsByLicensePlate[vehicleTypeId];
+        if (!vehicleIds || vehicleIds.length === 0) {
+          invalidVehicles.push(vehicleTypeId);
+        }
+      }
+    }
+
+    return invalidVehicles;
+  }
+
+  openTransformValidationDialog(validationResponse?: any) {
+    const modalRef = this.ngbModal.open(TransformValidationDialogComponent, {
+      centered: true,
+      animation: true,
+      windowClass: 'transform-validation-modal',
+    });
+    modalRef.componentInstance.validationResponse = validationResponse;
+  }
+
+  setTransformWarnings(warnings: any[]) {
+    this.transformWarnings = warnings.map((warning) => ({
+      ...warning,
+      detail: this.deduplicateByInput(warning.detail),
+    }));
+    this.transformWarningCollapseStates = this.transformWarnings.map(
+      () => true,
+    );
+  }
+
+  private deduplicateByInput(details: any[]): any[] {
+    const seenInputIds = new Set<string>();
+    return details.filter((detail) => {
+      if (seenInputIds.has(detail.input)) return false;
+      seenInputIds.add(detail.input);
+      return true;
+    });
+  }
+
+  toggleTransformWarningCollapse(index: number) {
+    this.transformWarningCollapseStates[index] =
+      !this.transformWarningCollapseStates[index];
+  }
+
+  getWarningTitle(title: string): string {
+    const titleMap: Record<string, string> = {
+      products: this.transloco.translate('product_missing', {}, 'index'),
+    };
+    return titleMap[title] || title;
+  }
+
+  getWarningTypeLabel(errorType: string): string {
+    const scopedKey = `validation.${errorType}`;
+    const translated = this.transloco.translate(scopedKey, { errorType });
+    if (translated === scopedKey) {
+      return this.transloco.translate('validation.unknown_validation_error', { errorType });
+    }
+    return translated;
+  }
+
+  getValidationMessage(type: string, params: any): string {
+    return this.cachedGetValidationMessage(type, params);
+  }
+
+  setValidationWarnings(warnings: any[]) {
+    this.cachedGetValidationMessage = createCachedValidationMessageFn(
+      this.transloco,
+    );
+    const safeWarnings = (warnings || []).map((warning) =>
+      warning.errorType === 'missing_product'
+        ? { ...warning, detail: this.deduplicateByInput(warning.detail) }
+        : warning,
+    );
+    this.validationWarnings = safeWarnings;
+    this.validationWarningCollapseStates = safeWarnings.map(() => false);
+    this.validationWarningTableRows = buildTableRows(safeWarnings);
+    this.validationWarningCollapse = false;
+  }
+
+  getRowsForWarning(warning: any): ValidationTableRow[] {
+    return buildTableRows([warning]);
+  }
+
+  toggleValidationWarningCollapse(index?: number) {
+    if (index !== undefined) {
+      this.validationWarningCollapseStates[index] =
+        !this.validationWarningCollapseStates[index];
+    } else {
+      this.validationWarningCollapse = !this.validationWarningCollapse;
+    }
   }
 }

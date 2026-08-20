@@ -1,0 +1,106 @@
+<ng-container *transloco="let t; read: 'index'">
+  <ng-container #loading *ngIf="isLoading">
+    <div class="text-center py-4">
+      <mat-spinner diameter="40" class="mx-auto mb-3"></mat-spinner>
+      <p class="text-muted">{{ t("loading") }}...</p>
+    </div>
+  </ng-container>
+
+  <ng-container #content *ngIf="!isLoading">
+    <div class="modal-body">
+      <div class="mb-3 d-flex gap-2">
+        <div (keyup.enter)="onSearch()" class="flex-fill">
+          <app-input-field
+            [control]="searchControl"
+            [placeholder]="t('search_license_plate')"
+            type="text"
+            height="42px"
+          ></app-input-field>
+        </div>
+        <button
+
+        class="btn btn-outline-secondary btn-search"
+          type="button"
+          (click)="onSearch()"
+        >
+          <mat-icon>search</mat-icon>
+        </button>
+        <button
+          class="btn btn-outline-secondary btn-clear"
+          type="button"
+          (click)="onClearSearch()"
+          *ngIf="activeSearchText"
+        >
+          <mat-icon>clear</mat-icon>
+        </button>
+      </div>
+
+      <!-- Empty state -->
+      <div class="text-center py-4" *ngIf="filteredLicensePlates.length === 0">
+        <mat-icon
+          class="text-muted"
+          style="font-size: 64px; width: 64px; height: 64px; opacity: 0.5"
+          >directions_car</mat-icon
+        >
+        <p class="text-muted mt-3">{{ t("no_vehicles_found") }}</p>
+      </div>
+
+      <!-- License plates list -->
+      <div class="border rounded mb-3" *ngIf="filteredLicensePlates.length > 0">
+        <!-- License plate items -->
+        <div class="row g-0" style="max-height: 350px; overflow-y: auto">
+          <div
+            class="col-6 p-3"
+            *ngFor="let item of filteredLicensePlates; let i = index"
+            (click)="onLicensePlateToggle(item)"
+            style="cursor: pointer"
+          >
+            <mat-checkbox
+              [checked]="item.isSelected"
+              (change)="onLicensePlateToggle(item)"
+              (click)="$event.stopPropagation()"
+            >
+              <strong>{{ item.licensePlate }}</strong>
+            </mat-checkbox>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected License plates list -->
+      <div class="border rounded p-3" *ngIf="selectedLicensePlates.length > 0">
+        <mat-chip-set aria-label="Selected license plates">
+          <mat-chip
+            *ngFor="let item of selectedLicensePlates"
+            highlighted
+            removable
+            (removed)="onRemoveChip(item)"
+            class="text-capitalize chip-outline"
+            color="primary"
+          >
+            {{ item.licensePlate }}
+            <mat-icon matChipRemove class="opacity-100">cancel</mat-icon>
+          </mat-chip>
+        </mat-chip-set>
+        <div class="text-right">
+          <span>{{ "total" | transloco }}: {{ selectedCount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="close()">
+        {{ "cancel" | transloco }}
+      </button>
+      <button
+        type="button"
+        ngbAutofocus
+        mat-raised-button
+        class="bg-custom-primary"
+        (click)="confirm()"
+        [disabled]="selectedCount === 0"
+      >
+        {{ "confirm" | transloco }}
+      </button>
+    </div>
+  </ng-container>
+</ng-container>

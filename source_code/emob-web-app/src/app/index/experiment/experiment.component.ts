@@ -34,6 +34,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     { def: 'select', label: 'select', visible: true },
     { def: 'Name', label: 'name', visible: true },
     { def: 'actions', label: 'actions', visible: true },
+    { def: 'DepotName', label: 'depot_name', visible: true },
     { def: 'TimeStamp', label: 'timestamp', visible: true },
     { def: 'TimeStart', label: 'run_start', visible: true },
     { def: 'TimeEnd', label: 'run_end', visible: true },
@@ -50,7 +51,6 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     countReroute: 0,
   };
 
-  interval: any;
   dataSource = new MatTableDataSource<Experiment>([]);
   selection = new SelectionModel<Experiment>(false);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -66,7 +66,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     private readonly toastr: ToastrService,
     private readonly userMsGraphService: UserMSGraphService,
     private readonly transloco: TranslocoService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.loadDisplayedColumns();
@@ -89,8 +89,9 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     this.showSpinner();
     this.experimentService.getExperiments().subscribe({
       next: (response) => {
+        console.log('response', response);
         this.dataSource.data = response;
-        this.dataSource.paginator = this.paginator;    
+        this.dataSource.paginator = this.paginator;
         this.hiddenSpinner();
         this.spinner.hide();
       },
@@ -122,7 +123,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     }
   }
 
-  toggleSelection(row: any) {
+  toggleSelection(row: Experiment) {
     this.selection.clear(); // Clear previous selections
     this.selection.toggle(row); // Select the new row
   }
@@ -199,7 +200,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     this.openConsumptionDialog('');
     this.hiddenSpinner();
   }
-  objectToStringArray(value: any): string[] {
+  objectToStringArray(value: unknown): string[] {
     if (!value || typeof value !== 'object') {
       return [];
     }
@@ -207,7 +208,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     return Object.entries(value).map(([key, val]) => `${key}: ${val}`);
   }
 
-  objectToStringWithNewlines(obj: { [key: string]: any }): string {
+  objectToStringWithNewlines(obj: { [key: string]: unknown }): string {
     return Object.entries(obj)
       .map(([key, value]) => `${key}: ${value}`)
       .join('\n');
@@ -225,12 +226,14 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       size: 'lg',
     });
     dialogRef.componentInstance.dynamicParameters = dynamicParameters;
-    dialogRef.result.then((confirmed: boolean) => {
-      console.log(`Parameters dialog: confirmed = ${confirmed}`);
-      if (confirmed) {
-        console.log('confirmed');
-      }
-    }).catch(() => {});
+    dialogRef.result
+      .then((confirmed: boolean) => {
+        console.log(`Parameters dialog: confirmed = ${confirmed}`);
+        if (confirmed) {
+          console.log('confirmed');
+        }
+      })
+      .catch(() => {});
   }
 
   openConsumptionDialog(size: string) {
@@ -245,12 +248,14 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       size: size,
     });
     dialogRef.componentInstance.paramsConsumption = this.paramsConsumption;
-    dialogRef.result.then((confirmed: boolean) => {
-      console.log(`Consumption dialog: confirmed = ${confirmed}`);
-      if (confirmed) {
-        console.log('confirmed');
-      }
-    }).catch(() => {});
+    dialogRef.result
+      .then((confirmed: boolean) => {
+        console.log(`Consumption dialog: confirmed = ${confirmed}`);
+        if (confirmed) {
+          console.log('confirmed');
+        }
+      })
+      .catch(() => {});
   }
   openConfirmDialog(
     title: string,

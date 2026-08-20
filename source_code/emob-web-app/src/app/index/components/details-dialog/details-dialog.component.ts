@@ -13,10 +13,10 @@ export class DetailsDialogComponent {
     private readonly activeModal: NgbActiveModal
   ) {
   }
-  isArray(checkType: any): boolean {
+  isArray(checkType: unknown): boolean {
     return Array.isArray(checkType);
   }
-  isString(value: any): boolean {
+  isString(value: unknown): boolean {
     return typeof value === 'string';
   }
   get messageArray(): string[] {

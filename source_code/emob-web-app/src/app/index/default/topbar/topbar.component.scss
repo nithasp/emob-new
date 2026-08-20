@@ -12,6 +12,7 @@
   -moz-box-shadow: 0 8px 6px -6px #999;
   box-shadow: 0 8px 6px -6px #999;
   /* the rest of your styling */
+  z-index: 100;
 }
 
 .navbar-nav .dropdown-menu {
@@ -97,6 +98,26 @@
 .flag-navbar {
   position: relative;
   bottom: 2px;
+}
+
+.nav-item {
+  button {
+    &.active {
+      transition: border-width 0.4s linear;
+      border-bottom: solid 4px #04948c;
+    }
+  }
+  .dropdown-item {
+    font-size: 14px;
+    &.active {
+      background-color: #0e145f !important;
+      color: white;
+    }
+    &:hover,
+    &:focus {
+      background-color: #e2e6ea;
+    }
+  }
 }
 
 @media screen and (max-width: 992px) {

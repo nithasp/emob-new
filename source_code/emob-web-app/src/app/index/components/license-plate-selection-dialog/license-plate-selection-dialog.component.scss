@@ -1,0 +1,9 @@
+:host ::ng-deep {
+  .mdc-label {
+    margin-bottom: 0 !important;
+  }
+}
+
+.btn-search, .btn-clear {
+  height: 42px;
+}

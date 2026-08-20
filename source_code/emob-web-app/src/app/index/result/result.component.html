@@ -48,7 +48,7 @@
               <input
                 type="text"
                 class="form-control bg-white"
-                [value]="t('status_' + (experiment?.run || '').toLowerCase())"
+                [value]="experiment?.run"
                 disabled
               />
             </div>
@@ -100,9 +100,7 @@
               <input
                 type="text"
                 class="form-control bg-white"
-                [value]="
-                  t('status_' + (experiment?.status || '').toLowerCase())
-                "
+                [value]="experiment?.status"
                 disabled
               />
             </div>
@@ -125,38 +123,129 @@
         </mat-card>
       </div>
       <div class="col-md-7 mb-3">
-        <div class="table-responsive mb-3">
-          <table class="table table-striped table-bordered">
-            <thead class="thead-dark">
+        <div class="d-flex gap-1 mb-2">
+          <button
+            class="btn btn-outline-secondary btn-sm rounded-pill d-flex align-items-center gap-1 vrp-toggle-btn"
+            [class.vrp-toggle-active]="vrpStatsView === 'dashboard'"
+            (click)="vrpStatsView = 'dashboard'"
+          >
+            <mat-icon class="vrp-toggle-icon">data_object</mat-icon> Dashboard
+          </button>
+          <button
+            class="btn btn-outline-secondary btn-sm rounded-pill d-flex align-items-center gap-1 vrp-toggle-btn"
+            [class.vrp-toggle-active]="vrpStatsView === 'keyvalue'"
+            (click)="vrpStatsView = 'keyvalue'"
+          >
+            <mat-icon class="vrp-toggle-icon">list</mat-icon> All Metrics
+          </button>
+        </div>
+
+        <div class="border rounded overflow-hidden bg-white vrp-section mb-3" *ngIf="vrpStatsView === 'dashboard'">
+          <div class="vrp-bg-primary text-white fw-semibold px-3 py-2 vrp-dashboard-header">VRP Statistics Dashboard Overview</div>
+
+          <div class="d-flex border-bottom overflow-auto">
+            <div
+              *ngFor="let card of vrpDashboardCards; let last = last"
+              class="flex-fill p-3"
+              [class.border-end]="!last"
+            >
+              <div class="fs-6 text-secondary fw-semibold small mb-1 vrp-card-label">{{ card.label }}</div>
+              <div
+                class="fs-5 fw-bold d-flex align-items-center gap-1 vrp-card-value"
+                [class.text-success]="card.isFeasible === true"
+                [class.text-danger]="card.isFeasible === false"
+              >
+                <span>
+                  @if(isNumber(card.value)){
+                    {{ getNumberValue(card.value) | number : "1.0-2" }}
+                  }@else{
+                    {{ card.value }}
+                  }
+                </span>
+                @if(card.isFeasible === true){
+                  <mat-icon class="text-success vrp-status-icon">check_circle</mat-icon>
+                }@else if(card.isFeasible === false){
+                  <mat-icon class="text-danger vrp-status-icon">cancel</mat-icon>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="vrp-dashboard-info overflow-auto">
+            <table class="table table-sm mb-0 vrp-dashboard-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>metric</th>
+                  <th class="text-right">totalValue</th>
+                  <th class="text-right">excessValue</th>
+                  <th class="text-center">unit</th>
+                  <th class="text-center">status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of vrpDashboardRows">
+                  <td class="text-secondary fw-semibold">{{ row.index }}</td>
+                  <td>{{ row.metric }}</td>
+                  <td class="text-right">
+                    @if(row.totalValue !== null){
+                      {{ row.totalValue | number : "1.0-2" }}
+                    }@else{
+                      <span class="text-muted">-</span>
+                    }
+                  </td>
+                  <td class="text-right">
+                    @if(row.excessValue !== null){
+                      {{ row.excessValue | number : "1.0-1" }}
+                    }@else{
+                      <span class="text-muted">-</span>
+                    }
+                  </td>
+                  <td class="text-center text-secondary small">{{ row.unit }}</td>
+                  <td class="text-center">
+                    @if(row.statusOk === true){
+                      <span class="badge bg-success">OK</span>
+                    }@else if(row.statusOk === false){
+                      <span class="badge bg-danger">Excess</span>
+                    }@else{
+                      <span class="text-muted">-</span>
+                    }
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-vrp-stats border rounded overflow-hidden bg-white vrp-section mb-3" *ngIf="vrpStatsView === 'keyvalue'">
+          <table class="table table-sm table-hover mb-0">
+            <thead>
               <tr>
-                <th
-                  *ngFor="let col of headersReport"
-                  scope="col"
-                  class="text-wrap"
-                >
-                  {{ t(col) }}
-                </th>
+                <th scope="col">Property</th>
+                <th scope="col" class="text-right">Value</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let row of dataSourceReport">
+                <td class="fw-semibold text-secondary">{{ row["property"] }}</td>
                 <td
-                  *ngFor="let col of headersReport"
+                  class="text-right"
                   [ngClass]="{
-                    'td-warning':
-                      row[col] === null || '' || row[col] === undefined
+                    'text-success fw-semibold': row['value'] === 'Yes',
+                    'text-danger fw-semibold': row['value'] === 'No'
                   }"
                 >
-                  @if(isNumber(row[col])){
-                  {{ row[col] | number : "1.0-2" }}
+                  @if(isNumber(row['value'])){
+                    {{ getNumberValue(row["value"]) | number : "1.0-2" }}
                   }@else{
-                  {{ row[col] }}
+                    {{ row["value"] }}
                   }
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+
       </div>
 
       <div id="filter-result" class="col-md-5">
@@ -173,7 +262,7 @@
                   ngbDropdownToggle
                   class="btn btn-outline-secondary btn-sm text-capitalize d-flex align-items-center justify-content-between w-100 text-black"
                 >
-                  {{ t(selectedSearchOption) }}
+                  {{ t(selectedSearchOption | snakeCase) }}
                 </button>
                 <div ngbDropdownMenu class="w-100">
                   <button
@@ -182,7 +271,7 @@
                     (click)="setSearchOption(item)"
                     class="text-capitalize text-black"
                   >
-                    {{ t(item) }}
+                    {{ t(item | snakeCase) }}
                   </button>
                 </div>
               </div>
@@ -251,7 +340,7 @@
                 class="text-capitalize chip-outline"
                 color="primary"
               >
-                {{ t(f.column) }}
+                {{ t(f.column | snakeCase) }}
                 {{ t(f.criteria) }}
                 {{ f.value }}
                 <mat-icon matChipRemove class="opacity-100">cancel</mat-icon>
@@ -366,7 +455,7 @@
                 mat-sort-header
                 class="text-wrap text-capitalize"
               >
-                {{ t(column) }}
+                {{ t(column | snakeCase) }}
               </th>
               <td
                 mat-cell
@@ -379,16 +468,16 @@
                       {{ element[column] | number : "1.0-0" }} {{ t("kg") }}
                     </ng-container>
 
-                    <ng-container *ngSwitchCase="'travel_distance'">
+                    <ng-container *ngSwitchCase="'travelDistance'">
                       {{ element[column] | number : "1.0-0" }} {{ t("km") }}
                     </ng-container>
 
-                    <ng-container *ngSwitchCase="'travel_duration'">
-                      {{ element[column] / 60 | number : "1.0-2" }}
+                    <ng-container *ngSwitchCase="'travelDuration'">
+                      {{ element[column] / 3600 | number : "1.0-2" }}
                       {{ "hours" | transloco }}
                     </ng-container>
-                    <ng-container *ngSwitchCase="'service_time'">
-                      {{ element[column] / 60 | number : "1.0-2" }}
+                    <ng-container *ngSwitchCase="'serviceTime'">
+                      {{ element[column] / 3600 | number : "1.0-2" }}
                       {{ "hours" | transloco }}
                     </ng-container>
 
@@ -426,7 +515,7 @@
                   <button
                     mat-raised-button
                     class="bg-custom-secondary small-button"
-                    (click)="openRouteDetails(element.route_index)"
+                    (click)="openRouteDetails(element.routeIndex)"
                     [disabled]="isLoading"
                   >
                     <mat-icon>route</mat-icon>
@@ -458,24 +547,18 @@
                       }"
                       (click)="handleDistance(node)"
                     >
-                      {{
-                        i === 0 || i === element.route.length - 1
-                          ? t("depot_expand")
-                          : node
-                      }}
-                      <div class="text">
-                        @if(i === 1) {
-                        {{ element.depot2first_distance | number : "1.0-1" }}
-                        {{ "km" | transloco }}
-                        } @else if (i === element.route.length - 1) {
-                        {{ element.last2depot_distance | number : "1.0-1" }}
-                        {{ "km" | transloco }}
-                        } @else if(i !== 0) {
+                      <div class="route-node-label">
                         {{
-                          element.customers_distance[i - 2] | number : "1.0-1"
+                          i === 0 || i === element.route.length - 1
+                            ? t("depot_expand")
+                            : node
                         }}
-                        {{ "km" | transloco }} }@else {
-                        {{ 0 | number : "1.0-1" }} {{ "km" | transloco }} }
+                      </div>
+                      <div class="route-node-distance">
+                        @if(element.routeDistances?.[i] != null) {
+                        {{ element.routeDistances[i] | number : "1.0-1" }}
+                        {{ "km" | transloco }}
+                        }
                       </div>
                     </div>
                     }
@@ -517,7 +600,7 @@
         <div
           id="popupMapResult"
           class="ol-popup"
-          [ngClass]="{ 'depot-popup': popupContent?.is_depot }"
+          [ngClass]="{ 'depot-popup': popupContent?.['isDepot'] }"
           [hidden]="!mapAlreadyRendered"
         >
           <div
@@ -528,33 +611,33 @@
           >
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.route_label"
+              *ngIf="popupContent?.['routeLabel']"
             >
               <strong>{{ t("route_label") }} : </strong>
-              <span>{{ popupContent?.route_label }}</span>
+              <span>{{ popupContent['routeLabel'] }}</span>
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.node_index"
+              *ngIf="popupContent?.['nodeIndex']"
             >
               <strong>{{ t("point_index") }} : </strong>
-              <span>{{ popupContent["node_index"] }}</span>
+              <span>{{ popupContent["nodeIndex"] }}</span>
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.route_order"
+              *ngIf="popupContent?.['routeOrder']"
             >
               <strong>{{ t("route_order") }} : </strong>
-              <span>{{ popupContent["route_order"] }}</span>
+              <span>{{ popupContent["routeOrder"] }}</span>
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.name"
+              *ngIf="popupContent?.['name']"
             >
               <strong>
                 <span>
                   {{
-                    popupContent.is_depot ? t("depot_name") : t("order_id")
+                    popupContent['isDepot'] ? t("depot_name") : t("order_id")
                   }}</span
                 >
                 <span> : </span>
@@ -563,44 +646,44 @@
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.num_customers"
+              *ngIf="popupContent?.['numCustomers']"
             >
               <strong>{{ t("total_points") }} : </strong>
-              <span>{{ popupContent["num_customers"] }}</span>
+              <span>{{ popupContent["numCustomers"] }}</span>
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.distance"
+              *ngIf="popupContent?.['distance']"
             >
               <strong>{{ t("distance") }} : </strong>
               <span
-                >{{ popupContent["distance"] | number : "1.2-2" }}
+                >{{ getNumberValue(popupContent["distance"] || 0) | number : "1.2-2" }}
                 {{ "kilometer" | transloco }}</span
               >
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.duration"
+              *ngIf="popupContent?.['duration']"
             >
               <strong>{{ t("duration") }} : </strong>
               <span>
-                {{ popupContent["duration"] / 60 | number : "1.2-2" }}
+                {{ getNumberValue(popupContent["duration"] || 0) / 60 | number : "1.2-2" }}
                 {{ "hours" | transloco }}</span
               >
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.weight"
+              *ngIf="popupContent?.['weight']"
             >
               <strong>{{ t("weight") }} : </strong>
               <span
-                >{{ popupContent["weight"] | number : "1.2-2" }}
+                >{{ getNumberValue(popupContent["weight"] || 0) | number : "1.2-2" }}
                 {{ "kg" | transloco }}.</span
               >
             </p>
             <p
               class="d-inline-block text-truncate mr-2"
-              *ngIf="popupContent?.zone"
+              *ngIf="popupContent?.['zone']"
             >
               <strong>{{ t("zone") }} : </strong>
               <span>{{ popupContent["zone"] }}</span>

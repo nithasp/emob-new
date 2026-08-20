@@ -1,0 +1,40 @@
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ConfigurationRoutingModule } from './configuration-routing.module';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MaterialModule } from 'src/app/material.module';
+import { TranslocoModule } from '@jsverse/transloco';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { IndexModule } from '../index.module';
+import { NgxSpinnerModule } from 'ngx-spinner';
+
+import { ConfigurationComponent } from './configuration.component';
+import { UploadComponent } from './upload/upload.component';
+import { UploadFileComponent } from './upload-file/upload-file.component';
+import { InputFieldComponent } from 'src/app/shared/components/form/input-field/input-field.component';
+import { InputSelectComponent } from 'src/app/shared/components/form/input-select/input-select.component';
+
+@NgModule({
+  declarations: [
+    ConfigurationComponent,
+    UploadComponent,
+    UploadFileComponent
+  ],
+  imports: [
+    CommonModule,
+    ConfigurationRoutingModule,
+    IndexModule,
+    TranslocoModule,
+    NgbModule,
+    MaterialModule,
+    FormsModule,
+    NgxSpinnerModule,
+    ReactiveFormsModule,
+    MaterialModule,
+    NgbModule,
+    InputFieldComponent,
+    InputSelectComponent
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+})
+export class ConfigurationModule {}

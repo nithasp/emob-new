@@ -53,7 +53,7 @@ export class CustomerListComponent implements OnInit {
     if (existingIndex !== -1) {
       // Replace the existing entry
       this.customersLocationUpdated[existingIndex] = {
-        node_id: customer.node_id,
+        nodeId: customer.nodeId,
         index: customer.index,
         name: customer.name,
         latitude: locationUpdated.latitude,
@@ -62,7 +62,7 @@ export class CustomerListComponent implements OnInit {
     } else {
       // Add a new entry
       this.customersLocationUpdated.push({
-        node_id: customer.node_id,
+        nodeId: customer.nodeId,
         index: customer.index,
         name: customer.name,
         latitude: locationUpdated.latitude,
@@ -91,28 +91,56 @@ export class CustomerListComponent implements OnInit {
   selectData() {
     const selected = this.customersToVerify[this.selectedIndex];
     const keyed = this.groupedDataPreOrder?.[selected?.name];
-    const fallback = keyed || {
-      ORDERID_ORG: selected?.name,
-      CHANNEL: selected?.extra?.channel || '',
-      CUSTOMER_NAME: selected?.extra?.customer_name || '',
-      TEL: selected?.extra?.tel || '',
-      ADDRESS: selected?.original_address?.address || '',
-      AUMPHER: selected?.original_address?.district || '',
-      PROVINCE: selected?.original_address?.province || '',
-      ZIPCODE: Number(selected?.original_address?.postal_code || 0),
-      details: (selected?.extra?.products_info || []).map((p) => ({
-        PRODUCTID: String(p.product_id || ''),
-        ORDER_ID: p.order_id || null,
-        PRODUCTNAME: p.product_name || '',
-        QUANTITYMAIN: Number(p.quantity_major || 0),
-        QUANTITYMINOR: Number(p.quantity_minor || 0),
-        UserConfirm: p.user_confirm || null,
-        DateConfirm: p.date_confirm || null,
-      })),
+    const products: any[] = (selected?.productQuantity?.length ? selected.productQuantity : null)
+      || selected?.extra?.productsInfo
+      || [];
+
+    const base =
+      keyed ||
+      ({
+        ORDERID_ORG: selected?.nodeId,
+        CHANNEL: '',
+        CUSTOMER_NAME: '',
+        TEL: '',
+        ADDRESS: selected?.originalAddress?.address || '',
+        AUMPHER: selected?.originalAddress?.district || '',
+        PROVINCE: selected?.originalAddress?.province || '',
+        ZIPCODE: Number(selected?.originalAddress?.postalCode || 0),
+        details: products.map((p: any) => ({
+          PRODUCTID: String(p.productId || ''),
+          ORDER_ID: p.skuCode || p.orderId || null,
+          PRODUCTNAME: p.name || p.productName || '',
+          QUANTITYMAIN: Number(p.productQuantity ?? p.quantityMajor ?? 0),
+          QUANTITYMINOR: Number(p.quantityMinor ?? 0),
+          UserConfirm: p.userConfirm || null,
+          DateConfirm: p.dateConfirm || null,
+        })),
+      } as unknown as DetailsPreOder);
+
+    // Match openCustomerOrderDetails in run.component: runtime customers use
+    // additionalProperties + name, not only Excel-grouped rows or extra.*.
+    const channel =
+      selected?.additionalProperties?.channel ??
+      base.CHANNEL ??
+      selected?.extra?.channel ??
+      '';
+    const customerName =
+      selected?.name || base.CUSTOMER_NAME || selected?.extra?.customerName || '';
+    const tel =
+      selected?.additionalProperties?.telephone ??
+      base.TEL ??
+      selected?.extra?.tel ??
+      '';
+
+    const dataPreOder: DetailsPreOder = {
+      ...base,
+      CHANNEL: channel,
+      CUSTOMER_NAME: customerName,
+      TEL: tel,
     };
 
     this.customerSelected = {
-      dataPreOder: fallback,
+      dataPreOder,
       dataCustomer: selected,
       locationType: this.findLocationType(selected.name),
     };
@@ -133,8 +161,8 @@ export class CustomerListComponent implements OnInit {
     );
   }
   selectCustomer(customer: Customer) {
-    this.selectedIndex =
-      this.customersToVerify.findIndex((c) => c.name === customer.name) || 0;
+    const idx = this.customersToVerify.findIndex((c) => c.name === customer.name);
+    this.selectedIndex = idx >= 0 ? idx : 0;
     console.log('Selected customer:', this.selectedIndex);
     this.selectData();
   }

@@ -1,3 +1,11 @@
+export interface TimeRangeValidatorConfig {
+  startTimeField: string;
+  endTimeField: string;
+  startTimeErrorMessage?: string;
+  endTimeErrorMessage?: string;
+  errorKey?: string;
+}
+
 export class Time {
     hour: number = 0;
     minute:number = 0;

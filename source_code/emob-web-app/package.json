@@ -1,12 +1,12 @@
 {
   "name": "emob-web-app",
-  "version": "v0.7.4",
+  "version": "v0.7.8",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config src/proxy.conf.json --verbose",
     "start:dev": "ng serve --configuration=development",
     "start:test": "ng serve --configuration=test",
-    "build:dev": "ng build --configuration=development --aot --progress",
+    "build:dev": "ng build --configuration=development --aot --progress --output-hashing=all",
     "build:test": "ng build --configuration=test --aot --optimization --progress",
     "build:prod": "ng build --configuration=production --aot --optimization --progress",
     "build": "ng build --configuration=production --aot --optimization --progress",

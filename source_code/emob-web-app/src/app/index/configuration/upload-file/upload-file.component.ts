@@ -5,6 +5,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { TranslocoService } from '@jsverse/transloco';
 import { ToastrService } from 'ngx-toastr';
 import {
   ActualLocation,
@@ -36,26 +37,32 @@ export class UploadFileComponent implements OnInit {
   constructor(
     private readonly toastr: ToastrService,
     public readonly activeModal: NgbActiveModal,
-    private readonly ngbModal: NgbModal
+    private readonly ngbModal: NgbModal,
+    private readonly transloco: TranslocoService
   ) {}
 
   ngOnInit(): void {}
 
-  onFileSelected(files: any) {
+  onFileSelected(files: FileList | Event): void {
     console.log('onFileSelected', files);
-    let file: File;
+    let file: File | undefined;
+    let fileCount = 0;
+
     if (files instanceof FileList) {
       file = files[0];
-      if (files.length > 1) {
-        this.toastr.warning('Cannot use multiple files');
-      }
+      fileCount = files.length;
     } else {
-      file = files.target.files[0];
-      const target: DataTransfer = <DataTransfer>files.target;
-      if (target.files.length > 1) {
-        this.toastr.warning('Cannot use multiple files');
+      const target = files.target as HTMLInputElement;
+      if (target?.files) {
+        file = target.files[0];
+        fileCount = target.files.length;
       }
     }
+
+    if (fileCount > 1) {
+      this.toastr.warning('Cannot use multiple files');
+    }
+
     if (file) {
       if (!this.validTypes.includes(file.type)) {
         this.alertInvalidation(
@@ -69,8 +76,11 @@ export class UploadFileComponent implements OnInit {
     }
   }
 
-  resetFileInput(event: any): void {
-    event.target.value = null;
+  resetFileInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (target) {
+      target.value = '';
+    }
   }
 
   /**
@@ -92,10 +102,11 @@ export class UploadFileComponent implements OnInit {
     const normalize = (s: string) =>
       s.trim().toLowerCase().replace(/\s+/g, '_');
 
-    const rawActual: string[] = (worksheet.getRow(1).values as any[])
+    const headerRow = worksheet.getRow(1);
+    const rawActual: string[] = (Array.isArray(headerRow.values) ? headerRow.values : [])
       .slice(1)
-      .map((h) => (h ?? '').toString())
-      .filter((cell) => cell.trim() !== '' && cell !== 'Unnamed: 0');
+      .map((cell) => (cell ?? '').toString())
+      .filter((cellValue) => cellValue.trim() !== '' && cellValue !== 'Unnamed: 0');
 
     const rawExpected: string[] = [...this.headersColumns];
 
@@ -119,14 +130,14 @@ export class UploadFileComponent implements OnInit {
       // );
 
       this.alertInvalidation(
-        'Header Columns are incorrect.',
+        this.transloco.translate('header_columns_incorrect', {}, 'index'),
         `<div>
           <div class="mb-1">
-            <p class="mb-0">Missing Columns:</p>
+            <p class="mb-0">${this.transloco.translate('missing_columns', {}, 'index')}</p>
             <p>${missingRaw.join(', ')}</p>
           </div>
           <div class="text-muted small">
-            <p class="mb-0">Expected Columns:</p>
+            <p class="mb-0">${this.transloco.translate('expected_columns', {}, 'index')}</p>
             <p>${rawExpected.join(', ')}</p>
           </div>
         </div>`
@@ -148,9 +159,9 @@ export class UploadFileComponent implements OnInit {
       centered: true,
       animation: true,
     });
-    dialogRef.componentInstance.title = 'Upload File Confirmation';
-    dialogRef.componentInstance.question = `Confirm uploading ${file.name} to category?`;
-    dialogRef.componentInstance.message = `If you upload ${file.name} to the incorrect category, it will affect your route planning AI service.`;
+    dialogRef.componentInstance.title = this.transloco.translate('upload_file_confirmation', {}, 'index');
+    dialogRef.componentInstance.question = this.transloco.translate('upload_file_confirmation_question', { fileName: file.name }, 'index');
+    dialogRef.componentInstance.message = this.transloco.translate('upload_file_confirmation_message', { fileName: file.name }, 'index');
 
     dialogRef.result.then((confirmed: boolean) => {
       if (confirmed) {

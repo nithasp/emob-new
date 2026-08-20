@@ -17,9 +17,9 @@
           }"
           *ngFor="let item of customersToVerify; let i = index"
           (click)="selectCustomer(item)" 
-          [value]="item.name"
+          [value]="item.nodeId"
           [disabled]="isDisabled(i)">
-            {{ item.name }}
+            {{ item.nodeId }}
           </mat-list-item>
         </mat-selection-list>
 

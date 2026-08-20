@@ -1,0 +1,48 @@
+<ng-container *transloco="let t; read: 'index'">
+  <div class="modal-header">
+    <div class="d-flex align-items-center gap-2">
+      <h2 class="modal-title text-danger m-0 fw-bold">
+        {{ t('validation_dialog_title') }}
+      </h2>
+    </div>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="close()"
+    ></button>
+  </div>
+
+  <div class="modal-body">
+    <div class="validation-table-wrapper" *ngIf="tableRows.length; else emptyError">
+      <table class="table validation-table">
+        <thead>
+          <tr>
+            <th>{{ t('validation_table_header_file_name') }}</th>
+            <th>{{ t('validation_table_header_message') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of tableRows">
+            <td class="file-name-cell">{{ row.fileName }}</td>
+            <td>{{ getValidationMessage(row.type, row.params) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #emptyError>
+      <div class="empty-error-state">
+        <span class="empty-error-icon">&#9888;</span>
+        <p class="empty-error-title">{{ t('validation_dialog_empty_error_title') }}</p>
+        <p class="empty-error-desc">{{ t('validation_dialog_empty_error_desc') }}</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="close()">
+      {{ 'close' | transloco }}
+    </button>
+  </div>
+</ng-container>

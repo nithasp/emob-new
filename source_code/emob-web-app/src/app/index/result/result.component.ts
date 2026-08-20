@@ -57,15 +57,19 @@ import { MapDetailsDialogComponent } from '../components/map-details-dialog/map-
 import { Workbook } from 'exceljs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExperimentService } from 'src/app/services/experiment.service';
-import {
-  Experiment,
-  NodeSheet,
-  PlanDetail,
-} from 'src/app/models/experiment.model';
+import { Experiment } from 'src/app/models/experiment.model';
+import { FilterCriteria } from 'src/app/models/common.model';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import { firstValueFrom, take } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
-import { RouteInfo } from 'src/app/models/location.model';
+import {
+  RouteInfo,
+  FeatureCollection,
+  ReportDataItem,
+  PopupContent,
+  NumberValue,
+  MapPointerBrowserEvent,
+} from 'src/app/models/location.model';
 import { FormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
@@ -100,27 +104,43 @@ export class ResultComponent implements OnInit, AfterViewInit {
   public iconStyle?: Style;
   allFiles: File[] = [];
   public popUp?: Overlay;
-  public popupContent?: any;
+  public popupContent?: PopupContent;
   private dimStyle: Style;
   private highlightedFeatureCollectionId: number | null = null;
-  private featureCollections: any[] = [];
-  private featureDepots: any[] = [];
-  private featureRoutes: any[] = [];
+  private featureCollections: FeatureCollection[] = [];
+  private featureDepots: FeatureCollection[] = [];
+  private featureRoutes: FeatureCollection[] = [];
   public mapAlreadyRendered: boolean = false;
   readonly panelOpenState = signal(false);
 
   headersReport: string[] = [];
-  dataSourceReport: any[] = [];
+  dataSourceReport: ReportDataItem[] = [];
+  vrpStatsView: 'keyvalue' | 'dashboard' = 'dashboard';
+
+  vrpDashboardCards: {
+    label: string;
+    value: string | number;
+    isFeasible?: boolean;
+  }[] = [];
+
+  vrpDashboardRows: {
+    index: number;
+    metric: string;
+    totalValue: number | null;
+    excessValue: number | null;
+    unit: string;
+    statusOk: boolean | null;
+  }[] = [];
 
   dataRouteInfo = new MatTableDataSource<RouteInfo>([]);
-  searchControl = new FormControl();
+  searchControl = new FormControl<string>('');
   showFilterPanel = false;
   columnsToDisplay: string[] = [
-    'route_label',
-    'number_delivery_points',
-    'service_time',
-    'travel_distance',
-    'travel_duration',
+    'routeLabel',
+    'numberDeliveryPoints',
+    'serviceTime',
+    'travelDistance',
+    'travelDuration',
     'weight',
   ];
   filterCriteriaToDisplay: string[] = [
@@ -152,13 +172,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
     does_not_end_with: '!$=',
   };
   selectedFilterCriteria: string = 'equal';
-  selectedSearchOption: string = 'route_label';
+  selectedSearchOption: string = 'routeLabel';
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
-  expandedElement: Array<any> = [];
+  expandedElement: RouteInfo[] = [];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('filterModal', { static: false, read: TemplateRef })
-  filterModal!: TemplateRef<any>;
+  filterModal!: TemplateRef<unknown>;
   vectorLayer!: VectorLayer;
   clusterLayer!: VectorLayer;
 
@@ -168,11 +188,21 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   // data store
   experiment?: Experiment;
-  nodeSheetData: NodeSheet[] = [];
-  planDetailData: PlanDetail[] = [];
+  nodeSheetData: any[] = [];
+  planDetailData: any[] = [];
   preOrderData: any[] = [];
-  routeInfoDetails: any = null;
+  routeInfoDetails: RouteInfo | null = null;
   visibleRoutes = new Set<number>();
+
+  // API-fetched plan data
+  private vrpStatsData: Record<string, unknown> = {};
+  private vrpSolutionData: any = {};
+  private geoJsonRawData: any = {};
+
+  // VRP routing nodes for data lookup
+  private routingNodes: any[] = [];
+  private routingNodesMap: Record<number, any> = {};
+  private routingNodesByIdMap: Record<string, any> = {};
 
   isLoading: boolean = true;
 
@@ -208,36 +238,58 @@ export class ResultComponent implements OnInit, AfterViewInit {
       .pipe(take(1))
       .subscribe((params: { [x: string]: string }) => {
         this.experimentService
-          .getExperimentResult(params['experimentId'])
+          .getExperiment(params['experimentId'])
           .subscribe(async (response: Experiment) => {
             console.log(response);
             this.experiment = { ...response };
             this.expandedElement = [];
-            if (response.fileUrl.outputReportUrl) {
-              await this.loadReportData(response.fileUrl.outputReportUrl);
-            }
-            if (this.experiment.fileUrl.outputPlanDetailUrl) {
-              await this.loadPlanDetailData(
-                this.experiment.fileUrl.outputPlanDetailUrl
+
+            try {
+              await this.loadPlanData(response);
+
+              this.initRoutingNodes();
+              this.buildVrpStatsReport();
+              this.buildRouteInfoFromVrpSolution();
+              this.loadAndProcessGeoJSON();
+
+              this.dataRouteInfo.filterPredicate =
+                this.multiFilterPredicate.bind(this);
+
+              this.checkFilterOverflowTwolinesWhenLanguageChange();
+            } catch (error) {
+              console.error('Failed to load plan data from API:', error);
+              this.toastr.error(
+                this.transloco.translate('failed_to_load_plan_data', {}, 'index'),
+                this.transloco.translate('error', {}, 'index')
               );
+            } finally {
+              this.spinner.hide();
+              this.isLoading = false;
             }
-
-            if (response.fileUrl.preOrderUrl) {
-              await this.downloadExcelFromUrlAsJson(response.fileUrl.preOrderUrl);
-            }
-
-            this.spinner.hide();
-            if (response.fileUrl.outputGeoJsonUrl) {
-              await this.loadAndProcessGeoJSON(response.fileUrl.outputGeoJsonUrl);
-            }
-
-            this.dataRouteInfo.filterPredicate =
-              this.multiFilterPredicate.bind(this);
-
-            this.checkFilterOverflowTwolinesWhenLanguageChange();
-            this.isLoading = false;
           });
       });
+  }
+
+  private async loadPlanData(response: Experiment): Promise<void> {
+    const planUrls = response.fileUrls?.plan;
+
+    const [vrpStats, vrpSolution, geoJson] = await Promise.all([
+      planUrls?.vrpStats
+        ? this.dataFromFileUrlToJson(planUrls.vrpStats)
+        : Promise.resolve({}),
+      planUrls?.vrpSolutionLean
+        ? this.dataFromFileUrlToJson(planUrls.vrpSolutionLean)
+        : Promise.resolve({}),
+      planUrls?.geoJson
+        ? this.dataFromFileUrlToJson(planUrls.geoJson)
+        : Promise.resolve({}),
+    ]);
+
+    this.vrpStatsData = vrpStats as Record<string, unknown>;
+    this.vrpSolutionData = vrpSolution;
+    this.geoJsonRawData = geoJson;
+
+    console.log('vrpStats', this.vrpStatsData);
   }
 
   ngAfterViewInit(): void {
@@ -251,26 +303,28 @@ export class ResultComponent implements OnInit, AfterViewInit {
       value: string;
     };
     const rawValue = data[column as keyof RouteInfo];
-    return this.evaluateFilter(column, rawValue, value);
+    return this.evaluateFilter(column, rawValue as number, value);
   }
 
   evaluateFilter(
     column: string,
-    rawValue: any,
+    rawValue: number,
     searchValue: string,
     crit?: string
   ): boolean {
+    console.log('rawValue', rawValue);
+
     const critUsed = crit ?? this.selectedFilterCriteria;
     const search = searchValue.trim().toLowerCase();
     let displayValue: number | string;
     switch (column) {
-      case 'service_time':
+      case 'serviceTime':
         displayValue = Number(rawValue) / 60;
         break;
-      case 'travel_duration':
+      case 'travelDuration':
         displayValue = Number((Number(rawValue) / 60).toFixed(2));
         break;
-      case 'travel_distance':
+      case 'travelDistance':
       case 'weight':
         displayValue = Math.round(Number(rawValue));
         break;
@@ -326,16 +380,250 @@ export class ResultComponent implements OnInit, AfterViewInit {
       return;
     }
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
-    await this.fetchAndParseExcel(arrayBuffer, 0);
+    this.buildVrpStatsReport();
+    //await this.fetchAndParseExcel(arrayBuffer, 0);
     await this.fetchAndParseExcel(arrayBuffer, 1);
     await this.fetchAndParseExcel(arrayBuffer, 3);
   }
-  
-  calculateDuration(start: any, end: any): number {
+
+  private buildVrpStatsReport(): void {
+    this.headersReport = ['property', 'value'];
+
+    const stats = this.vrpStatsData;
+    const rows: ReportDataItem[] = [];
+
+    const propertyOrder = [
+      'customerCount',
+      'routeCount',
+      'feasibleRouteCount',
+      'infeasibleRouteCount',
+      'isSolutionFeasible',
+      'totalFitness',
+      'totalCost',
+      'totalWeight',
+      'totalVolume',
+      'totalDistance',
+      'totalDuration',
+      'totalTravelDuration',
+      'totalServiceDuration',
+      'totalBreakDuration',
+      'excessWeight',
+      'excessVolume',
+      'excessDistance',
+      'excessDuration',
+      'excessEarlyTime',
+      'excessLateTime',
+      'hasExcessWeight',
+      'hasExcessVolume',
+      'hasExcessDistance',
+      'hasExcessDuration',
+      'hasExcessEarlyTime',
+      'hasExcessLateTime',
+      'hasIncorrectOrder',
+    ];
+
+    for (const key of propertyOrder) {
+      const value = stats[key];
+      let displayValue: string | number;
+
+      if (typeof value === 'boolean') {
+        displayValue = value ? 'Yes' : 'No';
+      } else if (typeof value === 'number') {
+        displayValue = value;
+      } else {
+        displayValue = String(value ?? '');
+      }
+
+      rows.push({ property: key, value: displayValue } as ReportDataItem);
+    }
+
+    if (stats['dataUnits'] && typeof stats['dataUnits'] === 'object') {
+      const units = stats['dataUnits'] as Record<string, string>;
+      for (const [unitKey, unitValue] of Object.entries(units)) {
+        rows.push({ property: unitKey, value: unitValue } as ReportDataItem);
+      }
+    }
+
+    if (Array.isArray(stats['unassignedCustomers'])) {
+      rows.push({
+        property: 'unassignedCustomers',
+        value: (stats['unassignedCustomers'] as unknown[]).length,
+      } as ReportDataItem);
+    }
+
+    this.dataSourceReport = rows;
+    this.buildVrpStatsDashboard();
+  }
+
+  private buildVrpStatsDashboard(): void {
+    const s = this.vrpStatsData;
+    const units = (s['dataUnits'] ?? {}) as Record<string, string>;
+
+    this.vrpDashboardCards = [
+      {
+        label: 'isSolutionFeasible',
+        value: s['isSolutionFeasible'] ? 'True' : 'False',
+        isFeasible: s['isSolutionFeasible'] as boolean,
+      },
+      { label: 'customerCount', value: s['customerCount'] as number },
+      { label: 'routeCount', value: s['routeCount'] as number },
+      { label: 'totalFitness', value: s['totalFitness'] as number },
+      { label: 'totalCost', value: s['totalCost'] as number },
+    ];
+
+    this.vrpDashboardRows = [
+      {
+        index: 1,
+        metric: 'totalWeight',
+        totalValue: s['totalWeight'] as number,
+        excessValue: s['excessWeight'] as number,
+        unit: units['weightUnit'] ?? '',
+        statusOk: !(s['hasExcessWeight'] as boolean),
+      },
+      {
+        index: 2,
+        metric: 'totalVolume',
+        totalValue: s['totalVolume'] as number,
+        excessValue: s['excessVolume'] as number,
+        unit: units['volumeUnit'] ?? '',
+        statusOk: !(s['hasExcessVolume'] as boolean),
+      },
+      {
+        index: 3,
+        metric: 'totalDistance',
+        totalValue: s['totalDistance'] as number,
+        excessValue: s['excessDistance'] as number,
+        unit: units['distanceUnit'] ?? '',
+        statusOk: !(s['hasExcessDistance'] as boolean),
+      },
+      {
+        index: 4,
+        metric: 'totalDuration',
+        totalValue: s['totalDuration'] as number,
+        excessValue: s['excessDuration'] as number,
+        unit: units['timeUnit'] ?? '',
+        statusOk: !(s['hasExcessDuration'] as boolean),
+      },
+      {
+        index: 5,
+        metric: 'totalTravelDuration',
+        totalValue: s['totalTravelDuration'] as number,
+        excessValue: null,
+        unit: units['timeUnit'] ?? '',
+        statusOk: null,
+      },
+      {
+        index: 6,
+        metric: 'totalServiceDuration',
+        totalValue: s['totalServiceDuration'] as number,
+        excessValue: null,
+        unit: units['timeUnit'] ?? '',
+        statusOk: null,
+      },
+      {
+        index: 7,
+        metric: 'totalBreakDuration',
+        totalValue: s['totalBreakDuration'] as number,
+        excessValue: null,
+        unit: units['timeUnit'] ?? '',
+        statusOk: null,
+      },
+      {
+        index: 8,
+        metric: 'excessEarlyTime',
+        totalValue: null,
+        excessValue: s['excessEarlyTime'] as number,
+        unit: units['timeUnit'] ?? '',
+        statusOk: !(s['hasExcessEarlyTime'] as boolean),
+      },
+      {
+        index: 9,
+        metric: 'excessLateTime',
+        totalValue: null,
+        excessValue: s['excessLateTime'] as number,
+        unit: units['timeUnit'] ?? '',
+        statusOk: !(s['hasExcessLateTime'] as boolean),
+      },
+    ];
+  }
+
+  private initRoutingNodes(): void {
+    const vrpData = this.vrpSolutionData?.vrpData;
+    this.routingNodes = vrpData?.routingNodes ?? [];
+    this.routingNodes.forEach((node: any) => {
+      if (node?.index != null) this.routingNodesMap[node.index] = node;
+      if (node?.nodeId) this.routingNodesByIdMap[node.nodeId] = node;
+    });
+  }
+
+  private buildRouteDistancesMap(): Record<number, number[]> {
+    const distancesMap: Record<number, number[]> = {};
+    const geoJson: any = this.geoJsonRawData;
+    geoJson.routes?.forEach((route: any) => {
+      route.features?.forEach((feature: any) => {
+        if (feature.geometry?.type === 'LineString' && feature.properties?.distances) {
+          const routeIdx = feature.properties.routeIndex ?? 0;
+          distancesMap[routeIdx] = feature.properties.distances;
+        }
+      });
+    });
+    return distancesMap;
+  }
+
+  private buildRouteInfoFromVrpSolution(): void {
+    const routeMetrics =
+      this.vrpSolutionData?.solutionMetrics?.routeMetrics ?? [];
+    const routeDistancesMap = this.buildRouteDistancesMap();
+
+    routeMetrics.forEach((route: any) => {
+      const customerNodes = route.routeNodes?.slice(1, -1) ?? [];
+      const zones = [
+        ...new Set(
+          customerNodes
+            .map((idx: number) => this.routingNodesMap[idx]?.zone)
+            .filter((z: any) => !!z)
+        ),
+      ] as string[];
+
+      const routeIndex = route.routeIndex ?? 0;
+
+      this.dataRouteInfo.data.push({
+        routeLabel: route.routeLabel ?? 0,
+        routeIndex: routeIndex,
+        route: route.routeNodes ?? [],
+        routeDistances: routeDistancesMap[routeIndex] ?? [],
+        numberDeliveryPoints: route.customerCount ?? 0,
+        weight: route.routeWeight ?? 0,
+        utilize: 0,
+        travelDistance: route.routeDistance ?? 0,
+        totalDuration: route.routeDuration ?? 0,
+        travelDuration: route.routeTravelDuration ?? 0,
+        serviceTime: route.routeServiceDuration ?? 0,
+        depot2firstDistance: 0,
+        last2depotDistance: 0,
+        totalCustomersDistance: 0,
+        averageCustomersDistance: 0,
+        maxCustomersDistance: 0,
+        customersDistance: [],
+        numberZone: zones.length,
+        zone: zones,
+        numberOfValidateTypes: '',
+        numberOfReplaceTypes: '',
+      } as unknown as RouteInfo);
+    });
+
+    this.dataRouteInfo.sort = this.sort;
+    this.dataRouteInfo.paginator = this.paginator;
+  }
+
+  calculateDuration(
+    start: string | Date | number,
+    end: string | Date | number
+  ): number {
     if (!start || !end) return 0;
-    const startTime = new Date(start).getTime();
-    const endTime = new Date(end).getTime();
-    return endTime - startTime;
+    const twEarly = new Date(start).getTime();
+    const twLate = new Date(end).getTime();
+    return twLate - twEarly;
   }
 
   toSnakeCaseHeader(raw: string): string {
@@ -368,52 +656,95 @@ export class ResultComponent implements OnInit, AfterViewInit {
         cell.value != null ? String(cell.value).trim() : `Column ${col}`;
     });
 
+    console.log('worksheet', worksheet);
+
     for (let i = 0; i < headers.length; i++) {
       const original = headers[i] ?? `Column ${i + 1}`;
       const snake = this.toSnakeCaseHeader(original);
       headers[i] = snake || `column_${i + 1}`;
     }
     if (!isPlanDetail && sheetIndex === 0) {
-      this.headersReport = headers;
+      console.log('headers', headers);
+      //this.headersReport = headers;
+      return;
     }
 
     worksheet.eachRow((row, rowIndex) => {
       if (rowIndex === 1) return;
-      const rowData: Record<string, any> = {};
+      const rowData: Record<string, string | number | boolean> = {};
       row.eachCell({ includeEmpty: true }, (cell, col) => {
-        let v = cell.value;
-        if (v == null) v = '';
-        else if (typeof v === 'string') v = v.trim();
-        else if (typeof v === 'boolean') v = v ? 'Yes' : 'No';
-        else if (typeof v === 'number') v = Number(v);
-        else v = String(v);
-        rowData[headers[col - 1]] = v;
+        let v: string | number | boolean = '';
+        const cellValue = cell.value;
+
+        if (cellValue == null) {
+          v = '';
+        } else if (typeof cellValue === 'string') {
+          v = cellValue.trim();
+        } else if (typeof cellValue === 'boolean') {
+          v = cellValue ? 'Yes' : 'No';
+        } else if (typeof cellValue === 'number') {
+          v = cellValue;
+        } else {
+          v = String(cellValue);
+        }
+
+        const headerKey = headers[col - 1];
+        if (headerKey) {
+          rowData[headerKey] = v;
+        }
       });
 
       if (isPlanDetail) {
-        this.planDetailData.push(rowData as PlanDetail);
+        this.planDetailData.push(rowData as any);
       } else {
         switch (sheetIndex) {
           case 0:
-            this.dataSourceReport.push(rowData);
+            // old vrpStats data (top right table)
+            //this.dataSourceReport.push(rowData as ReportDataItem);
             break;
           case 1:
-            rowData['customers_distance'] = (
-              rowData['customers_distance'] as string
-            )
-              .split('➠')
-              .map(Number);
-            rowData['route'] = JSON.parse(rowData['route'] as string);
-            rowData['zone'] = JSON.parse(
-              (rowData['zone'] as string).replace(/'/g, '"')
-            );
-            this.dataRouteInfo.data.push(rowData as any);
-            this.dataRouteInfo.sort = this.sort;
-            this.dataRouteInfo.paginator = this.paginator;
-            this.dataRouteInfo.filterPredicate = this.createFilter();
+            try {
+              // Transform the data with proper typing
+
+              // old vrp_solution_lean data (bottom left table + expand)
+              console.log('rowData', rowData);
+
+              const transformedData: Record<string, unknown> = { ...rowData };
+
+              const customersDistanceStr = rowData['customersDistance'];
+              if (typeof customersDistanceStr === 'string') {
+                transformedData['customersDistance'] = customersDistanceStr
+                  .split('➠')
+                  .map(Number)
+                  .filter((n) => !isNaN(n));
+              }
+
+              const routeStr = rowData['route'];
+              if (typeof routeStr === 'string') {
+                transformedData['route'] = JSON.parse(routeStr) as number[];
+              }
+
+              const zoneStr = rowData['zone'];
+              if (typeof zoneStr === 'string') {
+                transformedData['zone'] = JSON.parse(
+                  zoneStr.replace(/'/g, '"')
+                ) as string[];
+              }
+
+              console.log('transformedData', transformedData);
+
+              this.dataRouteInfo.data.push(
+                transformedData as unknown as RouteInfo
+              );
+              this.dataRouteInfo.sort = this.sort;
+              this.dataRouteInfo.paginator = this.paginator;
+              this.dataRouteInfo.filterPredicate = this.createFilter();
+            } catch (error) {
+              console.error('Error parsing route data:', error, rowData);
+            }
             break;
           case 3:
-            this.nodeSheetData.push(rowData as NodeSheet);
+            this.nodeSheetData.push(rowData as any);
             break;
         }
       }
@@ -423,7 +754,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   createFilter(): (data: RouteInfo, filter: string) => boolean {
     return (data: RouteInfo, filter: string): boolean => {
       const searchTerms = JSON.parse(filter);
-      return Object.keys(searchTerms).every((key: any) => {
+      return Object.keys(searchTerms).every((key: string) => {
         const value = data[key as keyof RouteInfo];
         const searchValues = searchTerms[key]
           .split(',')
@@ -431,13 +762,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
         if (Array.isArray(value)) {
           return searchValues.every((searchValue: string) =>
-            value.some((item: any) =>
+            value.some((item: string | number) =>
               item.toString().toLowerCase().includes(searchValue)
             )
           );
         } else {
           return searchValues.some((searchValue: string) => {
             if (searchValue === '') return false;
+            if (value === null || value === undefined) return false;
             return value.toString().toLowerCase() === searchValue;
           });
         }
@@ -445,37 +777,35 @@ export class ResultComponent implements OnInit, AfterViewInit {
     };
   }
 
-  private async loadAndProcessGeoJSON(url: string): Promise<void> {
-    const geoJson = await this.dataFromFileUrlToJson(url);
-    this.featureCollections = geoJson.routes.map(
-      (rc: { features: { properties: { route_index: number } }[] }) => ({
-        ...rc,
-        route_index: rc.features[0]?.properties?.route_index,
-      })
-    );
-    this.featureDepots = geoJson.depots;
+  private loadAndProcessGeoJSON(): void {
+    const geoJson: any = JSON.parse(JSON.stringify(this.geoJsonRawData));
+
+    this.enrichGeoJsonData(geoJson);
+
+    this.featureCollections = geoJson.routes.map((rc: any) => ({
+      ...rc,
+      routeIndex: rc.features[0]?.properties?.routeIndex,
+    }));
+
+    this.featureDepots = geoJson.depots.map((depot: any) => ({
+      type: 'FeatureCollection',
+      features: [depot],
+    }));
     this.featureRoutes = geoJson.routes;
 
     const allFeatures: Feature<Geometry>[] = [];
-    geoJson.routes.forEach((item: any, index_: number) => {
+    geoJson.routes.forEach((item: FeatureCollection, index_: number) => {
       const itemFeatures = new GeoJSON().readFeatures(item, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
       });
 
-      const reducedItemFeatures = itemFeatures.map((feature, index, arr) => {
+      const reducedItemFeatures = itemFeatures.map((feature) => {
         const geometry = feature.getGeometry();
         if (geometry?.getType() === 'LineString') {
           const lineString = geometry as LineString;
           const coordinates = lineString.getCoordinates();
           const reducedCoordinates = coordinates.filter((_, i) => i % 10 === 0);
-          console.log(
-            index_,
-            'Original coordinates:',
-            coordinates.length,
-            'Reduced coordinates:',
-            reducedCoordinates.length
-          );
           lineString.setCoordinates(reducedCoordinates);
         }
         return feature;
@@ -487,24 +817,15 @@ export class ResultComponent implements OnInit, AfterViewInit {
       distance: 40,
       source: new VectorSource({
         features: allFeatures.filter((feature) => {
-          if (feature.getGeometry() && feature.getGeometry()!.getType()) {
-            return feature.getGeometry()!.getType() === 'Point';
-          } else {
-            return false;
-          }
+          return feature.getGeometry()?.getType() === 'Point' && !feature.get('isDepot');
         }),
       }),
     });
     const vectorSource = new VectorSource({
       features: allFeatures.filter((feature) => {
-        if (feature.getGeometry() && feature.getGeometry()!.getType()) {
-          return feature.getGeometry()!.getType() !== 'Point';
-        } else {
-          return false;
-        }
+        return feature.getGeometry()?.getType() !== 'Point';
       }),
     });
-    console.log(clusterSource);
     const clusterLayer = new VectorLayer({
       source: clusterSource,
       style: this.clusterStyleFunction.bind(this),
@@ -522,6 +843,82 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
     this.initMap(clusterLayer, vectorSource);
     this.mapAlreadyRendered = true;
+  }
+
+  private enrichGeoJsonData(geoJson: any): void {
+    const routeMetricsMap: Record<number, any> = {};
+    (this.vrpSolutionData?.solutionMetrics?.routeMetrics ?? []).forEach(
+      (rm: any) => {
+        if (rm?.routeIndex != null) routeMetricsMap[rm.routeIndex] = rm;
+      }
+    );
+
+    geoJson.depots?.forEach((depot: any) => {
+      const node = this.routingNodesByIdMap[depot.properties?.nodeId];
+      if (node) {
+        depot.properties = {
+          ...depot.properties,
+          isDepot: true,
+          depotId: node.nodeId,
+          name: node.name,
+          nodeIndex: node.index,
+        };
+      }
+    });
+
+    geoJson.routes?.forEach((route: any) => {
+      let routeMetric: any = null;
+
+      route.features?.forEach((feature: any) => {
+        if (feature.geometry?.type === 'LineString') {
+          const routeIdx = feature.properties?.routeIndex ?? 0;
+          routeMetric = routeMetricsMap[routeIdx];
+
+          const customerNodes = routeMetric?.routeNodes?.slice(1, -1) ?? [];
+          const zones = [
+            ...new Set(
+              customerNodes
+                .map((idx: number) => this.routingNodesMap[idx]?.zone)
+                .filter((z: any) => !!z)
+            ),
+          ] as string[];
+
+          feature.properties = {
+            ...feature.properties,
+            routeIndex: feature.properties?.routeIndex,
+            routeLabel: feature.properties?.routeLabel,
+            distance: routeMetric?.routeDistance ?? 0,
+            duration: routeMetric?.routeDuration ?? 0,
+            weight: routeMetric?.routeWeight ?? 0,
+            numCustomers: routeMetric?.customerCount ?? 0,
+            zone: zones.join(', '),
+            serviceDuration: routeMetric?.routeServiceDuration ?? 0,
+            travelDuration: routeMetric?.routeTravelDuration ?? 0,
+          };
+        } else if (feature.geometry?.type === 'Point') {
+          const node = this.routingNodesByIdMap[feature.properties?.nodeId];
+          if (node) {
+            let routeOrder = 0;
+            if (routeMetric?.routeNodes) {
+              routeOrder = routeMetric.routeNodes.indexOf(node.index);
+              if (routeOrder < 0) routeOrder = 0;
+            }
+
+            feature.properties = {
+              ...feature.properties,
+              nodeIndex: node.index,
+              name: node.name,
+              weight: node.deliveryWeight ?? 0,
+              isDepot: node.isDepot ?? false,
+              routeOrder: routeOrder,
+              routeIndex: routeMetric?.routeIndex ?? 0,
+              routeLabel: routeMetric?.routeLabel ?? 0,
+              originalAddress: node.originalAddress,
+            };
+          }
+        }
+      });
+    });
   }
   async fetchDataFromFileUrl(url: string) {
     const blob = await firstValueFrom(
@@ -610,9 +1007,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
       ]),
     });
 
-    this.map.on('pointermove', this.handlePointerMove.bind(this));
-    this.map.on('pointermove', (event) => this.pointMove(event));
-    this.map.on('click', this.handleClick.bind(this));
+    this.map.on('pointermove', (event: MapPointerBrowserEvent) =>
+      this.handlePointerMove(event)
+    );
+    this.map.on('click', (event: MapPointerBrowserEvent) =>
+      this.handleClick(event)
+    );
 
     // Initialize overlay for popup
     const element = document.getElementById('popupMapResult')!;
@@ -623,7 +1023,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.map.addOverlay(this.popUp);
   }
 
-  handlePointerMove(event: any): void {
+  handlePointerMove(event: MapPointerBrowserEvent): void {
     // show popup and compute hovered feature
     let coordinates: Coordinate;
     const feature = this.map.forEachFeatureAtPixel(event.pixel, (feat) => feat);
@@ -658,13 +1058,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
     // determine which route (if any) is hovered
     if (feature && feature.getGeometry()?.getType() === 'LineString') {
       this.highlightedFeatureCollectionId = feature.get(
-        'route_index'
+        'routeIndex'
       ) as number;
     } else if (feature && feature.get('features')) {
-      // if it's a cluster, pick one child route_index
+      // if it's a cluster, pick one child routeIndex
       const members = feature.get('features') as FeatureLike[];
       this.highlightedFeatureCollectionId =
-        (members[0]?.get('route_index') as number) || null;
+        (members[0]?.get('routeIndex') as number) || null;
     } else {
       this.highlightedFeatureCollectionId = null;
     }
@@ -677,7 +1077,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         .getSource()!
         .getFeatures()
         .forEach((feat) => {
-          if (feat.get('route_index') === hoverId) {
+          if (feat.get('routeIndex') === hoverId) {
             feat.setStyle(undefined);
           }
         });
@@ -688,7 +1088,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         .getFeatures()
         .forEach((clusterFeat) => {
           const members = clusterFeat.get('features') as FeatureLike[];
-          if (members.some((m) => m.get('route_index') === hoverId)) {
+          if (members.some((m) => m.get('routeIndex') === hoverId)) {
             clusterFeat.setStyle(undefined);
           }
         });
@@ -697,24 +1097,31 @@ export class ResultComponent implements OnInit, AfterViewInit {
     // force a redraw so styleFunction / clusterStyleFunction re-runs
     this.vectorLayer.getSource()?.changed();
     this.clusterLayer.getSource()?.changed();
+
+    // Update cursor style
+    this.pointMove(event);
   }
 
-  handleClick(event: any): void {
-    const feature = this.map.forEachFeatureAtPixel(event.pixel, (feat) => feat);
+  handleClick(event: MapPointerBrowserEvent): void {
+    const feature = this.map.forEachFeatureAtPixel(
+      event.pixel,
+      (feat: FeatureLike) => feat
+    );
     if (!feature || feature.getGeometry()?.getType() !== 'LineString') {
       return;
     }
 
-    const routeIndex = feature.getProperties()['route_index'];
+    const routeIndex: number | undefined =
+      feature.getProperties()['routeIndex'] as number | undefined;
     if (routeIndex == null) {
-      console.error('Clicked LineString has no route_index');
+      console.error('Clicked LineString has no routeIndex');
       return;
     }
 
     this.openRouteDetails(routeIndex);
   }
 
-  private pointMove(evt: any): void {
+  private pointMove(evt: MapPointerBrowserEvent): void {
     const target = this.map.getTargetElement();
     const pixel = this.map.getEventPixel(evt.originalEvent);
     const hit = this.map.hasFeatureAtPixel(pixel);
@@ -726,21 +1133,25 @@ export class ResultComponent implements OnInit, AfterViewInit {
     }
   }
 
-  openModal(featureCollection: any, featureDepots: any[]): void {
+  openModal(
+    featureCollection: FeatureCollection,
+    featureDepots: FeatureCollection[]
+  ): void {
     const modalRef = this.ngbModal.open(MapDetailsDialogComponent, {
       size: 'xl',
       centered: true,
       windowClass: 'custom-modal-width',
       modalDialogClass: 'custom-modal-content',
     });
+
     modalRef.componentInstance.featureCollection = featureCollection;
     modalRef.componentInstance.featureDepots = featureDepots;
     modalRef.componentInstance.routeInfo = this.routeInfoDetails;
+    modalRef.componentInstance.routingNodes = this.routingNodes;
   }
 
   styleFunction(feature: FeatureLike): Style | Style[] {
     const geom = feature.getGeometry();
-    // ─── DEPOT POINTS ───────────────────────────────────────────────────────────
     if (geom?.getType() === 'Point') {
       return new Style({
         image: new Icon({
@@ -753,7 +1164,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
           src: `assets/image/depot.png`,
         }),
         text: new Text({
-          text: feature.get('depot_id')?.toString() || '',
+          text: feature.get('name')?.toString() || '',
           font: '12px Calibri,sans-serif',
           fill: new Fill({ color: '#000' }),
         }),
@@ -761,7 +1172,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     }
 
     // ─── ROUTE LINES ────────────────────────────────────────────────────────────
-    const idx = feature.get('route_index') as number;
+    const idx = feature.get('routeIndex') as number;
     const color = feature.get('color') as string;
     const hovered = this.highlightedFeatureCollectionId;
 
@@ -798,9 +1209,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   clusterStyleFunction(feature: FeatureLike): Style | Style[] {
     const members = feature.get('features') as FeatureLike[];
-    const idxs = members.map((m) => m.get('route_index') as number);
+    const idxs = members.map((m) => m.get('routeIndex') as number);
     const baseColor = (members[0].get('color') as string) || '#3399CC';
-    const orderTxt = String(members[0].get('route_order') || '');
+    const orderTxt = String(members[0].get('routeOrder') || '');
 
     const hovered = this.highlightedFeatureCollectionId;
 
@@ -888,7 +1299,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   toggleRow(row: RouteInfo) {
     const index = this.expandedElement.findIndex(
-      (x) => x.route_index == row.route_index
+      (x) => x.routeIndex == row.routeIndex
     );
     if (index === -1) {
       this.expandedElement.push(row);
@@ -899,7 +1310,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   isExpanded(row: RouteInfo): string {
     const index = this.expandedElement.findIndex(
-      (x) => x.route_index == row.route_index
+      (x) => x.routeIndex == row.routeIndex
     );
     if (index === -1) {
       return 'collapsed';
@@ -907,8 +1318,41 @@ export class ResultComponent implements OnInit, AfterViewInit {
     return 'expanded';
   }
 
-  isNumber(value: any): boolean {
-    return !isNaN(value);
+  isNumber(value: NumberValue): boolean {
+    if (value === null || value === undefined) {
+      return false;
+    }
+
+    if (typeof value === 'object') {
+      const stringValue = String(value);
+      return !isNaN(Number(stringValue));
+    }
+
+    return !isNaN(Number(value));
+  }
+
+  getNumberValue(value: NumberValue): number {
+    if (value === null || value === undefined) {
+      return 0;
+    }
+
+    if (typeof value === 'boolean') {
+      return value ? 1 : 0;
+    }
+
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    if (typeof value === 'object') {
+      // For objects, try to convert to string first
+      const stringValue = String(value);
+      const numValue = Number(stringValue);
+      return isNaN(numValue) ? 0 : numValue;
+    }
+
+    const numValue = Number(value);
+    return isNaN(numValue) ? 0 : numValue;
   }
   haveTime(): boolean {
     return (
@@ -916,7 +1360,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     );
   }
 
-  applyFilter(p0: any = ''): void {
+  applyFilter(searchValue: string = ''): void {
     const raw = this.searchControl.value?.toString().trim();
     if (!raw) return;
 
@@ -954,17 +1398,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   multiFilterPredicate(data: RouteInfo, filter: string): boolean {
     if (!filter) return true;
-    interface F {
-      column: string;
-      criteria: string;
-      value: string;
-    }
-    const filters = JSON.parse(filter) as F[];
+    const filters = JSON.parse(filter) as FilterCriteria[];
 
     return filters.some((f) =>
       this.evaluateFilter(
         f.column,
-        data[f.column as keyof RouteInfo],
+        data[f.column as keyof RouteInfo] as number,
         f.value,
         f.criteria
       )
@@ -981,48 +1420,24 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   openRouteDetails(routeIndex: number): void {
-    let depotStartId: number | null = null;
-    let depotEndId: number | null = null;
+    this.routeInfoDetails =
+      this.dataRouteInfo.data.find((r) => r.routeIndex === routeIndex) || null;
 
-    this.routeInfoDetails = this.dataRouteInfo.data.find(
-      (r) => r.route_index === routeIndex
+    const collection = this.featureCollections.find(
+      (fc: any) => fc.routeIndex === routeIndex
     );
-
-    const collection = this.featureCollections.find((collection: any) => {
-      return collection.features.some((feature: any) => {
-        if (feature.properties.route_index === routeIndex) {
-          depotStartId = feature.properties.start_depot_id;
-          depotEndId = feature.properties.end_depot_id;
-          return collection.route_index === routeIndex;
-        }
-        return false;
-      });
-    });
 
     if (!collection) {
       console.error(`No route found for index ${routeIndex}`);
       return;
     }
 
-    const featureDepots: any[] = [];
-    if (this.featureDepots.length === 1) {
-      featureDepots.push(this.featureDepots[0]);
-    }
-    {
-      const matchingDepots = this.featureDepots.filter((depot: any) =>
-        [depotStartId, depotEndId].includes(depot.properties.depot_id)
-      );
-      featureDepots.push(...matchingDepots);
-    }
-    if (!featureDepots) {
-      console.error(
-        `No depot found with depot_id ${depotStartId} : ${depotEndId}`
-      );
+    if (!this.featureDepots || !Array.isArray(this.featureDepots) || this.featureDepots.length === 0) {
+      console.error('featureDepots is not properly initialized');
       return;
     }
 
-    console.log('featureDepots:', featureDepots);
-
+    const featureDepots = [...this.featureDepots];
     this.openModal(collection, featureDepots);
   }
 
@@ -1030,7 +1445,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     if (!this.mapAlreadyRendered) return;
     console.log('Mouse entered row:', row);
 
-    this.highlightedFeatureCollectionId = row.route_index;
+    this.highlightedFeatureCollectionId = row.routeIndex;
     const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
     vectorLayer.getSource()?.changed();
     const clusterLayer = this.map.getLayers()?.item(2) as VectorLayer;
@@ -1083,17 +1498,31 @@ export class ResultComponent implements OnInit, AfterViewInit {
         this.spinner.show();
         this.experimentService
           .replicateExperiment(this.experiment!.runId)
-          .subscribe((response) => {
-            this.spinner.hide();
-            this.toastr.success(
-              this.transloco.translate(
-                'success_to_replicate_experiment',
-                {},
-                'index'
-              ),
-              this.transloco.translate('replicate_experiment', {}, 'index')
-            );
-            this.router.navigate(['/users/run', response.runId]);
+          .subscribe({
+            next: (response) => {
+              this.spinner.hide();
+              this.toastr.success(
+                this.transloco.translate(
+                  'success_to_replicate_experiment',
+                  {},
+                  'index'
+                ),
+                this.transloco.translate('replicate_experiment', {}, 'index')
+              );
+              this.router.navigate(['/users/run', response.runId]);
+            },
+            error: (err) => {
+              console.error('Failed to replicate experiment', err);
+              this.spinner.hide();
+              this.toastr.error(
+                this.transloco.translate(
+                  'failed_to_replicate_experiment',
+                  {},
+                  'index'
+                ),
+                this.transloco.translate('replicate_experiment', {}, 'index')
+              );
+            },
           });
       }
     });
@@ -1354,7 +1783,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     // compute visibleRoutes array exactly as you do now
     const visibleRoutesArr = (
       this.dataRouteInfo.filteredData as RouteInfo[]
-    ).map((r) => r.route_index);
+    ).map((r) => r.routeIndex);
     this.visibleRoutes = new Set(visibleRoutesArr);
 
     // 1) vector lines
@@ -1363,7 +1792,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       .getFeatures()
       .forEach((feat) => {
         if (feat.getGeometry()?.getType() === 'LineString') {
-          const idx = feat.get('route_index') as number;
+          const idx = feat.get('routeIndex') as number;
           if (!this.visibleRoutes.has(idx)) {
             // outside filter → dim
             feat.setStyle(this.dimStyle);
@@ -1380,7 +1809,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
       .getFeatures()
       .forEach((clusterFeat) => {
         const members = clusterFeat.get('features') as FeatureLike[];
-        const routeIndexes = members.map((m) => m.get('route_index') as number);
+        const routeIndexes = members.map((m) => m.get('routeIndex') as number);
         // if *none* of the member routes is in your filter → dim
         const isAnyVisible = routeIndexes.some((i) =>
           this.visibleRoutes.has(i)
@@ -1397,7 +1826,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
                 stroke: new Stroke({ color: '#fff', width: 2 }),
               }),
               text: new Text({
-                text: String(members[0].get('route_order') || ''),
+                text: String(members[0].get('routeOrder') || ''),
                 font: '15px Calibri,sans-serif',
                 fill: new Fill({ color: '#fff' }),
               }),
@@ -1417,106 +1846,62 @@ export class ResultComponent implements OnInit, AfterViewInit {
     });
   }
 
-  handleDistance(distance: number) {
-    if (distance) {
-      const matchedItem = this.nodeSheetData.find(
-        (item) => item.node_index === distance
-      );
+  handleDistance(nodeIndex: number) {
+    if (!nodeIndex) return;
 
-      const matchedOrderId = this.planDetailData.find(
-        (item) => item.ORDERID_ORG === matchedItem?.node_name
-      );
+    const matchedItem = this.routingNodesMap[nodeIndex];
+    if (!matchedItem) return;
 
-      const matchedPreOrderData = this.preOrderData.find(
-        (item) => item.ORDERID === matchedItem?.node_name
-      );
+    const planDetails = {
+      ORDERID_ORG: matchedItem?.nodeId ?? '',
+      CHANNEL: matchedItem?.additionalProperties?.channel ?? '',
+      CUSTOMER_NAME: matchedItem?.name ?? '',
+      TEL: matchedItem?.additionalProperties?.telephone?.toString() ?? '',
+      AUMPHER: matchedItem?.originalAddress?.district ?? '',
+      PROVINCE: matchedItem?.originalAddress?.province ?? '',
+      ZIPCODE: matchedItem?.originalAddress?.postalCode ?? '',
+      ADDRESS: matchedItem?.originalAddress?.address ?? '',
+      latitude: matchedItem?.latitude ?? 0,
+      longitude: matchedItem?.longitude ?? 0,
+      details:
+        matchedItem?.productQuantity?.map((product: any) => ({
+          PRODUCTID: product?.productId ?? '',
+          ORDER_ID: product?.skuCode ?? '',
+          PRODUCTNAME: product?.name ?? '',
+          QUANTITYMAIN: product?.productQuantity ?? 0,
+        })) ?? [],
+    };
 
-      const matchedFC = this.featureRoutes.find((fc) =>
-        fc.features.some(
-          (feature: any) => feature.properties.node_index === distance
-        )
-      );
+    const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
+      centered: true,
+      size: 'xl',
+      animation: true,
+      backdrop: 'static',
+      keyboard: false,
+      beforeDismiss: () => false,
+    });
 
-      let planDetails = null;
-      const refactormatchedPreOrderData = {
-        ...matchedPreOrderData,
-        validation_type: matchedItem?.validation_type,
-        replace_type: matchedItem?.replace_type,
-        PROVINCE: matchedPreOrderData.PROVICE || '',
-      };
-
-      planDetails = {
-        ...refactormatchedPreOrderData,
-        details: [refactormatchedPreOrderData],
-      };
-      const matchedFeatureRoutes = {
-        ...matchedFC,
-        features: matchedFC.features.filter(
-          (feature: any) => feature.properties.node_index === distance
-        ),
-      };
-
-      if (matchedFC) {
-        const { type, properties, geometry } = matchedFeatureRoutes.features[0];
-
-        planDetails = {
-          ORDERID_ORG: properties.name,
-          CHANNEL: properties.extra.channel,
-          CUSTOMER_NAME: properties.extra.customer_name,
-          TEL: properties.extra.tel,
-          AUMPHER: properties.original_address.district,
-          PROVINCE: properties.original_address.province,
-          ZIPCODE: properties.original_address.postal_code,
-          ADDRESS: properties.original_address.address,
-          latitude: geometry.coordinates[1],
-          longitude: geometry.coordinates[0],
-
-          details: properties.extra.products_info.map((product: any) => ({
-            PRODUCTID: product.product_id,
-            ORDER_ID: product.order_id,
-            PRODUCTNAME: product.product_name,
-            QUANTITYMAIN: product.quantity_major,
-            QUANTITYMINOR: product.quantity_minor,
-            UserConfirm: product.user_confirm,
-            DateConfirm: product.date_confirm,
-          })),
-        };
-      } else {
-        planDetails = {
-          ...refactormatchedPreOrderData,
-          details: [refactormatchedPreOrderData],
-        };
-      }
-
-      const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
-        centered: true,
-        size: 'xl',
-        animation: true,
-        backdrop: 'static',
-        keyboard: false,
-        beforeDismiss: () => {
-          return false;
-        },
-      });
-
-      modalRef.componentInstance.dataPreOder = planDetails;
-      modalRef.componentInstance.dataCustomer = planDetails;
-      modalRef.componentInstance.isGeolocationDisplay = false;
-    }
+    modalRef.componentInstance.dataPreOder = planDetails;
+    modalRef.componentInstance.dataCustomer = planDetails;
+    modalRef.componentInstance.isGeolocationDisplay = false;
   }
 
-  splitLatLng(order: Record<string, any>): Record<string, any> {
+  splitLatLng(
+    order: Record<string, string | number | boolean | undefined>
+  ): Record<string, string | number | boolean | undefined> {
     if (typeof order['LatLng'] === 'string') {
       const [latStr, lngStr] = order['LatLng'].split(',');
-      order['latitude'] = parseFloat(latStr.trim());
-      order['longitude'] = parseFloat(lngStr.trim());
+      if (latStr && lngStr) {
+        order['latitude'] = parseFloat(latStr.trim());
+        order['longitude'] = parseFloat(lngStr.trim());
+      }
     }
     return order;
   }
 
   async downloadExcelFromUrlAsJson(
     location: string
-  ): Promise<Array<{ [key: string]: any }>> {
+  ): Promise<any[]> {
     try {
       const arrayBuffer = await this.fetchDataFromFileUrl(location);
       const workbook = new Workbook();
@@ -1529,30 +1914,39 @@ export class ResultComponent implements OnInit, AfterViewInit {
         return [];
       }
 
-      // build headers
       const headers: string[] = [];
       worksheet.getRow(1).eachCell((cell, colNumber) => {
         headers[colNumber] = cell.text.trim();
       });
 
-      // parse rows
-      const result: Array<Record<string, any>> = [];
+      const result: Record<string, string | number | boolean | undefined>[] =
+        [];
       worksheet.eachRow((row, rowNumber) => {
         if (rowNumber === 1) return;
-        const obj: Record<string, any> = {};
+        const obj: Record<string, string | number | boolean | undefined> = {};
         row.eachCell((cell, colNumber) => {
           const key = headers[colNumber];
-          if (key) obj[key] = cell.value;
+          if (key) {
+            const cellValue = cell.value;
+            obj[key] =
+              cellValue == null
+                ? undefined
+                : typeof cellValue === 'string'
+                ? cellValue.trim()
+                : typeof cellValue === 'number' ||
+                  typeof cellValue === 'boolean'
+                ? cellValue
+                : String(cellValue);
+          }
         });
         result.push(obj);
       });
 
-      const transformed = result.map((r) => this.splitLatLng(r));
+      const transformed = result.map((r) => this.splitLatLng(r)) as any[];
 
       this.preOrderData = transformed;
-      console.log('this.preOrderData', this.preOrderData);
       return transformed;
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('downloadExcelFromUrlAsJson failed', err);
       this.toastr.error('Failed to fetch or parse PreOrder file');
       return [];

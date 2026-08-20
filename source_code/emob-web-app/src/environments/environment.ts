@@ -11,7 +11,7 @@ export const environment = {
     scopes: ['ENTER_SCOPE'],
     uri: 'ENTER_URI'
   },
-  graphqlConfig {
+  graphqlConfig: {
     scopes: ['ENTER_SCOPE'],
     uri: 'ENTER_URI'
   },

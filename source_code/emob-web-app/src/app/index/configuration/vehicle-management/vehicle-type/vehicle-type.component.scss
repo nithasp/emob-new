@@ -1,0 +1,7 @@
+.item-details-info {
+  grid-template-columns: 1fr 150px;
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
+}

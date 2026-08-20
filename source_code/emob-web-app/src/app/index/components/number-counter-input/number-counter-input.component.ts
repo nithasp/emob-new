@@ -22,8 +22,8 @@ export class NumberCounterInputComponent implements ControlValueAccessor {
   @Input() errorMessage: string | null = null;
   @Output() valueChange = new EventEmitter<number>();
 
-  onChange: any = () => {};
-  onTouched: any = () => {};
+  onChange: (value: number) => void = () => {};
+  onTouched: () => void = () => {};
   protected touched = false;
   protected disabled = false;
 

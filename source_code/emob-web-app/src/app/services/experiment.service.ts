@@ -8,11 +8,13 @@ import {
   DownloadResultFile,
   Experiment,
   ExperimentState,
+  Company,
+  MyDepot,
 } from '../models/experiment.model';
-import { Company, MyDepot } from '../models/experiment.model';
 import { Constraint, TimingAndCapacity } from '../models/constraint.model';
 import { Location } from '../models/location.model';
 import { CustomerUpdated } from '../models/pre-order.model';
+import { VehicleValidationInput } from '../models/vehicle.model';
 import type { Error } from '../models/graphql.model';
 import { ToastrService } from 'ngx-toastr';
 import { ErrorHandlingService } from './handle-error.service';
@@ -22,7 +24,7 @@ export class ExperimentService {
   constructor(
     private readonly apollo: Apollo,
     private readonly toastr: ToastrService,
-    private readonly errorHandlingService: ErrorHandlingService
+    private readonly errorHandlingService: ErrorHandlingService,
   ) {}
 
   getExperiments(): Observable<Array<Experiment>> {
@@ -44,6 +46,28 @@ export class ExperimentService {
               groupId
               countGeocoding
               countReroute
+              depots {
+                companyName
+                depotId
+                depotName
+                latitude
+                longitude
+                timeWindowEarly
+                timeWindowLate
+                createdAt
+                updatedAt
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  required
+                  createdAt
+                  modifiedAt
+                }
+              }
             }
           }
         `,
@@ -65,7 +89,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.createExperiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -75,84 +99,68 @@ export class ExperimentService {
         query: gql`
           query experiment($Id: RunIdInput!) {
             experiment(input: $Id) {
+              companyName
               runId
               name
               timestamp
-              preOrderBlobPath
-              locationBlobPath
-              locationUpdateBlobPath
-              validatedBlobPath
-              parameterBlobPath
-              outputRouteOptimizationBlobPath
-              triggeredBy
-              timeEnd
-              timeStart
-              status
-              run
-              groupId
-              inputdata
+              configurations
+              inputdata {
+                keyName
+                filename
+                blobPath
+                displayName
+                fileFormatType
+                fileSize
+                fileUrl
+              }
               depots {
                 companyName
                 depotId
                 depotName
                 latitude
                 longitude
-                tw_early
-                tw_late
+                timeWindowEarly
+                timeWindowLate
                 createdAt
                 updatedAt
+                inputdata {
+                  companyName
+                  depotId
+                  keyName
+                  displayName
+                  columnRequired
+                  fileFormatType
+                  required
+                  createdAt
+                  modifiedAt
+                }
               }
-              fileUrl {
-                parameterUrl
-                preOrderUrl
-                LocationBlobPathUrl
-                locationUpdateBlobPathUrl
-                validatedBlobPathUrl
-              }
-            }
-          }
-        `,
-        variables: {
-          Id: {
-            runId: runId,
-          },
-        },
-        fetchPolicy: 'network-only',
-      })
-      .pipe(
-        map((result) => result.data.experiment),
-        this.errorHandlingService.handleError
-      );
-  }
-
-  getExperimentResult(runId: string): Observable<Experiment> {
-    return this.apollo
-      .query<Response>({
-        query: gql`
-          query experiment($Id: RunIdInput!) {
-            experiment(input: $Id) {
-              runId
-              name
-              timestamp
-              preOrderBlobPath
-              locationBlobPath
-              locationUpdateBlobPath
-              validatedBlobPath
-              parameterBlobPath
-              outputRouteOptimizationBlobPath
-              triggeredBy
-              timeEnd
               timeStart
+              timeEnd
               timeDuration
+              triggeredBy
+              triggeredByName
               status
               run
               groupId
-              fileUrl {
-                parameterUrl
-                outputGeoJsonUrl
-                outputReportUrl
-                outputPlanDetailUrl
-                preOrderUrl
+              countGeocoding
+              countReroute
+              fileUrls {
+                transform {
+                  locations
+                  warning
+                }
+                validate {
+                  parameterFormats
+                  vehicleTypes
+                  preVRPSolution
+                  errorWarning
+                }
+                plan {
+                  vrpSolutionLean
+                  geoJson
+                  vrpStats
+                }
               }
             }
           }
@@ -166,7 +174,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data.experiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -190,14 +198,15 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data.downloadResultFile),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
   validateExperiment(
     runId: string,
     parameter: TimingAndCapacity,
-    locationUpdated: CustomerUpdated[]
+    locationUpdated: CustomerUpdated[],
+    vehicles?: VehicleValidationInput[],
   ): Observable<Experiment> {
     return this.apollo
       .mutate<Response>({
@@ -217,12 +226,13 @@ export class ExperimentService {
             updateLocation: {
               customers: locationUpdated,
             },
+            ...(vehicles && vehicles.length > 0 ? { vehicles } : {}),
           },
         },
       })
       .pipe(
         map((result) => result.data!.validateExperiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
   submitExperiment(runId: string): Observable<Experiment> {
@@ -253,7 +263,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.submitExperiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -277,7 +287,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.rerunExperiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -301,7 +311,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.cancelExperiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -321,7 +331,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data!.replicateExperiment),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -340,7 +350,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data.myCompany),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 
@@ -354,8 +364,8 @@ export class ExperimentService {
               depotName
               latitude
               longitude
-              tw_early
-              tw_late
+              timeWindowEarly
+              timeWindowLate
               createdAt
               updatedAt
               inputdata {
@@ -365,6 +375,7 @@ export class ExperimentService {
                 displayName
                 columnRequired
                 fileFormatType
+                required
                 createdAt
                 modifiedAt
               }
@@ -375,7 +386,7 @@ export class ExperimentService {
       })
       .pipe(
         map((result) => result.data.myDepots),
-        this.errorHandlingService.handleError
+        this.errorHandlingService.handleError,
       );
   }
 }
