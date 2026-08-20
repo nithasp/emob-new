@@ -396,7 +396,7 @@
                                   class="step2"
                                   *ngIf="!isFileSelectionStep"
                                 >
-                                  {{ fileObj.file.type }}
+                                  {{ getFileTypeDisplay(fileObj) | slice: 0 : 10 }}
                                 </span>
                               </td>
                               <td>
