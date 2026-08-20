@@ -85,7 +85,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   maximumDurationObject: TimeObject = { hour: 0, minute: 0 };
 
   vehicleSizingType: 'dimension' | 'volume' = 'dimension';
-
   allowedBreaks!: FormArray<FormGroup<BreakFormControls>>;
   breakTimeObjects: BreakTimeObject[] = [];
 
@@ -198,26 +197,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     });
   }
 
-  private preserveStringNulls(): void {
-    this.stringControlKeys.forEach((key) => {
-      const control = this.formVehicleType.get(key);
-      if (control && control.value === '') {
-        control.setValue(null, { emitEvent: false });
-      }
-    });
-
-    this.allowedBreaks.controls.forEach((breakGroup) => {
-      ['name', 'duration', 'timeWindowEarly', 'timeWindowLate'].forEach(
-        (key) => {
-          const control = breakGroup.get(key);
-          if (control && control.value === '') {
-            control.setValue(null, { emitEvent: false });
-          }
-        }
-      );
-    });
-  }
-
   private loadEnumValuesAndVehicleTypeData(): void {
     this.isLoading = true;
 
@@ -242,10 +221,10 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
                 : 'dimension';
             this.onVehicleSizingTypeChange();
             const timeWindowEarly = this.formatTimeForDisplay(
-              data.timeWindowEarly ?? (data as { twEarly?: string | number }).twEarly
+              data.timeWindowEarly ?? data.twEarly
             );
             const timeWindowLate = this.formatTimeForDisplay(
-              data.timeWindowLate ?? (data as { twLate?: string | number }).twLate
+              data.timeWindowLate ?? data.twLate
             );
             const maximumDuration = this.formatTimeForDisplay(data.maximumDuration);
             this.formVehicleType.patchValue({
@@ -395,7 +374,6 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     this.formVehicleType.markAllAsTouched();
     this.allowedBreaks.markAsTouched();
     this.allowedBreaks.controls.forEach((control) => control.markAsTouched());
-    this.preserveStringNulls();
 
     if (this.allowedBreaks.hasError('required') && this.allowedBreaks.length === 0) {
       this.scrollToBottom();
@@ -657,68 +635,4 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   getBreakControls(): FormGroup<BreakFormControls>[] {
     return this.allowedBreaks.controls;
   }
-
-  logFormValue() {
-    console.log(this.formVehicleType.getRawValue());
-  }
-
-  // addMockData(): void {
-  //   const mock = {
-  //     name: '2',
-  //     access: [] as AccessTypeEnum[],
-  //     vehicleProfileType: 'CAR',
-  //     maximumVolumeCapacity: 0,
-  //     maximumWeightCapacity: 2,
-  //     timeWindowEarly: null,
-  //     timeWindowLate: null,
-  //     dimension: { width: 2, height: 2, depth: 2 },
-  //     vehicleGroupId: '2',
-  //     maximumDistance: 2,
-  //     maximumDuration: '02:00',
-  //     unitDistanceCost: 0,
-  //     unitDurationCost: 0,
-  //     fixedCost: 0,
-  //     allowedBreaks: [
-  //       {
-  //         name: '2',
-  //         duration: '00:01',
-  //         timeWindowEarly: '00:02',
-  //         timeWindowLate: '00:03',
-  //       },
-  //     ],
-  //   };
-
-  //   this.vehicleSizingType = 'dimension';
-  //   this.onVehicleSizingTypeChange();
-
-  //   this.formVehicleType.patchValue({
-  //     name: mock.name,
-  //     access: mock.access,
-  //     vehicleProfileType: mock.vehicleProfileType,
-  //     maximumVolumeCapacity: mock.maximumVolumeCapacity,
-  //     maximumWeightCapacity: mock.maximumWeightCapacity,
-  //     timeWindowEarly: mock.timeWindowEarly,
-  //     timeWindowLate: mock.timeWindowLate,
-  //     dimension: mock.dimension,
-  //     vehicleGroupId: mock.vehicleGroupId,
-  //     maximumDistance: mock.maximumDistance,
-  //     maximumDuration: mock.maximumDuration,
-  //     unitDistanceCost: mock.unitDistanceCost,
-  //     unitDurationCost: mock.unitDurationCost,
-  //     fixedCost: mock.fixedCost,
-  //   });
-
-  //   this.timeWindowEarlyObject = this.parseTimeString(mock.timeWindowEarly);
-  //   this.timeWindowLateObject = this.parseTimeString(mock.timeWindowLate);
-  //   this.maximumDurationObject = this.parseTimeString(mock.maximumDuration);
-
-  //   this.allowedBreaks.clear();
-  //   this.breakTimeObjects = [];
-
-  //   mock.allowedBreaks.forEach((breakData) => {
-  //     this.allowedBreaks.push(this.createBreakFormGroup(breakData));
-  //     this.breakTimeObjects.push(this.createBreakTimeObjects(breakData));
-  //   });
-  // }
-
 }

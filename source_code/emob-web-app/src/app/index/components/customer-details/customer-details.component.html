@@ -18,7 +18,7 @@
             <input
               type="text"
               class="form-control bg-white"
-              [value]="dataPreOder?.ORDERID_ORG || ''"
+              [value]="dataPreOrder?.ORDERID_ORG || ''"
               disabled
             />
           </div>
@@ -32,7 +32,7 @@
             <input
               type="text"
               class="form-control bg-white"
-              [value]="dataPreOder?.CHANNEL || ''"
+              [value]="dataPreOrder?.CHANNEL || ''"
               disabled
             />
           </div>
@@ -46,7 +46,7 @@
             <input
               type="text"
               class="form-control bg-white"
-              [value]="dataPreOder?.CUSTOMER_NAME || ''"
+              [value]="dataPreOrder?.CUSTOMER_NAME || ''"
               disabled
             />
           </div>
@@ -60,7 +60,7 @@
             <input
               type="text"
               class="form-control bg-white"
-              [value]="dataPreOder?.TEL || ''"
+              [value]="dataPreOrder?.TEL || ''"
               disabled
             />
           </div>
@@ -74,7 +74,7 @@
             <input
               type="text"
               class="form-control bg-white"
-              [value]="dataPreOder?.AUMPHER || ''"
+              [value]="dataPreOrder?.AUMPHER || ''"
               disabled
             />
           </div>
@@ -88,7 +88,7 @@
             <input
               type="text"
               class="form-control bg-white"
-              [value]="dataPreOder?.PROVINCE || ''"
+              [value]="dataPreOrder?.PROVINCE || ''"
               disabled
             />
           </div>
@@ -102,7 +102,7 @@
             <input
               type="text"
               class="form-control bg-white"
-              [value]="dataPreOder?.ZIPCODE || ''"
+              [value]="dataPreOrder?.ZIPCODE || ''"
               disabled
             />
           </div>
@@ -122,7 +122,7 @@
               aria-label="Small"
               aria-describedby="inputGroup-sizing-sm"
               rows="3"
-              [value]="dataPreOder?.ADDRESS || ''"
+              [value]="dataPreOrder?.ADDRESS || ''"
               style="height: 100px; overflow: auto"
               disabled
             ></textarea>
@@ -221,7 +221,7 @@
     </div>
 
     <div mat-dialog-content>
-      <div class="modal-body" *ngIf="(dataPreOder?.details?.length || 0) > 0">
+      <div class="modal-body" *ngIf="(dataPreOrder?.details?.length || 0) > 0">
         <h3 mat-dialog-title class="text-center my-3">{{ t("order_details") }}</h3>
         <div class="table-responsive">
           <table class="table-order-details table table-striped">
@@ -248,7 +248,7 @@
 
         <div class="d-flex justify-content-between p-2 float-right">
           <ngb-pagination
-            [collectionSize]="dataPreOder?.details?.length || 0"
+            [collectionSize]="dataPreOrder?.details?.length || 0"
             [(page)]="page"
             [pageSize]="6"
           >

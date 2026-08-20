@@ -7,9 +7,12 @@ import {
 } from 'src/app/models/location.model';
 import {
   Customer,
+  CustomerProduct,
+  CustomerSelected,
   CustomerUpdated,
-  DetailsPreOder,
-  GroupedDataPreOrder,
+  DataPreOrder,
+  DetailsPreOrder,
+  GroupedDataPreOrder
 } from 'src/app/models/pre-order.model';
 
 @Component({
@@ -21,13 +24,9 @@ export class CustomerListComponent implements OnInit {
   @Input() groupedDataPreOrder!: GroupedDataPreOrder;
   @Input() uploadDataGroupCustomers!: DataGroup;
 
-  customersToVerify: Array<Customer> = [];
-  public customersLocationUpdated: Array<CustomerUpdated> = [];
-  customerSelected: {
-    dataPreOder: DetailsPreOder;
-    dataCustomer: Customer;
-    locationType: LocationType;
-  } | null = null;
+  customersToVerify: Customer[] = [];
+  public customersLocationUpdated: CustomerUpdated[] = [];
+  customerSelected: CustomerSelected | null = null;
 
   selectedIndex: number = 0;
 
@@ -46,7 +45,7 @@ export class CustomerListComponent implements OnInit {
   isDisabled(index: number): boolean {
     return this.selectedIndex !== null && this.selectedIndex !== index;
   }
-  receiveData(locationUpdated: Location, customer: Customer) {
+  receiveData(locationUpdated: Location, customer: Customer): void {
     const existingIndex = this.customersLocationUpdated.findIndex(
       (item) => item.index === customer.index && item.name === customer.name
     );
@@ -88,17 +87,22 @@ export class CustomerListComponent implements OnInit {
     }
     this.selectData();
   }
-  selectData() {
+  selectData(): void {
     const selected = this.customersToVerify[this.selectedIndex];
-    const keyed = this.groupedDataPreOrder?.[selected?.name];
-    const products: any[] = (selected?.productQuantity?.length ? selected.productQuantity : null)
-      || selected?.extra?.productsInfo
-      || [];
+    const keyed: DetailsPreOrder | undefined = selected?.name
+      ? this.groupedDataPreOrder?.[selected.name]
+      : undefined;
+    const products: CustomerProduct[] =
+      (selected?.productQuantity?.length
+        ? (selected.productQuantity as CustomerProduct[])
+        : null) ||
+      (selected?.extra?.productsInfo as CustomerProduct[] | undefined) ||
+      [];
 
-    const base =
-      keyed ||
+    const base: DetailsPreOrder | DataPreOrder =
+      keyed ??
       ({
-        ORDERID_ORG: selected?.nodeId,
+        ORDERID_ORG: selected?.nodeId ?? '',
         CHANNEL: '',
         CUSTOMER_NAME: '',
         TEL: '',
@@ -106,7 +110,7 @@ export class CustomerListComponent implements OnInit {
         AUMPHER: selected?.originalAddress?.district || '',
         PROVINCE: selected?.originalAddress?.province || '',
         ZIPCODE: Number(selected?.originalAddress?.postalCode || 0),
-        details: products.map((p: any) => ({
+        details: products.map((p) => ({
           PRODUCTID: String(p.productId || ''),
           ORDER_ID: p.skuCode || p.orderId || null,
           PRODUCTNAME: p.name || p.productName || '',
@@ -115,24 +119,27 @@ export class CustomerListComponent implements OnInit {
           UserConfirm: p.userConfirm || null,
           DateConfirm: p.dateConfirm || null,
         })),
-      } as unknown as DetailsPreOder);
+      } satisfies DataPreOrder);
 
     // Match openCustomerOrderDetails in run.component: runtime customers use
     // additionalProperties + name, not only Excel-grouped rows or extra.*.
-    const channel =
+    const channel: string =
       selected?.additionalProperties?.channel ??
       base.CHANNEL ??
       selected?.extra?.channel ??
       '';
-    const customerName =
-      selected?.name || base.CUSTOMER_NAME || selected?.extra?.customerName || '';
-    const tel =
+    const customerName: string =
+      selected?.name ||
+      base.CUSTOMER_NAME ||
+      selected?.extra?.customerName ||
+      '';
+    const tel: string =
       selected?.additionalProperties?.telephone ??
       base.TEL ??
       selected?.extra?.tel ??
       '';
 
-    const dataPreOder: DetailsPreOder = {
+    const dataPreOrder: DetailsPreOrder | DataPreOrder = {
       ...base,
       CHANNEL: channel,
       CUSTOMER_NAME: customerName,
@@ -140,7 +147,7 @@ export class CustomerListComponent implements OnInit {
     };
 
     this.customerSelected = {
-      dataPreOder,
+      dataPreOrder,
       dataCustomer: selected,
       locationType: this.findLocationType(selected.name),
     };
@@ -160,8 +167,10 @@ export class CustomerListComponent implements OnInit {
       ) ?? false
     );
   }
-  selectCustomer(customer: Customer) {
-    const idx = this.customersToVerify.findIndex((c) => c.name === customer.name);
+  selectCustomer(customer: Customer): void {
+    const idx = this.customersToVerify.findIndex(
+      (c) => c.name === customer.name
+    );
     this.selectedIndex = idx >= 0 ? idx : 0;
     console.log('Selected customer:', this.selectedIndex);
     this.selectData();
@@ -196,7 +205,7 @@ export class CustomerListComponent implements OnInit {
     }
   }
 
-  close() {
+  close(): void {
     this.ngbModalActive.close(this.customersLocationUpdated);
   }
 }

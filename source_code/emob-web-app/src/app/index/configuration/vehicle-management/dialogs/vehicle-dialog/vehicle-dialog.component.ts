@@ -31,15 +31,14 @@ export class VehicleDialogComponent implements OnInit {
   @Input() mode: ActionMode = 'create';
   @Input() vehicle: MyVehicles | null = null;
 
-  form!: FormGroup<VehicleFormControls>;
-  licensePlates: string[] = [];
   isLoading: boolean = true;
-
-  vehicleTypeOptions: VehicleType[] = [];
-  depotOptions: MyDepot[] = [];
-
   isEditMode: boolean = false;
   isViewMode: boolean = false;
+
+  form!: FormGroup<VehicleFormControls>;
+  licensePlates: string[] = [];
+  vehicleTypeOptions: VehicleType[] = [];
+  depotOptions: MyDepot[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -64,14 +63,11 @@ export class VehicleDialogComponent implements OnInit {
   }
 
   private initializeForm(): void {
-    const licensePlateValidators =
-      this.isEditMode || this.isViewMode ? [Validators.required] : [];
-
     this.form = this.fb.group<VehicleFormControls>({
       vehicleType: this.fb.control<string | null>('', [Validators.required]),
       startDepot: this.fb.control<string | null>('', [Validators.required]),
       endDepot: this.fb.control<string | null>('', [Validators.required]),
-      licensePlate: this.fb.control<string | null>('', licensePlateValidators),
+      licensePlate: this.fb.control<string | null>(''),
     });
 
     this.updateLicensePlateValidators();
@@ -128,18 +124,13 @@ export class VehicleDialogComponent implements OnInit {
       ),
     })
       .pipe(finalize(() => (this.isLoading = false)))
-      .subscribe({
-        next: ({ vehicleTypes, depots }) => {
-          this.vehicleTypeOptions = vehicleTypes;
-          this.depotOptions = depots;
+      .subscribe(({ vehicleTypes, depots }) => {
+        this.vehicleTypeOptions = vehicleTypes;
+        this.depotOptions = depots;
 
-          if ((this.isEditMode || this.isViewMode) && this.vehicle?.vehicleId) {
-            this.fetchAndPatchVehicleData();
-          }
-        },
-        error: (error) => {
-          console.error(error);
-        },
+        if ((this.isEditMode || this.isViewMode) && this.vehicle?.vehicleId) {
+          this.fetchAndPatchVehicleData();
+        }
       });
   }
 
@@ -172,46 +163,40 @@ export class VehicleDialogComponent implements OnInit {
     this.updateLicensePlateValidators();
   }
 
-  private extractDepotId(value: string | MyDepot | null | undefined): string {
-    if (!value) return '';
-    return typeof value === 'object' ? value.depotId : value;
-  }
-
   private buildPayload(): VehicleCreateInput | VehicleUpdateInput {
     const formValues = this.form.value;
     const basePayload = {
-      vehicleTypeId: formValues.vehicleType!,
-      startDepotId: this.extractDepotId(formValues.startDepot)!,
-      endDepotId: this.extractDepotId(formValues.endDepot)!,
+      vehicleTypeId: formValues.vehicleType ?? '',
+      startDepotId: formValues.startDepot ?? '',
+      endDepotId: formValues.endDepot ?? '',
     };
 
     if (this.isEditMode) {
       return {
         ...basePayload,
-        licensePlate: formValues.licensePlate!,
-      } as VehicleUpdateInput;
-    } else {
-      return {
-        ...basePayload,
-        licensePlates: this.licensePlates,
-      } as VehicleCreateInput;
+        licensePlate: formValues.licensePlate ?? '',
+      };
     }
+
+    return {
+      ...basePayload,
+      licensePlates: this.licensePlates,
+    };
   }
 
   private handleSubmit(): void {
     this.spinner.show();
     const payload = this.buildPayload();
-    const request$ = (
+    const request$: Observable<VehicleCreateResponse | VehicleUpdateResponse> =
       this.isEditMode
         ? this.vehicleService.updateVehicle(
             this.vehicle!.vehicleId,
             payload as VehicleUpdateInput
           )
-        : this.vehicleService.createVehicle(payload as VehicleCreateInput)
-    ) as Observable<VehicleCreateResponse | VehicleUpdateResponse>;
+        : this.vehicleService.createVehicle(payload as VehicleCreateInput);
 
     request$.pipe(finalize(() => this.spinner.hide())).subscribe({
-      next: (res: VehicleCreateResponse | VehicleUpdateResponse) => {
+      next: (res) => {
         this.toastr.success(
           this.transloco.translate(
             this.isEditMode

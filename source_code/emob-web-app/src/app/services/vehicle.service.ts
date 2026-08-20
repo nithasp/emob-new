@@ -428,7 +428,7 @@ export class VehicleService {
         },
       })
       .pipe(
-        map((result) => result.data?.createVehicle),
+        map((result) => result.data!.createVehicle),
         this.errorHandlingService.handleError
       );
   }
@@ -532,7 +532,7 @@ export class VehicleService {
         },
       })
       .pipe(
-        map((result) => result.data?.updateVehicle),
+        map((result) => result.data!.updateVehicle),
         this.errorHandlingService.handleError
       );
   }
@@ -550,7 +550,7 @@ export class VehicleService {
         },
       })
       .pipe(
-        map((result) => result.data?.deleteVehicle),
+        map((result) => result.data!.deleteVehicle),
         this.errorHandlingService.handleError
       );
   }
@@ -626,7 +626,7 @@ export class VehicleService {
         },
       })
       .pipe(
-        map((result) => result.data?.softDeleteVehicle),
+        map((result) => result.data!.softDeleteVehicle),
         this.errorHandlingService.handleError
       );
   }
@@ -675,7 +675,7 @@ export class VehicleService {
         },
       })
       .pipe(
-        map((result) => result.data?.createVehicleType),
+        map((result) => result.data!.createVehicleType),
         this.errorHandlingService.handleError
       );
   }
@@ -731,7 +731,7 @@ export class VehicleService {
         },
       })
       .pipe(
-        map((result) => result.data?.updateVehicleType),
+        map((result) => result.data!.updateVehicleType),
         this.errorHandlingService.handleError
       );
   }
@@ -749,7 +749,7 @@ export class VehicleService {
         },
       })
       .pipe(
-        map((result) => result.data?.deleteVehicleType),
+        map((result) => result.data!.deleteVehicleType),
         this.errorHandlingService.handleError
       );
   }

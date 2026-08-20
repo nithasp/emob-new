@@ -1,3 +1,5 @@
+import type { LocationType } from './location.model';
+
 export interface PreOrder {
   ADDRESS: string;
   AUMPHER: string;
@@ -51,6 +53,25 @@ export interface ProductInfo {
   dateConfirm: string | null;
 }
 
+export interface CustomerProduct {
+  productId?: string;
+  skuCode?: string;
+  orderId?: string | null;
+  name?: string;
+  productName?: string;
+  productQuantity?: number;
+  quantityMajor?: number;
+  quantityMinor?: number;
+  userConfirm?: string | null;
+  dateConfirm?: string | null;
+}
+
+export interface NodeAdditionalProperties {
+  channel?: string;
+  telephone?: string;
+  [key: string]: unknown;
+}
+
 export interface Extra {
   orderId: string | null;
   channel: string | null;
@@ -60,7 +81,7 @@ export interface Extra {
 }
 
 export interface Customer {
-  deliveryWeight: number | string;
+  deliveryWeight: number;
   index: number;
   isDepot: boolean;
   latitude: number;
@@ -77,7 +98,7 @@ export interface Customer {
   timeWindowEarly: number;
   timeWindowLate: string | number;
   validationType: ValidationType;
-  deliveryVolume: number | string;
+  deliveryVolume: number;
   pickupVolume: number;
   zone: string;
   extra: Extra;
@@ -85,19 +106,19 @@ export interface Customer {
   priorityGroup?: number;
   priority?: number;
   prize?: number;
-  productQuantity?: any[];
+  productQuantity?: CustomerProduct[];
   allowVehicleGroupId?: string[];
-  additionalProperties?: any;
+  additionalProperties?: NodeAdditionalProperties;
 }
 
-interface Metrics {
+export interface Metrics {
   excessDistance: number;
   excessDuration: number;
-  excessVolumn: number;
+  excessVolume: number;
   excessWeight: number;
   isExcessDistance: boolean;
   isExcessDuration: boolean;
-  isExcessVolumn: boolean;
+  isExcessVolume: boolean;
   isExcessWeight: boolean;
   isFeasible: boolean;
   isMissingProduct: boolean;
@@ -185,16 +206,16 @@ export interface Depot {
   priorityGroup?: number;
   priority?: number;
   prize?: number;
-  productQuantity?: any[];
+  productQuantity?: CustomerProduct[];
   allowVehicleGroupId?: string[];
-  additionalProperties?: any;
+  additionalProperties?: NodeAdditionalProperties;
 }
 
 export interface GroupedDataPreOrder {
-  [ORDERID_ORG: string]: DetailsPreOder;
+  [ORDERID_ORG: string]: DetailsPreOrder;
 }
 
-export interface DetailsPreOder {
+export interface DetailsPreOrder {
   ORDERID_ORG: string;
   CHANNEL: string;
   CUSTOMER_NAME: string;
@@ -239,19 +260,15 @@ export interface DataCustomer {
   ADDRESS: string;
   latitude: number;
   longitude: number;
-  validation_type: ValidationType;
-  replace_type: ReplaceType;
+  validationType: ValidationType;
+  replaceType: ReplaceType;
   details: ProductDetail[];
 }
 
-export interface Location {
-  latitude: number;
-  longitude: number;
-}
-
-export enum LocationType {
-  Edit = 'edit',
-  View = 'view',
+export interface CustomerSelected {
+  dataPreOrder: DetailsPreOrder | DataPreOrder;
+  dataCustomer: Customer;
+  locationType: LocationType;
 }
 
 export interface FileWithCategory extends File {

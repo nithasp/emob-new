@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TRANSLOCO_SCOPE, TranslocoService } from '@jsverse/transloco';
+import { TransformResult } from 'src/app/models/experiment.model';
 import { ValidationTableRow } from 'src/app/models/validation-table.model';
 import { buildTableRows, createCachedValidationMessageFn } from 'src/app/shared/utils/validation-table.utils';
 
@@ -11,7 +12,7 @@ import { buildTableRows, createCachedValidationMessageFn } from 'src/app/shared/
   providers: [{ provide: TRANSLOCO_SCOPE, useValue: ['index', 'validation'] }],
 })
 export class TransformValidationDialogComponent implements OnInit {
-  @Input() validationResponse: any;
+  @Input() validationResponse?: TransformResult;
 
   tableRows: ValidationTableRow[] = [];
   private cachedGetValidationMessage!: ReturnType<typeof createCachedValidationMessageFn>;
@@ -28,7 +29,7 @@ export class TransformValidationDialogComponent implements OnInit {
     }
   }
 
-  getValidationMessage(type: string, params: any): string {
+  getValidationMessage(type: string, params: Record<string, unknown>): string {
     return this.cachedGetValidationMessage(type, params);
   }
 
