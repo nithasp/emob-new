@@ -144,26 +144,28 @@ describe('ExperimentComponent', () => {
   });
 
   describe('ngOnInit / loadData', () => {
-    it('should load displayed columns and data on init', () => {
+    it('should load displayed columns and data on init', fakeAsync(() => {
       const experiments = [createMockExperiment()];
       experimentService.getExperiments.and.returnValue(of(experiments));
 
       component.ngOnInit();
+      tick(500); // hiddenSpinner() hides the named spinner after a 500ms delay
 
       expect(experimentService.getExperiments).toHaveBeenCalled();
       expect(component.dataSource.data).toEqual(experiments);
       expect(spinner.hide).toHaveBeenCalledWith('experiment');
-    });
+    }));
 
-    it('should hide the spinner when loading data fails', () => {
+    it('should hide the spinner when loading data fails', fakeAsync(() => {
       experimentService.getExperiments.and.returnValue(
         throwError(() => new Error('network error'))
       );
 
       component.loadData();
+      tick(500); // hiddenSpinner() hides the named spinner after a 500ms delay
 
       expect(spinner.hide).toHaveBeenCalledWith('experiment');
-    });
+    }));
   });
 
   describe('displayed columns persistence', () => {
@@ -320,34 +322,36 @@ describe('ExperimentComponent', () => {
   });
 
   describe('getParameter', () => {
-    it('should open the parameters dialog on success', () => {
+    it('should open the parameters dialog on success', fakeAsync(() => {
       const params = [{ key: 'a' }] as never[];
       constraintService.getDynamicParameter.and.returnValue(of(params));
       const openSpy = spyOn(component, 'openParametersDialog');
 
       component.getParameter('run-1');
+      tick(500); // hiddenSpinner() hides the named spinner after a 500ms delay
 
       expect(constraintService.getDynamicParameter).toHaveBeenCalledWith(
         'run-1'
       );
       expect(spinner.hide).toHaveBeenCalledWith('experiment');
       expect(openSpy).toHaveBeenCalledWith(params);
-    });
+    }));
 
-    it('should show an error toast when loading parameters fails', () => {
+    it('should show an error toast when loading parameters fails', fakeAsync(() => {
       constraintService.getDynamicParameter.and.returnValue(
         throwError(() => new Error('boom'))
       );
 
       component.getParameter('run-1');
+      tick(500); // hiddenSpinner() hides the named spinner after a 500ms delay
 
       expect(spinner.hide).toHaveBeenCalledWith('experiment');
       expect(toastr.error).toHaveBeenCalled();
-    });
+    }));
   });
 
   describe('getConsumption', () => {
-    it('should map consumption counts and open the dialog', () => {
+    it('should map consumption counts and open the dialog', fakeAsync(() => {
       const openSpy = spyOn(component, 'openConsumptionDialog');
       const experiment = createMockExperiment({
         countGeocoding: 5,
@@ -355,12 +359,13 @@ describe('ExperimentComponent', () => {
       });
 
       component.getConsumption(experiment);
+      tick(500); // hiddenSpinner() hides the named spinner after a 500ms delay
 
       expect(component.paramsConsumption.countGeocoding).toBe(5);
       expect(component.paramsConsumption.countReroute).toBe(3);
       expect(openSpy).toHaveBeenCalledWith('');
       expect(spinner.hide).toHaveBeenCalledWith('experiment');
-    });
+    }));
 
     it('should default missing counts to zero', () => {
       spyOn(component, 'openConsumptionDialog');
@@ -505,7 +510,7 @@ describe('ExperimentComponent', () => {
       component.selectExperiment(
         createMockExperiment({
           runId: 'r1',
-          status: 'Succeededs' as Experiment['status'],
+          status: 'Succeeded' as Experiment['status'],
         })
       );
 
@@ -569,9 +574,11 @@ describe('ExperimentComponent', () => {
       );
     });
 
-    it('should hide the experiment spinner', () => {
+    it('should hide the experiment spinner', fakeAsync(() => {
       component.hiddenSpinner();
+      tick(500); // hiddenSpinner() hides the named spinner after a 500ms delay
+
       expect(spinner.hide).toHaveBeenCalledWith('experiment');
-    });
+    }));
   });
 });

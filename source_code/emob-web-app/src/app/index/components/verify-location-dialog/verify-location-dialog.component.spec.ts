@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { VerifyLocationDialogComponent } from './verify-location-dialog.component';
 
@@ -8,9 +9,15 @@ describe('VerifyLocationDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VerifyLocationDialogComponent]
+      declarations: [VerifyLocationDialogComponent],
+      schemas: [NO_ERRORS_SCHEMA],
     })
-    .compileComponents();
+      // Replace the template so we don't pull in transloco pipes/child
+      // elements used by the real verify-location template.
+      .overrideComponent(VerifyLocationDialogComponent, {
+        set: { template: '' },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(VerifyLocationDialogComponent);
     component = fixture.componentInstance;

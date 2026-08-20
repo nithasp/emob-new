@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { NumberCounterInputComponent } from './number-counter-input.component';
 
@@ -8,9 +9,14 @@ describe('NumberCounterInputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NumberCounterInputComponent]
+      declarations: [NumberCounterInputComponent],
+      schemas: [NO_ERRORS_SCHEMA],
     })
-    .compileComponents();
+      // Replace the template so we don't pull in transloco pipes.
+      .overrideComponent(NumberCounterInputComponent, {
+        set: { template: '' },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(NumberCounterInputComponent);
     component = fixture.componentInstance;
