@@ -1,5 +1,5 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -7,11 +7,14 @@ import { Response } from '../models/graphql.model';
 import type { Error } from '../models/graphql.model';
 import { ActualLocation, Configuration } from '../models/configuration.model';
 import { ErrorHandlingService } from './handle-error.service';
+import { LoggerService } from './logger.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ConfigurationService {
+  private readonly logger = inject(LoggerService);
+
   constructor(
     private readonly apollo: Apollo,
     private readonly http: HttpClient,
@@ -119,7 +122,7 @@ export class ConfigurationService {
   }
 
   uploadActualLocation(file: File): Observable<ActualLocation> {
-    console.log('file', file);
+    this.logger.log('file', file);
 
     return this.apollo
       .mutate<Response>({

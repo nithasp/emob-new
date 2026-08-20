@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { formatNumber } from '@angular/common';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { VehicleType } from 'src/app/models/vehicle.model';
@@ -10,6 +10,7 @@ import { ConfirmationDialogComponent } from 'src/app/index/components/confirmati
 import { finalize } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { ActionMode } from 'src/app/models/common.model';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-vehicle-type',
@@ -17,6 +18,8 @@ import { ActionMode } from 'src/app/models/common.model';
   styleUrls: ['./vehicle-type.component.scss'],
 })
 export class VehicleTypeComponent implements OnInit {
+  private readonly logger = inject(LoggerService);
+
   page: number = 1;
   pageSize: number = 5;
   collectionSize: number = 0;
@@ -54,7 +57,7 @@ export class VehicleTypeComponent implements OnInit {
             ),
             this.transloco.translate('error')
           );
-          console.error('Error fetching vehicle types:', error);
+          this.logger.error('Error fetching vehicle types:', error);
         },
       });
   }
@@ -146,7 +149,7 @@ export class VehicleTypeComponent implements OnInit {
                 ),
                 this.transloco.translate('error')
               );
-              console.error(err);
+              this.logger.error(err);
             },
           });
       }

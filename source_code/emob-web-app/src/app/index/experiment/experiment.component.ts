@@ -5,7 +5,7 @@ import {
   HostListener,
   OnDestroy,
   OnInit,
-  ViewChild,
+  ViewChild, inject,
 } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
@@ -22,6 +22,7 @@ import { ParametersDialogComponent } from '../components/parameters-dialog/param
 import { DynamicParameter } from 'src/app/models/constraint.model';
 import { ConsumptionDialogComponent } from '../components/consumption-dialog/consumption-dialog.component';
 import { TranslocoService } from '@jsverse/transloco';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-experiment',
@@ -29,6 +30,8 @@ import { TranslocoService } from '@jsverse/transloco';
   styleUrl: './experiment.component.scss',
 })
 export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
+  private readonly logger = inject(LoggerService);
+
   columnsStorageKey = 'experimentDisplayedColumns';
   public displayedColumns = [
     { def: 'select', label: 'select', visible: true },
@@ -317,11 +320,11 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
 
   selectExperiment(experiment: Experiment) {
     this.spinner.show();
-    console.log('select experiment', experiment);
+    this.logger.log('select experiment', experiment);
     if (experiment.status === 'Initializing') {
       this.userMsGraphService.getUserId().subscribe((userId) => {
         this.spinner.hide();
-        console.log('compare user id', userId, experiment.triggeredBy);
+        this.logger.log('compare user id', userId, experiment.triggeredBy);
         if (userId === experiment.triggeredBy) {
           this.router.navigate(['/users/run', experiment.runId]);
           this.toastr.info(

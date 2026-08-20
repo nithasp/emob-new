@@ -13,6 +13,7 @@ import { environment } from 'src/environments/environment';
 import { HttpHeaders, provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
 import { MsalService } from '@azure/msal-angular';
 import { Error } from './models/graphql.model';
+import { logError, logMessage } from 'src/app/services/logger.service';
 
 if (!environment.production) {
   // Adds messages only in a dev environment
@@ -41,17 +42,17 @@ if (!environment.production) {
         const errorLink = onError(({ graphQLErrors, networkError, response  }) => {
           if (graphQLErrors)
             graphQLErrors.map(({ message, locations, path }) => {
-              console.log(
+              logMessage(
                 `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
               );
-              console.error("error", message);
+              logError("error", message);
             });
-          if (networkError) console.log(`[Network error]: ${networkError}`);
+          if (networkError) logMessage(`[Network error]: ${networkError}`);
           if (response) {
-            console.error('Internal Server Error:', response);
+            logError('Internal Server Error:', response);
             response.errors?.forEach((error) => {
               if (error.message) {
-                console.error('Internal Server Error:', error.message);
+                logError('Internal Server Error:', error.message);
               }
             });
           }

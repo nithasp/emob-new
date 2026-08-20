@@ -4,7 +4,7 @@ import {
   OnInit,
   OnDestroy,
   ViewChild,
-  ElementRef,
+  ElementRef, inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -46,6 +46,7 @@ import { InputFieldComponent } from 'src/app/shared/components/form/input-field/
 import { InputSelectComponent } from 'src/app/shared/components/form/input-select/input-select.component';
 import { DynamicPopoverComponent } from 'src/app/shared/components/dynamic-popover/dynamic-popover.component';
 import { ActionMode } from 'src/app/models/common.model';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-vehicle-type-dialog',
@@ -66,6 +67,8 @@ import { ActionMode } from 'src/app/models/common.model';
   ],
 })
 export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
+  private readonly logger = inject(LoggerService);
+
   @Input() mode: ActionMode = 'create';
   @Input() vehicleType: VehicleType | null = null;
   @ViewChild('formContainer') formContainer!: ElementRef<HTMLDivElement>;
@@ -286,7 +289,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
           }
         },
         error: (err) => {
-          console.error('Error loading enum values:', err);
+          this.logger.error('Error loading enum values:', err);
           VehicleEnumConfigs.forEach((config) => {
             (this as Record<string, unknown>)[config.property] = [];
           });
@@ -440,7 +443,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
         this.activeModal.close({ refresh: true, vehicleType: res });
       },
       error: (err) => {
-        console.error(
+        this.logger.error(
           `Failed to ${this.isEdit ? 'update' : 'create'} vehicle type:`,
           err
         );

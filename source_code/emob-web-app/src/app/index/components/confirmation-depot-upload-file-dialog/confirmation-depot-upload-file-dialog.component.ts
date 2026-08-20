@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
@@ -7,6 +7,7 @@ import {
   DepotInputDataItem,
   PreOrderFileItem,
 } from 'src/app/models/pre-order.model';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-confirmation-depot-upload-file-dialog',
@@ -14,6 +15,8 @@ import {
   styleUrls: ['./confirmation-depot-upload-file-dialog.component.scss'],
 })
 export class ConfirmationDepotUploadFileDialogComponent {
+  private readonly logger = inject(LoggerService);
+
   @Input() title: string = 'Confirm Action';
   @Input() message?: string;
   @Input() question?: string;
@@ -72,7 +75,7 @@ export class ConfirmationDepotUploadFileDialogComponent {
 
     if (!targetItem) {
       // If no matching item found, skip validation (backwards compatibility)
-      console.log(
+      this.logger.log(
         'No matching depotInputDataItem found for category:',
         this.selectedCategory
       );
@@ -88,7 +91,7 @@ export class ConfirmationDepotUploadFileDialogComponent {
       (col) => !this.fileColumns.includes(col)
     );
 
-    console.log('Category validation:', {
+    this.logger.log('Category validation:', {
       selectedCategory: this.selectedCategory,
       requiredColumns: targetItem.columnRequired,
       fileColumns: this.fileColumns,
@@ -103,10 +106,10 @@ export class ConfirmationDepotUploadFileDialogComponent {
   }
 
   onConfirm(): void {
-    console.log('onConfirm');
+    this.logger.log('onConfirm');
     if (this.showCategorySelectOnly || this.selectedRadioOption === 'no') {
-      console.log('onConfirm1 - validating category columns');
-      console.log('selectedCategory', this.selectedCategory);
+      this.logger.log('onConfirm1 - validating category columns');
+      this.logger.log('selectedCategory', this.selectedCategory);
 
       // Validate columns for the selected category
       const validation = this.validateCategoryColumns();
@@ -128,7 +131,7 @@ export class ConfirmationDepotUploadFileDialogComponent {
         category: this.selectedCategory,
       });
     } else if (this.selectedRadioOption === 'yes') {
-      console.log('onConfirm2');
+      this.logger.log('onConfirm2');
       this.activeModal.close({ replace: true });
     }
   }

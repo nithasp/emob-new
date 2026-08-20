@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   Configuration,
@@ -19,6 +19,7 @@ import { UploadFileComponent } from '../upload-file/upload-file.component';
 import { firstValueFrom } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-upload',
@@ -26,6 +27,8 @@ import { TranslocoService } from '@jsverse/transloco';
   styleUrl: './upload.component.scss',
 })
 export class UploadComponent implements OnInit {
+  private readonly logger = inject(LoggerService);
+
   public selectedNode: string | null = null;
   public selectedChildId: string | null = null;
   public configurationsExplorer: ConfigurationExplorerDepot[] = [];
@@ -419,7 +422,7 @@ export class UploadComponent implements OnInit {
         this.excelData.push(rowData);
       });
     } catch (error) {
-      console.error('Error fetching or parsing file:', error);
+      this.logger.error('Error fetching or parsing file:', error);
     }
   }
 
@@ -479,7 +482,7 @@ export class UploadComponent implements OnInit {
         }
       })
       .catch((error) => {
-        console.error('Dialog was dismissed:', error);
+        this.logger.error('Dialog was dismissed:', error);
       });
   }
 
@@ -553,7 +556,7 @@ export class UploadComponent implements OnInit {
         );
         window.URL.revokeObjectURL(link.href);
       } else {
-        console.error('Download failed: Blob is null');
+        this.logger.error('Download failed: Blob is null');
         this.spinner.hide();
       }
     });

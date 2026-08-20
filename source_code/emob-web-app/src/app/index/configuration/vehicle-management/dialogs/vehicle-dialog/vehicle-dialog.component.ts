@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { VehicleService } from 'src/app/services/vehicle.service';
@@ -21,6 +21,7 @@ import { TranslocoService } from '@jsverse/transloco';
 import { licensePlateDuplicateValidator } from 'src/app/shared/validators/license-plate.validator';
 import { VehicleFormControls } from 'src/app/models/forms/vehicle-form-control.model';
 import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-vehicle-dialog',
@@ -28,6 +29,8 @@ import { ConfirmationDialogComponent } from 'src/app/index/components/confirmati
   styleUrls: ['./vehicle-dialog.component.scss'],
 })
 export class VehicleDialogComponent implements OnInit {
+  private readonly logger = inject(LoggerService);
+
   @Input() mode: ActionMode = 'create';
   @Input() vehicle: MyVehicles | null = null;
 
@@ -96,7 +99,7 @@ export class VehicleDialogComponent implements OnInit {
     forkJoin({
       vehicleTypes: this.vehicleService.getMyVehicleTypes().pipe(
         catchError((error) => {
-          console.error('Error loading vehicle types:', error);
+          this.logger.error('Error loading vehicle types:', error);
           this.toastr.error(
             this.transloco.translate(
               'failed_to_load_vehicle_types',
@@ -110,7 +113,7 @@ export class VehicleDialogComponent implements OnInit {
       ),
       depots: this.experimentService.getMyDepots().pipe(
         catchError((error) => {
-          console.error('Error loading depots:', error);
+          this.logger.error('Error loading depots:', error);
           this.toastr.error(
             this.transloco.translate(
               'failed_to_load_depots',
@@ -144,7 +147,7 @@ export class VehicleDialogComponent implements OnInit {
           licensePlate: vehicleData.licensePlate,
         });
       },
-      error: (error) => console.error('Error fetching vehicle data:', error),
+      error: (error) => this.logger.error('Error fetching vehicle data:', error),
     });
   }
 
@@ -213,7 +216,7 @@ export class VehicleDialogComponent implements OnInit {
         });
       },
       error: (err: unknown) => {
-        console.error(
+        this.logger.error(
           `Error ${this.isEditMode ? 'updating' : 'creating'} vehicle:`,
           err
         );

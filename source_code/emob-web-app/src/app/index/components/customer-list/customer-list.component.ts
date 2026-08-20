@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   DataGroup,
@@ -14,6 +14,7 @@ import {
   DetailsPreOrder,
   GroupedDataPreOrder
 } from 'src/app/models/pre-order.model';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-customer-list',
@@ -21,6 +22,8 @@ import {
   styleUrl: './customer-list.component.scss',
 })
 export class CustomerListComponent implements OnInit {
+  private readonly logger = inject(LoggerService);
+
   @Input() groupedDataPreOrder!: GroupedDataPreOrder;
   @Input() uploadDataGroupCustomers!: DataGroup;
 
@@ -172,7 +175,7 @@ export class CustomerListComponent implements OnInit {
       (c) => c.name === customer.name
     );
     this.selectedIndex = idx >= 0 ? idx : 0;
-    console.log('Selected customer:', this.selectedIndex);
+    this.logger.log('Selected customer:', this.selectedIndex);
     this.selectData();
   }
 
@@ -191,16 +194,16 @@ export class CustomerListComponent implements OnInit {
       (c) => c.name === name
     );
     if (uncertainIndex !== -1) {
-      console.log('findLocationType Uncertain');
+      this.logger.log('findLocationType Uncertain');
       return LocationType.Uncertain;
     } else if (unverifyIndex !== -1) {
-      console.log('findLocationType Unverify');
+      this.logger.log('findLocationType Unverify');
       return LocationType.Unverify;
     } else if (editIndex !== -1) {
-      console.log('findLocationType Edit');
+      this.logger.log('findLocationType Edit');
       return LocationType.Edit;
     } else {
-      console.log('findLocationType Verify');
+      this.logger.log('findLocationType Verify');
       return LocationType.Verify;
     }
   }

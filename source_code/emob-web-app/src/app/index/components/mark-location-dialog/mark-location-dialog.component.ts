@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, Input } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Input, inject } from '@angular/core';
 import Map from 'ol/Map';
 import * as OlProj from 'ol/proj';
 import View from 'ol/View';
@@ -19,12 +19,15 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Icon, Style } from 'ol/style';
 import { Point } from 'ol/geom';
 import { Location } from 'src/app/models/location.model';
+import { LoggerService } from 'src/app/services/logger.service';
 @Component({
   selector: 'app-mark-location-dialog',
   templateUrl: './mark-location-dialog.component.html',
   styleUrl: './mark-location-dialog.component.scss',
 })
 export class MarkLocationDialogComponent implements OnInit, AfterViewInit {
+  private readonly logger = inject(LoggerService);
+
   popupContent: string = '';
   attribution!: Attribution;
   source!: XYZ;
@@ -98,7 +101,7 @@ export class MarkLocationDialogComponent implements OnInit, AfterViewInit {
     const coords: number[] = OlProj.toLonLat(event.coordinate);
     const lat: number = coords[1];
     const lon: number = coords[0];
-    console.log('Mark latlong:', coords);
+    this.logger.log('Mark latlong:', coords);
     this.isEditLocation = true;
     this.location.latitude = lat;
     this.location.longitude = lon;
@@ -107,7 +110,7 @@ export class MarkLocationDialogComponent implements OnInit, AfterViewInit {
   private setLocation() {
     this.vectorSource.clear();
 
-    console.log('setLocation', this.location);
+    this.logger.log('setLocation', this.location);
     const location: Feature = new Feature({
       geometry: new Point(
         OlProj.fromLonLat([

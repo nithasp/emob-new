@@ -11,6 +11,7 @@ import {
   BrowserCacheLocation,
 } from '@azure/msal-browser';
 import { environment } from 'src/environments/environment';
+import { logMessage } from 'src/app/services/logger.service';
 
 
 const isIE = window.navigator.userAgent.indexOf("MSIE ") > -1 || window.navigator.userAgent.indexOf("Trident/") > -1;
@@ -33,7 +34,7 @@ export const msalConfig: Configuration = {
   system: {
     loggerOptions: {
       loggerCallback(logLevel: LogLevel, message: string) {
-        console.log(logLevel,message);
+        logMessage(logLevel,message);
       },
       logLevel: LogLevel.Warning,
       piiLoggingEnabled: true,

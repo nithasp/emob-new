@@ -5,7 +5,7 @@ import {
   HostListener,
   OnInit,
   TemplateRef,
-  ViewChild,
+  ViewChild, inject,
 } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Fill, Stroke, Text } from 'ol/style';
@@ -79,6 +79,7 @@ import { DownloadResultFile } from '../../models/experiment.model';
 import { TranslocoService } from '@jsverse/transloco';
 import { LanguageChangeService } from 'src/app/services/language-change.service';
 import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-result',
@@ -96,6 +97,8 @@ import { CustomerDetailsComponent } from '../components/customer-details/custome
   ],
 })
 export class ResultComponent implements OnInit, AfterViewInit {
+  private readonly logger = inject(LoggerService);
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('filterModal', { static: false, read: TemplateRef })
@@ -220,7 +223,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         this.experimentService
           .getExperiment(params['experimentId'])
           .subscribe(async (response: Experiment) => {
-            console.log(response);
+            this.logger.log(response);
             this.experiment = { ...response };
             this.expandedElement = [];
 
@@ -237,7 +240,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
               this.checkFilterOverflowTwolinesWhenLanguageChange();
             } catch (error) {
-              console.error('Failed to load plan data from API:', error);
+              this.logger.error('Failed to load plan data from API:', error);
               this.toastr.error(
                 this.transloco.translate('failed_to_load_plan_data', {}, 'index'),
                 this.transloco.translate('error', {}, 'index')
@@ -269,7 +272,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.vrpSolutionData = vrpSolution as VrpSolutionData;
     this.geoJsonRawData = geoJson as VrpGeoJsonData;
 
-    console.log('vrpStats', this.vrpStatsData);
+    this.logger.log('vrpStats', this.vrpStatsData);
   }
 
   ngAfterViewInit(): void {
@@ -282,7 +285,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     searchValue: string,
     crit?: string
   ): boolean {
-    console.log('rawValue', rawValue);
+    this.logger.log('rawValue', rawValue);
 
     const critUsed = crit ?? this.selectedFilterCriteria;
     const search = searchValue.trim().toLowerCase();
@@ -725,13 +728,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   async dataFromFileUrlToJson(url: string) {
-    console.log(`Fetching data from url: ${url}`);
+    this.logger.log(`Fetching data from url: ${url}`);
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
-    console.log(`Fetched array buffer with length: ${arrayBuffer.byteLength}`);
+    this.logger.log(`Fetched array buffer with length: ${arrayBuffer.byteLength}`);
     const text = new TextDecoder().decode(arrayBuffer);
-    console.log(`Decoded text: ${text}`);
+    this.logger.log(`Decoded text: ${text}`);
     const jsonData = JSON.parse(text);
-    console.log(`Parsed JSON data: ${JSON.stringify(jsonData)}`);
+    this.logger.log(`Parsed JSON data: ${JSON.stringify(jsonData)}`);
 
     return jsonData;
   }
@@ -762,7 +765,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
           })
           .catch((err) => {
             if (err.name !== 'AbortError')
-              console.error('Tile load error', err);
+              this.logger.error('Tile load error', err);
           });
 
         tile.setState(TileState.LOADED);
@@ -910,7 +913,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const routeIndex: number | undefined =
       feature.getProperties()['routeIndex'] as number | undefined;
     if (routeIndex == null) {
-      console.error('Clicked LineString has no routeIndex');
+      this.logger.error('Clicked LineString has no routeIndex');
       return;
     }
 
@@ -1218,12 +1221,12 @@ export class ResultComponent implements OnInit, AfterViewInit {
     );
 
     if (!collection) {
-      console.error(`No route found for index ${routeIndex}`);
+      this.logger.error(`No route found for index ${routeIndex}`);
       return;
     }
 
     if (!this.featureDepots || !Array.isArray(this.featureDepots) || this.featureDepots.length === 0) {
-      console.error('featureDepots is not properly initialized');
+      this.logger.error('featureDepots is not properly initialized');
       return;
     }
 
@@ -1233,7 +1236,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   onMouseEnter(row: RouteInfo) {
     if (!this.mapAlreadyRendered) return;
-    console.log('Mouse entered row:', row);
+    this.logger.log('Mouse entered row:', row);
 
     this.highlightedFeatureCollectionId = row.routeIndex;
     const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
@@ -1244,7 +1247,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   onMouseLeave(row: RouteInfo) {
     if (!this.mapAlreadyRendered) return;
-    console.log('Mouse left row:', row);
+    this.logger.log('Mouse left row:', row);
     this.highlightedFeatureCollectionId = null;
     const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
     vectorLayer.getSource()?.changed();
@@ -1302,7 +1305,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
               this.router.navigate(['/users/run', response.runId]);
             },
             error: (err) => {
-              console.error('Failed to replicate experiment', err);
+              this.logger.error('Failed to replicate experiment', err);
               this.spinner.hide();
               this.toastr.error(
                 this.transloco.translate(
@@ -1355,7 +1358,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
                 this.spinner.hide();
               },
               error: (err) => {
-                console.error('Download failed', err);
+                this.logger.error('Download failed', err);
                 this.spinner.hide();
                 this.toastr.error(
                   this.transloco.translate(
@@ -1369,7 +1372,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
             });
         },
         error: (err) => {
-          console.error('Could not get download URL', err);
+          this.logger.error('Could not get download URL', err);
           this.spinner.hide();
           this.toastr.error(
             this.transloco.translate('failed_to_get_download_url', {}, 'index'),

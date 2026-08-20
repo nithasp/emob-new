@@ -1,14 +1,16 @@
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
-import { Inject, Injectable } from "@angular/core";
+import { Inject, Injectable, inject } from "@angular/core";
 import { Location } from "@angular/common";
 import { Observable, of, from } from "rxjs";
 import { concatMap } from "rxjs/operators";
 
 import { MsalBroadcastService, MsalGuardConfiguration, MsalService, MSAL_GUARD_CONFIG } from "@azure/msal-angular";
 import { BaseGuard } from "./base.guard";
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Injectable()
 export class RoleGuard extends BaseGuard {
+  private readonly logger = inject(LoggerService);
 
   constructor(
     @Inject(MSAL_GUARD_CONFIG) protected override msalGuardConfig: MsalGuardConfiguration,
@@ -34,7 +36,7 @@ export class RoleGuard extends BaseGuard {
         }
         if (!activeAccount?.idTokenClaims?.roles) {
           this.router.navigate(['/unauthorized']);
-          console.warn('Token does not have roles claim. Please ensure that your account is assigned to an app role and then sign-out and sign-in again.');
+          this.logger.warn('Token does not have roles claim. Please ensure that your account is assigned to an app role and then sign-out and sign-in again.');
           return of(false);
         }
 
@@ -42,7 +44,7 @@ export class RoleGuard extends BaseGuard {
 
         if (!hasRequiredRole) {
           this.router.navigate(['/unauthorized']);
-          console.warn('You do not have access as the expected role is not found. Please ensure that your account is assigned to an app role and then sign-out and sign-in again.');
+          this.logger.warn('You do not have access as the expected role is not found. Please ensure that your account is assigned to an app role and then sign-out and sign-in again.');
           return of(false);
         }
 

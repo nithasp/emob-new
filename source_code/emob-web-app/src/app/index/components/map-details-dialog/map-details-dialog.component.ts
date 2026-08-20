@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, AfterViewInit } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, inject } from '@angular/core';
 import { OSM, Vector as VectorSource } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { GeoJSON } from 'ol/format';
@@ -34,6 +34,7 @@ import {
   RoutingNodeProductQuantity,
 } from 'src/app/models/location.model';
 import { MapBrowserEvent } from 'ol';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-map-details-dialog',
@@ -41,6 +42,8 @@ import { MapBrowserEvent } from 'ol';
   styleUrl: './map-details-dialog.component.scss',
 })
 export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
+  private readonly logger = inject(LoggerService);
+
   @Input() routeInfo!: RouteInfo;
   @Input() featureCollection: GeoJSONFeatureCollection | null = null;
   @Input() featureDepots: GeoJSONFeatureCollection[] = [];
@@ -91,7 +94,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
         const lineString = geometry as LineString;
         const coordinates = lineString.getCoordinates();
         const reducedCoordinates = coordinates.filter((_, i) => i % 2 === 0); // Keep every other coordinate
-        console.log(
+        this.logger.log(
           index,
           'Original coordinates:',
           coordinates.length,
@@ -204,7 +207,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
       } else {
         this.popupContent = properties;
       }
-      console.log(this.popupContent);
+      this.logger.log(this.popupContent);
     } else {
       this.popUp?.setPosition(undefined);
     }
@@ -315,13 +318,13 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
     });
 
     if (!pointFeature) {
-      console.warn('Point feature not found for:', pointDetail);
+      this.logger.warn('Point feature not found for:', pointDetail);
       return;
     }
 
     const nodeIndex = pointFeature.getProperties()['nodeIndex'];
     if (!nodeIndex) {
-      console.warn('nodeIndex not found for point:', pointDetail);
+      this.logger.warn('nodeIndex not found for point:', pointDetail);
       return;
     }
 

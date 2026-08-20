@@ -1,21 +1,24 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { NgxSpinnerService } from "ngx-spinner";
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ErrorDialogComponent } from '../index/components/error-dialog/error-dialog.component';
+import { LoggerService } from './logger.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ErrorHandlingService {
+  private readonly logger = inject(LoggerService);
+
   constructor(private toastr: ToastrService, private spinner: NgxSpinnerService, private ngbModal: NgbModal,) {}
 
   handleError = <T>(source: Observable<T>): Observable<T> =>
     source.pipe(
       catchError((error: Error): Observable<never> => {
-        console.error('Error occurred:', error.message);
+        this.logger.error('Error occurred:', error.message);
         this.toastr.error(error.message, 'Error');
         this.showInvalidModal('Error', error.message);
         this.spinner.hide();

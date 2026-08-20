@@ -3,7 +3,7 @@ import {
   Component,
   Injectable,
   OnInit,
-  ViewChild,
+  ViewChild, inject,
 } from '@angular/core';
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -122,6 +122,7 @@ import {
   buildTableRows,
   createCachedValidationMessageFn,
 } from 'src/app/shared/utils/validation-table.utils';
+import { LoggerService, logMessage } from 'src/app/services/logger.service';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
 
@@ -159,6 +160,8 @@ export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
   providers: [{ provide: NgbTimeAdapter, useClass: NgbTimeStringAdapter }],
 })
 export class RunComponent implements OnInit, AfterViewInit {
+  private readonly logger = inject(LoggerService);
+
   // Condition
   public activeNavId = 1;
   public isUpload: boolean = false;
@@ -476,14 +479,14 @@ export class RunComponent implements OnInit, AfterViewInit {
                   .subscribe({
                     next: (response: Experiment) => {
                       this.experiment = { ...response };
-                      console.log('experiment', this.experiment);
+                      this.logger.log('experiment', this.experiment);
 
                       if (response.fileUrls?.transform?.locations) {
                         this.dataFromFileUrlToJson(
                           response.fileUrls.transform.locations,
                         )
                           .then((data: TransformLocationsData) => {
-                            console.log('transform locations data', data);
+                            this.logger.log('transform locations data', data);
                             if (data?.customers && data?.depots) {
                               this.groupingCustomer(
                                 data.customers,
@@ -492,7 +495,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                             }
                           })
                           .catch((err) => {
-                            console.error(
+                            this.logger.error(
                               'error fetching transform locations data',
                               err,
                             );
@@ -516,7 +519,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                             response.fileUrls?.validate.errorWarning,
                           )
                             .then((data) => {
-                              console.log(data);
+                              this.logger.log(data);
                               const warnings = data?.warnings || [];
                               const errors = data?.errors || [];
                               this.isValidationWarning = warnings.length > 0;
@@ -525,7 +528,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                               this.setValidationErrors(errors);
                             })
                             .catch((err) => {
-                              console.error(
+                              this.logger.error(
                                 'error fetching validate warning data',
                                 err,
                               );
@@ -543,11 +546,11 @@ export class RunComponent implements OnInit, AfterViewInit {
                           response.fileUrls.transform.warning,
                         )
                           .then((data) => {
-                            console.log('transform warning data', data);
+                            this.logger.log('transform warning data', data);
                             this.setTransformWarnings(data);
                           })
                           .catch((err) => {
-                            console.error(
+                            this.logger.error(
                               'error fetching transform warning data',
                               err,
                             );
@@ -643,7 +646,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                               }
                             },
                             error: (err) => {
-                              console.error('Error getting user ID:', err);
+                              this.logger.error('Error getting user ID:', err);
                               this.spinner.hide();
                             },
                           });
@@ -679,20 +682,20 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   async initializeDataFromExperiment(experiment: Experiment) {
-    console.log("initialize Data From Experiment's historical", experiment);
+    this.logger.log("initialize Data From Experiment's historical", experiment);
     // Load Parameter
     if (experiment.fileUrls?.validate?.parameterFormats) {
       this.dataFromFileUrlToJson(
         experiment.fileUrls.validate.parameterFormats,
       ).then((response: Constraint) => {
-        console.log('Constraint', response);
+        this.logger.log('Constraint', response);
         this.constraintsData = { ...response };
         this.constraintsFromFileLoaded = true;
         // Ensure UI reflects constraint values on init
         if (this.allDynamicParameters?.length) {
           this.refreshDynamicParametersForSelectedDepot();
         }
-        console.log(this.constraintsData);
+        this.logger.log(this.constraintsData);
       });
     } else {
       this.getDynamicParameters();
@@ -709,7 +712,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       await this.dataFromFileUrlToJson(
         experiment.fileUrls.validate.vehicleTypes,
       ).then((response: VehicleBlobData[]) => {
-        console.log('Vehicles Data from vehiclesBlobPathUrl:', response);
+        this.logger.log('Vehicles Data from vehiclesBlobPathUrl:', response);
         this.loadVehicleDataFromBlob(response);
       });
     }
@@ -747,14 +750,14 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     // load geocoding location
     if (experiment.fileUrls?.transform?.locations) {
-      console.log(
+      this.logger.log(
         'experiment.fileUrls?.transform?.locations',
         experiment.fileUrls?.transform?.locations,
       );
       await this.dataFromFileUrlToJson(
         experiment.fileUrls.transform.locations,
       ).then((response: TransformLocationsData) => {
-        console.log('transform locations response', response);
+        this.logger.log('transform locations response', response);
         if (response?.customers && response?.depots) {
           this.groupingCustomer(response.customers, response.depots);
         }
@@ -762,7 +765,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     }
 
     if (experiment.fileUrls?.validate?.preVRPSolution) {
-      console.log(
+      this.logger.log(
         'experiment.fileUrls?.validate?.preVRPSolution',
         experiment.fileUrls?.validate?.preVRPSolution,
       );
@@ -774,7 +777,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       await this.dataFromFileUrlToJson(
         experiment.fileUrls.validate.preVRPSolution,
       ).then((response: Result) => {
-        console.log('Result', response);
+        this.logger.log('Result', response);
         this.validateExperiment = response.validate;
         this.haveValidated = true;
         // Rebuild dynamic parameters so values reflect constraintsData when page initializes with historical validation
@@ -803,7 +806,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     vehiclesData: VehicleBlobData[],
   ): Promise<void> {
     if (!Array.isArray(vehiclesData)) {
-      console.warn('Invalid vehicles data format:', vehiclesData);
+      this.logger.warn('Invalid vehicles data format:', vehiclesData);
       return;
     }
 
@@ -816,7 +819,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         (v) => v.vehicleTypeId === vehicleTypeId,
       );
       if (!vehicleTypeExists) {
-        console.warn(
+        this.logger.warn(
           `Vehicle type ${vehicleTypeId} not found in myVehicleTypes`,
         );
         continue;
@@ -900,7 +903,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         this.selectedVehicleCounts[vehicleTypeId] = licensePlates.length || 1;
       }
     } catch (error) {
-      console.error(
+      this.logger.error(
         `Error loading license plates for vehicle type ${vehicleTypeId}:`,
         error,
       );
@@ -997,7 +1000,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     if (columnNames) {
       this.fileColumnsCache[id] = columnNames;
-      console.log('Columns cached for file:', id, columnNames);
+      this.logger.log('Columns cached for file:', id, columnNames);
     }
 
     // Find the matched item for the new file
@@ -1138,7 +1141,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                   )}`,
                   [validationError],
                 );
-                console.log('Validation FAILED from dialog - missing columns');
+                this.logger.log('Validation FAILED from dialog - missing columns');
                 return; // Don't add the file
               }
 
@@ -1272,7 +1275,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                         )}`,
                         [validationError],
                       );
-                      console.log(
+                      this.logger.log(
                         'Validation FAILED from dialog - missing columns',
                       );
                       return; // Don't add the file
@@ -1365,7 +1368,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                 }),
               );
 
-              console.log(
+              this.logger.log(
                 'Detected sheets:',
                 allSheets.map((sheet) => sheet.name),
               );
@@ -1384,7 +1387,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           // Cache column names for later validation if fileId is provided
           if (fileId) {
             this.fileColumnsCache[fileId] = columnNames;
-            console.log('Cached columns for file:', fileId, columnNames);
+            this.logger.log('Cached columns for file:', fileId, columnNames);
           }
 
           const matchingInputDataItem =
@@ -1436,7 +1439,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                 );
               }
             }
-            console.log('column_name_mismatch_template 1');
+            this.logger.log('column_name_mismatch_template 1');
             this.showInvalidModal(
               `${this.transloco.translate(
                 'column_name_mismatch_template',
@@ -1446,10 +1449,10 @@ export class RunComponent implements OnInit, AfterViewInit {
               validationErrors,
             );
             resolve({ isValid: false, columnNames: columnNames });
-            console.log('column_name_mismatch_template 2');
+            this.logger.log('column_name_mismatch_template 2');
           }
         } catch (error) {
-          console.error('Error validating file:', error);
+          this.logger.error('Error validating file:', error);
           resolve({ isValid: false });
         }
       };
@@ -1511,7 +1514,7 @@ export class RunComponent implements OnInit, AfterViewInit {
             .uploadPreOrder(this.experiment.runId, depotIds, newPayload)
             .subscribe({
               next: (response: UploadPreOrderResponse) => {
-                console.log('uploadPreOrder success response', response);
+                this.logger.log('uploadPreOrder success response', response);
 
                 if (response.result?.isSuccesses === false) {
                   this.spinner.hide();
@@ -1540,7 +1543,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                             await this.dataFromFileUrlToJson(
                               exp.fileUrls.transform.locations,
                             );
-                          console.log(
+                          this.logger.log(
                             'post-upload transform locations data',
                             locationData,
                           );
@@ -1551,7 +1554,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                             );
                           }
                         } catch (err) {
-                          console.error(
+                          this.logger.error(
                             'error fetching transform locations after upload',
                             err,
                           );
@@ -1594,7 +1597,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                       this.spinner.hide();
                     },
                     error: (err) => {
-                      console.error(
+                      this.logger.error(
                         'Error fetching experiment after upload:',
                         err,
                       );
@@ -1603,14 +1606,14 @@ export class RunComponent implements OnInit, AfterViewInit {
                   });
               },
               error: (err) => {
-                console.error('Error uploading pre-order:', err);
+                this.logger.error('Error uploading pre-order:', err);
                 this.spinner.hide();
               },
             });
         }
       })
       .catch((error) => {
-        console.error('Dialog was dismissed:', error);
+        this.logger.error('Dialog was dismissed:', error);
         this.spinner.hide();
       });
   }
@@ -1706,7 +1709,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
       })
       .catch((error) => {
-        console.error('Dialog was dismissed:', error);
+        this.logger.error('Dialog was dismissed:', error);
       });
   }
 
@@ -1753,7 +1756,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       updatedAt?: string;
     }>,
   ) {
-    console.log('loadLocationDepot incoming', incoming);
+    this.logger.log('loadLocationDepot incoming', incoming);
 
     // Always use the incoming depots array for default selection and display
     const normalizedIncoming: MyDepot[] = incoming.map((item) => {
@@ -1780,7 +1783,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     this.depots = normalizedIncoming;
 
-    console.log('this.depots', this.depots);
+    this.logger.log('this.depots', this.depots);
 
     if (!this.experiment.depots || this.experiment.depots.length === 0) {
       this.experiment.depots = normalizedIncoming.map((depot: MyDepot) => ({
@@ -1905,7 +1908,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     const attribution = new Attribution({
       collapsible: true,
     });
-    console.log(this.preOrderFiles);
+    this.logger.log(this.preOrderFiles);
     this.map = new Map({
       layers: [
         new TileLayer({
@@ -1947,13 +1950,13 @@ export class RunComponent implements OnInit, AfterViewInit {
     this.map.addOverlay(this.popUp);
     this.map.getViewport().addEventListener('contextmenu', function (evt) {
       evt.preventDefault();
-      console.log(evt);
+      logMessage(evt);
     });
     // display popup on click
     this.map.on('singleclick', (event) => this.popupShow(event, element));
     this.map.on('pointermove', (event) => this.pointMove(event));
 
-    console.log(this.haveUpdateAfterValidated, this.haveValidated);
+    this.logger.log(this.haveUpdateAfterValidated, this.haveValidated);
   }
 
   private pointMove(
@@ -2149,7 +2152,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   openCustomerOrderDetails(customer: Customer) {
-    console.log('openCustomerOrderDetails customer', customer);
+    this.logger.log('openCustomerOrderDetails customer', customer);
 
     const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
       centered: true,
@@ -2368,7 +2371,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       )
       .subscribe({
         next: (result: ValidateExperimentResponse) => {
-          console.log('validateExperiment result', result);
+          this.logger.log('validateExperiment result', result);
           const validateResult = result.result;
           const errors = validateResult?.error || [];
           const warnings = validateResult?.warning || [];
@@ -2431,7 +2434,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           };
         },
         error: (err) => {
-          console.error(err);
+          this.logger.error(err);
         },
       });
   }
@@ -2545,7 +2548,7 @@ export class RunComponent implements OnInit, AfterViewInit {
             .submitExperiment(this.experiment.runId)
             .subscribe({
               next: (result) => {
-                console.log(result);
+                this.logger.log(result);
                 this.toastr.success(
                   this.transloco.translate('submit_experiment', {}, 'index'),
                   this.transloco.translate('succeed', {}, 'index'),
@@ -2565,7 +2568,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
       })
       .catch((error) => {
-        console.error('Dialog was dismissed:', error);
+        this.logger.error('Dialog was dismissed:', error);
       });
   }
 
@@ -2602,9 +2605,9 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   async dataFromFileUrlToJson(url: string) {
-    console.log(`Fetching data from url: ${url}`);
+    this.logger.log(`Fetching data from url: ${url}`);
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
-    console.log(`Fetched array buffer with length: ${arrayBuffer.byteLength}`);
+    this.logger.log(`Fetched array buffer with length: ${arrayBuffer.byteLength}`);
     const text = new TextDecoder().decode(arrayBuffer);
     const jsonData = JSON.parse(text);
 
@@ -2612,7 +2615,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   updateCustomerGroup(customers: Array<CustomerUpdated>) {
-    console.log('new value customer details', customers);
+    this.logger.log('new value customer details', customers);
     if (!customers?.length) return;
     customers.forEach((item) => {
       const existingIndex = this.customersLocationUpdated.findIndex(
@@ -2668,8 +2671,8 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     const groupedCustomer = this.groupCustomers(customers);
 
-    console.log('groupingCustomer customers', customers);
-    console.log('groupingCustomer depots', depots);
+    this.logger.log('groupingCustomer customers', customers);
+    this.logger.log('groupingCustomer depots', depots);
 
     this.uploadDataGroupCustomers = {
       verify: {
@@ -2690,8 +2693,8 @@ export class RunComponent implements OnInit, AfterViewInit {
       },
     };
 
-    console.log('this.uploadDataGroupCustomers', this.uploadDataGroupCustomers);
-    console.log('depots', depots);
+    this.logger.log('this.uploadDataGroupCustomers', this.uploadDataGroupCustomers);
+    this.logger.log('depots', depots);
 
     this.reInitializeDataTable();
     this.loadLocation(this.uploadDataGroupCustomers);
@@ -2899,7 +2902,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         this.companyDepotType = company.depotType;
       },
       error: (error) => {
-        console.error('Error fetching myCompany data:', error);
+        this.logger.error('Error fetching myCompany data:', error);
         this.toastr.error(error);
       },
     });
@@ -2936,7 +2939,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
       },
       error: (error) => {
-        console.error('Error fetching myDepots data:', error);
+        this.logger.error('Error fetching myDepots data:', error);
         this.toastr.error(error);
         if (showSpinner) {
           this.spinner.hide();
@@ -2951,7 +2954,7 @@ export class RunComponent implements OnInit, AfterViewInit {
   }
 
   onCategoryDropdownOpened(fileObj: PreOrderFileItem, isOpened: boolean): void {
-    console.log('=== onCategoryDropdownOpened ===', {
+    this.logger.log('=== onCategoryDropdownOpened ===', {
       isOpened,
       fileId: fileObj.id,
       fileName: fileObj.file.name,
@@ -2964,8 +2967,8 @@ export class RunComponent implements OnInit, AfterViewInit {
         : (fileObj.file as PreOrderFileDescriptor).displayName || '';
       this.fileDisplayNameBeforeChange[fileObj.id] = currentDisplayName;
 
-      console.log('Captured current displayName:', currentDisplayName);
-      console.log('All tracked values:', this.fileDisplayNameBeforeChange);
+      this.logger.log('Captured current displayName:', currentDisplayName);
+      this.logger.log('All tracked values:', this.fileDisplayNameBeforeChange);
     }
   }
 
@@ -2973,9 +2976,9 @@ export class RunComponent implements OnInit, AfterViewInit {
     fileObj: PreOrderFileItem,
     event: { value: string },
   ) {
-    console.log('=== handleInputDataKeyChange START ===');
-    console.log('Event value:', event.value);
-    console.log('File object:', {
+    this.logger.log('=== handleInputDataKeyChange START ===');
+    this.logger.log('Event value:', event.value);
+    this.logger.log('File object:', {
       id: fileObj.id,
       currentDisplayName: fileObj.file.displayName,
       fileName: fileObj.file.name,
@@ -2988,22 +2991,22 @@ export class RunComponent implements OnInit, AfterViewInit {
     const previousDisplayName =
       this.fileDisplayNameBeforeChange[fileObj.id] || '';
 
-    console.log('Previous displayName from tracking:', previousDisplayName);
+    this.logger.log('Previous displayName from tracking:', previousDisplayName);
 
     if (selectedDisplayName) {
       // First: Validate if file columns match the new category requirements
-      console.log('Starting column validation...');
+      this.logger.log('Starting column validation...');
       const isValid = await this.validateFileColumnsForCategory(
         fileObj,
         selectedDisplayName,
       );
-      console.log('Validation result:', isValid);
+      this.logger.log('Validation result:', isValid);
 
       if (!isValid) {
         // Validation failed, modal already shown, revert to previous value
-        console.log('Validation failed, reverting...');
+        this.logger.log('Validation failed, reverting...');
         this.revertFileDisplayName(fileObj, previousDisplayName);
-        console.log('=== handleInputDataKeyChange END (validation failed) ===');
+        this.logger.log('=== handleInputDataKeyChange END (validation failed) ===');
         return;
       }
 
@@ -3015,7 +3018,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       );
 
       if (isDuplicate) {
-        console.log(
+        this.logger.log(
           'Category already exists in another file, showing warning...',
         );
         // Show warning toast but allow the change
@@ -3030,13 +3033,13 @@ export class RunComponent implements OnInit, AfterViewInit {
       }
     }
 
-    console.log('Validation passed, updating file properties...');
+    this.logger.log('Validation passed, updating file properties...');
     const found = this.depotInputDataItems.find(
       (item) => item.displayName === selectedDisplayName,
     );
 
     if (found) {
-      console.log('Found matching depot item:', found.keyName);
+      this.logger.log('Found matching depot item:', found.keyName);
       if (this.isFileWithCategory(fileObj.file)) {
         fileObj.file.keyName = found.keyName;
         fileObj.file.displayName = found.displayName;
@@ -3046,7 +3049,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           found.displayName;
       }
     } else {
-      console.log('No matching depot item found, clearing values');
+      this.logger.log('No matching depot item found, clearing values');
       if (this.isFileWithCategory(fileObj.file)) {
         fileObj.file.keyName = '';
         fileObj.file.displayName = '';
@@ -3058,11 +3061,11 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     // Update our tracked object with the new confirmed value
     this.fileDisplayNameBeforeChange[fileObj.id] = selectedDisplayName;
-    console.log('Updated tracking with new value:', selectedDisplayName);
+    this.logger.log('Updated tracking with new value:', selectedDisplayName);
 
     // Update upload button state after category change
     this.updateCanUploadState();
-    console.log('=== handleInputDataKeyChange END (success) ===');
+    this.logger.log('=== handleInputDataKeyChange END (success) ===');
   }
 
   hasDuplicateCategory(fileObj: PreOrderFileItem): boolean {
@@ -3172,7 +3175,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     fileObj: PreOrderFileItem,
     selectedDisplayName: string,
   ): Promise<boolean> {
-    console.log('validateFileColumnsForCategory called', {
+    this.logger.log('validateFileColumnsForCategory called', {
       fileId: fileObj.id,
       selectedDisplayName,
       isFileWithCategory: this.isFileWithCategory(fileObj.file),
@@ -3186,14 +3189,14 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
 
     if (!targetItem) {
-      console.error(
+      this.logger.error(
         'Target item not found for displayName:',
         selectedDisplayName,
       );
       return false;
     }
 
-    console.log('Target item found:', {
+    this.logger.log('Target item found:', {
       keyName: targetItem.keyName,
       displayName: targetItem.displayName,
       columnRequired: targetItem.columnRequired,
@@ -3202,7 +3205,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     // First, try to use cached columns (from when file was first uploaded)
     const cachedColumns = this.fileColumnsCache[fileObj.id];
     if (cachedColumns && cachedColumns.length > 0) {
-      console.log('Using cached columns for validation:', cachedColumns);
+      this.logger.log('Using cached columns for validation:', cachedColumns);
       return this.validateColumnsAgainstCategory(
         cachedColumns,
         targetItem,
@@ -3213,7 +3216,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     // If this is a PreOrderFileDescriptor (loaded from server), we cannot validate actual file columns
     // In this case, we'll assume it's valid
     if (!this.isFileWithCategory(fileObj.file)) {
-      console.log(
+      this.logger.log(
         'File is PreOrderFileDescriptor and no cached columns, skipping validation',
       );
       return true;
@@ -3222,21 +3225,21 @@ export class RunComponent implements OnInit, AfterViewInit {
     // Check if the file is a valid File object
     const file = fileObj.file as FileWithCategory;
     if (!file || !(file instanceof File)) {
-      console.error('File is not a valid File object:', file);
+      this.logger.error('File is not a valid File object:', file);
       this.toastr.error(
         this.transloco.translate('error_reading_file', {}, 'index'),
       );
       return false;
     }
 
-    console.log('Starting file read for validation:', file.name);
+    this.logger.log('Starting file read for validation:', file.name);
 
     // Read the file and get its columns
     return new Promise<boolean>((resolve) => {
       const reader = new FileReader();
 
       reader.onerror = () => {
-        console.error('FileReader error:', reader.error);
+        this.logger.error('FileReader error:', reader.error);
         this.toastr.error(
           this.transloco.translate('error_reading_file', {}, 'index'),
         );
@@ -3252,19 +3255,19 @@ export class RunComponent implements OnInit, AfterViewInit {
           let columnNames: string[] = [];
           if (isCsv) {
             if (typeof result !== 'string') {
-              console.error('CSV result is not string');
+              this.logger.error('CSV result is not string');
               resolve(false);
               return;
             }
             columnNames = this.parseCsvHeaderColumnNames(result);
           } else {
             if (!(result instanceof ArrayBuffer)) {
-              console.error('Result is not ArrayBuffer');
+              this.logger.error('Result is not ArrayBuffer');
               resolve(false);
               return;
             }
 
-            console.log('File loaded, parsing Excel...');
+            this.logger.log('File loaded, parsing Excel...');
             const arrayBuffer = result;
             const workbook = new ExcelJS.Workbook();
             await workbook.xlsx.load(arrayBuffer);
@@ -3285,7 +3288,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
           // Cache these columns for future validations
           this.fileColumnsCache[fileObj.id] = columnNames;
-          console.log('Cached columns for future use:', columnNames);
+          this.logger.log('Cached columns for future use:', columnNames);
 
           const isValid = this.validateColumnsAgainstCategory(
             columnNames,
@@ -3294,7 +3297,7 @@ export class RunComponent implements OnInit, AfterViewInit {
           );
           resolve(isValid);
         } catch (error) {
-          console.error('Error validating file columns:', error);
+          this.logger.error('Error validating file columns:', error);
           this.toastr.error(
             this.transloco.translate('error_reading_file', {}, 'index'),
           );
@@ -3320,7 +3323,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     },
     fileName: string,
   ): boolean {
-    console.log('validateColumnsAgainstCategory:', {
+    this.logger.log('validateColumnsAgainstCategory:', {
       fileName,
       targetDisplayName: targetItem.displayName,
       fileColumns: columnNames,
@@ -3332,7 +3335,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       (col) => !columnNames.includes(col),
     );
 
-    console.log('Missing columns:', missingColumns);
+    this.logger.log('Missing columns:', missingColumns);
 
     if (missingColumns.length > 0) {
       // Show error modal with missing columns
@@ -3356,11 +3359,11 @@ export class RunComponent implements OnInit, AfterViewInit {
         )}`,
         [validationError],
       );
-      console.log('Validation FAILED - missing columns');
+      this.logger.log('Validation FAILED - missing columns');
       return false; // Validation failed - missing columns
     } else {
       // All required columns are present
-      console.log('Validation PASSED - all columns present');
+      this.logger.log('Validation PASSED - all columns present');
       return true; // Validation passed
     }
   }
@@ -3369,7 +3372,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     fileObj: PreOrderFileItem,
     previousDisplayName: string,
   ): void {
-    console.log('Reverting file displayName', {
+    this.logger.log('Reverting file displayName', {
       fileId: fileObj.id,
       currentDisplayName: fileObj.file.displayName,
       previousDisplayName,
@@ -3405,7 +3408,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     // Trigger change detection to update the UI
     this.cdr.detectChanges();
 
-    console.log('File reverted successfully', {
+    this.logger.log('File reverted successfully', {
       newDisplayName: fileObj.file.displayName,
       newKeyName: this.isFileWithCategory(fileObj.file)
         ? fileObj.file.keyName
@@ -3503,7 +3506,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                 }),
               );
 
-              console.log(
+              this.logger.log(
                 'Detected sheets:',
                 allSheets.map((sheet) => sheet.name),
               );
@@ -3534,7 +3537,7 @@ export class RunComponent implements OnInit, AfterViewInit {
             resolve(false);
           }
         } catch (error) {
-          console.error('Error validating file:', error);
+          this.logger.error('Error validating file:', error);
           resolve(false);
         }
       };
@@ -3816,7 +3819,7 @@ export class RunComponent implements OnInit, AfterViewInit {
         );
       },
       error: (err) => {
-        console.error(err);
+        this.logger.error(err);
         this.toastr.error(
           this.transloco.translate('failed', {}, 'index'),
           this.transloco.translate('set_default_parameter_failed', {}, 'index'),
