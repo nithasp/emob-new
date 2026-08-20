@@ -30,11 +30,11 @@
                   <p>
                     <strong>{{ t("dimensions") }}: </strong>
                     <span>{{ vehicleType.dimension?.width }} </span
-                    ><span>{{ "m" | transloco }}</span> x
+                    ><span>{{ "cm" | transloco }}</span> x
                     <span>{{ vehicleType.dimension?.height }} </span
-                    ><span>{{ "m" | transloco }}</span> x
+                    ><span>{{ "cm" | transloco }}</span> x
                     <span>{{ vehicleType.dimension?.depth }} </span
-                    ><span>{{ "m" | transloco }}</span>
+                    ><span>{{ "cm" | transloco }}</span>
                   </p>
                   <p>
                     <strong>{{ t("capacity") }}: </strong>
@@ -44,7 +44,7 @@
                   <p>
                     <strong>{{ t("volume") }}: </strong>
                     <span>{{ formatNumberTemporary(vehicleType.maximumVolumeCapacity) }} </span>
-                    <span>{{ "m3" | transloco }}</span>
+                    <span>{{ "cm3" | transloco }}</span>
                   </p>
                   <p>
                     <strong>{{ t("access_points") }}: </strong>
