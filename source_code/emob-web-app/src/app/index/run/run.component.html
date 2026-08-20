@@ -390,12 +390,7 @@
                               </td>
                               <td>
                                 <span class="step1" *ngIf="isFileSelectionStep"
-                                  >{{
-                                    (validTypes.includes(fileObj.file.type)
-                                      ? "xlsx"
-                                      : fileObj.file.type
-                                    ) | slice: 0 : 10
-                                  }}
+                                  >{{ getFileTypeDisplay(fileObj) | slice: 0 : 10 }}
                                 </span>
                                 <span
                                   class="step2"
