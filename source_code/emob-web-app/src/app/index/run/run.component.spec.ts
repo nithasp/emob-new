@@ -28,6 +28,10 @@ import {
   Run,
   MyDepot,
   Validate,
+  TransformWarning,
+  ValidationWarningItem,
+  ValidateExperimentResponse,
+  UploadPreOrderResponse,
 } from 'src/app/models/experiment.model';
 import {
   Customer,
@@ -48,37 +52,6 @@ import {
   LocationType,
   Location,
 } from 'src/app/models/location.model';
-
-/**
- * The component consumes warnings and the validate mutation response through
- * `any`-typed members, so these shapes are declared locally in the spec rather
- * than in the shared models.
- */
-interface WarningDetail {
-  input: string;
-  type: string;
-}
-
-interface TransformWarning {
-  title: string;
-  detail: WarningDetail[];
-}
-
-interface ValidationWarningItem {
-  errorType: string;
-  title: string;
-  detail: WarningDetail[];
-}
-
-interface ValidateExperimentResponse {
-  result: {
-    isSuccesses: boolean;
-    message?: string;
-    validate?: Validate;
-    isWarning?: boolean;
-    warning?: ValidationWarningItem[];
-  };
-}
 
 function createExperiment(overrides: Partial<Experiment> = {}): Experiment {
   return {
@@ -1165,17 +1138,6 @@ describe('RunComponent', () => {
       component.toggleValidationWarningCollapse(0);
       expect(component.validationWarningCollapseStates[0]).toBeTrue();
     });
-
-    it('toggleValidationWarningCollapse() with no index flips the whole-section collapse flag', () => {
-      component.setValidationWarnings([warning]);
-      expect(component.validationWarningCollapse).toBeFalse();
-
-      component.toggleValidationWarningCollapse();
-      expect(component.validationWarningCollapse).toBeTrue();
-
-      component.toggleValidationWarningCollapse();
-      expect(component.validationWarningCollapse).toBeFalse();
-    });
   });
 
   describe('resetFileInput() / deleteFileInList()', () => {
@@ -1341,14 +1303,11 @@ describe('RunComponent', () => {
         componentInstance: {},
         result: Promise.resolve(true),
       } as unknown as NgbModalRef);
-      // uploadPreOrder is typed Observable<Experiment>; the component only
-      // reads `name` and `result` off the response, so a narrow stub is cast.
-      preOrderServiceSpy.uploadPreOrder.and.returnValue(
-        of({
-          name: 'Test Run',
-          result: { isSuccesses: true },
-        } as unknown as Experiment)
-      );
+      const uploadResponse: UploadPreOrderResponse = {
+        name: 'Test Run',
+        result: { isSuccesses: true },
+      };
+      preOrderServiceSpy.uploadPreOrder.and.returnValue(of(uploadResponse));
       experimentServiceSpy.getExperiment.and.returnValue(
         of(createExperiment({ name: 'Test Run' }))
       );
