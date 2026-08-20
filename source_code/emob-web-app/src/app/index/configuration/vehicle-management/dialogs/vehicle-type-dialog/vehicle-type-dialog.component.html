@@ -215,6 +215,7 @@
                   [placeholder]="t('volume')"
                   type="number"
                   [control]="formVehicleType.controls.maximumVolumeCapacity"
+                  [suffix]="'cm3' | transloco"
                   [required]="vehicleSizingType === 'volume'"
                   [disabled]="isViewMode || vehicleSizingType === 'dimension'"
                 ></app-input-field>

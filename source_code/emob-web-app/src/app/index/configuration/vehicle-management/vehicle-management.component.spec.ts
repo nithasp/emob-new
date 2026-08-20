@@ -8,9 +8,12 @@ describe('VehicleManagementComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VehicleManagementComponent]
+      declarations: [VehicleManagementComponent],
     })
-    .compileComponents();
+      // Replace the template so we don't pull in the transloco directive/pipe
+      // or the app-vehicle / app-vehicle-type / ngbNav dependencies.
+      .overrideComponent(VehicleManagementComponent, { set: { template: '' } })
+      .compileComponents();
 
     fixture = TestBed.createComponent(VehicleManagementComponent);
     component = fixture.componentInstance;
@@ -19,5 +22,9 @@ describe('VehicleManagementComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should default the active nav tab to the first tab', () => {
+    expect(component.activeNavId).toBe(1);
   });
 });
