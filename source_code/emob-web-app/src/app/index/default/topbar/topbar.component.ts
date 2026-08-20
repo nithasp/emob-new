@@ -8,7 +8,7 @@ import {
 } from '@azure/msal-angular';
 import { InteractionType } from '@azure/msal-browser';
 import { UserADProfile } from 'src/app/models/profile.model';
-import { version } from 'package.json';
+import packageJson from 'package.json';
 import { TranslocoService } from '@jsverse/transloco';
 import { LanguageChangeService } from 'src/app/services/language-change.service';
 import { filter } from 'rxjs/operators';
@@ -22,7 +22,7 @@ import { filter } from 'rxjs/operators';
 export class TopbarComponent implements OnInit {
   @Input() public userADprofile?: UserADProfile;
   public activeRoute: string;
-  version: string = version;
+  version: string = packageJson.version;
   currentUrl = '';
 
   constructor(

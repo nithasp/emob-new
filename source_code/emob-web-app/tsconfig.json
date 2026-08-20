@@ -28,11 +28,11 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "tslib" : ["node_modules/tslib/tslib.d.ts"],
       "rxjs/*": ["node_modules/rxjs/*"]
     },
     "typeRoots": [
-      "node_modules/@types"
+      "node_modules/@types",
+      "node_modules"
     ]
     
   },
