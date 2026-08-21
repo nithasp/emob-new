@@ -5,6 +5,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges, inject,
@@ -45,8 +46,6 @@ import { Style } from 'ol/style';
 import { MarkLocationDialogComponent } from '../mark-location-dialog/mark-location-dialog.component';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
-import { SnakeCasePipe } from 'src/app/directives/snakecase.pipe.directive';
-import { set } from 'ol/transform';
 import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
@@ -56,7 +55,7 @@ import { LoggerService } from 'src/app/services/logger.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerDetailsComponent
-  implements OnInit, AfterViewInit, OnChanges
+  implements OnInit, AfterViewInit, OnChanges, OnDestroy
 {
   private readonly logger = inject(LoggerService);
 
@@ -240,7 +239,7 @@ export class CustomerDetailsComponent
 
   private initIconStyle() {
     Object.values(LocationType).forEach((type) => {
-      let iconLocation = new Style({
+      const iconLocation = new Style({
         image: new Icon({
           anchor: [0.5, 0.5],
           anchorOrigin: 'bottom-left',

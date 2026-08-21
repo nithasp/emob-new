@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import { Observable, ObservableInput, throwError } from 'rxjs';
-import { catchError, map, retry } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import gql from 'graphql-tag';
 import { Response } from '../models/graphql.model';
 import {
@@ -11,11 +11,9 @@ import {
   Company,
   MyDepot,
 } from '../models/experiment.model';
-import { Constraint, TimingAndCapacity } from '../models/constraint.model';
-import { Location } from '../models/location.model';
+import { TimingAndCapacity } from '../models/constraint.model';
 import { CustomerUpdated } from '../models/pre-order.model';
 import { VehicleValidationInput } from '../models/vehicle.model';
-import type { Error } from '../models/graphql.model';
 import { ToastrService } from 'ngx-toastr';
 import { ErrorHandlingService } from './handle-error.service';
 

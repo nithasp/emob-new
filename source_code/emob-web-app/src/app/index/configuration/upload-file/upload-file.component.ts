@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit,
 } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslocoService } from '@jsverse/transloco';
@@ -17,7 +16,7 @@ import * as ExcelJS from 'exceljs';
   styleUrl: './upload-file.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UploadFileComponent implements OnInit {
+export class UploadFileComponent {
   @Input() category: string = '';
   @Input() type: string = '';
   @Input() name: string = '';
@@ -35,8 +34,6 @@ export class UploadFileComponent implements OnInit {
     private readonly ngbModal: NgbModal,
     private readonly transloco: TranslocoService
   ) {}
-
-  ngOnInit(): void {}
 
   onFileSelected(files: FileList | Event): void {
     let file: File | undefined;

@@ -5,7 +5,7 @@ import { Directive, EventEmitter, HostBinding, HostListener, Output } from '@ang
   selector: '[DropZone]'
 })
 export class DropzoneDirective {
-  @Output() onFileDropped = new EventEmitter<FileList>();
+  @Output() fileDropped = new EventEmitter<FileList>();
 
   @HostBinding('style.opacity') private opacity = '1';
   @HostBinding('style.border') private border = 'none';
@@ -31,7 +31,7 @@ export class DropzoneDirective {
     this.border = 'none';
     const files = evt.dataTransfer?.files;
     if (files && files.length > 0) {
-      this.onFileDropped.emit(files);
+      this.fileDropped.emit(files);
     }
   }
 }

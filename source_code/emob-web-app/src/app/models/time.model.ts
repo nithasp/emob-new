@@ -14,7 +14,7 @@ export class Time {
         this.hour = hour;
         this.minute = minute;
     }
-    public toStringformat():String{
+    public toStringformat():string{
         return `${this.prependZero(this.hour)}:${this.prependZero(this.minute)}`
     }
     private prependZero(num:number) {

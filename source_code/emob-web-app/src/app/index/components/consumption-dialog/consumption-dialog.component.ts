@@ -15,8 +15,6 @@ export class ConsumptionDialogComponent {
 
   constructor(private readonly activeModal: NgbActiveModal) {}
 
-  ngOnInit(): void {}
-
   onCancleClick() {
     this.activeModal.close(false);
   }

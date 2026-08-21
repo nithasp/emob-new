@@ -352,7 +352,7 @@ export class UploadComponent implements OnInit {
             });
         }
       }
-    } catch (error) {
+    } catch {
       this.hiddenSpinner();
     }
 
@@ -503,7 +503,7 @@ export class UploadComponent implements OnInit {
       if (configuration) {
         this.configurationService
           .uploadConfiguration(file, configuration.id)
-          .subscribe((response) => {
+          .subscribe(() => {
             this.loadDataConfiguration();
             this.toastr.success(
               this.transloco.translate(

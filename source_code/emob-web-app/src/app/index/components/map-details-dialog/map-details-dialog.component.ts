@@ -88,7 +88,7 @@ export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
       featureProjection: 'EPSG:3857',
     });
     // Reduce coordinates in LineString features by 50%
-    const reducedItemFeatures = itemFeatures.map((feature, index, arr) => {
+    const reducedItemFeatures = itemFeatures.map((feature, index) => {
       const geometry = feature.getGeometry();
       if (geometry?.getType() === 'LineString') {
         const lineString = geometry as LineString;

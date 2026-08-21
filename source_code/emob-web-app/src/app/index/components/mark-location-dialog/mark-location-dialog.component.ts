@@ -1,9 +1,8 @@
-import { Component, OnInit, AfterViewInit, Input, inject } from '@angular/core';
+import { Component, AfterViewInit, Input, inject } from '@angular/core';
 import Map from 'ol/Map';
 import * as OlProj from 'ol/proj';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
-import { fromLonLat } from 'ol/proj';
 import OSM from 'ol/source/OSM';
 import { Feature, Overlay, MapBrowserEvent } from 'ol';
 import { XYZ } from 'ol/source';
@@ -25,7 +24,7 @@ import { LoggerService } from 'src/app/services/logger.service';
   templateUrl: './mark-location-dialog.component.html',
   styleUrl: './mark-location-dialog.component.scss',
 })
-export class MarkLocationDialogComponent implements OnInit, AfterViewInit {
+export class MarkLocationDialogComponent implements AfterViewInit {
   private readonly logger = inject(LoggerService);
 
   popupContent: string = '';
@@ -44,7 +43,6 @@ export class MarkLocationDialogComponent implements OnInit, AfterViewInit {
   @Input() address: string | null = null;
   constructor(private readonly activeModal: NgbActiveModal) {}
 
-  ngOnInit() {}
   ngAfterViewInit() {
     this.vectorSource = new VectorSource({});
     this.vectorLayer = new VectorLayer({

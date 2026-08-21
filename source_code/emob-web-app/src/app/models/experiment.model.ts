@@ -351,8 +351,10 @@ export interface myDepots {
   updatedAt: string;
 }
 
-export interface ExperimentCounts
-  extends Pick<Experiment, 'countGeocoding' | 'countReroute'> {}
+export type ExperimentCounts = Pick<
+  Experiment,
+  'countGeocoding' | 'countReroute'
+>;
 
 export interface PlanDetail {
   TripNo: number;

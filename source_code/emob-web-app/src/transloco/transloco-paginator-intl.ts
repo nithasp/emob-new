@@ -9,7 +9,7 @@ export class TranslocoPaginatorIntl extends MatPaginatorIntl {
 
     this.transloco
       .selectTranslateObject<Record<string, string>>('paginator')
-      .subscribe((tr) => {
+      .subscribe(() => {
         this.itemsPerPageLabel = this.transloco.translate(
           'paginator.items_per_page'
         );

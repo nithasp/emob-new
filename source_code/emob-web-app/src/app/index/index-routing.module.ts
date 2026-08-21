@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { ExperimentComponent } from './experiment/experiment.component';
 import { RunComponent } from './run/run.component';

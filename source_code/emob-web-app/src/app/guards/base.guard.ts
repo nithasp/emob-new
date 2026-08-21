@@ -102,7 +102,9 @@ export class BaseGuard implements CanActivate, CanActivateChild, CanLoad {
      * Helper which checks for the correct interaction type, prevents page with Guard to be set as reidrect, and calls handleRedirectObservable
      * @param state 
      */
-    protected activateHelper(state?: RouterStateSnapshot, route?: ActivatedRouteSnapshot): Observable<boolean|UrlTree> {
+    // Unused here, but the parameter must stay: RoleGuard.activateHelper overrides
+    // this method and reads route.data['expectedRoles'].
+    protected activateHelper(state?: RouterStateSnapshot, _route?: ActivatedRouteSnapshot): Observable<boolean|UrlTree> {
         if (this.msalGuardConfig.interactionType !== InteractionType.Popup && this.msalGuardConfig.interactionType !== InteractionType.Redirect) {
             throw new BrowserConfigurationAuthError("invalid_interaction_type", "Invalid interaction type provided to MSAL Guard. InteractionType.Popup or InteractionType.Redirect must be provided in the MsalGuardConfiguration");
         }
@@ -215,7 +217,7 @@ export class BaseGuard implements CanActivate, CanActivateChild, CanLoad {
 
     canLoad(): Observable<boolean> {
         this.authService.getLogger().verbose("Guard - canLoad");
-        // @ts-ignore
+        // @ts-expect-error activateHelper resolves to boolean|UrlTree; canLoad is typed boolean only.
         return this.activateHelper();
     }
 }

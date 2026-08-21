@@ -1,7 +1,7 @@
 import { inject, NgModule } from '@angular/core';
 import { ApolloLink, InMemoryCache } from '@apollo/client/core';
 import { onError } from "@apollo/client/link/error";
-import { ApolloModule, APOLLO_OPTIONS, provideApollo, Apollo } from 'apollo-angular';
+import { APOLLO_OPTIONS, Apollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 import extractFiles from 'extract-files/extractFiles.mjs';
@@ -11,8 +11,6 @@ import { createUploadLink } from 'apollo-upload-client';
 import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
 import { environment } from 'src/environments/environment';
 import { HttpHeaders, provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
-import { MsalService } from '@azure/msal-angular';
-import { Error } from './models/graphql.model';
 import { logError, logMessage } from 'src/app/services/logger.service';
 
 if (!environment.production) {
@@ -32,7 +30,7 @@ if (!environment.production) {
         const httpLink = inject(HttpLink);
         const httpsUrl = httpLink.create({ 
           uri: environment.graphqlConfig.uri,
-          extractFiles: (body: Record<string, any>) => extractFiles(body, isExtractableFile),
+          extractFiles: (body: unknown) => extractFiles(body, isExtractableFile),
           headers: new HttpHeaders({
             'Apollo-Require-Preflight': 'true'
           })
@@ -61,7 +59,7 @@ if (!environment.production) {
         const removeTypenameLink = removeTypenameFromVariables();
         const uploadLink = createUploadLink({
           uri: environment.graphqlConfig.uri,
-          extractFiles: (body: Record<string, any>) => extractFiles(body, isExtractableFile),
+          extractFiles: (body: unknown) => extractFiles(body, isExtractableFile),
           headers: {
             'Apollo-Require-Preflight': 'true'
           }

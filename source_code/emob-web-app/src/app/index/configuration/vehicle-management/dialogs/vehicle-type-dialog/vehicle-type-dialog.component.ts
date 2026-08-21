@@ -407,7 +407,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     const accessPoints = this.formVehicleType.get('access') as FormControl<
       AccessTypeEnum[] | null
     >;
-    let currentValues = [...(accessPoints.value || [])];
+    const currentValues = [...(accessPoints.value || [])];
 
     if (event.checked) {
       currentValues.push(accessPointKey as AccessTypeEnum);
