@@ -1,7 +1,7 @@
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
 import { Inject, Injectable, inject } from "@angular/core";
 import { Location } from "@angular/common";
-import { Observable, of, from } from "rxjs";
+import { Observable, of } from "rxjs";
 import { concatMap } from "rxjs/operators";
 
 import { MsalBroadcastService, MsalGuardConfiguration, MsalService, MSAL_GUARD_CONFIG } from "@azure/msal-angular";
@@ -23,7 +23,7 @@ export class RoleGuard extends BaseGuard {
   }
 
   override activateHelper(state?: RouterStateSnapshot, route?: ActivatedRouteSnapshot): Observable<boolean | UrlTree> {
-    let result = super.activateHelper(state, route);
+    const result = super.activateHelper(state, route);
 
     const expectedRoles: string[] = route ? route.data['expectedRoles'] : [];
 

@@ -32,7 +32,6 @@ import {
   MsalService,
   MsalInterceptorConfiguration,
   MSAL_INTERCEPTOR_CONFIG,
-  MsalGuard,
 } from '@azure/msal-angular';
 import { RoleGuard } from './guards/role.guard';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';

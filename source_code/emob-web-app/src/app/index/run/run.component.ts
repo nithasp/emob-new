@@ -575,7 +575,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                           )}?`,
                           this.transloco.translate('acknowledge', {}, 'index'),
                           true,
-                        ).result.then((confirmed) => {
+                        ).result.then(() => {
                           this.spinner.hide();
                           this.router.navigate(['/users/experiments']);
                         });
@@ -605,7 +605,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                                     'index',
                                   ),
                                   true,
-                                ).result.then((confirmed) => {
+                                ).result.then(() => {
                                   this.router.navigate(['/users/experiments']);
                                 });
                               } else if (
@@ -1359,7 +1359,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                 name
                   .trim()
                   .toLowerCase()
-                  .replace(/[\s_\-]/g, '');
+                  .replace(/[\s_-]/g, '');
 
               const allSheets = workbook.worksheets.map(
                 (ws: ExcelJS.Worksheet) => ({
@@ -1715,7 +1715,7 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   private initIconStyle() {
     Object.values(LocationType).forEach((type) => {
-      let iconLocation = new Style({
+      const iconLocation = new Style({
         image: new Icon({
           anchor: [0.5, 0.5],
           anchorOrigin: 'bottom-left',
@@ -1953,7 +1953,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       logMessage(evt);
     });
     // display popup on click
-    this.map.on('singleclick', (event) => this.popupShow(event, element));
+    this.map.on('singleclick', (event) => this.popupShow(event));
     this.map.on('pointermove', (event) => this.pointMove(event));
 
     this.logger.log(this.haveUpdateAfterValidated, this.haveValidated);
@@ -1975,7 +1975,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   private popupShow(
     evt: MapBrowserEvent<PointerEvent | KeyboardEvent | WheelEvent>,
-    element: HTMLElement,
   ) {
     let coordinates: Coordinate = [];
     const feature = this.map.forEachFeatureAtPixel(
@@ -2555,7 +2554,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                 );
                 this.router.navigate(['/users/experiments']);
               },
-              error: (err) => {
+              error: () => {
                 this.toastr.error(
                   this.transloco.translate('submit_experiment', {}, 'index'),
                   this.transloco.translate('failed', {}, 'index'),
@@ -3497,7 +3496,7 @@ export class RunComponent implements OnInit, AfterViewInit {
                 name
                   .trim()
                   .toLowerCase()
-                  .replace(/[\s_\-]/g, '');
+                  .replace(/[\s_-]/g, '');
 
               const allSheets = workbook.worksheets.map(
                 (ws: ExcelJS.Worksheet) => ({
@@ -3812,7 +3811,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (!payload.length) return;
     this.showSpinner();
     this.constraintService.updateDynamicParameter(payload).subscribe({
-      next: (res) => {
+      next: () => {
         this.toastr.success(
           this.transloco.translate('success', {}, 'index'),
           this.transloco.translate('set_default_parameter', {}, 'index'),
@@ -4024,9 +4023,8 @@ export class RunComponent implements OnInit, AfterViewInit {
   ): keyof Constraint | null {
     const keyName = (dynamicParameter.keyName || '').trim();
     switch (keyName) {
-      // support PascalCase
+      // keyName may arrive in PascalCase or camelCase; both map to the same key.
       case 'EarlyDeliveryTime':
-      // support camelCase
       case 'earlyDeliveryTime':
         return 'earlyDeliveryTime';
       case 'BackToDepotTime':
@@ -4156,7 +4154,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     modalRef.componentInstance.vehicleType = vehicleType;
   }
 
-  getVehicleMaxCount(vehicleId: string): number {
+  // The limit is a per-experiment constraint that applies to every vehicle, so the id is not read yet.
+  getVehicleMaxCount(_vehicleId: string): number {
     const maxByConstraint = Number(
       this.constraintsData?.numberOfVehicleAvailable,
     );

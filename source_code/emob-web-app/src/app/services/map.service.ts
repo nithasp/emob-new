@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as ol from 'ol';
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 @Injectable({
   providedIn: 'root'
 })
@@ -10,7 +9,7 @@ export class MapService {
     private http : HttpClient
   ) { }
 
-DetailLocation(lat:any,lon:any){
+DetailLocation(lat:number,lon:number){
 
   return this.http.get("https://nominatim.openstreetmap.org/reverse?format=json&lon=" +
   lon +

@@ -11,7 +11,6 @@ import {
   VehicleInput,
   VehicleUpdateInput,
   VehicleCreationResult,
-  Vehicle,
 } from '../models/vehicle.model';
 
 @Injectable({ providedIn: 'root' })

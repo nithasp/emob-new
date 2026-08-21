@@ -4,7 +4,6 @@ import { Apollo, gql } from 'apollo-angular';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Response } from '../models/graphql.model';
-import type { Error } from '../models/graphql.model';
 import { ActualLocation, Configuration } from '../models/configuration.model';
 import { ErrorHandlingService } from './handle-error.service';
 import { LoggerService } from './logger.service';

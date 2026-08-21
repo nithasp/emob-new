@@ -44,6 +44,10 @@ export class InputFieldComponent
   @Input() value: string = '';
   @Input() height?: string;
 
+  // Callers bind controls of many value types (string, number, enum, null) and this
+  // component reads/writes them as strings; narrowing to `unknown` would need casts
+  // here and break the 30+ strictTemplates bindings that pass typed FormControls.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   @Input() control?: FormControl<any>;
   @Input() decimal: number = 0;
   @Input() comma: boolean = false;

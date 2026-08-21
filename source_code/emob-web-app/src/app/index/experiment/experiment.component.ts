@@ -174,7 +174,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
         this.hiddenSpinner();
         this.openParametersDialog(response);
       },
-      (err) => {
+      () => {
         this.hiddenSpinner();
         this.toastr.error(
           this.transloco.translate('error_loading_parameters', {}, 'index'),

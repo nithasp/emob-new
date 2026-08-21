@@ -1,9 +1,6 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import {
-  VehicleType,
-  VehicleProfileTypeEnum,
-} from 'src/app/models/vehicle.model';
+import { VehicleType } from 'src/app/models/vehicle.model';
 import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({

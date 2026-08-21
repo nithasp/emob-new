@@ -2,7 +2,7 @@ import { Component, Inject, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalService } from '@azure/msal-angular';
 import { UserADProfile } from '../models/profile.model';
-import { AuthenticationResult, EventMessage, EventType, InteractionStatus, InteractionType, PopupRequest, RedirectRequest } from '@azure/msal-browser';
+import { EventMessage, EventType, InteractionStatus } from '@azure/msal-browser';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { LoggerService } from 'src/app/services/logger.service';
@@ -40,7 +40,7 @@ export class IndexComponent implements OnInit, OnDestroy {
             msg.eventType === EventType.ACCOUNT_REMOVED
         )
       )
-      .subscribe((result: EventMessage) => {
+      .subscribe(() => {
         if (this.authService.instance.getAllAccounts().length === 0) {
           window.location.pathname = '/';
         } else {
@@ -62,7 +62,7 @@ export class IndexComponent implements OnInit, OnDestroy {
   }
 
   setLoginDisplay() {
-    let activeAccount = this.authService.instance.getActiveAccount();
+    const activeAccount = this.authService.instance.getActiveAccount();
             this.logger.log(activeAccount);
             this.userADProfile = {
               name: activeAccount?.name ?? null,
@@ -78,13 +78,13 @@ export class IndexComponent implements OnInit, OnDestroy {
      * To use active account set here, subscribe to inProgress$ first in your component
      * Note: Basic usage demonstrated. Your app may require more complicated account selection logic
      */
-    let activeAccount = this.authService.instance.getActiveAccount();
+    const activeAccount = this.authService.instance.getActiveAccount();
 
     if (
       !activeAccount &&
       this.authService.instance.getAllAccounts().length > 0
     ) {
-      let accounts = this.authService.instance.getAllAccounts();
+      const accounts = this.authService.instance.getAllAccounts();
       this.authService.instance.setActiveAccount(accounts[0]);
     }
   }

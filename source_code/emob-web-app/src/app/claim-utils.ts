@@ -186,6 +186,6 @@ const populateClaim = (
  * @returns
  */
 const changeDateFormat = (date: number) => {
-  let dateObj = new Date(date * 1000);
+  const dateObj = new Date(date * 1000);
   return `${date} - [${dateObj.toString()}]`;
 };

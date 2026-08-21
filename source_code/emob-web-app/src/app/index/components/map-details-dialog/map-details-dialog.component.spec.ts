@@ -12,7 +12,7 @@ import CircleStyle from 'ol/style/Circle';
 import { MapDetailsDialogComponent } from './map-details-dialog.component';
 import { CustomerDetailsComponent } from '../customer-details/customer-details.component';
 import { SnakeCasePipe } from 'src/app/directives/snakecase.pipe.directive';
-import { GeoJSONFeatureCollection, RouteInfo, PointDetail } from 'src/app/models/experiment.model';
+import { GeoJSONFeatureCollection, PointDetail } from 'src/app/models/experiment.model';
 import { RoutingNode } from 'src/app/models/location.model';
 
 describe('MapDetailsDialogComponent', () => {

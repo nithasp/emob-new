@@ -1,8 +1,7 @@
 import { Component, Inject, Input, OnInit } from '@angular/core';
-import { GuardsCheckEnd, NavigationEnd, Router, Scroll } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import {
   MSAL_GUARD_CONFIG,
-  MsalBroadcastService,
   MsalGuardConfiguration,
   MsalService,
 } from '@azure/msal-angular';
