@@ -1,0 +1,4 @@
+# macOS finder metadata. The app-level .gitignore already covers
+# source_code/emob-web-app and below; this catches the repository root and
+# source_code itself.
+.DS_Store
