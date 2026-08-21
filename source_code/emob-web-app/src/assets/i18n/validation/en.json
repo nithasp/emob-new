@@ -21,5 +21,6 @@
   "bus_soft_constraint_duration": "Warning: Customer at row {{location[0]}} — route duration {{input}} exceeds soft duration limit (max: {{context.limits}})",
   "bus_missing_vehicle_groups": "Customer at row {{location[0]}} — required vehicle group {{input}} does not exist in the current vehicle configuration",
   "unknown_validation_error": "An unexpected error occurred. Please provide this code to our team: {{errorType}}",
-  "missing_product": "Warning!! Some items are missing. Please double-check the product list."
+  "missing_product": "Warning!! Some items are missing. Please double-check the product list.",
+  "constraint_validation": "Error!! Constraint validation failed. Please review and fix the issues below before continuing."
 }

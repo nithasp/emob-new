@@ -17,7 +17,7 @@ import { CustomerDetailsComponent } from './customer-details.component';
 import { MarkLocationDialogComponent } from '../mark-location-dialog/mark-location-dialog.component';
 import {
   Customer,
-  DetailsPreOder,
+  DetailsPreOrder,
   ReplaceType,
   ValidationType,
   getDescription,
@@ -199,16 +199,16 @@ describe('CustomerDetailsComponent', () => {
   });
 
   describe('detailRows', () => {
-    it('returns the details array when dataPreOder is set', () => {
+    it('returns the details array when dataPreOrder is set', () => {
       const details = [
         { PRODUCTID: 'P1' },
-      ] as unknown as DetailsPreOder['details'];
-      component.dataPreOder = { details } as DetailsPreOder;
+      ] as unknown as DetailsPreOrder['details'];
+      component.dataPreOrder = { details } as DetailsPreOrder;
       expect(component.detailRows).toEqual(details);
     });
 
-    it('returns an empty array when dataPreOder is null', () => {
-      component.dataPreOder = null;
+    it('returns an empty array when dataPreOrder is null', () => {
+      component.dataPreOrder = null;
       expect(component.detailRows).toEqual([]);
     });
   });

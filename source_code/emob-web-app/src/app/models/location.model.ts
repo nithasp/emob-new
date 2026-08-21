@@ -80,7 +80,8 @@ export interface FeatureProperties {
   routeLabel?: number;
   startDepotId?: number;
   endDepotId?: number;
-  depotId?: number;
+  depotId?: number | string;
+  nodeId?: string;
   nodeIndex?: number;
   name?: string;
   weight?: number;
@@ -89,6 +90,7 @@ export interface FeatureProperties {
   features?: FeatureLike[];
   numCustomers?: number;
   distance?: number;
+  distances?: number[];
   duration?: number;
   zone?: string | string[];
   customers?: string[];
@@ -109,10 +111,11 @@ export interface FeatureProperties {
     }>;
   };
   originalAddress?: {
-    district: string;
-    province: string;
-    postalCode: string;
-    address: string;
+    district?: string;
+    province?: string;
+    postalCode?: string | number;
+    address?: string;
+    subdistrict?: string;
   };
 }
 
@@ -121,7 +124,7 @@ export interface GeoJSONFeature {
   properties: FeatureProperties;
   geometry: {
     type: string;
-    coordinates: number[];
+    coordinates: number[] | number[][];
   };
 }
 
@@ -129,6 +132,75 @@ export interface FeatureCollection {
   type: string;
   features: GeoJSONFeature[];
   routeIndex?: number;
+}
+
+export interface RoutingNodeAddress {
+  address?: string;
+  district?: string;
+  province?: string;
+  postalCode?: string | number;
+  subdistrict?: string;
+}
+
+export interface RoutingNodeProductQuantity {
+  productId?: string;
+  skuCode?: string;
+  name?: string;
+  productQuantity?: number;
+  [key: string]: unknown;
+}
+
+export interface RoutingNodeAdditionalProperties {
+  channel?: string;
+  telephone?: string | number;
+  [key: string]: unknown;
+}
+
+export interface RoutingNode {
+  index?: number;
+  nodeId?: string;
+  name?: string;
+  zone?: string;
+  isDepot?: boolean;
+  deliveryWeight?: number;
+  pickupWeight?: number;
+  latitude?: number;
+  longitude?: number;
+  originalAddress?: RoutingNodeAddress;
+  additionalProperties?: RoutingNodeAdditionalProperties;
+  productQuantity?: RoutingNodeProductQuantity[];
+  [key: string]: unknown;
+}
+
+export interface RouteMetric {
+  routeIndex?: number;
+  routeLabel?: number;
+  routeNodes?: number[];
+  customerCount?: number;
+  routeWeight?: number;
+  routeDistance?: number;
+  routeDuration?: number;
+  routeTravelDuration?: number;
+  routeServiceDuration?: number;
+  [key: string]: unknown;
+}
+
+export interface VrpSolutionData {
+  vrpData?: {
+    routingNodes?: RoutingNode[];
+    [key: string]: unknown;
+  };
+  solutionMetrics?: {
+    routeMetrics?: RouteMetric[];
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface VrpGeoJsonData {
+  routes?: FeatureCollection[];
+  depots?: GeoJSONFeature[];
+  [key: string]: unknown;
 }
 
 export interface ReportDataItem {

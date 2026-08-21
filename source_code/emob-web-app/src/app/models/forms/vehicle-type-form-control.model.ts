@@ -29,17 +29,6 @@ interface BaseVehicleTypeFormControls {
   fixedCost: FormControl<number | null>;
 }
 
-export interface VehicleTypeFormControls extends BaseVehicleTypeFormControls {
-  breaks: FormArray<
-    FormGroup<{
-      name: FormControl<string | null>;
-      duration: FormControl<string | null>;
-      earliestStart: FormControl<string | null>;
-      latestStart: FormControl<string | null>;
-    }>
-  >;
-}
-
 export interface ConfigVehicleTypeFormControls extends BaseVehicleTypeFormControls {
   allowedBreaks: FormArray<FormGroup<BreakFormControls>>;
   maxpallet: FormControl<number | null>;

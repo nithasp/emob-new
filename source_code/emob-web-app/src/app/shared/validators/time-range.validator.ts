@@ -6,6 +6,7 @@ import {
 } from '@angular/forms';
 import { timeStringToMinutes } from 'src/app/directives/time-string-to-minutes.pipe';
 import { TimeRangeValidatorConfig } from 'src/app/models/time.model';
+import { logWarning } from 'src/app/services/logger.service';
 
 export function createTimeRangeValidator(
   config: TimeRangeValidatorConfig
@@ -24,7 +25,7 @@ export function createTimeRangeValidator(
     const endTimeControl = formGroup.get(endTimeField);
 
     if (!startTimeControl || !endTimeControl) {
-      console.warn(
+      logWarning(
         `TimeRangeValidator: Controls '${startTimeField}' or '${endTimeField}' not found in form`
       );
       return null;

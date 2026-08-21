@@ -1,9 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   VehicleType,
   VehicleProfileTypeEnum,
 } from 'src/app/models/vehicle.model';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-vehicle-profile-type-item-dialog',
@@ -11,6 +12,8 @@ import {
   styleUrl: './vehicle-profile-type-item-dialog.component.scss',
 })
 export class VehicleProfileTypeItemDialogComponent implements OnInit {
+  private readonly logger = inject(LoggerService);
+
   @Input() vehicleTypeData!: VehicleType;
 
   constructor(
@@ -18,6 +21,6 @@ export class VehicleProfileTypeItemDialogComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('vehicleTypeData', this.vehicleTypeData);
+    this.logger.log('vehicleTypeData', this.vehicleTypeData);
   }
 }

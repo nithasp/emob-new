@@ -7,7 +7,7 @@ import {
   OnChanges,
   OnInit,
   Output,
-  SimpleChanges,
+  SimpleChanges, inject,
 } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
@@ -17,7 +17,7 @@ import {
 } from 'src/app/models/location.model';
 import {
   Customer,
-  DetailsPreOder,
+  DetailsPreOrder,
   ReplaceType,
   ValidationType,
   getDescription,
@@ -47,6 +47,7 @@ import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 import { SnakeCasePipe } from 'src/app/directives/snakecase.pipe.directive';
 import { set } from 'ol/transform';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-customer-details',
@@ -57,7 +58,9 @@ import { set } from 'ol/transform';
 export class CustomerDetailsComponent
   implements OnInit, AfterViewInit, OnChanges
 {
-  @Input() dataPreOder: DetailsPreOder | DataPreOrder | null | undefined;
+  private readonly logger = inject(LoggerService);
+
+  @Input() dataPreOrder: DetailsPreOrder | DataPreOrder | null | undefined;
   @Input() dataCustomer!: Customer;
   @Input() locationType: LocationType = LocationType.Verify;
   @Input() isModal: boolean = true;
@@ -86,9 +89,9 @@ export class CustomerDetailsComponent
 
   ngOnInit(): void {
     if (this.isModal) {
-      console.log('Component is used as a modal');
+      this.logger.log('Component is used as a modal');
     } else {
-      console.log('Component is used via selector in HTML');
+      this.logger.log('Component is used via selector in HTML');
     }
     this.location.latitude = Number(this.dataCustomer?.latitude || 0);
     this.location.longitude = Number(this.dataCustomer?.longitude || 0);
@@ -102,8 +105,8 @@ export class CustomerDetailsComponent
     });
     this.initIconStyle();
 
-    console.log('this.dataCustomer', this.dataCustomer);
-    console.log('this.dataPreOder', this.dataPreOder);
+    this.logger.log('this.dataCustomer', this.dataCustomer);
+    this.logger.log('this.dataPreOrder', this.dataPreOrder);
   }
 
   ngAfterViewInit(): void {
@@ -116,18 +119,18 @@ export class CustomerDetailsComponent
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log('Onchange', changes);
+    this.logger.log('Onchange', changes);
     if (!this.isFirstChange) {
       if (
         changes['dataCustomer'].currentValue['name'] !=
         changes['dataCustomer'].previousValue['name']
       ) {
-        console.log('have change', this.locationType);
+        this.logger.log('have change', this.locationType);
         // Detect changes to the @Input property
         this.refreshLocation();
       }
     } else {
-      console.log('ngOnChanges called for the first time');
+      this.logger.log('ngOnChanges called for the first time');
       this.isFirstChange = false;
     }
   }
@@ -184,7 +187,7 @@ export class CustomerDetailsComponent
       data: customer.name,
     });
 
-    console.log('locationTpye before checking and use icon', this.locationType);
+    this.logger.log('locationTpye before checking and use icon', this.locationType);
     if (this.locationType === LocationType.Edit && this.isModal) {
       location.setStyle(this.iconStyle.edit);
       this.locationType = LocationType.Edit;
@@ -262,7 +265,7 @@ export class CustomerDetailsComponent
   }
   // Provide a unified iterable type for template to avoid NG2 union errors
   get detailRows(): Array<ProductDetail | PreOrder> {
-    const details = (this.dataPreOder as DetailsPreOder | DataPreOrder)?.details || [];
+    const details = (this.dataPreOrder as DetailsPreOrder | DataPreOrder)?.details || [];
     return details as Array<ProductDetail | PreOrder>;
   }
   convertDateString(dateString: string): Date {
@@ -319,7 +322,7 @@ export class CustomerDetailsComponent
     dialogRef.result
       .then((result: Location) => {
         if (result) {
-          console.log(result);
+          this.logger.log(result);
           this.location.latitude = Number(result.latitude);
           this.location.longitude = Number(result.longitude);
           this.locationType = LocationType.Edit;
@@ -332,7 +335,7 @@ export class CustomerDetailsComponent
         }
       })
       .catch((error) => {
-        console.error('Dialog was dismissed:', error);
+        this.logger.error('Dialog was dismissed:', error);
       });
   }
 }

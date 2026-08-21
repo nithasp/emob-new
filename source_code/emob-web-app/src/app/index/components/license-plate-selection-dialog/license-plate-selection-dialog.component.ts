@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +11,7 @@ import { VehicleService } from 'src/app/services/vehicle.service';
 import { LicensePlateItem, LicensePlateSelectionResult, MyVehicles, VehicleType } from 'src/app/models/vehicle.model';
 import { TranslocoModule } from '@jsverse/transloco';
 import { InputFieldComponent } from 'src/app/shared/components/form/input-field/input-field.component';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-license-plate-selection-dialog',
@@ -31,6 +32,8 @@ import { InputFieldComponent } from 'src/app/shared/components/form/input-field/
   styleUrl: './license-plate-selection-dialog.component.scss',
 })
 export class LicensePlateSelectionDialogComponent implements OnInit {
+  private readonly logger = inject(LoggerService);
+
   // Input properties set by parent component
   vehicleType!: VehicleType;
   vehicleId!: string;
@@ -76,7 +79,7 @@ export class LicensePlateSelectionDialogComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading vehicles:', error);
+        this.logger.error('Error loading vehicles:', error);
         this.isLoading = false;
       },
     });

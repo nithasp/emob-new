@@ -31,17 +31,21 @@
                     *ngFor="let warning of transformWarnings; let wi = index"
                   >
                     <ngb-alert [dismissible]="false">
-                      <strong>{{ getWarningTitle(warning.title) }}</strong>
-                      <button
-                        type="button"
-                        class="link link-primary link-opacity-75-hover"
-                        (click)="toggleTransformWarningCollapse(wi)"
-                        [attr.aria-expanded]="
-                          !transformWarningCollapseStates[wi]
-                        "
+                      <div
+                        class="d-flex flex-wrap align-items-baseline gap-2"
                       >
-                        {{ t("show_details") }}
-                      </button>
+                        <strong>{{ getWarningTitle(warning.title) }}</strong>
+                        <button
+                          type="button"
+                          class="link link-primary link-opacity-75-hover"
+                          (click)="toggleTransformWarningCollapse(wi)"
+                          [attr.aria-expanded]="
+                            !transformWarningCollapseStates[wi]
+                          "
+                        >
+                          {{ t("show_details") }}
+                        </button>
+                      </div>
                     </ngb-alert>
                     <div
                       class="transform-warning-item-wrapper mb-3 overflow-auto"
@@ -626,15 +630,6 @@
                               element.originalAddress?.address ?? ""
                                 | truncate: 70 : "..."
                             }}</span>
-                            <!-- <button class="btn btn-sm align-right"
-                          *ngIf="isUnverified(element.name) || isUncertain(element.name)"
-                          mat-button
-                          [ngClass]="{
-                            'btn-outline-warning': isUncertain(element.name),
-                            'btn-outline-danger': isUnverified(element.name)
-                          }">
-                          Verify
-                        </button> -->
                           </div>
                         </td>
                       </ng-container>
@@ -670,13 +665,6 @@
                           {{ element?.extra?.productsInfo?.length || "" }}
                         </td>
                       </ng-container>
-                      <ng-container matColumnDef>
-                        <th mat-header-cell *matHeaderCellDef></th>
-                        <td mat-cell *matCellDef="let element">
-                          {{ countOrder(element.name) }}
-                        </td>
-                      </ng-container>
-
                       <tr
                         mat-header-row
                         *matHeaderRowDef="displayedColumns; sticky: true"
@@ -1210,6 +1198,7 @@
                       *ngIf="
                         haveValidated &&
                         !isValidationWarning &&
+                        !isValidationError &&
                         !isFileSelectionStep
                       "
                     >
@@ -1233,11 +1222,11 @@
                       "
                     >
                       <div
-                        class="container-validation-warning new-warning-validation"
+                        class="container-validation-warning-error new-warning-error-validation"
                         *ngIf="validationWarnings.length > 0"
                       >
                         <div
-                          class="validation-warning-item"
+                          class="validation-warning-error-item"
                           *ngFor="
                             let warning of validationWarnings;
                             let i = index
@@ -1245,9 +1234,9 @@
                         >
                           <ngb-alert [dismissible]="false">
                             <div
-                              class="d-flex align-items-center justify-content-between"
+                              class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-lg-between gap-2"
                             >
-                              <div>
+                              <div class="d-flex flex-wrap align-items-baseline gap-2">
                                 <strong>{{ getWarningTypeLabel(warning.errorType) }}</strong>
                                 <button
                                   type="button"
@@ -1263,7 +1252,7 @@
                               <button
                                 *ngIf="warning.errorType === 'missing_product'"
                                 mat-raised-button
-                                class="bg-custom-primary"
+                                class="bg-custom-primary text-nowrap flex-shrink-0"
                                 (click)="validateExperimentPreOrder()"
                               >
                                 <mat-icon>rule</mat-icon>
@@ -1272,7 +1261,7 @@
                             </div>
                           </ngb-alert>
                           <div
-                            class="validation-warning-item-wrapper mb-3 overflow-x-auto"
+                            class="validation-warning-error-item-wrapper mb-3 overflow-x-auto"
                             [ngbCollapse]="validationWarningCollapseStates[i]"
                           >
                             <ng-container
@@ -1283,7 +1272,7 @@
                             >
                               <table class="table table-striped">
                                 <thead>
-                                  <tr>
+                                  <tr class="text-nowrap">
                                     <th scope="col">
                                       {{ t("product_id_missing") }}
                                     </th>
@@ -1295,26 +1284,26 @@
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  <tr *ngFor="let detail of warning.detail">
-                                    <td>
+                                  <tr class="text-nowrap" *ngFor="let detail of warning.detail">
+                                    <td class="text-nowrap">
                                       {{
                                         detail.context?.missing_product_quantity
                                           ?.productId
                                       }}
                                     </td>
-                                    <td>
+                                    <td class="text-nowrap">
                                       {{
                                         detail.context?.missing_product_quantity
                                           ?.skuCode
                                       }}
                                     </td>
-                                    <td>
+                                    <td class="text-nowrap">
                                       {{
                                         detail.context?.missing_product_quantity
                                           ?.name
                                       }}
                                     </td>
-                                    <td>
+                                    <td class="text-nowrap">
                                       {{
                                         detail.context?.missing_product_quantity
                                           ?.packagingType
@@ -1327,7 +1316,7 @@
                             <ng-template #defaultWarningTable>
                               <table class="table table-striped">
                                 <thead>
-                                  <tr>
+                                  <tr class="text-nowrap">
                                     <th>
                                       {{
                                         t("validation_table_header_file_name")
@@ -1340,12 +1329,13 @@
                                 </thead>
                                 <tbody>
                                   <tr
+                                    class="text-nowrap"
                                     *ngFor="
                                       let row of getRowsForWarning(warning)
                                     "
                                   >
-                                    <td>{{ row.fileName }}</td>
-                                    <td>
+                                    <td class="text-nowrap">{{ row.fileName }}</td>
+                                    <td class="text-nowrap">
                                       {{
                                         getValidationMessage(
                                           row.type,
@@ -1357,6 +1347,82 @@
                                 </tbody>
                               </table>
                             </ng-template>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        class="container-validation-warning-error new-warning-error-validation"
+                        *ngIf="validationErrors.length > 0"
+                      >
+                        <div
+                          class="validation-warning-error-item"
+                          *ngFor="
+                            let error of validationErrors;
+                            let i = index
+                          "
+                        >
+                          <ngb-alert type="danger" [dismissible]="false">
+                            <div
+                              class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-lg-between gap-2"
+                            >
+                              <div class="d-flex flex-wrap align-items-baseline gap-2">
+                                <strong>{{ getWarningTypeLabel(error.errorType) }}</strong>
+                                <button
+                                  type="button"
+                                  class="link link-primary link-opacity-75-hover"
+                                  (click)="toggleValidationErrorCollapse(i)"
+                                  [attr.aria-expanded]="
+                                    !validationErrorCollapseStates[i]
+                                  "
+                                >
+                                  {{ t("show_details") }}
+                                </button>
+                              </div>
+                              <button
+                                mat-raised-button
+                                class="bg-custom-primary text-nowrap flex-shrink-0"
+                                (click)="validateExperimentPreOrder()"
+                              >
+                                <mat-icon>rule</mat-icon>
+                                {{ t("revalidate") }}
+                              </button>
+                            </div>
+                          </ngb-alert>
+                          <div
+                            class="validation-warning-error-item-wrapper mb-3 overflow-x-auto"
+                            [ngbCollapse]="validationErrorCollapseStates[i]"
+                          >
+                            <table class="table table-striped">
+                              <thead>
+                                <tr class="text-nowrap">
+                                  <th>
+                                    {{
+                                      t("validation_table_header_file_name")
+                                    }}
+                                  </th>
+                                  <th>
+                                    {{ t("validation_table_header_message") }}
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  class="text-nowrap"
+                                  *ngFor="let row of getRowsForError(error)"
+                                >
+                                  <td class="text-nowrap">{{ row.fileName }}</td>
+                                  <td class="text-nowrap">
+                                    {{
+                                      getValidationMessage(
+                                        row.type,
+                                        row.params
+                                      )
+                                    }}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
                           </div>
                         </div>
                       </div>
@@ -1387,7 +1453,11 @@
                       mat-raised-button
                       class="bg-custom-primary"
                       (click)="routePlanning()"
-                      *ngIf="!haveUpdateAfterValidated && haveValidated"
+                      *ngIf="
+                        !haveUpdateAfterValidated &&
+                        haveValidated &&
+                        !isValidationError
+                      "
                     >
                       <mat-icon>route</mat-icon>
                       {{ t("plan_my_route") }}
@@ -1396,7 +1466,10 @@
                       mat-raised-button
                       class="bg-custom-primary pr-3"
                       (click)="validateExperimentPreOrder()"
-                      *ngIf="haveUpdateAfterValidated && haveValidated"
+                      *ngIf="
+                        (haveUpdateAfterValidated && haveValidated) ||
+                        isValidationError
+                      "
                     >
                       <mat-icon>rule</mat-icon>
                       {{ t("revalidate") }}

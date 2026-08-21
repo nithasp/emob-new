@@ -1,18 +1,15 @@
-import { HttpClient } from '@angular/common/http';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   HostListener,
   OnInit,
-  signal,
   TemplateRef,
-  ViewChild,
+  ViewChild, inject,
 } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { Circle, Fill, Stroke, Text } from 'ol/style';
-import Style, { StyleFunction } from 'ol/style/Style';
+import { Fill, Stroke, Text } from 'ol/style';
+import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
 import Feature, { FeatureLike } from 'ol/Feature';
 import VectorSource from 'ol/source/Vector';
@@ -30,7 +27,7 @@ import {
 import * as OlProj from 'ol/proj';
 import GeoJSON from 'ol/format/GeoJSON';
 import Overlay from 'ol/Overlay';
-import { Coordinate, equals } from 'ol/coordinate';
+import { Coordinate } from 'ol/coordinate';
 
 import {
   animate,
@@ -50,11 +47,10 @@ import {
 import Tile from 'ol/Tile';
 import TileState from 'ol/TileState';
 import ImageTile from 'ol/ImageTile';
-import { Cluster, Vector, XYZ } from 'ol/source';
+import { Cluster } from 'ol/source';
 import CircleStyle from 'ol/style/Circle';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { MapDetailsDialogComponent } from '../components/map-details-dialog/map-details-dialog.component';
-import { Workbook } from 'exceljs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExperimentService } from 'src/app/services/experiment.service';
 import { Experiment } from 'src/app/models/experiment.model';
@@ -65,10 +61,16 @@ import { ToastrService } from 'ngx-toastr';
 import {
   RouteInfo,
   FeatureCollection,
+  GeoJSONFeature,
   ReportDataItem,
   PopupContent,
   NumberValue,
   MapPointerBrowserEvent,
+  RoutingNode,
+  RoutingNodeProductQuantity,
+  RouteMetric,
+  VrpSolutionData,
+  VrpGeoJsonData,
 } from 'src/app/models/location.model';
 import { FormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
@@ -77,6 +79,7 @@ import { DownloadResultFile } from '../../models/experiment.model';
 import { TranslocoService } from '@jsverse/transloco';
 import { LanguageChangeService } from 'src/app/services/language-change.service';
 import { CustomerDetailsComponent } from '../components/customer-details/customer-details.component';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-result',
@@ -94,6 +97,14 @@ import { CustomerDetailsComponent } from '../components/customer-details/custome
   ],
 })
 export class ResultComponent implements OnInit, AfterViewInit {
+  private readonly logger = inject(LoggerService);
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild('filterModal', { static: false, read: TemplateRef })
+  filterModal!: TemplateRef<unknown>;
+  @ViewChild('chipListbox') chipListbox!: ElementRef<HTMLElement>;
+
   public activeFilters: Array<{
     column: string;
     criteria: string;
@@ -101,17 +112,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }> = [];
 
   public map!: Map;
-  public iconStyle?: Style;
-  allFiles: File[] = [];
   public popUp?: Overlay;
   public popupContent?: PopupContent;
   private dimStyle: Style;
   private highlightedFeatureCollectionId: number | null = null;
   private featureCollections: FeatureCollection[] = [];
   private featureDepots: FeatureCollection[] = [];
-  private featureRoutes: FeatureCollection[] = [];
   public mapAlreadyRendered: boolean = false;
-  readonly panelOpenState = signal(false);
 
   headersReport: string[] = [];
   dataSourceReport: ReportDataItem[] = [];
@@ -157,57 +164,33 @@ export class ResultComponent implements OnInit, AfterViewInit {
     'ends_with',
     'does_not_end_with',
   ];
-  operatorSymbols: Record<string, string> = {
-    equal: '=',
-    does_not_equal: '≠',
-    greater_than: '>',
-    greater_than_or_equal: '>=',
-    less_than: '<',
-    less_than_or_equal: '<=',
-    contains: '∋',
-    does_not_contain: '∌',
-    starts_with: '^=',
-    does_not_start_with: '!^=',
-    ends_with: '$=',
-    does_not_end_with: '!$=',
-  };
   selectedFilterCriteria: string = 'equal';
   selectedSearchOption: string = 'routeLabel';
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: RouteInfo[] = [];
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
-  @ViewChild('filterModal', { static: false, read: TemplateRef })
-  filterModal!: TemplateRef<unknown>;
   vectorLayer!: VectorLayer;
   clusterLayer!: VectorLayer;
 
-  @ViewChild('chipListbox') chipListbox!: ElementRef<HTMLElement>;
-  hasOverflow = false;
-  showAllLines = false;
+  isLoading: boolean = true;
+  hasOverflow: boolean = false;
+  showAllLines: boolean = false;
 
   // data store
   experiment?: Experiment;
-  nodeSheetData: any[] = [];
-  planDetailData: any[] = [];
-  preOrderData: any[] = [];
   routeInfoDetails: RouteInfo | null = null;
   visibleRoutes = new Set<number>();
 
   // API-fetched plan data
   private vrpStatsData: Record<string, unknown> = {};
-  private vrpSolutionData: any = {};
-  private geoJsonRawData: any = {};
+  private vrpSolutionData: VrpSolutionData = {};
+  private geoJsonRawData: VrpGeoJsonData = {};
 
   // VRP routing nodes for data lookup
-  private routingNodes: any[] = [];
-  private routingNodesMap: Record<number, any> = {};
-  private routingNodesByIdMap: Record<string, any> = {};
-
-  isLoading: boolean = true;
+  private routingNodes: RoutingNode[] = [];
+  private routingNodesMap: Record<number, RoutingNode> = {};
+  private routingNodesByIdMap: Record<string, RoutingNode> = {};
 
   constructor(
-    private readonly http: HttpClient,
     private readonly spinner: NgxSpinnerService,
     private readonly ngbModal: NgbModal,
     private readonly route: ActivatedRoute,
@@ -240,7 +223,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
         this.experimentService
           .getExperiment(params['experimentId'])
           .subscribe(async (response: Experiment) => {
-            console.log(response);
+            this.logger.log(response);
             this.experiment = { ...response };
             this.expandedElement = [];
 
@@ -257,7 +240,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
               this.checkFilterOverflowTwolinesWhenLanguageChange();
             } catch (error) {
-              console.error('Failed to load plan data from API:', error);
+              this.logger.error('Failed to load plan data from API:', error);
               this.toastr.error(
                 this.transloco.translate('failed_to_load_plan_data', {}, 'index'),
                 this.transloco.translate('error', {}, 'index')
@@ -286,24 +269,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
     ]);
 
     this.vrpStatsData = vrpStats as Record<string, unknown>;
-    this.vrpSolutionData = vrpSolution;
-    this.geoJsonRawData = geoJson;
+    this.vrpSolutionData = vrpSolution as VrpSolutionData;
+    this.geoJsonRawData = geoJson as VrpGeoJsonData;
 
-    console.log('vrpStats', this.vrpStatsData);
+    this.logger.log('vrpStats', this.vrpStatsData);
   }
 
   ngAfterViewInit(): void {
     setTimeout(() => this.checkOverflow(), 0);
-  }
-
-  filterPredicate(data: RouteInfo, filter: string): boolean {
-    if (!filter) return true;
-    const { column, value } = JSON.parse(filter) as {
-      column: string;
-      value: string;
-    };
-    const rawValue = data[column as keyof RouteInfo];
-    return this.evaluateFilter(column, rawValue as number, value);
   }
 
   evaluateFilter(
@@ -312,7 +285,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     searchValue: string,
     crit?: string
   ): boolean {
-    console.log('rawValue', rawValue);
+    this.logger.log('rawValue', rawValue);
 
     const critUsed = crit ?? this.selectedFilterCriteria;
     const search = searchValue.trim().toLowerCase();
@@ -363,27 +336,6 @@ export class ResultComponent implements OnInit, AfterViewInit {
       default:
         return false;
     }
-  }
-
-  async loadPlanDetailData(url: string) {
-    const arrayBuffer = await this.fetchDataFromFileUrl(url);
-    await this.fetchAndParseExcel(arrayBuffer, 0, true);
-  }
-
-  async loadReportData(url: string) {
-    if (!url) {
-      console.warn('loadReportData called with null URL, skipping.');
-      this.toastr.warning(
-        this.transloco.translate('no_report_available_to_load', {}, 'index'),
-        this.transloco.translate('warning')
-      );
-      return;
-    }
-    const arrayBuffer = await this.fetchDataFromFileUrl(url);
-    this.buildVrpStatsReport();
-    //await this.fetchAndParseExcel(arrayBuffer, 0);
-    await this.fetchAndParseExcel(arrayBuffer, 1);
-    await this.fetchAndParseExcel(arrayBuffer, 3);
   }
 
   private buildVrpStatsReport(): void {
@@ -550,7 +502,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
   private initRoutingNodes(): void {
     const vrpData = this.vrpSolutionData?.vrpData;
     this.routingNodes = vrpData?.routingNodes ?? [];
-    this.routingNodes.forEach((node: any) => {
+    this.routingNodes.forEach((node: RoutingNode) => {
       if (node?.index != null) this.routingNodesMap[node.index] = node;
       if (node?.nodeId) this.routingNodesByIdMap[node.nodeId] = node;
     });
@@ -558,10 +510,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   private buildRouteDistancesMap(): Record<number, number[]> {
     const distancesMap: Record<number, number[]> = {};
-    const geoJson: any = this.geoJsonRawData;
-    geoJson.routes?.forEach((route: any) => {
-      route.features?.forEach((feature: any) => {
-        if (feature.geometry?.type === 'LineString' && feature.properties?.distances) {
+    const geoJson = this.geoJsonRawData;
+    geoJson.routes?.forEach((route: FeatureCollection) => {
+      route.features?.forEach((feature: GeoJSONFeature) => {
+        if (
+          feature.geometry?.type === 'LineString' &&
+          feature.properties?.distances
+        ) {
           const routeIdx = feature.properties.routeIndex ?? 0;
           distancesMap[routeIdx] = feature.properties.distances;
         }
@@ -575,15 +530,15 @@ export class ResultComponent implements OnInit, AfterViewInit {
       this.vrpSolutionData?.solutionMetrics?.routeMetrics ?? [];
     const routeDistancesMap = this.buildRouteDistancesMap();
 
-    routeMetrics.forEach((route: any) => {
+    routeMetrics.forEach((route: RouteMetric) => {
       const customerNodes = route.routeNodes?.slice(1, -1) ?? [];
       const zones = [
         ...new Set(
           customerNodes
             .map((idx: number) => this.routingNodesMap[idx]?.zone)
-            .filter((z: any) => !!z)
+            .filter((z: string | undefined): z is string => !!z)
         ),
-      ] as string[];
+      ];
 
       const routeIndex = route.routeIndex ?? 0;
 
@@ -616,185 +571,27 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.dataRouteInfo.paginator = this.paginator;
   }
 
-  calculateDuration(
-    start: string | Date | number,
-    end: string | Date | number
-  ): number {
-    if (!start || !end) return 0;
-    const twEarly = new Date(start).getTime();
-    const twLate = new Date(end).getTime();
-    return twLate - twEarly;
-  }
-
-  toSnakeCaseHeader(raw: string): string {
-    if (!raw) return '';
-    return raw
-      .toString()
-      .normalize('NFKD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim()
-      .replace(/["']/g, '')
-      .replace(/[^A-Za-z0-9]+/g, '_')
-      .replace(/^_+|_+$/g, '')
-      .replace(/_+/g, '_')
-      .toLowerCase();
-  }
-
-  async fetchAndParseExcel(
-    data: ArrayBuffer,
-    sheetIndex: number = 0,
-    isPlanDetail: boolean = false
-  ): Promise<void> {
-    const workbook = new Workbook();
-    await workbook.xlsx.load(data);
-    const worksheet = workbook.worksheets[sheetIndex];
-    if (!worksheet) throw new Error(`Worksheet ${sheetIndex} not found`);
-
-    let headers: string[] = [];
-    worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell, col) => {
-      headers[col - 1] =
-        cell.value != null ? String(cell.value).trim() : `Column ${col}`;
-    });
-
-    console.log('worksheet', worksheet);
-
-    for (let i = 0; i < headers.length; i++) {
-      const original = headers[i] ?? `Column ${i + 1}`;
-      const snake = this.toSnakeCaseHeader(original);
-      headers[i] = snake || `column_${i + 1}`;
-    }
-    if (!isPlanDetail && sheetIndex === 0) {
-      console.log('headers', headers);
-      //this.headersReport = headers;
-      return;
-    }
-
-    worksheet.eachRow((row, rowIndex) => {
-      if (rowIndex === 1) return;
-      const rowData: Record<string, string | number | boolean> = {};
-      row.eachCell({ includeEmpty: true }, (cell, col) => {
-        let v: string | number | boolean = '';
-        const cellValue = cell.value;
-
-        if (cellValue == null) {
-          v = '';
-        } else if (typeof cellValue === 'string') {
-          v = cellValue.trim();
-        } else if (typeof cellValue === 'boolean') {
-          v = cellValue ? 'Yes' : 'No';
-        } else if (typeof cellValue === 'number') {
-          v = cellValue;
-        } else {
-          v = String(cellValue);
-        }
-
-        const headerKey = headers[col - 1];
-        if (headerKey) {
-          rowData[headerKey] = v;
-        }
-      });
-
-      if (isPlanDetail) {
-        this.planDetailData.push(rowData as any);
-      } else {
-        switch (sheetIndex) {
-          case 0:
-            // old vrpStats data (top right table)
-            //this.dataSourceReport.push(rowData as ReportDataItem);
-            break;
-          case 1:
-            try {
-              // Transform the data with proper typing
-
-              // old vrp_solution_lean data (bottom left table + expand)
-              console.log('rowData', rowData);
-
-              const transformedData: Record<string, unknown> = { ...rowData };
-
-              const customersDistanceStr = rowData['customersDistance'];
-              if (typeof customersDistanceStr === 'string') {
-                transformedData['customersDistance'] = customersDistanceStr
-                  .split('➠')
-                  .map(Number)
-                  .filter((n) => !isNaN(n));
-              }
-
-              const routeStr = rowData['route'];
-              if (typeof routeStr === 'string') {
-                transformedData['route'] = JSON.parse(routeStr) as number[];
-              }
-
-              const zoneStr = rowData['zone'];
-              if (typeof zoneStr === 'string') {
-                transformedData['zone'] = JSON.parse(
-                  zoneStr.replace(/'/g, '"')
-                ) as string[];
-              }
-
-              console.log('transformedData', transformedData);
-
-              this.dataRouteInfo.data.push(
-                transformedData as unknown as RouteInfo
-              );
-              this.dataRouteInfo.sort = this.sort;
-              this.dataRouteInfo.paginator = this.paginator;
-              this.dataRouteInfo.filterPredicate = this.createFilter();
-            } catch (error) {
-              console.error('Error parsing route data:', error, rowData);
-            }
-            break;
-          case 3:
-            this.nodeSheetData.push(rowData as any);
-            break;
-        }
-      }
-    });
-  }
-
-  createFilter(): (data: RouteInfo, filter: string) => boolean {
-    return (data: RouteInfo, filter: string): boolean => {
-      const searchTerms = JSON.parse(filter);
-      return Object.keys(searchTerms).every((key: string) => {
-        const value = data[key as keyof RouteInfo];
-        const searchValues = searchTerms[key]
-          .split(',')
-          .map((term: string) => term.trim().toLowerCase());
-
-        if (Array.isArray(value)) {
-          return searchValues.every((searchValue: string) =>
-            value.some((item: string | number) =>
-              item.toString().toLowerCase().includes(searchValue)
-            )
-          );
-        } else {
-          return searchValues.some((searchValue: string) => {
-            if (searchValue === '') return false;
-            if (value === null || value === undefined) return false;
-            return value.toString().toLowerCase() === searchValue;
-          });
-        }
-      });
-    };
-  }
-
   private loadAndProcessGeoJSON(): void {
-    const geoJson: any = JSON.parse(JSON.stringify(this.geoJsonRawData));
+    const geoJson: VrpGeoJsonData = JSON.parse(
+      JSON.stringify(this.geoJsonRawData)
+    );
 
     this.enrichGeoJsonData(geoJson);
 
-    this.featureCollections = geoJson.routes.map((rc: any) => ({
-      ...rc,
-      routeIndex: rc.features[0]?.properties?.routeIndex,
-    }));
+    this.featureCollections = (geoJson.routes ?? []).map(
+      (rc: FeatureCollection) => ({
+        ...rc,
+        routeIndex: rc.features[0]?.properties?.routeIndex,
+      })
+    );
 
-    this.featureDepots = geoJson.depots.map((depot: any) => ({
+    this.featureDepots = (geoJson.depots ?? []).map((depot: GeoJSONFeature) => ({
       type: 'FeatureCollection',
       features: [depot],
     }));
-    this.featureRoutes = geoJson.routes;
 
     const allFeatures: Feature<Geometry>[] = [];
-    geoJson.routes.forEach((item: FeatureCollection, index_: number) => {
+    (geoJson.routes ?? []).forEach((item: FeatureCollection) => {
       const itemFeatures = new GeoJSON().readFeatures(item, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
@@ -832,7 +629,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     });
 
     const depotFeatures: Feature<Geometry>[] = [];
-    geoJson.depots.forEach((depot: any) => {
+    (geoJson.depots ?? []).forEach((depot: GeoJSONFeature) => {
       const itemFeatures = new GeoJSON().readFeatures(depot, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
@@ -845,16 +642,17 @@ export class ResultComponent implements OnInit, AfterViewInit {
     this.mapAlreadyRendered = true;
   }
 
-  private enrichGeoJsonData(geoJson: any): void {
-    const routeMetricsMap: Record<number, any> = {};
+  private enrichGeoJsonData(geoJson: VrpGeoJsonData): void {
+    const routeMetricsMap: Record<number, RouteMetric> = {};
     (this.vrpSolutionData?.solutionMetrics?.routeMetrics ?? []).forEach(
-      (rm: any) => {
+      (rm: RouteMetric) => {
         if (rm?.routeIndex != null) routeMetricsMap[rm.routeIndex] = rm;
       }
     );
 
-    geoJson.depots?.forEach((depot: any) => {
-      const node = this.routingNodesByIdMap[depot.properties?.nodeId];
+    geoJson.depots?.forEach((depot: GeoJSONFeature) => {
+      const nodeId = depot.properties?.nodeId;
+      const node = nodeId ? this.routingNodesByIdMap[nodeId] : undefined;
       if (node) {
         depot.properties = {
           ...depot.properties,
@@ -866,10 +664,10 @@ export class ResultComponent implements OnInit, AfterViewInit {
       }
     });
 
-    geoJson.routes?.forEach((route: any) => {
-      let routeMetric: any = null;
+    geoJson.routes?.forEach((route: FeatureCollection) => {
+      let routeMetric: RouteMetric | undefined;
 
-      route.features?.forEach((feature: any) => {
+      route.features?.forEach((feature: GeoJSONFeature) => {
         if (feature.geometry?.type === 'LineString') {
           const routeIdx = feature.properties?.routeIndex ?? 0;
           routeMetric = routeMetricsMap[routeIdx];
@@ -879,9 +677,9 @@ export class ResultComponent implements OnInit, AfterViewInit {
             ...new Set(
               customerNodes
                 .map((idx: number) => this.routingNodesMap[idx]?.zone)
-                .filter((z: any) => !!z)
+                .filter((z: string | undefined): z is string => !!z)
             ),
-          ] as string[];
+          ];
 
           feature.properties = {
             ...feature.properties,
@@ -896,10 +694,11 @@ export class ResultComponent implements OnInit, AfterViewInit {
             travelDuration: routeMetric?.routeTravelDuration ?? 0,
           };
         } else if (feature.geometry?.type === 'Point') {
-          const node = this.routingNodesByIdMap[feature.properties?.nodeId];
+          const nodeId = feature.properties?.nodeId;
+          const node = nodeId ? this.routingNodesByIdMap[nodeId] : undefined;
           if (node) {
             let routeOrder = 0;
-            if (routeMetric?.routeNodes) {
+            if (routeMetric?.routeNodes && node.index != null) {
               routeOrder = routeMetric.routeNodes.indexOf(node.index);
               if (routeOrder < 0) routeOrder = 0;
             }
@@ -929,13 +728,13 @@ export class ResultComponent implements OnInit, AfterViewInit {
   }
 
   async dataFromFileUrlToJson(url: string) {
-    console.log(`Fetching data from url: ${url}`);
+    this.logger.log(`Fetching data from url: ${url}`);
     const arrayBuffer = await this.fetchDataFromFileUrl(url);
-    console.log(`Fetched array buffer with length: ${arrayBuffer.byteLength}`);
+    this.logger.log(`Fetched array buffer with length: ${arrayBuffer.byteLength}`);
     const text = new TextDecoder().decode(arrayBuffer);
-    console.log(`Decoded text: ${text}`);
+    this.logger.log(`Decoded text: ${text}`);
     const jsonData = JSON.parse(text);
-    console.log(`Parsed JSON data: ${JSON.stringify(jsonData)}`);
+    this.logger.log(`Parsed JSON data: ${JSON.stringify(jsonData)}`);
 
     return jsonData;
   }
@@ -966,7 +765,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
           })
           .catch((err) => {
             if (err.name !== 'AbortError')
-              console.error('Tile load error', err);
+              this.logger.error('Tile load error', err);
           });
 
         tile.setState(TileState.LOADED);
@@ -1114,7 +913,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const routeIndex: number | undefined =
       feature.getProperties()['routeIndex'] as number | undefined;
     if (routeIndex == null) {
-      console.error('Clicked LineString has no routeIndex');
+      this.logger.error('Clicked LineString has no routeIndex');
       return;
     }
 
@@ -1354,13 +1153,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
     const numValue = Number(value);
     return isNaN(numValue) ? 0 : numValue;
   }
-  haveTime(): boolean {
-    return (
-      this.experiment?.timeStart !== null && this.experiment?.timeEnd !== null
-    );
-  }
-
-  applyFilter(searchValue: string = ''): void {
+  applyFilter(): void {
     const raw = this.searchControl.value?.toString().trim();
     if (!raw) return;
 
@@ -1416,7 +1209,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   setSelectedFilterCriteria(value: string) {
     this.selectedFilterCriteria = value;
-    this.applyFilter(this.searchControl.value || '');
+    this.applyFilter();
   }
 
   openRouteDetails(routeIndex: number): void {
@@ -1424,16 +1217,16 @@ export class ResultComponent implements OnInit, AfterViewInit {
       this.dataRouteInfo.data.find((r) => r.routeIndex === routeIndex) || null;
 
     const collection = this.featureCollections.find(
-      (fc: any) => fc.routeIndex === routeIndex
+      (fc: FeatureCollection) => fc.routeIndex === routeIndex
     );
 
     if (!collection) {
-      console.error(`No route found for index ${routeIndex}`);
+      this.logger.error(`No route found for index ${routeIndex}`);
       return;
     }
 
     if (!this.featureDepots || !Array.isArray(this.featureDepots) || this.featureDepots.length === 0) {
-      console.error('featureDepots is not properly initialized');
+      this.logger.error('featureDepots is not properly initialized');
       return;
     }
 
@@ -1443,7 +1236,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   onMouseEnter(row: RouteInfo) {
     if (!this.mapAlreadyRendered) return;
-    console.log('Mouse entered row:', row);
+    this.logger.log('Mouse entered row:', row);
 
     this.highlightedFeatureCollectionId = row.routeIndex;
     const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
@@ -1454,7 +1247,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
 
   onMouseLeave(row: RouteInfo) {
     if (!this.mapAlreadyRendered) return;
-    console.log('Mouse left row:', row);
+    this.logger.log('Mouse left row:', row);
     this.highlightedFeatureCollectionId = null;
     const vectorLayer = this.map.getLayers()?.item(1) as VectorLayer;
     vectorLayer.getSource()?.changed();
@@ -1512,7 +1305,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
               this.router.navigate(['/users/run', response.runId]);
             },
             error: (err) => {
-              console.error('Failed to replicate experiment', err);
+              this.logger.error('Failed to replicate experiment', err);
               this.spinner.hide();
               this.toastr.error(
                 this.transloco.translate(
@@ -1565,7 +1358,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
                 this.spinner.hide();
               },
               error: (err) => {
-                console.error('Download failed', err);
+                this.logger.error('Download failed', err);
                 this.spinner.hide();
                 this.toastr.error(
                   this.transloco.translate(
@@ -1579,7 +1372,7 @@ export class ResultComponent implements OnInit, AfterViewInit {
             });
         },
         error: (err) => {
-          console.error('Could not get download URL', err);
+          this.logger.error('Could not get download URL', err);
           this.spinner.hide();
           this.toastr.error(
             this.transloco.translate('failed_to_get_download_url', {}, 'index'),
@@ -1864,12 +1657,14 @@ export class ResultComponent implements OnInit, AfterViewInit {
       latitude: matchedItem?.latitude ?? 0,
       longitude: matchedItem?.longitude ?? 0,
       details:
-        matchedItem?.productQuantity?.map((product: any) => ({
-          PRODUCTID: product?.productId ?? '',
-          ORDER_ID: product?.skuCode ?? '',
-          PRODUCTNAME: product?.name ?? '',
-          QUANTITYMAIN: product?.productQuantity ?? 0,
-        })) ?? [],
+        matchedItem?.productQuantity?.map(
+          (product: RoutingNodeProductQuantity) => ({
+            PRODUCTID: product?.productId ?? '',
+            ORDER_ID: product?.skuCode ?? '',
+            PRODUCTNAME: product?.name ?? '',
+            QUANTITYMAIN: product?.productQuantity ?? 0,
+          })
+        ) ?? [],
     };
 
     const modalRef = this.ngbModal.open(CustomerDetailsComponent, {
@@ -1881,75 +1676,8 @@ export class ResultComponent implements OnInit, AfterViewInit {
       beforeDismiss: () => false,
     });
 
-    modalRef.componentInstance.dataPreOder = planDetails;
+    modalRef.componentInstance.dataPreOrder = planDetails;
     modalRef.componentInstance.dataCustomer = planDetails;
     modalRef.componentInstance.isGeolocationDisplay = false;
-  }
-
-  splitLatLng(
-    order: Record<string, string | number | boolean | undefined>
-  ): Record<string, string | number | boolean | undefined> {
-    if (typeof order['LatLng'] === 'string') {
-      const [latStr, lngStr] = order['LatLng'].split(',');
-      if (latStr && lngStr) {
-        order['latitude'] = parseFloat(latStr.trim());
-        order['longitude'] = parseFloat(lngStr.trim());
-      }
-    }
-    return order;
-  }
-
-  async downloadExcelFromUrlAsJson(
-    location: string
-  ): Promise<any[]> {
-    try {
-      const arrayBuffer = await this.fetchDataFromFileUrl(location);
-      const workbook = new Workbook();
-      await workbook.xlsx.load(arrayBuffer);
-
-      const worksheet =
-        workbook.getWorksheet('PreOrder') || workbook.worksheets[0];
-      if (!worksheet) {
-        this.toastr.warning('Worksheet "PreOrder" not found');
-        return [];
-      }
-
-      const headers: string[] = [];
-      worksheet.getRow(1).eachCell((cell, colNumber) => {
-        headers[colNumber] = cell.text.trim();
-      });
-
-      const result: Record<string, string | number | boolean | undefined>[] =
-        [];
-      worksheet.eachRow((row, rowNumber) => {
-        if (rowNumber === 1) return;
-        const obj: Record<string, string | number | boolean | undefined> = {};
-        row.eachCell((cell, colNumber) => {
-          const key = headers[colNumber];
-          if (key) {
-            const cellValue = cell.value;
-            obj[key] =
-              cellValue == null
-                ? undefined
-                : typeof cellValue === 'string'
-                ? cellValue.trim()
-                : typeof cellValue === 'number' ||
-                  typeof cellValue === 'boolean'
-                ? cellValue
-                : String(cellValue);
-          }
-        });
-        result.push(obj);
-      });
-
-      const transformed = result.map((r) => this.splitLatLng(r)) as any[];
-
-      this.preOrderData = transformed;
-      return transformed;
-    } catch (err: unknown) {
-      console.error('downloadExcelFromUrlAsJson failed', err);
-      this.toastr.error('Failed to fetch or parse PreOrder file');
-      return [];
-    }
   }
 }

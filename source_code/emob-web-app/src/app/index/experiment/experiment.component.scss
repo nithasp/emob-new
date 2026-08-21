@@ -1,23 +1,11 @@
-body {
-  background-color: rgb(184, 118, 118);
-}
-
-
 a:link, a:visited {
   text-decoration: none;
 
 }
 
-.excerpt {
-  margin-bottom: 10px;
-  max-height: 4.6em;
-  overflow: hidden;
-  
-}
 .mat-mdc-row .mat-mdc-cell {
   border-bottom: 1px solid transparent;
   border-top: 1px solid transparent;
-  // cursor: pointer;
 }
 .mat-paginator-sticky {
   bottom: 0px;
@@ -95,8 +83,7 @@ td , th {
 }
 
 .hover-row:hover {
-  background-color: #f5f5f5; /* Change this to your desired hover color */
-  // cursor: pointer; /* Optional: change cursor to pointer */
+  background-color: #f5f5f5;
 }
 .custom-icon-button {
   border-radius: 0; /* Removes the circular border */

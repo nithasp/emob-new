@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -11,6 +11,7 @@ import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 import { ActionMode } from 'src/app/models/common.model';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-vehicle',
@@ -18,6 +19,11 @@ import { ActionMode } from 'src/app/models/common.model';
   styleUrl: './vehicle.component.scss',
 })
 export class VehicleComponent implements OnInit {
+  private readonly logger = inject(LoggerService);
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  
+  dataSource = new MatTableDataSource<MyVehicles>([]);
   displayedColumns: string[] = [
     'licensePlate',
     'vehicleType',
@@ -28,9 +34,6 @@ export class VehicleComponent implements OnInit {
     'isActive',
     'actions',
   ];
-
-  dataSource = new MatTableDataSource<MyVehicles>([]);
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
     private ngbModal: NgbModal,
@@ -55,7 +58,7 @@ export class VehicleComponent implements OnInit {
           this.dataSource.paginator = this.paginator;
         },
         error: (err) => {
-          console.error(err);
+          this.logger.error(err);
         },
       });
   }
@@ -93,8 +96,6 @@ export class VehicleComponent implements OnInit {
     modalRef.componentInstance.question = this.transloco.translate(
       'vehicleManagement.are_you_sure_delete_vehicle'
     );
-    modalRef.componentInstance.acceptButton =
-      this.transloco.translate('delete');
 
     modalRef.result.then(
       (confirmed: boolean) => {
@@ -114,7 +115,7 @@ export class VehicleComponent implements OnInit {
                 this.getMyVehicles();
               },
               error: (err) => {
-                console.error(err);
+                this.logger.error(err);
                 this.toastr.error(
                   this.transloco.translate(
                     'vehicleManagement.failed_to_delete_vehicle'

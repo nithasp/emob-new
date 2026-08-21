@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  enableLogging: true,
   msalConfig: {
     auth: {
       clientId: 'ENTER_CLIENT_ID',

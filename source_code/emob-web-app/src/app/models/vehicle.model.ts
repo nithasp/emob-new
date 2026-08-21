@@ -6,7 +6,7 @@ export interface Vehicle {
   licensePlate: string;
   startDepotId: string;
   endDepotId: string;
-  vehicleType: any;
+  vehicleType: VehicleType;
   isActive: boolean;
   createdAt: string;
   modifiedAt: string;
@@ -171,18 +171,6 @@ export interface VehicleValidationInput {
   numberOfVehiclesAvailable?: number;
 }
 
-
-export interface VehicleTypePayload extends Partial<VehicleType> {
-  maximumVolumeCapacity?: number;
-  vehicleGroupId?: string;
-  allowedBreaks?: Break[];
-}
-
-export interface VehicleValidationInput {
-  vehicleTypeId: string;
-  vehicleId?: string[];
-  numberOfVehiclesAvailable?: number;
-}
 
 export interface VehicleBlobData {
   vehicleTypeId: string;

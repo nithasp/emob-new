@@ -1,6 +1,4 @@
 <ng-container *transloco="let t; read: 'index'">
-  <!-- <button (click)="addMockData()">Add Mock Data</button>
-  <h1 (click)="logFormValue()">log form value</h1> -->
   <div
     id="vehicle-type-dialog"
     [class.is-loading]="isLoading"
@@ -83,14 +81,6 @@
                     </mat-checkbox>
                   </div>
                 </div>
-                <mat-error
-                  *ngIf="
-                    formVehicleType.get('access')?.hasError('minlength') &&
-                    formVehicleType.get('access')?.touched
-                  "
-                >
-                  {{ t("please_select_at_least_one_access_point") }}
-                </mat-error>
               </div>
 
               <div>
@@ -176,8 +166,8 @@
                         formVehicleType.controls.dimension.controls.width
                       "
                       [suffix]="'cm' | transloco"
-                      [disabled]="isViewMode"
-                      [required]="true"
+                      [disabled]="isViewMode || vehicleSizingType === 'volume'"
+                      [required]="vehicleSizingType === 'dimension'"
                       [decimal]="3"
                     ></app-input-field>
                   </div>
@@ -189,8 +179,8 @@
                         formVehicleType.controls.dimension.controls.height
                       "
                       [suffix]="'cm' | transloco"
-                      [disabled]="isViewMode"
-                      [required]="true"
+                      [disabled]="isViewMode || vehicleSizingType === 'volume'"
+                      [required]="vehicleSizingType === 'dimension'"
                       [decimal]="3"
                     ></app-input-field>
                   </div>
@@ -202,8 +192,8 @@
                         formVehicleType.controls.dimension.controls.depth
                       "
                       [suffix]="'cm' | transloco"
-                      [disabled]="isViewMode"
-                      [required]="true"
+                      [disabled]="isViewMode || vehicleSizingType === 'volume'"
+                      [required]="vehicleSizingType === 'dimension'"
                       [decimal]="3"
                     ></app-input-field>
                   </div>
@@ -511,11 +501,7 @@
           <div class="col-12">
             <div class="modal-footer border-0 pt-3 px-0">
               <div class="d-flex gap-2 justify-content-end flex-wrap w-100">
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  (click)="onCancel()"
-                >
+                <button mat-raised-button type="button" (click)="onCancel()">
                   {{ "cancel" | transloco }}
                 </button>
                 <button

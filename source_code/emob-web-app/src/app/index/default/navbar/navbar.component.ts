@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-navbar',
@@ -7,12 +8,14 @@ import { Router } from '@angular/router';
   styleUrl: './navbar.component.scss'
 })
 export class NavbarComponent {
+  private readonly logger = inject(LoggerService);
+
   constructor(
     private router: Router
   ){}
 
   logout(){
-    console.log("Delete USer")
+    this.logger.log("Delete USer")
     this.router.navigate(['/login'])
   }
 

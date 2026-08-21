@@ -1,16 +1,19 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalService } from '@azure/msal-angular';
 import { UserADProfile } from '../models/profile.model';
 import { AuthenticationResult, EventMessage, EventType, InteractionStatus, InteractionType, PopupRequest, RedirectRequest } from '@azure/msal-browser';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
+import { LoggerService } from 'src/app/services/logger.service';
 @Component({
   selector: 'app-users',
   templateUrl: './index.component.html',
   styleUrl: './index.component.scss'
 })
 export class IndexComponent implements OnInit, OnDestroy {
+  private readonly logger = inject(LoggerService);
+
   userADProfile!: UserADProfile;
   private readonly _destroying$ = new Subject<void>();
   isIframe = false;
@@ -60,7 +63,7 @@ export class IndexComponent implements OnInit, OnDestroy {
 
   setLoginDisplay() {
     let activeAccount = this.authService.instance.getActiveAccount();
-            console.log(activeAccount);
+            this.logger.log(activeAccount);
             this.userADProfile = {
               name: activeAccount?.name ?? null,
               tenantId: activeAccount?.tenantId ?? null,

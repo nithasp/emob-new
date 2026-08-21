@@ -5,7 +5,7 @@ import {
   HostListener,
   OnDestroy,
   OnInit,
-  ViewChild,
+  ViewChild, inject,
 } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
@@ -22,6 +22,7 @@ import { ParametersDialogComponent } from '../components/parameters-dialog/param
 import { DynamicParameter } from 'src/app/models/constraint.model';
 import { ConsumptionDialogComponent } from '../components/consumption-dialog/consumption-dialog.component';
 import { TranslocoService } from '@jsverse/transloco';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-experiment',
@@ -29,6 +30,8 @@ import { TranslocoService } from '@jsverse/transloco';
   styleUrl: './experiment.component.scss',
 })
 export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
+  private readonly logger = inject(LoggerService);
+
   columnsStorageKey = 'experimentDisplayedColumns';
   public displayedColumns = [
     { def: 'select', label: 'select', visible: true },
@@ -89,15 +92,12 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     this.showSpinner();
     this.experimentService.getExperiments().subscribe({
       next: (response) => {
-        console.log('response', response);
         this.dataSource.data = response;
         this.dataSource.paginator = this.paginator;
         this.hiddenSpinner();
-        this.spinner.hide();
       },
       error: () => {
         this.hiddenSpinner();
-        this.spinner.hide();
       },
     });
   }
@@ -121,11 +121,6 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       clearInterval(this.pollingTimer);
       this.pollingTimer = null;
     }
-  }
-
-  toggleSelection(row: Experiment) {
-    this.selection.clear(); // Clear previous selections
-    this.selection.toggle(row); // Select the new row
   }
 
   /** The label for the checkbox on the passed row */
@@ -200,20 +195,6 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     this.openConsumptionDialog('');
     this.hiddenSpinner();
   }
-  objectToStringArray(value: unknown): string[] {
-    if (!value || typeof value !== 'object') {
-      return [];
-    }
-
-    return Object.entries(value).map(([key, val]) => `${key}: ${val}`);
-  }
-
-  objectToStringWithNewlines(obj: { [key: string]: unknown }): string {
-    return Object.entries(obj)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join('\n');
-  }
-
   openParametersDialog(dynamicParameters: DynamicParameter[]) {
     const focusedElement = document.activeElement as HTMLElement;
     if (focusedElement) {
@@ -226,14 +207,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       size: 'lg',
     });
     dialogRef.componentInstance.dynamicParameters = dynamicParameters;
-    dialogRef.result
-      .then((confirmed: boolean) => {
-        console.log(`Parameters dialog: confirmed = ${confirmed}`);
-        if (confirmed) {
-          console.log('confirmed');
-        }
-      })
-      .catch(() => {});
+    dialogRef.result.catch(() => {});
   }
 
   openConsumptionDialog(size: string) {
@@ -248,14 +222,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       size: size,
     });
     dialogRef.componentInstance.paramsConsumption = this.paramsConsumption;
-    dialogRef.result
-      .then((confirmed: boolean) => {
-        console.log(`Consumption dialog: confirmed = ${confirmed}`);
-        if (confirmed) {
-          console.log('confirmed');
-        }
-      })
-      .catch(() => {});
+    dialogRef.result.catch(() => {});
   }
   openConfirmDialog(
     title: string,
@@ -350,15 +317,15 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       }
     });
   }
+
   selectExperiment(experiment: Experiment) {
     this.spinner.show();
-    console.log('select experiment', experiment);
+    this.logger.log('select experiment', experiment);
     if (experiment.status === 'Initializing') {
       this.userMsGraphService.getUserId().subscribe((userId) => {
         this.spinner.hide();
-        console.log('compare user id', userId, experiment.triggeredBy);
+        this.logger.log('compare user id', userId, experiment.triggeredBy);
         if (userId === experiment.triggeredBy) {
-          console.log('open run experiment');
           this.router.navigate(['/users/run', experiment.runId]);
           this.toastr.info(
             this.transloco.translate('opening_experiment', {}, 'index'),
@@ -386,7 +353,6 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
         }
       });
     } else if (experiment.status === 'Succeeded') {
-      console.log('open result experiment');
       this.router.navigate(['/users/result', experiment.runId]);
     } else {
       this.toastr.warning(
@@ -422,10 +388,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   hiddenSpinner() {
-    console.log('hidden spinner');
-    setTimeout(() => {
-      this.spinner.hide('experiment');
-    }, 500);
+    this.spinner.hide('experiment');
   }
 
   loadDisplayedColumns(): void {

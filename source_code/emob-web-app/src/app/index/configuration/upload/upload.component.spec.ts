@@ -174,24 +174,10 @@ describe('UploadComponent', () => {
           children: [],
         })
       ).toBe('demand');
-      expect(component.trackByYear(0, { year: '2024', children: [] })).toBe(
-        '2024'
-      );
-      expect(component.trackByMonth(0, { month: '01', children: [] })).toBe(
-        '01'
-      );
     });
   });
 
-  describe('paginated / limited excel data', () => {
-    it('should limit the preview to the first 10 rows', () => {
-      component.excelData = Array.from({ length: 15 }, (_, i) => ({
-        col: i,
-      }));
-
-      expect(component.limitedExcelData.length).toBe(10);
-    });
-
+  describe('paginated excel data', () => {
     it('should paginate the excel data by page size', () => {
       component.excelData = Array.from({ length: 5 }, (_, i) => ({ col: i }));
       component.pageSize = 2;
@@ -201,9 +187,9 @@ describe('UploadComponent', () => {
     });
   });
 
-  describe('onChangeFile', () => {
+  describe('onChangeFileById', () => {
     it('should show an error and skip loading when the blob path is missing', () => {
-      component.onChangeFile('config.xlsx', 'configuration', '');
+      component.onChangeFileById('config-1', 'configuration', '');
 
       expect(toastr.error).toHaveBeenCalled();
       expect(configurationService.getConfiguration).not.toHaveBeenCalled();
@@ -220,9 +206,9 @@ describe('UploadComponent', () => {
     });
   });
 
-  describe('getFileUrl', () => {
-    it('should show a not-found error when no configuration matches the name', () => {
-      component.getFileUrl('missing.xlsx', 'configuration', 'some/path');
+  describe('getFileUrlById', () => {
+    it('should show a not-found error when no configuration matches the id', () => {
+      component.getFileUrlById('missing-id', 'configuration', 'some/path');
 
       expect(toastr.error).toHaveBeenCalledWith(
         'configuration_not_found',

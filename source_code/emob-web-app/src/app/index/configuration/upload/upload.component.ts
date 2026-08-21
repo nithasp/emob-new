@@ -1,8 +1,6 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
-  ActualLocation,
-  Categories,
   Configuration,
   ConfigurationExplorerDepot,
   ConfigurationExplorerFileType,
@@ -12,7 +10,6 @@ import {
   ExplorerNode,
   ExcelRow,
   ConfigurationComponentData,
-  FileType,
 } from 'src/app/models/configuration.model';
 import { ConfigurationService } from 'src/app/services/configuration.service';
 import * as ExcelJS from 'exceljs';
@@ -22,6 +19,7 @@ import { UploadFileComponent } from '../upload-file/upload-file.component';
 import { firstValueFrom } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
+import { LoggerService } from 'src/app/services/logger.service';
 
 @Component({
   selector: 'app-upload',
@@ -29,8 +27,8 @@ import { TranslocoService } from '@jsverse/transloco';
   styleUrl: './upload.component.scss',
 })
 export class UploadComponent implements OnInit {
-  readonly panelOpenState = signal<boolean>(false);
-  //Categories
+  private readonly logger = inject(LoggerService);
+
   public selectedNode: string | null = null;
   public selectedChildId: string | null = null;
   public configurationsExplorer: ConfigurationExplorerDepot[] = [];
@@ -38,7 +36,6 @@ export class UploadComponent implements OnInit {
     configurations: [],
     actualLocations: [],
   };
-  activeColor: string[] = [];
 
   // NgbTable
   currentPage = 1; // Current page
@@ -77,9 +74,6 @@ export class UploadComponent implements OnInit {
     }
     return [];
   };
-
-  hasChild = (_: number, node: Categories) =>
-    !!node.children && node.children.length > 0;
 
   constructor(
     private readonly configurationService: ConfigurationService,
@@ -317,59 +311,6 @@ export class UploadComponent implements OnInit {
     });
   }
 
-  get limitedExcelData() {
-    const maxRows = 10;
-    return this.excelData.slice(0, maxRows);
-  }
-
-  onChangeFile(fileName: string, type: string, blobPath: string) {
-    if (!blobPath || blobPath.trim() === '') {
-      this.toastr.error(
-        this.transloco.translate('error_no_file_path', {}, 'index') || 'No file path available',
-        this.transloco.translate('error', {}, 'index') || 'Error'
-      );
-      return;
-    }
-    
-    this.showSpinner();
-    try {
-      this.selectedNode = fileName;
-      if (type === 'configuration' || type === 'actualLocation') {
-        const configuration: Configuration | undefined =
-          this.configurationAllData.configurations.find(
-            (configuration) => configuration.name === fileName
-          );
-
-        if (configuration) {
-          this.configurationService
-            .getConfiguration(configuration.id)
-            .subscribe(async (data) => {
-              if (data.fileUrl?.fileConfigurationUrl) {
-                await this.fetchAndParseExcel(
-                  data.fileUrl.fileConfigurationUrl
-                );
-              } else {
-                this.toastr.error(
-                  this.transloco.translate(
-                    'error_no_url_provided',
-                    {},
-                    'index'
-                  ),
-                  this.transloco.translate('error', {}, 'index')
-                );
-                this.hiddenSpinner();
-              }
-            });
-        }
-      }
-    } catch (error) {
-      this.hiddenSpinner();
-    }
-
-    this.currentPage = 1;
-    this.searchText = '';
-  }
-
   onChangeFileById(id: string, type: string, blobPath: string) {
     if (!blobPath || blobPath.trim() === '') {
       this.toastr.error(
@@ -481,7 +422,7 @@ export class UploadComponent implements OnInit {
         this.excelData.push(rowData);
       });
     } catch (error) {
-      console.error('Error fetching or parsing file:', error);
+      this.logger.error('Error fetching or parsing file:', error);
     }
   }
 
@@ -541,7 +482,7 @@ export class UploadComponent implements OnInit {
         }
       })
       .catch((error) => {
-        console.error('Dialog was dismissed:', error);
+        this.logger.error('Dialog was dismissed:', error);
       });
   }
 
@@ -615,49 +556,10 @@ export class UploadComponent implements OnInit {
         );
         window.URL.revokeObjectURL(link.href);
       } else {
-        console.error('Download failed: Blob is null');
+        this.logger.error('Download failed: Blob is null');
         this.spinner.hide();
       }
     });
-  }
-
-  getFileUrl(fileName: string, type: string, blobPath: string) {
-    if (!blobPath || blobPath.trim() === '') {
-      this.toastr.error(
-        this.transloco.translate('error_no_file_path', {}, 'index') || 'No file path available',
-        this.transloco.translate('error', {}, 'index') || 'Error'
-      );
-      return;
-    }
-
-    if (type === 'configuration' || type === 'actualLocation') {
-      const configuration: Configuration | undefined =
-        this.configurationAllData.configurations.find(
-          (configuration) => configuration.name === fileName
-        );
-
-      if (configuration) {
-        this.spinner.show();
-        this.configurationService
-          .getConfiguration(configuration.id)
-          .subscribe(async (data) => {
-            if (data.fileUrl?.fileConfigurationUrl) {
-              this.downloadFile(data.fileUrl.fileConfigurationUrl, true);
-            } else {
-              this.toastr.error(
-                this.transloco.translate('error_no_url_provided', {}, 'index'),
-                this.transloco.translate('error', {}, 'index')
-              );
-              this.spinner.hide();
-            }
-          });
-      } else {
-        this.toastr.error(
-          this.transloco.translate('configuration_not_found', {}, 'index'),
-          this.transloco.translate('error', {}, 'index')
-        );
-      }
-    }
   }
 
   getFileUrlById(id: string, type: string, blobPath: string) {
@@ -766,26 +668,6 @@ export class UploadComponent implements OnInit {
     fileType: ConfigurationExplorerFileType
   ): string {
     return fileType.category;
-  }
-
-  trackByYear(index: number, yearNode: ConfigurationExplorerYearNode): string {
-    return yearNode.year;
-  }
-
-  trackByMonth(
-    index: number,
-    monthNode: ConfigurationExplorerMonthNode
-  ): string {
-    return monthNode.month;
-  }
-
-  getYearChildren(
-    fileType: ConfigurationExplorerFileType
-  ): ConfigurationExplorerYearNode[] {
-    if (fileType.type === 'actual') {
-      return fileType.children as ConfigurationExplorerYearNode[];
-    }
-    return [];
   }
 
   getRegularChildren(

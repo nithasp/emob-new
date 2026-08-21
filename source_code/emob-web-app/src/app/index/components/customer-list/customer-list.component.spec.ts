@@ -178,12 +178,12 @@ describe('CustomerListComponent', () => {
   });
 
   describe('selectData()', () => {
-    it('falls back to a synthesized DetailsPreOder when no grouped entry matches', () => {
+    it('falls back to a synthesized DetailsPreOrder when no grouped entry matches', () => {
       init();
       const selected = component.customerSelected!;
-      expect(selected.dataPreOder.ORDERID_ORG).toBe('N-UNCERTAIN');
-      expect(selected.dataPreOder.CUSTOMER_NAME).toBe('CUST-UNCERTAIN');
-      expect(selected.dataPreOder.ADDRESS).toBe('1 Main St');
+      expect(selected.dataPreOrder.ORDERID_ORG).toBe('N-UNCERTAIN');
+      expect(selected.dataPreOrder.CUSTOMER_NAME).toBe('CUST-UNCERTAIN');
+      expect(selected.dataPreOrder.ADDRESS).toBe('1 Main St');
     });
 
     it('prefers the matching grouped pre-order entry when present', () => {
@@ -204,8 +204,8 @@ describe('CustomerListComponent', () => {
       init();
 
       const selected = component.customerSelected!;
-      expect(selected.dataPreOder.ORDERID_ORG).toBe('GROUPED-ID');
-      expect(selected.dataPreOder.ADDRESS).toBe('Grouped Address');
+      expect(selected.dataPreOrder.ORDERID_ORG).toBe('GROUPED-ID');
+      expect(selected.dataPreOrder.ADDRESS).toBe('Grouped Address');
     });
 
     it('derives channel/name/tel from additionalProperties when available', () => {
@@ -228,9 +228,9 @@ describe('CustomerListComponent', () => {
       init();
 
       const selected = component.customerSelected!;
-      expect(selected.dataPreOder.CHANNEL).toBe('app');
-      expect(selected.dataPreOder.TEL).toBe('0899999999');
-      expect(selected.dataPreOder.CUSTOMER_NAME).toBe('CUST-CHANNEL');
+      expect(selected.dataPreOrder.CHANNEL).toBe('app');
+      expect(selected.dataPreOrder.TEL).toBe('0899999999');
+      expect(selected.dataPreOrder.CUSTOMER_NAME).toBe('CUST-CHANNEL');
     });
   });
 
