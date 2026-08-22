@@ -84,18 +84,27 @@
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.test.ts"
                 }
-              ]
+              ],
+              "outputHashing": "all",
+              "optimization": true,
+              "sourceMap": false,
+              "aot": true,
+              "extractLicenses": true,
+              "namedChunks": false
             },
             "development": {
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.development.ts"
                 }
-              ]
+              ],
+              "outputHashing": "all",
+              "optimization": false,
+              "sourceMap": true,
+              "aot": true,
+              "extractLicenses": false,
+              "namedChunks": true
             }
           },
           "defaultConfiguration": "production"
