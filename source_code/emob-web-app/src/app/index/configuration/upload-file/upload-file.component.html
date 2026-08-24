@@ -15,7 +15,11 @@
     (click)="activeModal.close(null)"
   ></button>
 </div>
-<div class="modal-body">
+<div
+  class="modal-body"
+  (dragover)="$event.preventDefault()"
+  (drop)="$event.preventDefault()"
+>
   <div class="row mt-3 justify-content-md-center">
     <div
       class="col-md-11 rounded-3 dropzone"

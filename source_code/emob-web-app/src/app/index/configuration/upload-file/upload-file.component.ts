@@ -51,20 +51,29 @@ export class UploadFileComponent {
     }
 
     if (fileCount > 1) {
-      this.toastr.warning('Cannot use multiple files');
+      this.toastr.warning(
+        this.transloco.translate('cannot_use_multiple_files', {}, 'index')
+      );
+      return;
     }
 
     if (file) {
-      if (!this.validTypes.includes(file.type)) {
+      if (!this.isValidExcelFile(file)) {
         this.alertInvalidation(
-          'File Invalid',
-          'Please select an Excel file (.xlsx or .xls)'
+          this.transloco.translate('file_invalid', {}, 'index'),
+          this.transloco.translate('select_excel_file', {}, 'index')
         );
       } else {
-        // Proceed with file processing
         this.uploadFile(file);
       }
     }
+  }
+
+  private isValidExcelFile(file: File): boolean {
+    const name = (file.name || '').toLowerCase();
+    const hasValidExtension = name.endsWith('.xlsx') || name.endsWith('.xls');
+    const hasValidMime = this.validTypes.includes(file.type);
+    return hasValidExtension || hasValidMime;
   }
 
   resetFileInput(event: Event): void {
@@ -81,9 +90,17 @@ export class UploadFileComponent {
    */
 
   private async uploadFile(file: File) {
-    const buffer = await file.arrayBuffer();
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer);
+    try {
+      const buffer = await file.arrayBuffer();
+      await workbook.xlsx.load(buffer);
+    } catch {
+      this.alertInvalidation(
+        this.transloco.translate('file_invalid', {}, 'index'),
+        this.transloco.translate('cannot_read_file', {}, 'index')
+      );
+      return;
+    }
     const worksheet = workbook.worksheets[0];
     if (!worksheet) {
       this.alertInvalidation('Invalid File', 'Could not read any worksheet.');
