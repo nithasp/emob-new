@@ -53,6 +53,7 @@
           },
           "configurations": {
             "production": {
+              "outputPath": "dist/emob-web-app/prod",
               "budgets": [
                 {
                   "type": "initial",
@@ -79,6 +80,7 @@
               "namedChunks": false
             },
             "test": {
+              "outputPath": "dist/emob-web-app/test",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -93,6 +95,7 @@
               "namedChunks": false
             },
             "development": {
+              "outputPath": "dist/emob-web-app/dev",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
