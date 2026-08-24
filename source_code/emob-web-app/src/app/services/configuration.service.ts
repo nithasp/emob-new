@@ -85,6 +85,9 @@ export class ConfigurationService {
         variables: {
           id: id,
         },
+        // Always hit the network: the file URL changes after a config upload and
+        // the default cache-first policy would keep serving the previous URL.
+        fetchPolicy: 'network-only',
       })
       .pipe(
         map((result) => result.data.configuration),
