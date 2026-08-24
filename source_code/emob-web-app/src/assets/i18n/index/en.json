@@ -36,7 +36,7 @@
   "cannot_open_not_creator": "You cannot open an route planning that you did not create",
   "cannot_open_not_succeeded": "You cannot open an route planning that is not succeeded",
   "cannot_read_file": "Cannot read file",
-  "cannot_use_multiple_files": "Cannot use multiple files",
+  "cannot_use_multiple_files": "Cannot upload multiple files",
   "capacity": "Capacity",
   "cargo_height": "Cargo Height",
   "cargo_length": "Cargo Length",

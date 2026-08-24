@@ -1,9 +1,13 @@
-
 .dropzone {
     background-color: rgb(240, 242, 246);
     padding: 80px 0px;
     border-radius: 0.5rem;
-  
+    border: 2px dashed #c5c7cc;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+  }
+
+  .dropzone.dropzone-active {
+    background-color: rgb(255, 236, 230);
   }
 
   .icon-upload {

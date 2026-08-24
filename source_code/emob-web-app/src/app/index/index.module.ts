@@ -103,7 +103,8 @@ import { InputFieldComponent } from '../shared/components/form/input-field/input
     VehicleTypeDialogComponent,
   ],
   exports: [
-    FilterPipe
+    FilterPipe,
+    DropzoneDirective,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'index' }],
