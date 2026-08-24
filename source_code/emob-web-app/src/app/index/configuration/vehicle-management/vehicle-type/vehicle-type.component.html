@@ -65,14 +65,14 @@
                     <strong>{{ t("fixed_cost") }}: </strong>
                     <span>{{
                       vehicleType.fixedCost
-                        | currency : "USD" : "symbol" : "1.2-2"
+                        | currency : "THB" : "symbol-narrow" : "1.2-2"
                     }}</span>
                   </p>
                   <p>
                     <strong>{{ t("unit_distance_cost") }}: </strong>
                     <span>{{
                       vehicleType.unitDistanceCost
-                        | currency : "USD" : "symbol" : "1.2-2"
+                        | currency : "THB" : "symbol-narrow" : "1.2-2"
                     }}</span>
                     <span>/ {{ "km" | transloco }}</span>
                   </p>
