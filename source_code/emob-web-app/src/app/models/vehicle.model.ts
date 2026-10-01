@@ -78,6 +78,8 @@ export interface VehicleType {
   isVehicleAvailable?: boolean;
   maxpallet?: number;
   zone?: string;
+  maxTrip?: number;
+  loadingDuration?: string;
   createdAt: string;
   modifiedAt: string;
   twEarly?: string | number;
@@ -90,6 +92,14 @@ export interface VehicleType {
   maxDistance?: number;
   maxDuration?: number;
 }
+
+export const DEFAULT_MAX_TRIP = 1;
+
+export const DEFAULT_VEHICLE_TYPE_MAX_TRIP = DEFAULT_MAX_TRIP;
+
+export const SYSTEM_MAX_TRIP = 10;
+
+export const DEFAULT_LOADING_DURATION = '00:30';
 
 export enum AccessTypeEnum {
   FRONT = "FRONT",
@@ -196,4 +206,61 @@ export interface LicensePlateSelectionResult {
   vehicleTypeId: string;
   selectedLicensePlates: string[];
   selectedVehicleIds: string[];
+}
+
+export type OpenVrpEndOfRoute = 'return' | 'no_return';
+
+export type OpenVrpSelectionMode = 'count' | 'license-plate';
+
+export interface OpenVrpRunVehicleEntry {
+  id: number;
+  vehicleTypeId: string;
+  vehicleTypeName: string;
+  mode: OpenVrpSelectionMode;
+  count: number;
+  licensePlates: string[];
+  vehicleIds: string[];
+  endOfRoute: OpenVrpEndOfRoute;
+  startDepotId: string;
+  startDepotName: string;
+  endDepotId: string | null;
+  endDepotName: string | null;
+  maxTrip: number;
+  loadingDuration: string | null;
+}
+
+export interface OpenVrpRunVehicleGroup {
+  vehicleTypeId: string;
+  vehicleTypeName: string;
+  /** Vehicles across every row of this type. */
+  total: number;
+  entries: OpenVrpRunVehicleEntry[];
+}
+
+export interface OpenVrpPoolBuilder {
+  mode: OpenVrpSelectionMode;
+  count: number;
+  endOfRoute: OpenVrpEndOfRoute;
+  chosenVehicleIds: string[];
+  /** null follows the depot in scope */
+  startDepotId: string | null;
+  /** null follows the start depot */
+  endDepotId: string | null;
+  maxTrip: number;
+  loadingDuration: string | null;
+}
+
+export type OpenVrpPresetEntry = Omit<
+  OpenVrpRunVehicleEntry,
+  'id' | 'maxTrip' | 'loadingDuration'
+> &
+  Partial<Pick<OpenVrpRunVehicleEntry, 'maxTrip' | 'loadingDuration'>>;
+
+export interface OpenVrpVehiclePreset {
+  id: string;
+  name: string;
+  depotId: string;
+  depotName: string;
+  createdAt: string;
+  entries: OpenVrpPresetEntry[];
 }

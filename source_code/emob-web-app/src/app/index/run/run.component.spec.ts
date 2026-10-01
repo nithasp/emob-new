@@ -46,6 +46,7 @@ import { DynamicParameter } from 'src/app/models/constraint.model';
 import {
   VehicleType,
   VehicleProfileTypeEnum,
+  OpenVrpRunVehicleEntry,
 } from 'src/app/models/vehicle.model';
 import {
   DataGroup,
@@ -223,6 +224,28 @@ function createVehicleType(overrides: Partial<VehicleType> = {}): VehicleType {
   } as VehicleType;
 }
 
+function createRunEntry(
+  overrides: Partial<OpenVrpRunVehicleEntry> = {}
+): OpenVrpRunVehicleEntry {
+  return {
+    id: 1,
+    vehicleTypeId: 'vt-1',
+    vehicleTypeName: 'Truck A',
+    mode: 'count',
+    count: 1,
+    licensePlates: [],
+    vehicleIds: [],
+    endOfRoute: 'return',
+    startDepotId: 'depot-1',
+    startDepotName: 'Depot 1',
+    endDepotId: null,
+    endDepotName: null,
+    maxTrip: 1,
+    loadingDuration: null,
+    ...overrides,
+  };
+}
+
 function createDataGroup(overrides: Partial<DataGroup> = {}): DataGroup {
   return {
     verify: { customers: [], type: LocationType.Verify },
@@ -316,6 +339,10 @@ describe('RunComponent', () => {
       'getMyVehicleTypes',
       'getMyVehicles',
     ]);
+    // The Open VRP vehicle pool is loaded as part of the init flow, so every
+    // spec needs this to emit; individual specs override it when the pool's
+    // contents matter.
+    vehicleServiceSpy.getMyVehicles.and.returnValue(of([]));
     paramsSubject = new Subject<{ [key: string]: string }>();
 
     await TestBed.configureTestingModule({
@@ -666,13 +693,54 @@ describe('RunComponent', () => {
     });
 
     it('buildVehiclesPayload() builds count-mode and license-plate-mode entries', () => {
-      component.selectedVehicleIds = ['v1', 'v2'];
-      component.vehicleSelectionMode = { v1: 'count', v2: 'license-plate' };
-      component.selectedVehicleCounts = { v1: 3 };
-      component.selectedVehicleIdsByLicensePlate = { v2: ['LP1', 'LP2'] };
+      component.runVehicleList.push(
+        createRunEntry({ vehicleTypeId: 'v1', mode: 'count', count: 3 }),
+        createRunEntry({
+          vehicleTypeId: 'v2',
+          mode: 'license-plate',
+          count: 2,
+          vehicleIds: ['LP1', 'LP2'],
+          licensePlates: ['LP1', 'LP2'],
+        })
+      );
 
       expect(component.buildVehiclesPayload()).toEqual([
         { vehicleTypeId: 'v1', numberOfVehiclesAvailable: 3 },
+        { vehicleTypeId: 'v2', vehicleId: ['LP1', 'LP2'] },
+      ]);
+    });
+
+    it('buildVehiclesPayload() aggregates several run-list rows of one type', () => {
+      // The run list may hold the same vehicle type more than once, one row per
+      // set of routing conditions. The validation contract takes one entry per
+      // type, so the rows are summed (and plates de-duplicated) here.
+      component.runVehicleList.push(
+        createRunEntry({ vehicleTypeId: 'v1', mode: 'count', count: 3 }),
+        createRunEntry({
+          vehicleTypeId: 'v1',
+          mode: 'count',
+          count: 2,
+          endOfRoute: 'no_return',
+        }),
+        createRunEntry({
+          vehicleTypeId: 'v2',
+          mode: 'license-plate',
+          count: 1,
+          vehicleIds: ['LP1'],
+          licensePlates: ['LP1'],
+        }),
+        createRunEntry({
+          vehicleTypeId: 'v2',
+          mode: 'license-plate',
+          count: 2,
+          vehicleIds: ['LP1', 'LP2'],
+          licensePlates: ['LP1', 'LP2'],
+          endOfRoute: 'no_return',
+        })
+      );
+
+      expect(component.buildVehiclesPayload()).toEqual([
+        { vehicleTypeId: 'v1', numberOfVehiclesAvailable: 5 },
         { vehicleTypeId: 'v2', vehicleId: ['LP1', 'LP2'] },
       ]);
     });
@@ -1527,7 +1595,7 @@ describe('RunComponent', () => {
 
   describe('validateExperimentPreOrder()', () => {
     it('blocks submission and jumps to the vehicle tab when no vehicle is selected', () => {
-      component.selectedVehicleIds = [];
+      // the Open VRP run list starts empty — nothing has been added to the run
       component.validateExperimentPreOrder();
 
       expect(component.vehicleSelectionError).toBeTrue();
@@ -1537,9 +1605,9 @@ describe('RunComponent', () => {
 
     it('validates and updates state on a successful response', fakeAsync(() => {
       component.experiment = createExperiment();
-      component.selectedVehicleIds = ['v1'];
-      component.vehicleSelectionMode = { v1: 'count' };
-      component.selectedVehicleCounts = { v1: 2 };
+      component.runVehicleList.push(
+        createRunEntry({ vehicleTypeId: 'v1', mode: 'count', count: 2 })
+      );
       const response: ValidateExperimentResponse = {
         result: { isSuccesses: true, message: 'ok', validate: {} as Validate },
       };
@@ -1549,6 +1617,9 @@ describe('RunComponent', () => {
 
       component.validateExperimentPreOrder();
       tick();
+      // navigateToTab() refreshes the map viewport after the column's 0.3s
+      // slide, so that timer has to be drained before fakeAsync() returns.
+      tick(350);
 
       expect(toastrSpy.success).toHaveBeenCalledWith('ok');
       expect(component.haveValidated).toBeTrue();
@@ -1558,9 +1629,9 @@ describe('RunComponent', () => {
 
     it('records the returned validation warnings on the component', fakeAsync(() => {
       component.experiment = createExperiment();
-      component.selectedVehicleIds = ['v1'];
-      component.vehicleSelectionMode = { v1: 'count' };
-      component.selectedVehicleCounts = { v1: 2 };
+      component.runVehicleList.push(
+        createRunEntry({ vehicleTypeId: 'v1', mode: 'count', count: 2 })
+      );
       const response: ValidateExperimentResponse = {
         result: {
           isSuccesses: true,
@@ -1582,6 +1653,9 @@ describe('RunComponent', () => {
 
       component.validateExperimentPreOrder();
       tick();
+      // navigateToTab() refreshes the map viewport after the column's 0.3s
+      // slide, so that timer has to be drained before fakeAsync() returns.
+      tick(350);
 
       expect(component.isValidationWarning).toBeTrue();
       expect(component.validationWarnings.length).toBe(1);

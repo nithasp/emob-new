@@ -26,19 +26,9 @@
             [disabled]="isViewMode">
           </app-input-select>
 
-          <!-- Start & End Depot -->
-          <div class="row g-2">
-            <div class="col-12 col-sm-6">
-              <app-input-select idAttribute="depotId" valueAttribute="depotName" [placeholder]="t('start_depot')"
-                [options]="depotOptions" [control]="form.controls.startDepot" [required]="true" [disabled]="isViewMode">
-              </app-input-select>
-            </div>
-            <div class="col-12 col-sm-6">
-              <app-input-select idAttribute="depotId" valueAttribute="depotName" [placeholder]="t('end_depot')"
-                [options]="depotOptions" [control]="form.controls.endDepot" [required]="true" [disabled]="isViewMode">
-              </app-input-select>
-            </div>
-          </div>
+          <!-- Vehicle Pool: depot binding removed from master data.
+               Vehicles live in a central pool; the depot and routing conditions
+               are assigned per run in the Open VRP vehicle selection phase. -->
 
           <!-- License Plate (Edit/View Mode) -->
           <div *ngIf="isEditMode || isViewMode">

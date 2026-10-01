@@ -84,6 +84,8 @@
       "email": "Email is not valid",
       "license_plates_empty": "License plates need to be added",
       "license_plate_duplicate": "This license plate has already been added",
+      "min": "Minimum value is {{min}}",
+      "max": "Maximum value is {{max}}",
       "invalid_input": "Invalid input",
       "invalid_selection": "Invalid selection",
       "start_time_invalid": "Start time must be earlier than end time",

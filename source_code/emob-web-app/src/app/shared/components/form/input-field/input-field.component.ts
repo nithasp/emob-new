@@ -226,6 +226,16 @@ export class InputFieldComponent
     if (this.control.hasError('licensePlateDuplicate')) {
       return this.transloco.translate('form.error.license_plate_duplicate');
     }
+    if (this.control.hasError('min')) {
+      return this.transloco.translate('form.error.min', {
+        min: this.control.getError('min').min,
+      });
+    }
+    if (this.control.hasError('max')) {
+      return this.transloco.translate('form.error.max', {
+        max: this.control.getError('max').max,
+      });
+    }
 
     return this.transloco.translate('form.error.invalid_input');
   }

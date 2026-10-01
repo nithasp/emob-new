@@ -1,3 +1,28 @@
+/* Open VRP palette */
+$ovrp-ink: #171b22;
+$ovrp-muted: #69717f;
+$ovrp-faint: #98a0ad;
+$ovrp-line: #dbe0e8;
+$ovrp-line-strong: #c4cbd6;
+$ovrp-surface-2: #f7f9fb;
+$ovrp-brand: #232f4e;
+$ovrp-depot: #0e7c86;
+$ovrp-closed: #1f6feb;
+$ovrp-closed-soft: #e8f0fe;
+$ovrp-closed-ink: #12468f;
+$ovrp-open: #db7a16;
+$ovrp-open-soft: #fceeda;
+$ovrp-open-ink: #8a4a05;
+$ovrp-now: #188a5b;
+$ovrp-now-soft: #e2f4ec;
+$ovrp-q4-amber: #b27c10;
+$ovrp-q4-amber-soft: #fcf2dc;
+$ovrp-q4-soft: #eef0f3;
+$ovrp-trip: #6b3fc4;
+$ovrp-trip-soft: #f2eefc;
+$ovrp-trip-soft-line: #ded2f6;
+$ovrp-trip-ink: #4a2a8c;
+
 a:link,
 a:visited {
   text-decoration: none;
@@ -13,11 +38,10 @@ a:visited {
 
 .mat-expansion-panel p a,
 .mat-expansion-panel p,
-.template div a,
-button.link {
+button.link,
+button.link-verify {
   font-size: 15px;
   user-select: inherit;
-  /* display: flex; */
   flex-direction: row;
   font-weight: 500;
 }
@@ -29,24 +53,6 @@ button.link {
   background: none;
 }
 
-.mat-expansion-panel p a,
-.mat-expansion-panel p,
-.template div a,
-button.link-verify {
-  font-size: 15px;
-  user-select: inherit;
-  flex-direction: row;
-  font-weight: 500;
-}
-button.link-verify {
-  border: none;
-  background: none;
-}
-
-.file-input {
-  display: none;
-}
-
 .icon-browser {
   font-size: 20px;
 }
@@ -56,13 +62,11 @@ button.link-verify {
   height: fit-content;
   width: fit-content;
   color: rgba(86, 87, 89, 0.726);
-  display: inline-flex;
 }
 
 .dropzone {
   background-color: rgb(240, 242, 246);
   padding: 80px 0px;
-  border-radius: 0.5rem;
 }
 
 .mat-mdc-button-base {
@@ -70,7 +74,7 @@ button.link-verify {
   padding-left: 10px;
   padding-right: 5px;
   border-radius: 5px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .fab-success {
@@ -103,8 +107,6 @@ button.link-verify {
 }
 
 .ol-popup {
-  position: absolute;
-  background-color: white;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   padding: 15px;
   border-radius: 10px;
@@ -143,8 +145,6 @@ button.link-verify {
   margin-left: -11px;
 }
 .ol-popup-closer {
-  text-decoration: none;
-  position: absolute;
   top: 2px;
   right: 8px;
 }
@@ -157,7 +157,11 @@ table {
   max-width: 100%;
 }
 
-.text-highlight-verify {
+/* one cell shape, four verification states — only the fill differs */
+.text-highlight-verify,
+.text-highlight-uncertain,
+.text-highlight-unverify,
+.text-highlight-edit {
   border: none;
   box-sizing: border-box;
   width: 100%;
@@ -169,47 +173,21 @@ table {
 }
 
 .text-highlight-uncertain {
-  border: none;
-  box-sizing: border-box;
-  width: 100%;
-  height: 24px;
-  padding: 0px 5px;
-  color: rgb(0, 0, 0);
-  font-size: 13px;
   background-color: #fff3cd;
-  transition: 0.3s;
 }
 
 .text-highlight-unverify {
-  border: none;
-  box-sizing: border-box;
-  width: 100%;
-  height: 24px;
-  padding: 0px 5px;
-  color: rgb(0, 0, 0);
-  font-size: 13px;
   background-color: #f1aeb5;
-  transition: 0.3s;
 }
+
 .text-highlight-edit {
-  border: none;
-  box-sizing: border-box;
-  width: 100%;
-  height: 24px;
-  padding: 0px 5px;
-  color: rgb(0, 0, 0);
-  font-size: 13px;
   background-color: #cfe2ff;
-  transition: 0.3s;
 }
 
 .small-icon-button {
   width: 24px !important;
   height: 24px !important;
   padding: 0px !important;
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
 
   & > *[role="img"] {
     width: 16px;
@@ -228,53 +206,14 @@ table {
   }
 }
 
-.mat-column-No {
-  word-wrap: break-word !important;
-  white-space: unset !important;
-  flex: 0 0 5% !important;
-  width: 50px !important;
-  overflow-wrap: break-word;
-  word-break: break-word;
-
-  -ms-hyphens: auto;
-  -moz-hyphens: auto;
-  -webkit-hyphens: auto;
-  hyphens: auto;
-}
-
-.mat-column-ORDERID_ORG {
-  word-wrap: break-word !important;
-  white-space: unset !important;
-  flex: 0 0 5% !important;
-  width: 240px !important;
-  overflow-wrap: break-word;
-  word-break: break-word;
-
-  -ms-hyphens: auto;
-  -moz-hyphens: auto;
-  -webkit-hyphens: auto;
-  hyphens: auto;
-}
-
-.mat-column-AUMPHER {
-  word-wrap: break-word !important;
-  white-space: unset !important;
-  flex: 0 0 5% !important;
-  width: 100px !important;
-  overflow-wrap: break-word;
-  word-break: break-word;
-
-  -ms-hyphens: auto;
-  -moz-hyphens: auto;
-  -webkit-hyphens: auto;
-  hyphens: auto;
-}
-
+/* every wrapping column shares one shape; only the width is per-column */
+.mat-column-No,
+.mat-column-ORDERID_ORG,
+.mat-column-AUMPHER,
 .mat-column-PROVINCE {
   word-wrap: break-word !important;
   white-space: unset !important;
   flex: 0 0 5% !important;
-  width: 100px !important;
   overflow-wrap: break-word;
   word-break: break-word;
 
@@ -282,6 +221,19 @@ table {
   -moz-hyphens: auto;
   -webkit-hyphens: auto;
   hyphens: auto;
+}
+
+.mat-column-No {
+  width: 50px !important;
+}
+
+.mat-column-ORDERID_ORG {
+  width: 240px !important;
+}
+
+.mat-column-AUMPHER,
+.mat-column-PROVINCE {
+  width: 100px !important;
 }
 
 .mat-mdc-row .mat-mdc-cell {
@@ -297,13 +249,9 @@ table {
 
 .table-container {
   height: 400px;
-  max-width: 100%;
-  overflow: auto;
 }
 
 .mat-paginator-sticky {
-  bottom: 0px;
-  position: sticky;
   z-index: 10;
 }
 
@@ -333,7 +281,6 @@ tr.mat-mdc-footer-row td {
 
 .upload-submit-button {
   max-width: 80px;
-  width: 100%;
 }
 
 .text-warning-intense {
@@ -350,44 +297,7 @@ tr.mat-mdc-footer-row td {
   }
 }
 
-.license-plate-selection-count {
-  margin-left: 44px;
-}
-
-.license-plate-details-button {
-  font-size: 14px;
-}
-
-.license-plate-list {
-  max-height: 120px;
-  overflow: auto;
-}
-
-::ng-deep .floating:has(.license-plate-details) {
-  max-width: 220px !important;
-  width: 100% !important;
-}
-
-.vehicle-selection-container {
-  height: 890px;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  transition: border-color 0.3s ease;
-
-  @media (max-width: 768px) {
-    height: auto;
-  }
-
-  &.vehicle-selection-error {
-    animation: shake 0.4s ease-in-out;
-    .vehicle-card {
-      border-color: #dc3545 !important;
-    }
-  }
-}
-
 .vehicle-selection-error-msg {
-  font-weight: 500;
   animation: fadeIn 0.3s ease-in;
 }
 
@@ -419,9 +329,6 @@ tr.mat-mdc-footer-row td {
 }
 
 .transform-warning-item {
-  table {
-    white-space: nowrap;
-  }
   .transform-warning-item-wrapper {
     max-height: 250px;
   }
@@ -438,6 +345,876 @@ tr.mat-mdc-footer-row td {
 
       ::ng-deep .mdc-button__label {
         white-space: nowrap;
+      }
+    }
+  }
+}
+
+/* ==========================================================================
+   Open VRP — depot scope / vehicle pool / run list / validation summary
+   (visual language adapted from the open-vrp complete flow mockup)
+   ========================================================================== */
+
+/* --- Orders tab: depot mode chips --- */
+.openvrp-depot-mode {
+  background: $ovrp-surface-2;
+  border: 1px solid $ovrp-line;
+  border-radius: 9px;
+  gap: 3px;
+
+  .openvrp-dm-btn {
+    font-size: 13.5px;
+    color: $ovrp-muted;
+    padding: 6px 13px;
+    border-radius: 7px;
+    gap: 6px;
+    cursor: default;
+
+    &.on {
+      background: #fff;
+      color: $ovrp-ink;
+      box-shadow: 0 1px 2px rgba(19, 26, 42, 0.1);
+    }
+  }
+}
+
+.openvrp-q4-pill {
+  font-size: 13.5px;
+  letter-spacing: 0.05em;
+  background: $ovrp-q4-amber-soft;
+  color: $ovrp-q4-amber;
+  /* wider now the label is read at body size — 6px left the tag looking
+     pinched around its own text */
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+
+/* --- Vehicle tab: 3-pane layout --- */
+.openvrp-three {
+  border: 2px solid transparent;
+  border-radius: 10px;
+  transition: border-color 0.3s ease;
+
+  &.vehicle-selection-error {
+    animation: shake 0.4s ease-in-out;
+
+    .openvrp-pane {
+      border-color: #dc3545 !important;
+    }
+  }
+}
+
+.openvrp-pane {
+  border: 1px solid $ovrp-line;
+  border-radius: 11px;
+  padding: 14px;
+  max-height: 720px;
+  font-size: 13.5px;
+
+  &.openvrp-pane-pool {
+    background: $ovrp-surface-2;
+  }
+}
+
+.openvrp-pane-title {
+  gap: 6px;
+  font-size: 15px;
+  margin-bottom: 2px;
+
+  mat-icon {
+    font-size: 19px;
+    width: 19px;
+    height: 19px;
+    color: $ovrp-brand;
+  }
+}
+
+.openvrp-pane-sub {
+  font-size: 14px;
+  color: $ovrp-muted;
+  margin: 11px 0;
+}
+
+.openvrp-count-badge {
+  font-size: 13px;
+  background: $ovrp-closed-soft;
+  color: $ovrp-closed-ink;
+  padding: 2px 9px;
+}
+
+/* pool cards */
+.openvrp-poolcard {
+  border: 1px solid $ovrp-line;
+  border-radius: 9px;
+}
+
+.openvrp-pc-head {
+  padding: 10px 12px;
+  cursor: pointer;
+
+  .openvrp-pc-code {
+    font-size: 14.5px;
+  }
+
+  .openvrp-pc-info {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: $ovrp-faint;
+    cursor: pointer;
+
+    &:hover {
+      color: $ovrp-brand;
+    }
+  }
+
+  .openvrp-pc-chev {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: $ovrp-faint;
+  }
+}
+
+.openvrp-pc-body {
+  padding: 0 12px 12px;
+  border-top: 1px solid $ovrp-line;
+  animation: fadeIn 0.2s ease-in;
+}
+
+.openvrp-pc-row {
+  margin-top: 10px;
+}
+
+.openvrp-pc-lab {
+  font-size: 13.5px;
+  color: #3c4453;
+  margin-bottom: 6px;
+}
+
+.openvrp-radio2 {
+  gap: 7px;
+
+  .openvrp-rbtn {
+    flex: 1;
+    border: 1px solid $ovrp-line;
+    border-radius: 7px;
+    padding: 6px 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: #fff;
+    color: $ovrp-ink;
+
+    &.on {
+      border-color: $ovrp-brand;
+      background: #edf1f9;
+      color: $ovrp-brand;
+      font-weight: 600;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.openvrp-qty {
+  gap: 7px;
+
+  button {
+    width: 28px;
+    height: 28px;
+    border: 1px solid $ovrp-line;
+    cursor: pointer;
+    font-size: 15px;
+    color: $ovrp-muted;
+
+    &:hover:not(:disabled) {
+      border-color: $ovrp-brand;
+      color: $ovrp-brand;
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+
+  .openvrp-qty-input {
+    width: 58px;
+    height: 28px;
+    border: 1px solid $ovrp-line;
+    color: $ovrp-ink;
+    font-size: 13.5px;
+    -moz-appearance: textfield;
+    appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $ovrp-brand;
+      box-shadow: 0 0 0 2px rgba(35, 47, 78, 0.12);
+    }
+  }
+
+  .openvrp-qty-left {
+    font-size: 13.5px;
+    color: $ovrp-faint;
+  }
+}
+
+.openvrp-plate-check {
+  gap: 5px;
+  /* grown with the row text, so the same number of plates is still in view
+     before the list has to be scrolled */
+  max-height: 150px;
+
+  label {
+    gap: 7px;
+    font-size: 13.5px;
+    cursor: pointer;
+
+    input[type="checkbox"] {
+      cursor: pointer;
+    }
+  }
+}
+
+.openvrp-eorseg {
+  gap: 6px;
+
+  .openvrp-eoropt {
+    flex: 1;
+    border: 1px solid $ovrp-line;
+    border-radius: 7px;
+    /* the two labels are long enough to wrap in a narrow pane, so the side
+       padding stays tight and the extra room goes into the rows */
+    padding: 7px 5px;
+    cursor: pointer;
+    font-size: 13.5px;
+    background: #fff;
+    color: $ovrp-ink;
+
+    &.on.o-closed {
+      border-color: $ovrp-closed;
+      background: $ovrp-closed-soft;
+      color: $ovrp-closed-ink;
+    }
+
+    &.on.o-open {
+      border-color: $ovrp-open;
+      background: $ovrp-open-soft;
+      color: $ovrp-open-ink;
+    }
+  }
+}
+
+.openvrp-depot-fixed {
+  gap: 5px;
+  border: 1px solid $ovrp-line;
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 14px;
+  background: $ovrp-surface-2;
+  color: $ovrp-ink;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: $ovrp-depot;
+  }
+}
+
+.openvrp-addbtn {
+  margin-top: 12px;
+  background: $ovrp-brand;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #31406b;
+  }
+
+  &:disabled {
+    background: #c7ccd4;
+    cursor: not-allowed;
+  }
+}
+
+.openvrp-demo-btn {
+  border-style: dashed !important;
+
+  &.on {
+    border-color: $ovrp-trip !important;
+    background: $ovrp-trip-soft !important;
+    color: $ovrp-trip-ink !important;
+
+    mat-icon {
+      color: $ovrp-trip;
+    }
+  }
+}
+
+.openvrp-demo-banner {
+  padding: 8px 12px;
+  border: 1px dashed $ovrp-trip;
+  background: $ovrp-trip-soft;
+  color: $ovrp-trip-ink;
+  font-size: 13.5px;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: $ovrp-trip;
+  }
+}
+
+.openvrp-mtnote {
+  padding: 7px 9px;
+  border: 1px solid $ovrp-trip-soft-line;
+  background: $ovrp-trip-soft;
+  font-size: 13.5px;
+  color: $ovrp-trip-ink;
+  gap: 7px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: $ovrp-trip;
+  }
+
+  b {
+    font-family: "Consolas", "Courier New", monospace;
+  }
+
+  .openvrp-mtedit {
+    padding: 3px 8px;
+    border: 1px dashed $ovrp-trip;
+    background: #fff;
+    color: $ovrp-trip-ink;
+    font-size: 13.5px;
+    cursor: pointer;
+
+    &:hover {
+      background: $ovrp-trip-soft;
+      border-style: solid;
+    }
+
+    mat-icon {
+      font-size: 15px;
+      width: 15px;
+      height: 15px;
+      color: $ovrp-trip;
+    }
+  }
+
+  &.muted {
+    border-style: dashed;
+    border-color: $ovrp-line-strong;
+    background: $ovrp-surface-2;
+    color: $ovrp-muted;
+
+    mat-icon {
+      color: $ovrp-faint;
+    }
+  }
+}
+
+.experiment-container {
+  transition: width 0.3s ease;
+}
+
+.openvrp-map-col {
+  transform: translateX(0);
+  opacity: 1;
+  transition:
+    width 0.3s ease,
+    padding 0.3s ease,
+    transform 0.3s ease,
+    opacity 0.3s ease;
+
+  &.collapsed {
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* run list: one tinted block per vehicle type, white rows inside — the same
+   card-on-surface pairing the pool pane uses */
+.openvrp-lgroup {
+  border: 1px solid $ovrp-line;
+  background: $ovrp-surface-2;
+  padding: 8px;
+
+  & + .openvrp-lgroup {
+    margin-top: 10px;
+  }
+}
+
+.openvrp-lgroup-head {
+  gap: 6px;
+  padding: 0 3px 8px;
+  font-size: 14px;
+  color: $ovrp-ink;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: $ovrp-brand;
+  }
+
+  /* a long type name truncates instead of pushing the count out of the block */
+  .openvrp-lgroup-name {
+    min-width: 0;
+  }
+
+  .openvrp-lgroup-count {
+    font-size: 14.5px;
+    color: $ovrp-muted;
+  }
+}
+
+.openvrp-lrow {
+  border: 1px solid $ovrp-line;
+  border-radius: 9px;
+  padding: 9px 11px;
+  gap: 9px;
+  /* slow settle once the merge highlight is dropped */
+  transition:
+    border-width 0.8s ease,
+    border-color 0.8s ease,
+    padding 0.8s ease,
+    box-shadow 0.8s ease;
+
+  /* the row a duplicate was just added to — amber like the warning toast, and
+     held for exactly as long as that toast (RUN_ENTRY_MERGE_NOTICE_MS) */
+  &.merged {
+    border-width: 2px;
+    border-color: $ovrp-q4-amber;
+    /* the 2px the thicker border takes on each side is given back here, so the
+       row keeps its size and the rows under it don't shift as it highlights */
+    padding: 7px 9px;
+    box-shadow: 0 0 0 3px $ovrp-q4-amber-soft;
+    /* quick to arrive, slow to leave */
+    transition-duration: 0.1s;
+
+    /* the count is what actually changed, so it does the moving — a shake on
+       the whole row would read as "rejected", which is the opposite of what
+       happened */
+    .openvrp-lcount {
+      animation: openvrp-count-pulse 0.45s ease-out;
+    }
+  }
+
+  .openvrp-lico {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    &.closed {
+      background: $ovrp-closed-soft;
+      color: $ovrp-closed;
+    }
+
+    &.open {
+      background: $ovrp-open-soft;
+      color: $ovrp-open;
+    }
+  }
+
+  .openvrp-lmain {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .openvrp-ltitle {
+    font-size: 14.5px;
+
+    /* how many vehicles a row carries is the number planners scan for, so it
+       reads at least as strongly as the type name — the muted grey it used to
+       be was hard on eyes that need more contrast */
+    .openvrp-lcount {
+      /* inline-block so the merge pulse below can scale it */
+      display: inline-block;
+      font-size: 16px;
+      color: $ovrp-ink;
+    }
+
+    .openvrp-ltrip {
+      font-size: 13.5px;
+      background: $ovrp-trip-soft;
+      color: $ovrp-trip-ink;
+      border-radius: 5px;
+      padding: 2px 7px;
+    }
+  }
+
+  .openvrp-lsub {
+    font-size: 13.5px;
+    color: $ovrp-muted;
+    text-overflow: ellipsis;
+
+    &.openvrp-ltripsub {
+      color: $ovrp-trip-ink;
+    }
+  }
+}
+
+@keyframes openvrp-count-pulse {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* The highlight itself stays — only the movement is dropped for anyone who
+   asked their system for less of it. */
+@media (prefers-reduced-motion: reduce) {
+  .openvrp-lrow {
+    transition: none;
+
+    &.merged .openvrp-lcount {
+      animation: none;
+    }
+  }
+}
+
+.openvrp-lbadge {
+  font-size: 13.5px;
+  padding: 2px 8px;
+  border-radius: 5px;
+
+  &.closed {
+    background: $ovrp-closed-soft;
+    color: $ovrp-closed-ink;
+  }
+
+  &.open {
+    background: $ovrp-open-soft;
+    color: $ovrp-open-ink;
+  }
+}
+
+.openvrp-iconbtn {
+  width: 27px;
+  height: 27px;
+  border: 1px solid $ovrp-line;
+  cursor: pointer;
+  color: $ovrp-muted;
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+  }
+
+  &:hover {
+    border-color: $ovrp-brand;
+    color: $ovrp-brand;
+  }
+
+  &.del:hover {
+    color: #d14343;
+    border-color: #f0bebe;
+  }
+}
+
+.openvrp-empty-list {
+  color: $ovrp-faint;
+  font-size: 13px;
+  padding: 26px 8px;
+  border: 1.5px dashed $ovrp-line-strong;
+  border-radius: 10px;
+}
+
+/* summary pane */
+.openvrp-map-summary {
+  border-top: 1px solid $ovrp-line;
+  padding-top: 10px;
+
+  .openvrp-msrow {
+    font-size: 14px;
+    padding: 5px 0;
+
+    .k {
+      color: $ovrp-muted;
+    }
+
+    /* unit spelled out next to every figure — "12 vehicles" and "31 trips"
+       are told apart at a glance, a bare number is not */
+    .openvrp-msunit {
+      margin-left: 3px;
+      font-size: 13.5px;
+      color: $ovrp-faint;
+    }
+
+    &.openvrp-msrow-sep {
+      border-top: 1px solid $ovrp-line;
+      margin-top: 5px;
+      padding-top: 9px;
+    }
+
+    &.openvrp-msrow-soft {
+      font-size: 13px;
+
+      .v {
+        font-weight: 500;
+        color: $ovrp-muted;
+      }
+    }
+  }
+}
+
+/* multi-depot summary: one group per depot, roll-up at the bottom */
+
+/* The other panes get their breathing room under the title from
+   `.openvrp-pane-sub`; this pane has no subtitle, so the 2px the title carries
+   was the whole gap. Restores the same rhythm the sibling panes read with. */
+.openvrp-depot-group-container {
+  margin-top: 12px;
+}
+
+/* Each depot is its own card. A rule between blocks was too weak to read as a
+   boundary once a third depot appeared — a frame plus the depot-coloured edge
+   makes "where one depot ends" obvious without a heading to announce it.
+   The outline stays light and the fill stays white so the filled roll-up
+   underneath still carries more weight than any single depot. */
+.openvrp-depot-group {
+  border: 1px solid $ovrp-line;
+  border-radius: 10px;
+  padding: 10px 12px 4px;
+
+  & + .openvrp-depot-group {
+    margin-top: 10px;
+  }
+
+  /* the card is the frame now, so the depot row drops its own box — nested
+     outlines only read as noise */
+  .openvrp-depot-fixed {
+    border: none;
+    border-radius: 0;
+    background: none;
+    padding: 0;
+  }
+
+  /* a long depot name truncates instead of pushing the pill out of the pane */
+  .openvrp-depot-name {
+    min-width: 0;
+  }
+}
+
+.openvrp-mock-pill {
+  border: 1px dashed $ovrp-trip;
+  /* a pill shape needs its ends wider than its sides, and more so now the
+     label inside it is read at body size */
+  padding: 2px 9px;
+  font-size: 13.5px;
+  background: $ovrp-trip-soft;
+  color: $ovrp-trip-ink;
+}
+
+.openvrp-grand-summary {
+  margin-top: 14px;
+  padding: 10px 11px 4px;
+  border: 1px solid $ovrp-line-strong;
+  border-radius: 10px;
+  background: $ovrp-surface-2;
+
+  /* the roll-up is framed already — the divider a per-depot block uses to
+     part itself from its heading would only double up here */
+  .openvrp-map-summary {
+    border-top: none;
+    padding-top: 0;
+  }
+}
+
+/* the roll-up heading sits a step above the depot rows it totals, and its
+   depot count a step below the heading — with 13.5px now the floor, the
+   heading takes the step up so that order still reads */
+.openvrp-grand-title {
+  gap: 6px;
+  font-size: 14.5px;
+  color: $ovrp-ink;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: $ovrp-brand;
+  }
+
+  small {
+    font-size: 13.5px;
+    color: $ovrp-faint;
+  }
+}
+
+.text-return {
+  color: $ovrp-closed !important;
+}
+
+.text-noreturn {
+  color: $ovrp-open !important;
+}
+
+.text-multitrip {
+  color: $ovrp-trip !important;
+}
+
+/* presets */
+.openvrp-preset-btn {
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.openvrp-preset-menu {
+  min-width: 260px;
+  max-height: 300px;
+}
+
+.openvrp-preset-item {
+  cursor: pointer;
+
+  .openvrp-preset-info {
+    min-width: 0;
+  }
+
+  .openvrp-preset-name {
+    font-size: 13px;
+  }
+}
+
+/* validation tab summary */
+.openvrp-scard {
+  border: 1px solid $ovrp-line;
+  border-radius: 10px;
+  padding: 11px 13px;
+
+  .k {
+    font-size: 13.5px;
+    color: $ovrp-faint;
+    letter-spacing: 0.03em;
+  }
+
+  .v {
+    font-size: 19px;
+    margin-top: 2px;
+
+    &.v-sm {
+      font-size: 14px;
+    }
+
+    small {
+      font-size: 13.5px;
+      color: $ovrp-muted;
+    }
+  }
+}
+
+/* Q4 preview: multi time windows (validation tab, mirrors mockup .ordcard) */
+.openvrp-ordcard {
+  border: 1px dashed $ovrp-line-strong;
+  border-radius: 10px;
+  background: $ovrp-q4-soft;
+  padding: 12px 14px;
+  margin-top: 14px;
+
+  .openvrp-oh {
+    gap: 9px;
+    font-size: 13px;
+  }
+
+  .openvrp-ord-id {
+    font-family: "Consolas", "Courier New", monospace;
+    color: #31406b;
+  }
+
+  /* the pill carries 13.5px of its own now — this block only used to exist to
+     lift it off the 9px it was, and repeating the size here would just be a
+     second place to keep in step */
+
+  .openvrp-tws {
+    gap: 7px;
+    margin-top: 9px;
+  }
+
+  .openvrp-twchip {
+    font-size: 13.5px;
+    font-family: "Consolas", "Courier New", monospace;
+    border: 1px solid $ovrp-line;
+    padding: 4px 9px;
+
+    &.pick {
+      border-color: $ovrp-now;
+      background: $ovrp-now-soft;
+      color: $ovrp-now;
+    }
+  }
+
+  .openvrp-tw-note {
+    font-size: 13.5px;
+    color: #8b93a1;
+  }
+}
+
+.openvrp-checks {
+  border: 1px solid $ovrp-line;
+  border-radius: 11px;
+
+  .openvrp-checkrow {
+    gap: 9px;
+    padding: 9px 0;
+    border-bottom: 1px solid $ovrp-line;
+    font-size: 13px;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .ci {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+
+      &.ci-ok {
+        color: $ovrp-now;
+      }
+
+      &.ci-warn {
+        color: $ovrp-q4-amber;
+      }
+
+      &.ci-trip {
+        color: $ovrp-trip;
       }
     }
   }

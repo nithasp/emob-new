@@ -94,7 +94,7 @@ h6 {
 }
 
 * {
-  font-family: Kanit;
+  font-family: Kanit !important;
 }
 
 .fullscreen-fit-content {
@@ -214,8 +214,9 @@ mat-icon {
   }
 
   .toast-warning {
-    background-color: #ffc507 !important;
-    /* Yellow background for warning toasts */
+    background-color: #a06a00 !important;
+    /* Deep amber: the toast text is white, and the bright yellow it replaces
+       left that text at ~1.6:1 contrast. This one reads at ~4.6:1 (WCAG AA). */
   }
 }
 

@@ -32,6 +32,7 @@ import {
   VehicleBreak,
   BreakTimeObject,
   Break,
+  DEFAULT_MAX_TRIP,
 } from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import { minutesToTimeString } from 'src/app/directives/time-string-to-minutes.pipe';
@@ -47,6 +48,11 @@ import { InputSelectComponent } from 'src/app/shared/components/form/input-selec
 import { DynamicPopoverComponent } from 'src/app/shared/components/dynamic-popover/dynamic-popover.component';
 import { ActionMode } from 'src/app/models/common.model';
 import { LoggerService } from 'src/app/services/logger.service';
+import {
+  getMultiTripSystemDefaults,
+  persistMultiTripFallback,
+  splitMultiTripInput,
+} from 'src/app/shared/utils/multi-trip-fallback.utils';
 
 @Component({
   selector: 'app-vehicle-type-dialog',
@@ -86,6 +92,10 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   timeWindowEarlyObject: TimeObject = { hour: 0, minute: 0 };
   timeWindowLateObject: TimeObject = { hour: 0, minute: 0 };
   maximumDurationObject: TimeObject = { hour: 0, minute: 0 };
+  loadingDurationObject: TimeObject = { hour: 0, minute: 30 };
+
+  private readonly multiTripDefaults = getMultiTripSystemDefaults();
+  readonly systemMaxTrip = this.multiTripDefaults.systemMaxTrip;
 
   vehicleSizingType: 'dimension' | 'volume' = 'dimension';
   allowedBreaks!: FormArray<FormGroup<BreakFormControls>>;
@@ -94,7 +104,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
   private formValueSubscriptions: Subscription[] = [];
   private readonly stringControlKeys = [
     'name', 'timeWindowEarly', 'timeWindowLate', 'maximumDuration',
-    'vehicleProfileType', 'vehicleGroupId', 'zone',
+    'vehicleProfileType', 'vehicleGroupId', 'zone', 'loadingDuration',
   ] as const;
 
   constructor(
@@ -166,6 +176,15 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
         fixedCost: [null as number | null, Validators.min(0)],
         maxpallet: [null as number | null, Validators.min(0)],
         zone: [null as string | null],
+        maxTrip: [
+          this.multiTripDefaults.defaultMaxTrip as number | null,
+          [
+            Validators.required,
+            Validators.min(DEFAULT_MAX_TRIP),
+            Validators.max(this.systemMaxTrip),
+          ],
+        ],
+        loadingDuration: [null as string | null],
         allowedBreaks: this.allowedBreaks,
       },
       {
@@ -184,6 +203,50 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
 
     this.formVehicleType = formGroup;
     this.setupNullPreservation();
+    this.syncMultiTripState();
+  }
+
+  get maxTripValue(): number {
+    const raw = Number(this.formVehicleType?.controls.maxTrip.value);
+    return Number.isFinite(raw) && raw >= DEFAULT_MAX_TRIP
+      ? Math.trunc(raw)
+      : DEFAULT_MAX_TRIP;
+  }
+
+  get isMultiTripEnabled(): boolean {
+    return this.maxTripValue > DEFAULT_MAX_TRIP;
+  }
+
+  onMaxTripChange(): void {
+    this.syncMultiTripState();
+  }
+
+  private syncMultiTripState(): void {
+    const loadingDuration = this.formVehicleType.controls.loadingDuration;
+    const defaultLoadingDuration = this.multiTripDefaults.defaultLoadingDuration;
+
+    if (!this.isMultiTripEnabled) {
+      loadingDuration.clearValidators();
+      loadingDuration.setValue(null, { emitEvent: false });
+      this.loadingDurationObject = this.parseTimeString(
+        defaultLoadingDuration
+      );
+      loadingDuration.disable({ emitEvent: false });
+      loadingDuration.updateValueAndValidity({ emitEvent: false });
+      return;
+    }
+
+    loadingDuration.setValidators(Validators.required);
+    if (!this.isViewMode) {
+      loadingDuration.enable({ emitEvent: false });
+    }
+    if (!loadingDuration.value) {
+      loadingDuration.setValue(defaultLoadingDuration, { emitEvent: false });
+      this.loadingDurationObject = this.parseTimeString(
+        defaultLoadingDuration
+      );
+    }
+    loadingDuration.updateValueAndValidity({ emitEvent: false });
   }
 
   private setupNullPreservation(): void {
@@ -230,6 +293,9 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
               data.timeWindowLate ?? data.twLate
             );
             const maximumDuration = this.formatTimeForDisplay(data.maximumDuration);
+            const loadingDuration = this.formatTimeForDisplay(
+              data.loadingDuration
+            );
             this.formVehicleType.patchValue({
               name: data.name,
               access: data.access,
@@ -247,7 +313,15 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
               dimension: data.dimension ?? undefined,
               maxpallet: data.maxpallet ?? null,
               zone: data.zone ?? null,
+              maxTrip: data.maxTrip ?? this.multiTripDefaults.defaultMaxTrip,
+              loadingDuration: loadingDuration || null,
             });
+            this.syncMultiTripState();
+            if (this.formVehicleType.controls.loadingDuration.value) {
+              this.loadingDurationObject = this.parseTimeString(
+                this.formVehicleType.controls.loadingDuration.value
+              );
+            }
 
             if (timeWindowEarly || data.timeWindowEarly) {
               this.timeWindowEarlyObject = this.parseTimeString(
@@ -430,17 +504,26 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
 
   private handleSubmit(): void {
     this.spinner.show();
-    const payload = this.buildPayload();
+    const { payload, multiTrip } = splitMultiTripInput(
+      this.buildPayload() as VehicleType
+    );
     const request$ = this.isEdit
       ? this.vehicleService.updateVehicleType(
           this.vehicleType!.vehicleTypeId,
-          payload as VehicleType
+          payload
         )
-      : this.vehicleService.createVehicleType(payload as VehicleType);
+      : this.vehicleService.createVehicleType(payload);
 
     request$.pipe(finalize(() => this.spinner.hide())).subscribe({
       next: (res: VehicleType) => {
-        this.activeModal.close({ refresh: true, vehicleType: res });
+        const vehicleTypeId = this.isEdit
+          ? this.vehicleType!.vehicleTypeId
+          : res?.vehicleTypeId;
+        persistMultiTripFallback(vehicleTypeId, multiTrip);
+        this.activeModal.close({
+          refresh: true,
+          vehicleType: { ...res, ...multiTrip },
+        });
       },
       error: (err) => {
         this.logger.error(
@@ -457,6 +540,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
       v != null ? Number(v) : null;
     const omitNull = (obj: Record<string, unknown>): Record<string, unknown> =>
       Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== null && v !== undefined));
+    const maxTrip = this.maxTripValue;
 
     const rawPayload: Record<string, unknown> = {
       name: formValue.name || null,
@@ -474,6 +558,9 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
       fixedCost: toNum(formValue.fixedCost),
       maxpallet: toNum(formValue.maxpallet),
       zone: formValue.zone || null,
+      maxTrip,
+      loadingDuration:
+        maxTrip > DEFAULT_MAX_TRIP ? formValue.loadingDuration || null : null,
     };
 
     const dimensionFields = omitNull({
@@ -522,6 +609,13 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
     const timeString = this.convertTimeObjectToString(event);
     this.formVehicleType.controls.maximumDuration.setValue(timeString || null);
     this.formVehicleType.controls.maximumDuration.markAsTouched();
+  }
+
+  onLoadingDurationChange(event: TimeObject): void {
+    this.loadingDurationObject = event;
+    const timeString = this.convertTimeObjectToString(event);
+    this.formVehicleType.controls.loadingDuration.setValue(timeString || null);
+    this.formVehicleType.controls.loadingDuration.markAsTouched();
   }
 
   private convertTimeObjectToString(event: TimeObject): string {

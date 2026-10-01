@@ -5,3 +5,13 @@
     grid-template-columns: 1fr;
   }
 }
+
+.multi-trip-badge {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  background: #e8f0fe;
+  color: #12468f;
+  border-radius: 5px;
+  padding: 1px 7px;
+}

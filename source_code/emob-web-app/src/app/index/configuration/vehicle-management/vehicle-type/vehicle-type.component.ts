@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { formatNumber } from '@angular/common';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { VehicleType } from 'src/app/models/vehicle.model';
+import { DEFAULT_MAX_TRIP, VehicleType } from 'src/app/models/vehicle.model';
 import { VehicleService } from 'src/app/services/vehicle.service';
 import { VehicleTypeDialogComponent } from '../dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
 import { ToastrService } from 'ngx-toastr';
@@ -11,6 +11,10 @@ import { finalize } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { ActionMode } from 'src/app/models/common.model';
 import { LoggerService } from 'src/app/services/logger.service';
+import {
+  applyMultiTripFallback,
+  forgetMultiTripFallback,
+} from 'src/app/shared/utils/multi-trip-fallback.utils';
 
 @Component({
   selector: 'app-vehicle-type',
@@ -46,7 +50,7 @@ export class VehicleTypeComponent implements OnInit {
       .pipe(finalize(() => this.spinner.hide()))
       .subscribe({
         next: (data) => {
-          this.allVehicleTypes = data;
+          this.allVehicleTypes = applyMultiTripFallback(data);
           this.collectionSize = this.allVehicleTypes.length;
           this.refreshVehicleTypes();
         },
@@ -105,6 +109,11 @@ export class VehicleTypeComponent implements OnInit {
     );
   }
 
+  getMaxTrip(vehicleType: VehicleType): number {
+    const maxTrip = Number(vehicleType.maxTrip);
+    return Number.isFinite(maxTrip) && maxTrip > 0 ? maxTrip : DEFAULT_MAX_TRIP;
+  }
+
   formatNumberTemporary(value: string | number | null | undefined): string {
     if (value === null || value === undefined) return '';
     if (typeof value === 'string') return value;
@@ -134,6 +143,7 @@ export class VehicleTypeComponent implements OnInit {
           )
           .subscribe({
             next: () => {
+              forgetMultiTripFallback(vehicleType.vehicleTypeId);
               this.toastr.success(
                 this.transloco.translate(
                   'vehicleManagement.vehicle_type_deleted_successfully'

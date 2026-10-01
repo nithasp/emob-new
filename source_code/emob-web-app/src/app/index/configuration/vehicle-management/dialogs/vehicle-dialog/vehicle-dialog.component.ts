@@ -43,6 +43,16 @@ export class VehicleDialogComponent implements OnInit {
   vehicleTypeOptions: VehicleType[] = [];
   depotOptions: MyDepot[] = [];
 
+  /**
+   * Vehicle Pool: the depot binding was removed from this dialog (vehicles are
+   * master data in a central pool; depots are assigned per run in the Open VRP
+   * flow). The backend contract still requires start/end depot ids, so they
+   * are filled silently: existing values are preserved on edit and the first
+   * available depot is used as a technical default on create.
+   */
+  private existingStartDepotId: string = '';
+  private existingEndDepotId: string = '';
+
   constructor(
     private fb: FormBuilder,
     public activeModal: NgbActiveModal,
@@ -68,8 +78,6 @@ export class VehicleDialogComponent implements OnInit {
   private initializeForm(): void {
     this.form = this.fb.group<VehicleFormControls>({
       vehicleType: this.fb.control<string | null>('', [Validators.required]),
-      startDepot: this.fb.control<string | null>('', [Validators.required]),
-      endDepot: this.fb.control<string | null>('', [Validators.required]),
       licensePlate: this.fb.control<string | null>(''),
     });
 
@@ -140,10 +148,10 @@ export class VehicleDialogComponent implements OnInit {
   private fetchAndPatchVehicleData(): void {
     this.vehicleService.getMyVehicle(this.vehicle!.vehicleId).subscribe({
       next: (vehicleData) => {
+        this.existingStartDepotId = vehicleData.startDepotId?.depotId || '';
+        this.existingEndDepotId = vehicleData.endDepotId?.depotId || '';
         this.form.patchValue({
           vehicleType: vehicleData.vehicleType?.vehicleTypeId,
-          startDepot: vehicleData.startDepotId?.depotId,
-          endDepot: vehicleData.endDepotId?.depotId,
           licensePlate: vehicleData.licensePlate,
         });
       },
@@ -166,12 +174,17 @@ export class VehicleDialogComponent implements OnInit {
     this.updateLicensePlateValidators();
   }
 
+  /** Technical default while the backend still requires depot ids on vehicles. */
+  private resolveDefaultDepotId(existingDepotId: string): string {
+    return existingDepotId || this.depotOptions[0]?.depotId || '';
+  }
+
   private buildPayload(): VehicleCreateInput | VehicleUpdateInput {
     const formValues = this.form.value;
     const basePayload = {
       vehicleTypeId: formValues.vehicleType ?? '',
-      startDepotId: formValues.startDepot ?? '',
-      endDepotId: formValues.endDepot ?? '',
+      startDepotId: this.resolveDefaultDepotId(this.existingStartDepotId),
+      endDepotId: this.resolveDefaultDepotId(this.existingEndDepotId),
     };
 
     if (this.isEditMode) {

@@ -255,8 +255,6 @@ describe('VehicleDialogComponent', () => {
       fixture.detectChanges();
       component.form.patchValue({
         vehicleType: 'type-1',
-        startDepot: 'depot-1',
-        endDepot: 'depot-2',
       });
       component.licensePlates = ['ABC-123'];
       vehicleService.createVehicle.and.returnValue(
@@ -268,10 +266,12 @@ describe('VehicleDialogComponent', () => {
 
       expect(ngbModal.open).toHaveBeenCalled();
       expect(spinner.show).toHaveBeenCalled();
+      // Vehicle Pool: the dialog no longer asks for depots. The backend still
+      // requires both ids, so a new vehicle takes the first available depot.
       expect(vehicleService.createVehicle).toHaveBeenCalledWith({
         vehicleTypeId: 'type-1',
         startDepotId: 'depot-1',
-        endDepotId: 'depot-2',
+        endDepotId: 'depot-1',
         licensePlates: ['ABC-123'],
       });
       expect(toastr.success).toHaveBeenCalled();

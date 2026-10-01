@@ -1,8 +1,10 @@
 import {
   AfterViewInit,
   Component,
+  ElementRef,
   Injectable,
   OnInit,
+  TemplateRef,
   ViewChild, inject,
 } from '@angular/core';
 import Map from 'ol/Map';
@@ -79,6 +81,7 @@ import {
   NgbTimeStruct,
   NgbTimeAdapter,
   NgbModal,
+  NgbTooltip,
 } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
 import { ConfirmationDepotUploadFileDialogComponent } from '../components/confirmation-depot-upload-file-dialog/confirmation-depot-upload-file-dialog.component';
@@ -115,6 +118,14 @@ import {
   VehicleType,
   VehicleValidationInput,
   VehicleBlobData,
+  MyVehicles,
+  OpenVrpEndOfRoute,
+  OpenVrpPoolBuilder,
+  OpenVrpRunVehicleEntry,
+  OpenVrpRunVehicleGroup,
+  OpenVrpSelectionMode,
+  OpenVrpVehiclePreset,
+  DEFAULT_MAX_TRIP,
 } from 'src/app/models/vehicle.model';
 
 import { ValidationTableRow } from 'src/app/models/validation-table.model';
@@ -123,8 +134,37 @@ import {
   createCachedValidationMessageFn,
 } from 'src/app/shared/utils/validation-table.utils';
 import { LoggerService, logMessage } from 'src/app/services/logger.service';
+import {
+  applyMultiTripFallback,
+  getMultiTripSystemDefaults,
+} from 'src/app/shared/utils/multi-trip-fallback.utils';
+import {
+  buildMockDepotRunLists,
+  OpenVrpDepotRunList,
+  OpenVrpDepotSummary,
+  OpenVrpRunSummaryTotals,
+  sumDepotSummaries,
+  sumRunEntries,
+} from 'src/app/shared/utils/multi-depot-summary.utils';
+import {
+  addOrMergeRunEntry,
+  groupRunEntriesByVehicleType,
+} from 'src/app/shared/utils/vehicle-run-list.utils';
 
 const pad = (i: number): string => (i < 10 ? `0${i}` : `${i}`);
+
+/**
+ * How long a duplicate add stays announced. The toast and the highlighted row
+ * are one notice in two places, so they read off the same number — a highlight
+ * that faded first left the toast pointing at a row nothing marked any more.
+ */
+const RUN_ENTRY_MERGE_NOTICE_MS = 8000;
+
+const OPEN_VRP_MULTI_TRIP_DEMO = [
+  { loadingDuration: '00:30' },
+  { loadingDuration: '00:20' },
+  { loadingDuration: '00:45' },
+];
 
 @Injectable()
 export class NgbTimeStringAdapter extends NgbTimeAdapter<string> {
@@ -304,6 +344,51 @@ export class RunComponent implements OnInit, AfterViewInit {
   public vehicleSelectionError: boolean = false;
   private readonly defaultVehicleMaxCount = 1000;
 
+  // ---------- Open VRP: central vehicle pool / run list ----------
+  /** Central pool (master data): all company vehicles grouped by vehicleTypeId. */
+  public poolVehiclesByType: Record<string, MyVehicles[]> = {};
+  public poolLoading: boolean = false;
+  /** Currently expanded pool card (vehicle type) in the configuration panel. */
+  public openPoolCardTypeId: string | null = null;
+  /** Builder (configuration panel) state per `${depotId}:${vehicleTypeId}`. */
+  private poolBuilders: Record<string, OpenVrpPoolBuilder> = {};
+  /** Run list (selected vehicles) kept per depot scope, mirroring the mockup. */
+  public runVehicleListByDepot: Record<string, OpenVrpRunVehicleEntry[]> = {};
+  private runEntryIdCounter = 1;
+  /** Run list row that just absorbed a duplicate, highlighted for a moment. */
+  public highlightedRunEntryId: number | null = null;
+  private highlightTimer?: ReturnType<typeof setTimeout>;
+  /** Open VRP: collapse the map column while working on the Vehicle tab. */
+  public isMapCollapsed: boolean = false;
+  /**
+   * Preview switch: feeds mock multi-trip master data into the vehicle tab so
+   * the finished UI can be reviewed before the API ships the real fields.
+   * Nothing else is stubbed — every panel below still runs the real logic.
+   */
+  public multiTripDemo: boolean = false;
+  /**
+   * Preview switch: a run still reports one depot, so the summary pane is fed
+   * extra sample depots to show the multi-depot roll-up. Only those extra
+   * depots are mock — every figure is counted by the real aggregation.
+   */
+  public multiDepotDemo: boolean = false;
+  /** Sample run lists behind `multiDepotDemo`, built once per preview. */
+  private mockDepotRunLists: OpenVrpDepotRunList[] | null = null;
+  /**
+   * System defaults a pool card opens on. Same source the vehicle type dialog
+   * seeds its form with, so "the default" means one number across the app.
+   * Mock today — swap `getMultiTripSystemDefaults()` for the API payload.
+   */
+  public readonly multiTripDefaults = getMultiTripSystemDefaults();
+
+  // Open VRP: preset configuration (save/load vehicle run list per depot)
+  public presetName: string = '';
+  private readonly openVrpPresetStorageKey = 'openVrpVehiclePresets';
+  private presetsVersion = 0;
+  private presetsCacheKey: string | null = null;
+  private presetsCache: OpenVrpVehiclePreset[] = [];
+  @ViewChild('savePresetModal') savePresetModalTemplate?: TemplateRef<unknown>;
+
   constructor(
     private readonly spinner: NgxSpinnerService,
     private readonly constraintService: ConstraintService,
@@ -320,6 +405,7 @@ export class RunComponent implements OnInit, AfterViewInit {
     private readonly exportService: ExportFileService,
     private readonly transloco: TranslocoService,
     private readonly vehicleService: VehicleService,
+    private readonly hostRef: ElementRef<HTMLElement>,
   ) {}
 
   public generateUniqueId(): string {
@@ -470,7 +556,7 @@ export class RunComponent implements OnInit, AfterViewInit {
             .pipe(take(1))
             .subscribe({
               next: (vehicleTypes: VehicleType[]) => {
-                this.myVehicleTypes = vehicleTypes || [];
+                this.myVehicleTypes = applyMultiTripFallback(vehicleTypes);
                 this.cdr.detectChanges();
 
                 // Now proceed with loading experiment data
@@ -666,6 +752,7 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.initMap();
       this.getMyDepots();
       this.getValidateMessage();
+      this.loadVehiclePool();
     }, 100);
     this.dataSource.paginator = this.paginator; // For pagination
     this.dataSource.sort = this.sort; // For sort
@@ -859,6 +946,9 @@ export class RunComponent implements OnInit, AfterViewInit {
         }
       }
     }
+
+    // Open VRP: mirror historical selections into the run list UI
+    this.rebuildRunListFromSelections();
 
     this.cdr.detectChanges();
   }
@@ -2067,6 +2157,33 @@ export class RunComponent implements OnInit, AfterViewInit {
     if (page === 2) {
       this.refreshDynamicParametersForSelectedDepot();
     }
+    // The map column can be collapsed on the vehicle tab, so its geometry
+    // may change whenever the active tab changes
+    this.refreshMapSize();
+  }
+
+  /** The map column is hidden while collapsed on the Vehicle tab. */
+  get isMapPaneHidden(): boolean {
+    return this.isMapCollapsed && this.activeNavId === 2 && this.isUpload;
+  }
+
+  toggleMapCollapsed(): void {
+    this.isMapCollapsed = !this.isMapCollapsed;
+    this.refreshMapSize();
+  }
+
+  /** Direct tab clicks; programmatic navigation goes through navigateToTab. */
+  onNavTabChange(): void {
+    this.refreshMapSize();
+  }
+
+  /**
+   * OpenLayers must recompute its viewport after layout/visibility changes.
+   * The delay waits for the 0.3s slide transition of the map column to end.
+   */
+  private refreshMapSize(): void {
+    this.cdr.detectChanges();
+    setTimeout(() => this.map?.updateSize(), 350);
   }
 
   getNextTab(currentTab: number): number {
@@ -2321,11 +2438,13 @@ export class RunComponent implements OnInit, AfterViewInit {
     );
   }
   validateExperimentPreOrder() {
-    if (this.selectedVehicleIds.length === 0) {
+    // Open VRP: at least one vehicle group must be added to the run list
+    if (this.runVehicleList.length === 0) {
       this.vehicleSelectionError = true;
       this.navigateToTab(2);
       return;
     }
+    this.vehicleSelectionError = false;
 
     const parameterPayload = this.buildValidateParameterFromDynamic();
     const vehiclesPayload = this.buildVehiclesPayload();
@@ -2338,19 +2457,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.showInvalidModal(
         'INVALID : Early Delivery Time',
         'Early Delivery Time must be less than Back to Depot Time',
-      );
-      return;
-    }
-
-    // Validate vehicles payload - check if license-plate mode has selections
-    const invalidVehicles = this.getInvalidVehicleSelections();
-    if (invalidVehicles.length > 0) {
-      const vehicleNames = invalidVehicles
-        .map((v) => this.getVehicleName(v))
-        .join(', ');
-      this.toastr.error(
-        `${this.transloco.translate('please_select_at_least_one_vehicle', {}, 'index')}: ${vehicleNames}`,
-        this.transloco.translate('error', {}, 'index'),
       );
       return;
     }
@@ -2465,31 +2571,47 @@ export class RunComponent implements OnInit, AfterViewInit {
     return payload as TimingAndCapacity;
   }
 
-  // Build vehicles payload for validation
+  // Build vehicles payload for validation from the Open VRP run list.
+  // The current GraphQL input (ExperimentInputValidation.vehicles) accepts one
+  // entry per vehicle type with either a count or specific vehicle ids, so run
+  // list entries are aggregated per vehicleTypeId here. The per-entry routing
+  // conditions (end-of-route / start / end depot) stay in the run list and the
+  // saved presets, ready to be attached once the backend contract supports them.
   buildVehiclesPayload(): VehicleValidationInput[] {
-    const vehiclesPayload: VehicleValidationInput[] = [];
+    const aggregatedByType: Record<
+      string,
+      { vehicleIds: string[]; countTotal: number }
+    > = {};
 
-    // Loop through all selected vehicle IDs
-    for (const vehicleTypeId of this.selectedVehicleIds) {
-      const mode = this.getVehicleSelectionMode(vehicleTypeId);
-      const vehicleItem: VehicleValidationInput = {
-        vehicleTypeId: vehicleTypeId,
-      };
-
-      if (mode === 'count') {
-        // Add numberOfVehiclesAvailable for count mode
-        const count = this.getVehicleCount(vehicleTypeId);
-        if (count > 0) {
-          vehicleItem.numberOfVehiclesAvailable = count;
-        }
-      } else if (mode === 'license-plate') {
-        // Add vehicleId array for license-plate mode
-        const vehicleIds = this.selectedVehicleIdsByLicensePlate[vehicleTypeId];
-        if (vehicleIds && vehicleIds.length > 0) {
-          vehicleItem.vehicleId = vehicleIds;
-        }
+    for (const entry of this.runVehicleList) {
+      if (!aggregatedByType[entry.vehicleTypeId]) {
+        aggregatedByType[entry.vehicleTypeId] = {
+          vehicleIds: [],
+          countTotal: 0,
+        };
       }
+      const aggregated = aggregatedByType[entry.vehicleTypeId];
+      if (entry.mode === 'license-plate') {
+        for (const vehicleId of entry.vehicleIds) {
+          if (!aggregated.vehicleIds.includes(vehicleId)) {
+            aggregated.vehicleIds.push(vehicleId);
+          }
+        }
+      } else {
+        aggregated.countTotal += entry.count;
+      }
+    }
 
+    const vehiclesPayload: VehicleValidationInput[] = [];
+    for (const vehicleTypeId of Object.keys(aggregatedByType)) {
+      const aggregated = aggregatedByType[vehicleTypeId];
+      const vehicleItem: VehicleValidationInput = { vehicleTypeId };
+      if (aggregated.vehicleIds.length > 0) {
+        vehicleItem.vehicleId = aggregated.vehicleIds;
+      }
+      if (aggregated.countTotal > 0) {
+        vehicleItem.numberOfVehiclesAvailable = aggregated.countTotal;
+      }
       vehiclesPayload.push(vehicleItem);
     }
 
@@ -4266,6 +4388,967 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   hasMyVehicleTypes(): boolean {
     return this.myVehicleTypes && this.myVehicleTypes.length > 0;
+  }
+
+  // ======================================================================
+  // Open VRP — depot scope (global switcher)
+  // ======================================================================
+
+  get scopeDepotId(): string {
+    if (!this.isFileSelectionStep && this.experiment?.depots?.length) {
+      return this.experiment.depots[0].depotId;
+    }
+    return this.getSelectedDepotObject()?.depotId || '';
+  }
+
+  get scopeDepotName(): string {
+    if (!this.isFileSelectionStep && this.experiment?.depots?.length) {
+      return this.experiment.depots[0].depotName;
+    }
+    return this.selectedDepotIdName || '';
+  }
+
+  // ======================================================================
+  // Open VRP — central vehicle pool (configuration panel)
+  // ======================================================================
+
+  loadVehiclePool(): void {
+    this.poolLoading = true;
+    this.vehicleService
+      .getMyVehicles()
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.poolLoading = false;
+          this.cdr.detectChanges();
+        }),
+      )
+      .subscribe({
+        next: (vehicles: MyVehicles[]) => {
+          const grouped: Record<string, MyVehicles[]> = {};
+          for (const vehicle of vehicles || []) {
+            const vehicleTypeId = vehicle.vehicleType?.vehicleTypeId;
+            if (!vehicleTypeId || vehicle.isActive === false) continue;
+            if (!grouped[vehicleTypeId]) grouped[vehicleTypeId] = [];
+            grouped[vehicleTypeId].push(vehicle);
+          }
+          this.poolVehiclesByType = grouped;
+        },
+        error: (error) => {
+          this.logger.error('Error loading vehicle pool:', error);
+        },
+      });
+  }
+
+  /** Run list (selected vehicles) of the current depot scope. */
+  get runVehicleList(): OpenVrpRunVehicleEntry[] {
+    const key = this.scopeDepotId || 'default';
+    if (!this.runVehicleListByDepot[key]) {
+      this.runVehicleListByDepot[key] = [];
+    }
+    return this.runVehicleListByDepot[key];
+  }
+
+  /** Vehicles of this type registered in the central pool. */
+  getPoolVehicles(vehicleTypeId: string): MyVehicles[] {
+    return this.poolVehiclesByType[vehicleTypeId] || [];
+  }
+
+  /** Whether this type has registered vehicles (license plates) in the pool. */
+  isPoolTypeTracked(vehicleTypeId: string): boolean {
+    return this.getPoolVehicles(vehicleTypeId).length > 0;
+  }
+
+  /** vehicleIds already reserved by "by plate" entries in this run. */
+  private usedVehicleIdsInRun(): Set<string> {
+    const used = new Set<string>();
+    for (const entry of this.runVehicleList) {
+      for (const vehicleId of entry.vehicleIds) {
+        used.add(vehicleId);
+      }
+    }
+    return used;
+  }
+
+  /** Plates of this type still selectable in "by plate" mode. */
+  getPoolAvailableVehicles(vehicleTypeId: string): MyVehicles[] {
+    const used = this.usedVehicleIdsInRun();
+    return this.getPoolVehicles(vehicleTypeId).filter(
+      (vehicle) => !used.has(vehicle.vehicleId),
+    );
+  }
+
+  private getDemoMultiTrip(vehicleTypeId: string): {
+    loadingDuration: string;
+  } {
+    const index = Math.max(
+      0,
+      this.myVehicleTypes.findIndex(
+        (candidate) => candidate.vehicleTypeId === vehicleTypeId,
+      ),
+    );
+    const preset =
+      OPEN_VRP_MULTI_TRIP_DEMO[index % OPEN_VRP_MULTI_TRIP_DEMO.length];
+    return preset;
+  }
+
+  toggleMultiTripDemo(): void {
+    this.multiTripDemo = !this.multiTripDemo;
+    this.poolBuilders = {};
+    this.openPoolCardTypeId = null;
+    // keep what the planner chose, only re-clamp it to the ceiling the
+    // preview data now implies
+    for (const entry of this.runVehicleList) {
+      entry.maxTrip = this.clampMaxTrip(entry.maxTrip);
+      entry.loadingDuration =
+        entry.maxTrip > DEFAULT_MAX_TRIP
+          ? entry.loadingDuration ||
+            this.getVehicleTypeLoadingDuration(entry.vehicleTypeId) ||
+            this.multiTripDefaults.defaultLoadingDuration
+          : null;
+    }
+    this.cdr.detectChanges();
+  }
+
+  toggleMultiDepotDemo(): void {
+    this.multiDepotDemo = !this.multiDepotDemo;
+    // dropped so the next preview picks up any depots and vehicle types that
+    // finished loading since the last one
+    this.mockDepotRunLists = null;
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Sample depots for the preview. They are ordinary run entries, so they go
+   * through the same aggregation as real ones instead of a parallel mock path.
+   */
+  private ensureMockDepotRunLists(
+    usedDepotIds: Set<string>,
+  ): OpenVrpDepotRunList[] {
+    if (!this.mockDepotRunLists) {
+      this.mockDepotRunLists = buildMockDepotRunLists(
+        this.depots,
+        this.myVehicleTypes.map((vehicleType) => ({
+          vehicleTypeId: vehicleType.vehicleTypeId || '',
+          vehicleTypeName: this.getVehicleName(vehicleType.vehicleTypeId || ''),
+        })),
+        usedDepotIds,
+      );
+    }
+    return this.mockDepotRunLists;
+  }
+
+  trackDepotSummary(_index: number, summary: OpenVrpDepotSummary): string {
+    return summary.depotId;
+  }
+
+  /**
+   * Shows the full depot name only when the column was too narrow to fit it.
+   * Measuring on hover rather than through a binding keeps it honest: the text
+   * is laid out by then, and no layout is read on every change detection.
+   */
+  openTooltipIfTruncated(tooltip: NgbTooltip, element: HTMLElement): void {
+    if (element.scrollWidth > element.clientWidth) {
+      tooltip.open();
+    }
+  }
+
+
+  /**
+   * Trip ceiling of this type — the "/ N trips" the pool card counts up to.
+   * The vehicle type's own maxTrip wins as soon as the API returns one;
+   * until then every type falls back to the system default.
+   */
+  /**
+   * Fleet-wide standard: the most trips a day any vehicle type may be raised
+   * to. It is the hard bound of the trips box — a run can overwrite the
+   * vehicle type's own number, but never go past this one.
+   */
+  getSystemMaxTrip(): number {
+    return Math.max(this.multiTripDefaults.systemMaxTrip, DEFAULT_MAX_TRIP);
+  }
+
+  /**
+   * This vehicle type's own max trips — the same number the vehicle type
+   * dialog puts in formVehicleType.controls.maxTrip, and what a pool card
+   * opens on. The API value wins once it ships; until then the system default
+   * fills in. Never above the fleet-wide standard.
+   */
+  getVehicleTypeMaxTrip(vehicleTypeId: string): number {
+    const vehicleType = this.myVehicleTypes.find(
+      (candidate) => candidate.vehicleTypeId === vehicleTypeId,
+    );
+    const configured = Number(vehicleType?.maxTrip);
+    const maxTrip =
+      Number.isFinite(configured) && configured >= DEFAULT_MAX_TRIP
+        ? Math.trunc(configured)
+        : this.multiTripDefaults.defaultMaxTrip;
+    return Math.min(
+      Math.max(maxTrip, DEFAULT_MAX_TRIP),
+      this.getSystemMaxTrip(),
+    );
+  }
+
+  getVehicleTypeLoadingDuration(vehicleTypeId: string): string | null {
+    if (this.multiTripDemo) {
+      return this.getDemoMultiTrip(vehicleTypeId).loadingDuration;
+    }
+    const vehicleType = this.myVehicleTypes.find(
+      (candidate) => candidate.vehicleTypeId === vehicleTypeId,
+    );
+    return vehicleType?.loadingDuration || null;
+  }
+
+  /**
+   * Whether the trips box is offered at all. It follows the fleet-wide
+   * standard, not the vehicle type: a type that defaults to one trip can
+   * still be pushed higher for this run.
+   */
+  isMultiTripAllowed(): boolean {
+    return this.getSystemMaxTrip() > DEFAULT_MAX_TRIP;
+  }
+
+  /** A run may overwrite the type's trips up to the fleet-wide standard. */
+  private clampMaxTrip(maxTrip: number): number {
+    const requested = Number(maxTrip);
+    if (!Number.isFinite(requested) || requested < DEFAULT_MAX_TRIP) {
+      return DEFAULT_MAX_TRIP;
+    }
+    return Math.min(Math.trunc(requested), this.getSystemMaxTrip());
+  }
+
+  changePoolBuilderMaxTrip(vehicleTypeId: string, delta: number): void {
+    const builder = this.getPoolBuilder(vehicleTypeId);
+    this.setPoolBuilderMaxTrip(vehicleTypeId, builder.maxTrip + delta);
+  }
+
+  /** Typed straight into the trips box — a stepper is painful past a few. */
+  setPoolBuilderMaxTrip(
+    vehicleTypeId: string,
+    maxTrip: number | null,
+  ): void {
+    const builder = this.getPoolBuilder(vehicleTypeId);
+    builder.maxTrip = this.clampMaxTrip(Number(maxTrip));
+    this.syncBuilderLoadingDuration(vehicleTypeId, builder);
+  }
+
+  /**
+   * A group only reloads from trip 2 onwards, so the reload time appears
+   * with multi-trip and is dropped again when the group falls back to one trip.
+   */
+  private syncBuilderLoadingDuration(
+    vehicleTypeId: string,
+    builder: OpenVrpPoolBuilder,
+  ): void {
+    if (builder.maxTrip <= DEFAULT_MAX_TRIP) {
+      builder.loadingDuration = null;
+      return;
+    }
+    if (!builder.loadingDuration) {
+      builder.loadingDuration =
+        this.getVehicleTypeLoadingDuration(vehicleTypeId) ||
+        this.multiTripDefaults.defaultLoadingDuration;
+    }
+  }
+
+  /** Reload time of this pool card, overwritable for this run only. */
+  getPoolBuilderLoadingDuration(vehicleTypeId: string): string {
+    return (
+      this.getPoolBuilder(vehicleTypeId).loadingDuration ||
+      this.multiTripDefaults.defaultLoadingDuration
+    );
+  }
+
+  setPoolBuilderLoadingDuration(
+    vehicleTypeId: string,
+    loadingDuration: string | null,
+  ): void {
+    const builder = this.getPoolBuilder(vehicleTypeId);
+    builder.loadingDuration =
+      loadingDuration || this.multiTripDefaults.defaultLoadingDuration;
+  }
+
+  private createDefaultBuilder(vehicleTypeId: string): OpenVrpPoolBuilder {
+    const builder: OpenVrpPoolBuilder = {
+      mode: 'count',
+      count: 1,
+      endOfRoute: 'return',
+      chosenVehicleIds: [],
+      startDepotId: null,
+      endDepotId: null,
+      // opens on the vehicle type's own trips, overwritable up to the standard
+      maxTrip: this.getVehicleTypeMaxTrip(vehicleTypeId),
+      loadingDuration: null,
+    };
+    this.syncBuilderLoadingDuration(vehicleTypeId, builder);
+    return builder;
+  }
+
+  getPoolBuilder(vehicleTypeId: string): OpenVrpPoolBuilder {
+    const key = `${this.scopeDepotId || 'default'}:${vehicleTypeId}`;
+    if (!this.poolBuilders[key]) {
+      this.poolBuilders[key] = this.createDefaultBuilder(vehicleTypeId);
+    }
+    const builder = this.poolBuilders[key];
+    builder.maxTrip = this.clampMaxTrip(builder.maxTrip);
+    return builder;
+  }
+
+  private resetPoolBuilder(vehicleTypeId: string): void {
+    const key = `${this.scopeDepotId || 'default'}:${vehicleTypeId}`;
+    this.poolBuilders[key] = this.createDefaultBuilder(vehicleTypeId);
+  }
+
+  togglePoolCard(vehicleTypeId: string): void {
+    this.openPoolCardTypeId =
+      this.openPoolCardTypeId === vehicleTypeId ? null : vehicleTypeId;
+  }
+
+  openPoolVehicleTypeInfo(event: Event, vehicleTypeId: string): void {
+    event.stopPropagation();
+    this.openVehicleItemModal(vehicleTypeId);
+  }
+
+  setPoolBuilderMode(vehicleTypeId: string, mode: OpenVrpSelectionMode): void {
+    if (mode === 'license-plate' && !this.isPoolTypeTracked(vehicleTypeId)) {
+      return;
+    }
+    this.getPoolBuilder(vehicleTypeId).mode = mode;
+  }
+
+  changePoolBuilderCount(vehicleTypeId: string, delta: number): void {
+    const builder = this.getPoolBuilder(vehicleTypeId);
+    this.setPoolBuilderCount(vehicleTypeId, builder.count + delta);
+  }
+
+  /**
+   * Typed straight into the quantity box — a large group would mean dozens of
+   * clicks on the stepper. The pool no longer caps a type, so the number is
+   * only kept a whole, non-negative count.
+   */
+  setPoolBuilderCount(vehicleTypeId: string, count: number | null): number {
+    const builder = this.getPoolBuilder(vehicleTypeId);
+    const requested = Number(count);
+    builder.count = Number.isFinite(requested)
+      ? Math.max(0, Math.trunc(requested))
+      : 0;
+    return builder.count;
+  }
+
+  isPoolPlateChosen(vehicleTypeId: string, vehicleId: string): boolean {
+    return this.getPoolBuilder(vehicleTypeId).chosenVehicleIds.includes(
+      vehicleId,
+    );
+  }
+
+  togglePoolPlate(
+    vehicleTypeId: string,
+    vehicleId: string,
+    checked: boolean,
+  ): void {
+    const builder = this.getPoolBuilder(vehicleTypeId);
+    if (checked) {
+      if (!builder.chosenVehicleIds.includes(vehicleId)) {
+        builder.chosenVehicleIds.push(vehicleId);
+      }
+    } else {
+      builder.chosenVehicleIds = builder.chosenVehicleIds.filter(
+        (id) => id !== vehicleId,
+      );
+    }
+  }
+
+  setPoolEndOfRoute(
+    vehicleTypeId: string,
+    endOfRoute: OpenVrpEndOfRoute,
+  ): void {
+    this.getPoolBuilder(vehicleTypeId).endOfRoute = endOfRoute;
+  }
+
+  onPoolStartDepotChange(vehicleTypeId: string, depotId: string): void {
+    this.getPoolBuilder(vehicleTypeId).startDepotId = depotId || null;
+  }
+
+  /**
+   * What the depot selects open on: the depot in scope while it is one of the
+   * company's depots, and the first depot otherwise. A select can only land on
+   * an option it actually lists, so this never resolves to an unknown depot.
+   */
+  private get defaultBuilderDepotId(): string {
+    const scopeDepotId = this.scopeDepotId;
+    const isListed = this.depots.some(
+      (depot) => depot.depotId === scopeDepotId,
+    );
+    return (isListed ? scopeDepotId : this.depots[0]?.depotId) || '';
+  }
+
+  /** Opens on the depot in scope; a group may start from any depot. */
+  getBuilderStartDepotId(vehicleTypeId: string): string {
+    return (
+      this.getPoolBuilder(vehicleTypeId).startDepotId ||
+      this.defaultBuilderDepotId
+    );
+  }
+
+  onPoolEndDepotChange(vehicleTypeId: string, depotId: string): void {
+    this.getPoolBuilder(vehicleTypeId).endDepotId = depotId || null;
+  }
+
+  /** Returns to where the group started (A → A) until another depot is picked. */
+  getBuilderEndDepotId(vehicleTypeId: string): string {
+    return (
+      this.getPoolBuilder(vehicleTypeId).endDepotId ||
+      this.getBuilderStartDepotId(vehicleTypeId)
+    );
+  }
+
+  canAddPoolEntry(vehicleTypeId: string): boolean {
+    const builder = this.getPoolBuilder(vehicleTypeId);
+    if (builder.mode === 'license-plate') {
+      // a chosen plate may have been taken since, e.g. by loading a preset
+      return this.getPoolAvailableVehicles(vehicleTypeId).some((vehicle) =>
+        builder.chosenVehicleIds.includes(vehicle.vehicleId),
+      );
+    }
+    return builder.count > 0;
+  }
+
+  addPoolEntryToRun(vehicleTypeId: string): void {
+    if (!this.canAddPoolEntry(vehicleTypeId)) return;
+    const builder = this.getPoolBuilder(vehicleTypeId);
+    const startDepotId = this.getBuilderStartDepotId(vehicleTypeId);
+    const startDepotName =
+      this.depots.find((depot) => depot.depotId === startDepotId)
+        ?.depotName || this.scopeDepotName;
+    const returnToDepot = builder.endOfRoute === 'return';
+    const endDepotId = returnToDepot
+      ? this.getBuilderEndDepotId(vehicleTypeId)
+      : null;
+    const endDepotName = returnToDepot
+      ? this.depots.find((depot) => depot.depotId === endDepotId)
+          ?.depotName || startDepotName
+      : null;
+
+    const maxTrip = this.clampMaxTrip(builder.maxTrip);
+    const baseEntry = {
+      id: this.runEntryIdCounter++,
+      vehicleTypeId,
+      vehicleTypeName: this.getVehicleName(vehicleTypeId),
+      endOfRoute: builder.endOfRoute,
+      startDepotId,
+      startDepotName,
+      endDepotId,
+      endDepotName,
+      maxTrip,
+      // the reload time the planner left on the card, not the master default
+      loadingDuration:
+        maxTrip > DEFAULT_MAX_TRIP
+          ? this.getPoolBuilderLoadingDuration(vehicleTypeId)
+          : null,
+    };
+
+    let entry: OpenVrpRunVehicleEntry;
+    if (builder.mode === 'license-plate') {
+      const chosenVehicles = this.getPoolAvailableVehicles(
+        vehicleTypeId,
+      ).filter((vehicle) =>
+        builder.chosenVehicleIds.includes(vehicle.vehicleId),
+      );
+      if (!chosenVehicles.length) return;
+      entry = {
+        ...baseEntry,
+        mode: 'license-plate',
+        count: chosenVehicles.length,
+        licensePlates: chosenVehicles.map((vehicle) => vehicle.licensePlate),
+        vehicleIds: chosenVehicles.map((vehicle) => vehicle.vehicleId),
+      };
+    } else {
+      entry = {
+        ...baseEntry,
+        mode: 'count',
+        count: builder.count,
+        licensePlates: [],
+        vehicleIds: [],
+      };
+    }
+
+    const mergedInto = addOrMergeRunEntry(this.runVehicleList, entry);
+    if (mergedInto) {
+      this.notifyRunEntryMerged(mergedInto, entry.count);
+    }
+    this.resetPoolBuilder(vehicleTypeId);
+    this.openPoolCardTypeId = null;
+    this.vehicleSelectionError = false;
+    this.markVehicleConfigurationChanged();
+  }
+
+  /**
+   * A group with exactly the same conditions never becomes a second row: its
+   * vehicles are added to the existing row, and the planner is told which row
+   * grew while it is briefly highlighted in the list.
+   */
+  private notifyRunEntryMerged(
+    entry: OpenVrpRunVehicleEntry,
+    addedCount: number,
+  ): void {
+    this.toastr.warning(
+      this.transloco.translate(
+        'run_entry_merged_message',
+        { name: entry.vehicleTypeName, added: addedCount, total: entry.count },
+        'index',
+      ),
+      this.transloco.translate('run_entry_merged_title', {}, 'index'),
+      { timeOut: RUN_ENTRY_MERGE_NOTICE_MS },
+    );
+    this.highlightedRunEntryId = entry.id;
+    clearTimeout(this.highlightTimer);
+    this.highlightTimer = setTimeout(() => {
+      this.highlightedRunEntryId = null;
+    }, RUN_ENTRY_MERGE_NOTICE_MS);
+    this.scrollRunEntryIntoView(entry.id);
+  }
+
+  /**
+   * The run list scrolls on its own, so the row that grew can sit below the
+   * fold — where neither the highlight nor the changed count would be seen.
+   * `nearest` leaves a row that is already visible where it is.
+   */
+  private scrollRunEntryIntoView(entryId: number): void {
+    // after the pending change detection, so the row is laid out with its
+    // new count before it is measured
+    setTimeout(() => {
+      this.hostRef.nativeElement
+        .querySelector<HTMLElement>(`[data-run-entry-id="${entryId}"]`)
+        ?.scrollIntoView({
+          block: 'nearest',
+          behavior: this.prefersReducedMotion() ? 'auto' : 'smooth',
+        });
+    });
+  }
+
+  /** Honours the OS "reduce motion" setting for animated feedback. */
+  private prefersReducedMotion(): boolean {
+    return (
+      window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
+    );
+  }
+
+  // ======================================================================
+  // Open VRP — run list (selected vehicles)
+  // ======================================================================
+
+  removeRunEntry(entryId: number): void {
+    const list = this.runVehicleList;
+    const index = list.findIndex((entry) => entry.id === entryId);
+    if (index < 0) return;
+    list.splice(index, 1);
+    this.markVehicleConfigurationChanged();
+  }
+
+  editRunEntry(entryId: number): void {
+    const list = this.runVehicleList;
+    const index = list.findIndex((entry) => entry.id === entryId);
+    if (index < 0) return;
+    const entry = list[index];
+    // Removing the row returns the vehicles to the pool, then the entry
+    // configuration is restored into the panel for editing (mockup behavior).
+    list.splice(index, 1);
+    const key = `${this.scopeDepotId || 'default'}:${entry.vehicleTypeId}`;
+    this.poolBuilders[key] = {
+      mode: entry.mode,
+      count: entry.count,
+      endOfRoute: entry.endOfRoute,
+      chosenVehicleIds:
+        entry.mode === 'license-plate' ? [...entry.vehicleIds] : [],
+      startDepotId: entry.startDepotId || null,
+      // a row that returns where it started keeps following the start depot,
+      // so moving the start while editing moves the return with it
+      endDepotId:
+        entry.endDepotId !== entry.startDepotId ? entry.endDepotId : null,
+      maxTrip: this.clampMaxTrip(entry.maxTrip),
+      loadingDuration: entry.loadingDuration,
+    };
+    this.openPoolCardTypeId = entry.vehicleTypeId;
+    this.markVehicleConfigurationChanged();
+  }
+
+  private markVehicleConfigurationChanged(): void {
+    if (this.haveValidated) {
+      this.haveUpdateAfterValidated = true;
+    }
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Summary of the depot in scope, shown next to the run list and in the
+   * validation tab. The summary pane itself uses `summaryView`, which reports
+   * every depot.
+   */
+  get runListTotals(): OpenVrpRunSummaryTotals {
+    return sumRunEntries(this.runVehicleList);
+  }
+
+  /** Run list of the depot in scope, one block per vehicle type (pane 2). */
+  get runVehicleGroups(): OpenVrpRunVehicleGroup[] {
+    return groupRunEntriesByVehicleType(this.runVehicleList);
+  }
+
+  trackRunVehicleGroup(_index: number, group: OpenVrpRunVehicleGroup): string {
+    return group.vehicleTypeId;
+  }
+
+  trackRunVehicleEntry(_index: number, entry: OpenVrpRunVehicleEntry): number {
+    return entry.id;
+  }
+
+  /**
+   * Vehicles whose group starts from a depot other than the one in scope. The
+   * start depot is selectable per group, so the validation tab only reports
+   * the scope as consistent while this stays at zero.
+   */
+  get runListOutOfScopeStartCount(): number {
+    const scopeDepotId = this.scopeDepotId;
+    if (!scopeDepotId) return 0;
+    return this.runVehicleList
+      .filter(
+        (entry) => !!entry.startDepotId && entry.startDepotId !== scopeDepotId,
+      )
+      .reduce((sum, entry) => sum + entry.count, 0);
+  }
+
+  /**
+   * The summary pane's view model — one block per depot plus the fleet-wide
+   * roll-up, assembled in a single getter so the template reads it once.
+   */
+  get summaryView(): {
+    depots: OpenVrpDepotSummary[];
+    grandTotals: OpenVrpRunSummaryTotals;
+    isMultiDepot: boolean;
+  } {
+    const depots = this.depotSummaries;
+    return {
+      depots,
+      grandTotals: sumDepotSummaries(depots),
+      isMultiDepot: depots.length > 1,
+    };
+  }
+
+  /**
+   * One summary per depot taking part in this run. The depot in scope always
+   * appears; any further depot that already carries a run list joins it, which
+   * is exactly what arrives once the API reports more than one depot per run.
+   * Until then the preview switch appends sample depots.
+   */
+  private get depotSummaries(): OpenVrpDepotSummary[] {
+    const summaries: OpenVrpDepotSummary[] = [];
+    const used = new Set<string>();
+
+    const scopeDepotId = this.scopeDepotId || 'default';
+    summaries.push({
+      depotId: scopeDepotId,
+      depotName: this.scopeDepotName,
+      isMock: false,
+      totals: sumRunEntries(this.runVehicleListByDepot[scopeDepotId]),
+    });
+    used.add(scopeDepotId);
+
+    for (const depot of this.depots) {
+      if (!depot?.depotId || used.has(depot.depotId)) continue;
+      const entries = this.runVehicleListByDepot[depot.depotId];
+      if (!entries?.length) continue;
+      used.add(depot.depotId);
+      summaries.push({
+        depotId: depot.depotId,
+        depotName: depot.depotName,
+        isMock: false,
+        totals: sumRunEntries(entries),
+      });
+    }
+
+    if (this.multiDepotDemo) {
+      for (const mockDepot of this.ensureMockDepotRunLists(used)) {
+        summaries.push({
+          depotId: mockDepot.depotId,
+          depotName: mockDepot.depotName,
+          isMock: true,
+          totals: sumRunEntries(mockDepot.entries),
+        });
+      }
+    }
+
+    return summaries;
+  }
+
+  getRunEntryDetail(entry: OpenVrpRunVehicleEntry): string {
+    if (entry.mode === 'license-plate' && entry.licensePlates.length) {
+      return entry.licensePlates.join(', ');
+    }
+    return `${entry.count} ${this.transloco.translate('vehicles_unit', {}, 'index')}`;
+  }
+
+  getRunEntryTrips(entry: OpenVrpRunVehicleEntry): string {
+    const maxTrip = entry.maxTrip || DEFAULT_MAX_TRIP;
+    if (maxTrip <= DEFAULT_MAX_TRIP) return '';
+    const trips = `${maxTrip} ${this.transloco.translate('trips_unit', {}, 'index')}`;
+    if (!entry.loadingDuration) return trips;
+    return `${trips} · ${this.transloco.translate('reload_at_depot', {}, 'index')} ${entry.loadingDuration}`;
+  }
+
+  getRunEntryRoute(entry: OpenVrpRunVehicleEntry): string {
+    if (entry.endOfRoute === 'return') {
+      return `${entry.startDepotName} → ${entry.endDepotName || entry.startDepotName}`;
+    }
+    return `${entry.startDepotName} → ${this.transloco.translate('ends_at_last_stop', {}, 'index')}`;
+  }
+
+  /**
+   * Rebuild the run list UI from the legacy selection structures that are
+   * populated when a historical experiment is reloaded from blob storage.
+   */
+  private rebuildRunListFromSelections(): void {
+    const depotId =
+      this.experiment?.depots?.[0]?.depotId || this.scopeDepotId || 'default';
+    const depotName =
+      this.experiment?.depots?.[0]?.depotName || this.scopeDepotName;
+    const list: OpenVrpRunVehicleEntry[] = [];
+
+    for (const vehicleTypeId of this.selectedVehicleIds) {
+      const mode = this.getVehicleSelectionMode(vehicleTypeId);
+      const baseEntry = {
+        id: this.runEntryIdCounter++,
+        vehicleTypeId,
+        vehicleTypeName: this.getVehicleName(vehicleTypeId),
+        endOfRoute: 'return' as OpenVrpEndOfRoute,
+        startDepotId: depotId,
+        startDepotName: depotName,
+        endDepotId: depotId,
+        endDepotName: depotName,
+        // the blob carries no trip count yet, so a restored group falls back
+        // to the vehicle type's own trips
+        maxTrip: this.getVehicleTypeMaxTrip(vehicleTypeId),
+        loadingDuration:
+          this.getVehicleTypeMaxTrip(vehicleTypeId) > DEFAULT_MAX_TRIP
+            ? this.getVehicleTypeLoadingDuration(vehicleTypeId) ||
+              this.multiTripDefaults.defaultLoadingDuration
+            : null,
+      };
+      if (mode === 'license-plate') {
+        const vehicleIds =
+          this.selectedVehicleIdsByLicensePlate[vehicleTypeId] || [];
+        if (!vehicleIds.length) continue;
+        list.push({
+          ...baseEntry,
+          mode: 'license-plate',
+          count: vehicleIds.length,
+          licensePlates: [
+            ...(this.selectedLicensePlates[vehicleTypeId] || []),
+          ],
+          vehicleIds: [...vehicleIds],
+        });
+      } else {
+        const count = this.getVehicleCount(vehicleTypeId);
+        if (count <= 0) continue;
+        list.push({
+          ...baseEntry,
+          mode: 'count',
+          count,
+          licensePlates: [],
+          vehicleIds: [],
+        });
+      }
+    }
+
+    this.runVehicleListByDepot[depotId] = list;
+  }
+
+  // ======================================================================
+  // Open VRP — preset configuration (save / load run list per depot)
+  // ======================================================================
+
+  /**
+   * Memoised so the getter returns the *same* array instance between change
+   * detection runs. Re-parsing storage on every run handed `*ngFor` brand new
+   * objects each time, which made Angular destroy and re-create every preset
+   * row — a row destroyed between mousedown and mouseup never emits `click`.
+   * The cache is invalidated by `writeAllPresets()` and by a depot change.
+   */
+  get currentDepotPresets(): OpenVrpVehiclePreset[] {
+    const depotId = this.scopeDepotId;
+    const cacheKey = `${this.presetsVersion}|${depotId}`;
+    if (cacheKey !== this.presetsCacheKey) {
+      this.presetsCacheKey = cacheKey;
+      this.presetsCache = depotId
+        ? this.readAllPresets().filter((preset) => preset.depotId === depotId)
+        : [];
+    }
+    return this.presetsCache;
+  }
+
+  trackPresetById(_index: number, preset: OpenVrpVehiclePreset): string {
+    return preset.id;
+  }
+
+  openSavePresetDialog(): void {
+    if (!this.runVehicleList.length) {
+      this.toastr.warning(
+        this.transloco.translate('no_vehicles_in_run', {}, 'index'),
+        this.transloco.translate('save_preset', {}, 'index'),
+      );
+      return;
+    }
+    if (!this.savePresetModalTemplate) return;
+    this.presetName = '';
+    this.ngbModal
+      .open(this.savePresetModalTemplate, { centered: true, animation: true })
+      .result.then(
+        (confirmed: boolean) => {
+          if (confirmed) {
+            this.savePreset();
+          }
+        },
+        () => {},
+      );
+  }
+
+  private savePreset(): void {
+    const name = (this.presetName || '').trim();
+    if (!name) return;
+    const preset: OpenVrpVehiclePreset = {
+      id: this.generateUniqueId(),
+      name,
+      depotId: this.scopeDepotId,
+      depotName: this.scopeDepotName,
+      createdAt: new Date().toISOString(),
+      entries: this.runVehicleList.map(({ id: _id, ...savedEntry }) => ({
+        ...savedEntry,
+        licensePlates: [...savedEntry.licensePlates],
+        vehicleIds: [...savedEntry.vehicleIds],
+      })),
+    };
+    const presets = this.readAllPresets();
+    presets.push(preset);
+    this.writeAllPresets(presets);
+    this.toastr.success(
+      name,
+      this.transloco.translate('preset_saved', {}, 'index'),
+    );
+  }
+
+  loadPreset(preset: OpenVrpVehiclePreset): void {
+    const key = this.scopeDepotId || 'default';
+    this.runVehicleListByDepot[key] = [];
+    let adjusted = false;
+
+    for (const savedEntry of preset.entries) {
+      const vehicleTypeName = this.getVehicleName(savedEntry.vehicleTypeId);
+      if (!vehicleTypeName) {
+        // vehicle type no longer exists in master data
+        adjusted = true;
+        continue;
+      }
+      const maxTrip = this.clampMaxTrip(
+        savedEntry.maxTrip ?? this.getVehicleTypeMaxTrip(savedEntry.vehicleTypeId),
+      );
+      if (savedEntry.maxTrip != null && maxTrip !== savedEntry.maxTrip) {
+        adjusted = true;
+      }
+      // a preset keeps the reload time the planner saved with it; the vehicle
+      // type default only fills in for presets saved before it was editable
+      const loadingDuration =
+        maxTrip > DEFAULT_MAX_TRIP
+          ? savedEntry.loadingDuration ||
+            this.getVehicleTypeLoadingDuration(savedEntry.vehicleTypeId) ||
+            this.multiTripDefaults.defaultLoadingDuration
+          : null;
+      // presets saved before identical rows were merged may still hold
+      // duplicates; they fold together here just like a manual add
+      if (savedEntry.mode === 'license-plate') {
+        const chosenVehicles = this.getPoolAvailableVehicles(
+          savedEntry.vehicleTypeId,
+        ).filter((vehicle) =>
+          savedEntry.vehicleIds.includes(vehicle.vehicleId),
+        );
+        if (chosenVehicles.length !== savedEntry.vehicleIds.length) {
+          adjusted = true;
+        }
+        if (!chosenVehicles.length) continue;
+        addOrMergeRunEntry(this.runVehicleList, {
+          ...savedEntry,
+          id: this.runEntryIdCounter++,
+          vehicleTypeName,
+          count: chosenVehicles.length,
+          licensePlates: chosenVehicles.map(
+            (vehicle) => vehicle.licensePlate,
+          ),
+          vehicleIds: chosenVehicles.map((vehicle) => vehicle.vehicleId),
+          maxTrip,
+          loadingDuration,
+        });
+      } else {
+        if (savedEntry.count <= 0) continue;
+        addOrMergeRunEntry(this.runVehicleList, {
+          ...savedEntry,
+          id: this.runEntryIdCounter++,
+          vehicleTypeName,
+          count: savedEntry.count,
+          licensePlates: [],
+          vehicleIds: [],
+          maxTrip,
+          loadingDuration,
+        });
+      }
+    }
+
+    this.openPoolCardTypeId = null;
+    this.vehicleSelectionError = false;
+    this.markVehicleConfigurationChanged();
+
+    if (adjusted) {
+      this.toastr.warning(
+        this.transloco.translate(
+          'preset_loaded_with_adjustments',
+          {},
+          'index',
+        ),
+        preset.name,
+      );
+    } else {
+      this.toastr.success(
+        preset.name,
+        this.transloco.translate('preset_loaded', {}, 'index'),
+      );
+    }
+  }
+
+  deletePreset(preset: OpenVrpVehiclePreset, event: Event): void {
+    event.stopPropagation();
+    const presets = this.readAllPresets().filter(
+      (existing) => existing.id !== preset.id,
+    );
+    this.writeAllPresets(presets);
+    this.toastr.info(
+      preset.name,
+      this.transloco.translate('preset_deleted', {}, 'index'),
+    );
+    this.cdr.detectChanges();
+  }
+
+  private readAllPresets(): OpenVrpVehiclePreset[] {
+    try {
+      const raw = localStorage.getItem(this.openVrpPresetStorageKey);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private writeAllPresets(presets: OpenVrpVehiclePreset[]): void {
+    localStorage.setItem(
+      this.openVrpPresetStorageKey,
+      JSON.stringify(presets),
+    );
+    this.presetsVersion++;
   }
 
   // Check if any selected vehicle in 'license-plate' mode has no vehicle IDs selected

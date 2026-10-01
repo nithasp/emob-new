@@ -33,4 +33,6 @@ export interface ConfigVehicleTypeFormControls extends BaseVehicleTypeFormContro
   allowedBreaks: FormArray<FormGroup<BreakFormControls>>;
   maxpallet: FormControl<number | null>;
   zone: FormControl<string | null>;
+  maxTrip: FormControl<number | null>;
+  loadingDuration: FormControl<string | null>;
 }
