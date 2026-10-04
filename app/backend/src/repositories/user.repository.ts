@@ -1,6 +1,6 @@
 import pool from '../database';
 import { Queryable } from '../types/database.types';
-import { NewUserRow, PublicUser, StoredUser, UserRole } from '../types/user.types';
+import { NewUserRow, PublicUser, StoredUser, UserProfileUpdate, UserRole } from '../types/user.types';
 import { requireRow } from '../utils/rows';
 
 const SAFE_FIELDS = `u.id, u.first_name, u.last_name, u.username, u.role, u.company_id, c.company_name`;
@@ -48,11 +48,7 @@ export class UserRepository {
     return (rowCount ?? 0) > 0;
   }
 
-  async updateProfile(
-    id: string,
-    profile: { firstName: string; lastName: string; role: UserRole },
-    db: Queryable = pool,
-  ): Promise<void> {
+  async updateProfile(id: string, profile: UserProfileUpdate, db: Queryable = pool): Promise<void> {
     await db.query('UPDATE users SET first_name = $1, last_name = $2, role = $3 WHERE id = $4', [
       profile.firstName,
       profile.lastName,

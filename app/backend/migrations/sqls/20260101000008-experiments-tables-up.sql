@@ -1,6 +1,3 @@
--- files holds the storage keys of everything a run produced:
---   {"transform": {...}, "validate": {...}, "plan": {...}, "result": "..."}
--- parameters is the snapshot of the dynamic parameters the run was validated with.
 CREATE TABLE experiments (
     run_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,

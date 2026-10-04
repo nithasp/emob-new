@@ -43,13 +43,6 @@ export class DialogVehicleComponent implements OnInit {
   vehicleTypeOptions: VehicleType[] = [];
   depotOptions: MyDepot[] = [];
 
-  /**
-   * Vehicle Pool: the depot binding was removed from this dialog (vehicles are
-   * master data in a central pool; depots are assigned per run in the Open VRP
-   * flow). The backend contract still requires start/end depot ids, so they
-   * are filled silently: existing values are preserved on edit and the first
-   * available depot is used as a technical default on create.
-   */
   private existingStartDepotId: string = '';
   private existingEndDepotId: string = '';
 
@@ -174,7 +167,6 @@ export class DialogVehicleComponent implements OnInit {
     this.updateLicensePlateValidators();
   }
 
-  /** Technical default while the backend still requires depot ids on vehicles. */
   private resolveDefaultDepotId(existingDepotId: string): string {
     return existingDepotId || this.depotOptions[0]?.depotId || '';
   }

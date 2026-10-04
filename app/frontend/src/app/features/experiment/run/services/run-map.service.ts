@@ -36,7 +36,6 @@ import {
 
 @Injectable()
 export class RunMapService {
-  // map rendering
   private map!: Map;
   private readonly iconStyle: Partial<IconStyle> = {};
   private vectorLayer!: VectorLayer;
@@ -134,7 +133,6 @@ export class RunMapService {
       evt.preventDefault();
       logMessage(evt);
     });
-    // display popup on click
     this.map.on('singleclick', (event) => this.popupShow(event));
     this.map.on('pointermove', (event) => this.pointMove(event));
   }
@@ -242,7 +240,6 @@ export class RunMapService {
     if (feature) {
       const geometry = feature.getGeometry();
       if (geometry instanceof SimpleGeometry) {
-        // getFlatCoordinates returns number[]; interpret as [x,y] in view proj
         const flat = geometry.getFlatCoordinates();
         coordinates = [flat[0], flat[1]] as Coordinate;
       } else {

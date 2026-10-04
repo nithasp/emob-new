@@ -102,14 +102,13 @@ describe('CustomerDetailsComponent', () => {
       ],
       schemas: [NO_ERRORS_SCHEMA],
     })
-      // Replace the template so we don't pull in transloco pipes/ol map DOM.
       .overrideComponent(CustomerDetailsComponent, { set: { template: '' } })
       .compileComponents();
 
     fixture = TestBed.createComponent(CustomerDetailsComponent);
     component = fixture.componentInstance;
     component.dataCustomer = createCustomer();
-    fixture.detectChanges(); // ngOnInit + ngAfterViewInit
+    fixture.detectChanges();
   });
 
   it('should create', () => {

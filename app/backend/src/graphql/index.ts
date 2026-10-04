@@ -65,8 +65,6 @@ const apollo = new ApolloServer<GraphQLContext>({
   },
 });
 
-// The app is assembled synchronously (the tests import it), so the server starts in the
-// background and the first requests wait for it
 apollo.startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests();
 
 export const graphqlServer = apollo;

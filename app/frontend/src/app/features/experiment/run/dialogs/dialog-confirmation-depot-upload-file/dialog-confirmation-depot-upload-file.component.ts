@@ -74,7 +74,6 @@ export class DialogConfirmationDepotUploadFileComponent {
     );
 
     if (!targetItem) {
-      // If no matching item found, skip validation (backwards compatibility)
       this.logger.log(
         'No matching depotInputDataItem found for category:',
         this.selectedCategory
@@ -82,7 +81,6 @@ export class DialogConfirmationDepotUploadFileComponent {
       return { isValid: true, missingColumns: [] };
     }
 
-    // If no file columns provided, skip validation (backwards compatibility)
     if (!this.fileColumns || this.fileColumns.length === 0) {
       return { isValid: true, missingColumns: [] };
     }
@@ -111,11 +109,9 @@ export class DialogConfirmationDepotUploadFileComponent {
       this.logger.log('onConfirm1 - validating category columns');
       this.logger.log('selectedCategory', this.selectedCategory);
 
-      // Validate columns for the selected category
       const validation = this.validateCategoryColumns();
 
       if (!validation.isValid && validation.missingColumns.length > 0) {
-        // Return validation failure result to parent component
         this.activeModal.close({
           replace: false,
           category: this.selectedCategory,

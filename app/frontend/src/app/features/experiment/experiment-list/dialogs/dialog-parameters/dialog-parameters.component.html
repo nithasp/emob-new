@@ -17,7 +17,6 @@
     </div>
     <mat-dialog-content class="ml-3">
       <div *ngIf="isLegacyFormat">
-        <!-- Data set 1: Old Data Format no translations -->
         <ul>
           <li *ngFor="let item of groupedParameters[0]?.items">
             <span>{{ item.displayName }}</span>
@@ -26,7 +25,6 @@
         </ul>
       </div>
       <div *ngIf="!isLegacyFormat">
-        <!-- Data set 2: New Data Format Grouped by category with translations -->
         <div *ngFor="let group of groupedParameters" class="mb-3">
           <h3  >{{ group.category }}</h3>
           <ul>

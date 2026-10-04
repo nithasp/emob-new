@@ -37,8 +37,7 @@ export class UploadComponent implements OnInit {
     actualLocations: [],
   };
 
-  // NgbTable
-  currentPage = 1; // Current page
+  currentPage = 1;
   pageSize = 60;
   public dataSource: ConfigurationExplorerDepot[] = [];
   public excelData: ExcelRow[] = [];
@@ -57,19 +56,15 @@ export class UploadComponent implements OnInit {
       return node.fileType;
     }
     if ('children' in node) {
-      // Check if this is a fileType node with actual category
       if ('type' in node && node.type === 'actual') {
         return node.children as ConfigurationExplorerYearNode[];
       }
-      // Check if this is a year node
       if ('year' in node) {
         return node.children as ConfigurationExplorerMonthNode[];
       }
-      // Check if this is a month node
       if ('month' in node) {
         return node.children as ConfigurationExplorerFileTypeChildren[];
       }
-      // Default case for regular categories
       return node.children as ConfigurationExplorerFileTypeChildren[];
     }
     return [];

@@ -39,7 +39,6 @@ function createMockVehicleType(
   };
 }
 
-/** Builds an NgbModalRef-like stub with a controllable result promise. */
 function createModalRef(result: Promise<unknown>): NgbModalRef {
   return {
     componentInstance: {},
@@ -75,7 +74,6 @@ describe('VehicleTypeComponent', () => {
       'translate',
     ]);
 
-    // Default return values to keep ngOnInit happy.
     vehicleService.getMyVehicleTypes.and.returnValue(of([]));
     vehicleService.deleteVehicleType.and.returnValue(of(true));
     transloco.translate.and.callFake(((key: string) => key) as never);
@@ -90,7 +88,6 @@ describe('VehicleTypeComponent', () => {
         { provide: TranslocoService, useValue: transloco },
       ],
     })
-      // Replace the template so we don't pull in transloco pipes/material deps.
       .overrideComponent(VehicleTypeComponent, { set: { template: '' } })
       .compileComponents();
 

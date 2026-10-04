@@ -11,6 +11,7 @@ import {
   PreOrderUpload,
   SolveOutcome,
   UploadPreOrderResult,
+  UploadedInputFile,
   emptyExperimentFiles,
 } from '../types/experiment.types';
 import { Constraint, DynamicParameter } from '../types/parameter.types';
@@ -65,8 +66,6 @@ export function createExperimentService(deps: ExperimentServiceDeps) {
     return new Map(list.map((depot): [string, Depot] => [depot.depotId, depot]));
   }
 
-  // A run that has no depot yet is shown under the company's first one, which is also the depot
-  // the run page preselects
   function depotsOf(row: ExperimentRow, depotById: Map<string, Depot>): Depot[] {
     const own = row.depotIds.flatMap((depotId) => {
       const depot = depotById.get(depotId);
@@ -230,7 +229,7 @@ export function createExperimentService(deps: ExperimentServiceDeps) {
       if (!uploads.length) throw new AppError('No file was uploaded', 400, 'invalid_request');
 
       const keys = experimentKeys(user.companyId, row.runId);
-      const fresh: Array<{ meta: ExperimentInputFile; content: Buffer; transform: TransformFile }> = [];
+      const fresh: UploadedInputFile[] = [];
 
       for (const { keyName, file } of uploads) {
         const definition = depot.inputdata.find((item) => item.keyName === keyName);
@@ -260,7 +259,6 @@ export function createExperimentService(deps: ExperimentServiceDeps) {
         });
       }
 
-      // Files already on the run stay unless this upload brings a newer one of the same type
       const replaced = new Set(fresh.map((entry) => entry.meta.keyName));
       const kept = row.inputdata.filter((file) => !replaced.has(file.keyName));
       const keptFiles = (await Promise.all(kept.map(readInput))).filter(
@@ -327,7 +325,6 @@ export function createExperimentService(deps: ExperimentServiceDeps) {
         : null;
       if (!locations) throw new AppError('Upload the order files before validating', 409, 'conflict');
 
-      // A pin the planner moved by hand is taken as confirmed
       for (const update of data.updateLocation?.customers ?? []) {
         const customer = locations.customers.find(
           (candidate) =>

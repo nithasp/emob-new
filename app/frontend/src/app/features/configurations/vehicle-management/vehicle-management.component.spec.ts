@@ -10,8 +10,6 @@ describe('VehicleManagementComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [VehicleManagementComponent],
     })
-      // Replace the template so we don't pull in the transloco directive/pipe
-      // or the app-vehicle / app-vehicle-type / ngbNav dependencies.
       .overrideComponent(VehicleManagementComponent, { set: { template: '' } })
       .compileComponents();
 

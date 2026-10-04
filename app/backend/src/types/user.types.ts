@@ -30,6 +30,28 @@ export interface NewUserRow extends Omit<NewUser, 'password'> {
   passwordHash: string;
 }
 
+export interface UserRegistration {
+  username: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface AccountUpsert {
+  companyId: string;
+  username: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+}
+
+export interface UserProfileUpdate {
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+}
+
 // What a client receives: `roles` is the list the frontend's role guard checks, where an Admin
 // also holds the planner role
 export interface AuthUser {

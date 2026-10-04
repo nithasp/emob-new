@@ -88,7 +88,6 @@ describe('CustomerListComponent', () => {
       providers: [{ provide: NgbActiveModal, useValue: ngbActiveModalSpy }],
       schemas: [NO_ERRORS_SCHEMA],
     })
-      // Replace the template so we don't pull in transloco pipes/child components.
       .overrideComponent(CustomerListComponent, { set: { template: '' } })
       .compileComponents();
 

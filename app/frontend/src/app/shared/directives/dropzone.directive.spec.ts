@@ -46,10 +46,6 @@ describe('DropzoneDirective', () => {
     ).nativeElement;
   });
 
-  /**
-   * Dispatches a real DragEvent on the host element so the tests exercise the
-   * @HostListener wiring as well, instead of calling the handlers directly.
-   */
   function dispatchDragEvent(type: string, dataTransfer?: DataTransfer): DragEvent {
     const event = new DragEvent(type, {
       bubbles: true,
@@ -76,8 +72,6 @@ describe('DropzoneDirective', () => {
 
     it('should activate on dragover and request the copy drop effect', () => {
       const dataTransfer = createDataTransfer();
-      // Chrome ignores dropEffect assignments outside a real OS drag session,
-      // so capture the value the directive writes instead of reading it back.
       let dropEffect: string | undefined;
       Object.defineProperty(dataTransfer, 'dropEffect', {
         set: (value: string) => (dropEffect = value),
@@ -104,8 +98,6 @@ describe('DropzoneDirective', () => {
 
   describe('dragleave', () => {
     it('should stay active while moving over nested children and deactivate on the last leave', () => {
-      // Dragging over a child fires an extra dragenter (bubbling) before the
-      // dragleave of the parent, which is what the drag counter compensates for.
       dispatchDragEvent('dragenter', createDataTransfer());
       dispatchDragEvent('dragenter', createDataTransfer());
 

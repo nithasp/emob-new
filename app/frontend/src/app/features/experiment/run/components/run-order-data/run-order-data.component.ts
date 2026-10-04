@@ -28,7 +28,6 @@ export class RunOrderDataComponent implements OnDestroy {
     protected readonly navigation: RunNavigationService,
   ) {}
 
-  // Mat table
   @ViewChild(MatPaginator, { static: false })
   set paginator(value: MatPaginator) {
     if (this.orders.dataSource) {

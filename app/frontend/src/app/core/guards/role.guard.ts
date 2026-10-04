@@ -35,10 +35,6 @@ export class RoleGuard implements CanActivate {
     );
   }
 
-  /**
-   * A valid access token is enough. Without one the session is renewed from the refresh cookie,
-   * and a visitor who has no session at all is let in as the demo account when that is enabled.
-   */
   private ensureSession(): Observable<boolean> {
     if (this.authService.hasValidToken()) {
       return of(true);

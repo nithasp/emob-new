@@ -5,10 +5,6 @@ import { catchError, filter, map, switchMap, take } from "rxjs/operators";
 
 import { AuthService } from '../services/auth/auth.service';
 
-/**
- * Keeps a signed-in user out of the login and register pages. A visitor with no session is sent
- * into the app as the demo account when that is enabled, so the pages show only after a sign-out.
- */
 @Injectable()
 export class GuestGuard implements CanActivate {
   constructor(

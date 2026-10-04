@@ -101,9 +101,6 @@ describe('DialogVehicleTypeComponent', () => {
       ],
     })
       .overrideComponent(DialogVehicleTypeComponent, { set: { template: '' } })
-      // NgbModalModule re-provides NgbModal in its own `providers` array, which
-      // shadows a plain TestBed provider override for standalone components
-      // that import NgbModule; overrideProvider bypasses that shadowing.
       .overrideProvider(NgbModal, { useValue: mockNgbModal })
       .compileComponents();
 

@@ -20,8 +20,6 @@ describe('AppComponent', () => {
       providers: [{ provide: AuthService, useValue: authService }],
       schemas: [NO_ERRORS_SCHEMA],
     })
-      // Replace the template so we don't pull in ngx-spinner / mat-icon
-      // dependencies that aren't registered in this testing module.
       .overrideComponent(AppComponent, { set: { template: '' } })
       .compileComponents();
 

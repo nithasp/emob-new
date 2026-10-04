@@ -108,7 +108,6 @@ describe('AuthInterceptor', () => {
         statusText: 'Unauthorized',
       });
 
-    // The Blob is read asynchronously before the request is repeated
     setTimeout(() => backend.expectOne('/api/v1/files/companies/c1/plan.json').flush(new Blob(['{}'])), 50);
   });
 

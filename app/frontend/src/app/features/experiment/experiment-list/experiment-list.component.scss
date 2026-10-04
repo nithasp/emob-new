@@ -47,14 +47,12 @@ td , th {
   right: 20px;
   padding: 0;
 
-  /* Label Styling */
   &-label {
     font-weight: bold;
     padding: 10px 15px;
     display: block;
   }
 
-  /* Options Styling */
   &-options {
     display: flex;
     flex-direction: column;
@@ -86,15 +84,15 @@ td , th {
   background-color: #f5f5f5;
 }
 .custom-icon-button {
-  border-radius: 0; /* Removes the circular border */
-  padding: 0; /* Adjust padding if needed */
-  width: auto; /* Adjust width if needed */
-  height: auto; /* Adjust height if needed */
+  border-radius: 0;
+  padding: 0;
+  width: auto;
+  height: auto;
 }
 
 .text-table-container {
   width: 100%;
-  margin: 0 auto; /* Horizontal centering */
+  margin: 0 auto;
   text-align: center;
   margin-top: 350px !important;
 }

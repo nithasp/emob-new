@@ -16,7 +16,6 @@ export class AppComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Restores the session from the refresh cookie after a page load; the route guards wait for it
     this.authService.initializeAuth().subscribe();
   }
 

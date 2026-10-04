@@ -32,7 +32,6 @@ export class LoginComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    // A page that redirected here may have left its full-screen spinner up
     this.spinner.hide();
     applySavedLanguage(this.transloco);
   }

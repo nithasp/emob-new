@@ -2,7 +2,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { TranslocoService } from '@jsverse/transloco';
 
-/** The API explains a refused sign-in or registration in the response body. */
 export function authErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) {
@@ -22,7 +21,6 @@ export function passwordsMatch(passwordField: string, confirmField: string): Val
   };
 }
 
-/** The language picked on an earlier visit; the top bar applies the same key once signed in. */
 export function applySavedLanguage(transloco: TranslocoService): void {
   const saved = localStorage.getItem('lang');
   if (saved === 'en' || saved === 'th') {

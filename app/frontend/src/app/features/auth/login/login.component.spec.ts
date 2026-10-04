@@ -38,7 +38,6 @@ function configure() {
     ],
     schemas: [NO_ERRORS_SCHEMA],
   })
-    // The templates need mat-icon and routerLink, which add nothing to these checks
     .overrideComponent(LoginComponent, { set: { template: '' } })
     .overrideComponent(RegisterComponent, { set: { template: '' } });
 

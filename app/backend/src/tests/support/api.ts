@@ -20,7 +20,6 @@ export const uniqueName = (prefix: string): string =>
 
 let workspace: Promise<void> | undefined;
 
-// The API specs read the demo workspace that `npm run seed` builds; it is built once per run
 export const demoWorkspace = (): Promise<void> => (workspace ??= seedWorkspace({ quiet: true }));
 
 export const sampleFile = (name: string): Promise<Buffer> => fs.readFile(path.join(SAMPLE_DIR, name));
@@ -36,7 +35,6 @@ function planner(id: string, username: string, token: string, agent: TestAgent):
     get: (url) => withAuth(agent.get(url)),
     post: (url, body) => withAuth(agent.post(`${API}${url}`)).send(body ?? {}),
     gql: (query, variables) => withAuth(agent.post(GRAPHQL)).send({ query, variables }),
-    // The GraphQL multipart request the web app sends for uploads
     upload: (query, variables, files: UploadFile[]) => {
       const test = withAuth(agent.post(GRAPHQL))
         .set('Apollo-Require-Preflight', 'true')
@@ -68,7 +66,6 @@ export async function demoPlanner(): Promise<TestPlanner> {
   return planner(res.body.data.user.id, res.body.data.user.username, res.body.data.accessToken, agent);
 }
 
-// A planner of a second company, to check that nothing crosses from one company to another
 export async function outsidePlanner(): Promise<TestPlanner> {
   await demoWorkspace();
   const company = await repositories.companies.upsert(uniqueName('Other Logistics'), 'Single');

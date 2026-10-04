@@ -14,7 +14,6 @@ import { roadDistanceKm, travelMinutes } from '../../utils/geo';
 import { timeToMinutes } from '../../utils/time';
 import { UNLIMITED } from './validation.service';
 
-// A break is only taken on a route long enough to run into it
 export const BREAK_THRESHOLD_MIN = 4 * 60;
 
 const TWO_OPT_PASSES = 40;
@@ -53,7 +52,6 @@ class Planner {
     this.matrix = points.map((from) => points.map((to) => roadDistanceKm(from, to)));
   }
 
-  // Position 0 is the depot; customer i sits at position i + 1
   private km(from: number, to: number): number {
     return this.matrix[from]?.[to] ?? 0;
   }
@@ -89,8 +87,6 @@ class Planner {
     return tour;
   }
 
-  // 2-opt on the stretch tour[from..to]; whatever sits on either side of it (the depot at the
-  // ends of the tour) stays where it is
   private twoOpt(tour: number[], from: number, to: number): void {
     for (let pass = 0; pass < TWO_OPT_PASSES; pass++) {
       let improved = false;
@@ -113,8 +109,6 @@ class Planner {
     }
   }
 
-  // Stops that share a delivery window are visited together, earliest window first, so a morning
-  // slot is not left for the end of the day. Within a window the order is the shortest found.
   order(positions: number[]): number[] {
     const byWindow = new Map<string, { middle: number; positions: number[] }>();
     for (const position of positions) {
@@ -166,8 +160,6 @@ class Planner {
     });
   }
 
-  // Customers sorted by bearing from the depot, starting after the widest empty sector, so
-  // neighbours end up on the same vehicle and no route straddles the gap
   sweep(depot: SolverDepot): number[] {
     const angled = this.customers
       .map((customer, index) => ({
@@ -194,8 +186,6 @@ class Planner {
   }
 }
 
-// Sweep construction with a nearest-neighbour + 2-opt ordering per vehicle. It is a heuristic
-// stand-in for the optimisation service: fast, deterministic, and it respects every vehicle limit.
 export function planRoutes(input: SolverInput): RoutePlan {
   const { depot, constraint } = input;
   const located = input.customers.filter(hasPoint);
@@ -236,8 +226,6 @@ export function planRoutes(input: SolverInput): RoutePlan {
       continue;
     }
 
-    // The vehicle next in line cannot take this order even on its own: give it a vehicle of its
-    // own from further down the fleet, if any can carry it
     const alternative = fleet.findIndex(
       (candidate, index) => index > 0 && planner.fits(candidate, [position]),
     );

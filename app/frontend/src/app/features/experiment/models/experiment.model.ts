@@ -343,6 +343,21 @@ export interface MyDepot {
   columns?: string[];
 }
 
+export interface DepotLocationInput {
+  depotId?: string;
+  id?: string;
+  depotName?: string;
+  name?: string;
+  latitude?: number | string;
+  longitude?: number | string;
+  columns?: string[];
+  inputdata?: DepotInputRequirement[];
+  timeWindowEarly?: string | number;
+  timeWindowLate?: string | number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface myDepots {
   depotName: string;
   latitude: string;

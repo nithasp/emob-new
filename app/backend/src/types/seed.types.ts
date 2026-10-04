@@ -9,7 +9,6 @@ export interface SeedDepot {
   longitude: number;
   timeWindowEarly: string;
   timeWindowLate: string;
-  /** Customers are drawn from districts within this distance of the depot. */
   serviceRadiusKm: number;
 }
 
@@ -43,13 +42,9 @@ export interface OrderOptions {
   depot: SeedDepot;
   orderCount: number;
   orderPrefix: string;
-  /** Share of orders that arrive without a coordinate and have to be placed from the address. */
   missingCoordinateShare?: number;
-  /** Orders whose coordinate disagrees with the address they name. */
   mismatchedCoordinates?: number;
-  /** Orders that name an area the gazetteer does not know, and carry no coordinate. */
   unknownAreas?: number;
-  /** Orders that include a product the product master does not list. */
   unlistedProductOrders?: number;
 }
 
@@ -85,11 +80,16 @@ export interface Scenario {
   ageHours: number;
   orders: Omit<OrderOptions, 'depot' | 'orderPrefix'>;
   orderPrefix: string;
-  /** How far the run got: only uploaded, validated and waiting, or submitted with that outcome. */
   stage: 'uploaded' | 'validated' | 'Succeeded' | 'Failed' | 'Cancelled';
-  /** Vehicles by count, or the first n registered plates of a type. */
   fleet: Array<{ type: TypeKey; count?: number; plates?: number }>;
   solveSeconds?: number;
-  /** A second run of the same group: a copy of this one that was run again and succeeded. */
   rerun?: { name: string; ageHours: number; solveSeconds: number; fleet: Scenario['fleet'] };
+}
+
+export interface SeedConfiguration {
+  name: string;
+  category: string;
+  columns: string[];
+  replace: boolean;
+  timestamp?: Date;
 }

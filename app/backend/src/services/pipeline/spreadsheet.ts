@@ -10,8 +10,6 @@ const CSV_DELIMITERS = [',', ';', '\t', '|'];
 const BOM = String.fromCharCode(0xfeff);
 const BOM_PATTERN = new RegExp(`^${BOM}`);
 
-// ExcelJS hands back an object for rich text, formulas and hyperlinks; a planner only ever means
-// the text they see in the cell
 function plainValue(value: ExcelJS.CellValue): CellValue {
   if (value === null || value === undefined) return null;
   if (typeof value === 'string') return value.trim();

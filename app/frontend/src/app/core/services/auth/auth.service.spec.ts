@@ -32,7 +32,6 @@ function user(overrides: Partial<AuthUser> = {}): AuthUser {
 
 const session = (expiresInSeconds = 900): AuthSession => ({ user: user(), accessToken: token(expiresInSeconds) });
 
-// How the browser says the page was loaded: 'reload' for a refresh, 'back_forward' for a reopened tab
 const loadedBy = (type: NavigationTimingType): void => {
   spyOn(performance, 'getEntriesByType').and.returnValue([{ type }] as unknown as PerformanceEntryList);
 };

@@ -1,14 +1,4 @@
 #!/usr/bin/env node
-/**
- * Builds one or more environments into version-scoped, per-environment folders.
- *
- * Usage:
- *   node scripts/build-envs.mjs dev
- *   node scripts/build-envs.mjs test prod
- *   node scripts/build-envs.mjs all
- *
- * Output layout: dist/<version>/<env>/browser
- */
 
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';

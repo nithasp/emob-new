@@ -51,7 +51,6 @@ export class RunVehicleSelectionService {
       const vehicleTypeId = vehicle.vehicleTypeId;
       if (!vehicleTypeId) continue;
 
-      // Check if this vehicle type exists in myVehicleTypes
       const vehicleTypeExists = this.fleet.myVehicleTypes.some(
         (v) => v.vehicleTypeId === vehicleTypeId,
       );
@@ -62,7 +61,6 @@ export class RunVehicleSelectionService {
         continue;
       }
 
-      // Determine selection mode based on data
       const hasCount =
         vehicle.numberOfVehiclesAvailable &&
         vehicle.numberOfVehiclesAvailable > 0;
@@ -72,24 +70,19 @@ export class RunVehicleSelectionService {
         vehicle.specificVehicleIds.length > 0;
 
       if (hasCount || hasSpecificVehicles) {
-        // Mark vehicle as selected
         if (!this.selectedVehicleIds.includes(vehicleTypeId)) {
           this.selectedVehicleIds.push(vehicleTypeId);
         }
 
         if (hasSpecificVehicles) {
-          // Set to license-plate mode
           this.vehicleSelectionMode[vehicleTypeId] = 'license-plate';
 
-          // Load license plates for these vehicle IDs
-          // Pass the numberOfVehiclesAvailable to use for count display
           await this.loadLicensePlatesForVehicleIds(
             vehicleTypeId,
             vehicle.specificVehicleIds!,
             vehicle.numberOfVehiclesAvailable,
           );
         } else if (hasCount) {
-          // Set to count mode
           this.vehicleSelectionMode[vehicleTypeId] = 'count';
           this.selectedVehicleCounts[vehicleTypeId] =
             vehicle.numberOfVehiclesAvailable!;
@@ -97,7 +90,6 @@ export class RunVehicleSelectionService {
       }
     }
 
-    // Open VRP: mirror historical selections into the run list UI
     this.rebuildRunListFromSelections();
 
     this.ui.detectChanges();
@@ -109,7 +101,6 @@ export class RunVehicleSelectionService {
     numberOfVehiclesAvailable?: number,
   ): Promise<void> {
     try {
-      // Fetch all vehicles for this vehicle type
       const vehicles = await firstValueFrom(
         this.vehicleService.getMyVehicles(
           this.state.experiment.depots[0].depotId,
@@ -117,22 +108,17 @@ export class RunVehicleSelectionService {
         ),
       );
 
-      // Filter to only the specific vehicle IDs
       const selectedVehicles = vehicles.filter((v) =>
         vehicleIds.includes(v.vehicleId),
       );
 
-      // Extract license plates
       const licensePlates = selectedVehicles
         .filter((v) => v.licensePlate)
         .map((v) => v.licensePlate);
 
-      // Update the component state
       this.selectedLicensePlates[vehicleTypeId] = licensePlates;
       this.selectedVehicleIdsByLicensePlate[vehicleTypeId] = vehicleIds;
 
-      // Use numberOfVehiclesAvailable from blob if provided
-      // If it's 0 or not provided, default to 1
       if (
         numberOfVehiclesAvailable !== undefined &&
         numberOfVehiclesAvailable !== null
@@ -147,10 +133,8 @@ export class RunVehicleSelectionService {
         `Error loading license plates for vehicle type ${vehicleTypeId}:`,
         error,
       );
-      // Fallback: just store the vehicle IDs
       this.selectedVehicleIdsByLicensePlate[vehicleTypeId] = vehicleIds;
 
-      // Use numberOfVehiclesAvailable if provided, otherwise default to 1
       if (
         numberOfVehiclesAvailable !== undefined &&
         numberOfVehiclesAvailable !== null
@@ -163,10 +147,6 @@ export class RunVehicleSelectionService {
     }
   }
 
-  /**
-   * Rebuild the run list UI from the legacy selection structures that are
-   * populated when a historical experiment is reloaded from blob storage.
-   */
   private rebuildRunListFromSelections(): void {
     const depotId =
       this.state.experiment?.depots?.[0]?.depotId || this.state.scopeDepotId || 'default';
@@ -185,8 +165,6 @@ export class RunVehicleSelectionService {
         startDepotName: depotName,
         endDepotId: depotId,
         endDepotName: depotName,
-        // the blob carries no trip count yet, so a restored group falls back
-        // to the vehicle type's own trips
         maxTrip: this.fleet.getVehicleTypeMaxTrip(vehicleTypeId),
         loadingDuration:
           this.fleet.getVehicleTypeMaxTrip(vehicleTypeId) > DEFAULT_MAX_TRIP
@@ -249,7 +227,6 @@ export class RunVehicleSelectionService {
       if (this.vehicleSelectionMode[vehicleId] != null) {
         delete this.vehicleSelectionMode[vehicleId];
       }
-      // Clear selected license plates when vehicle is unchecked
       if (this.selectedLicensePlates[vehicleId] != null) {
         delete this.selectedLicensePlates[vehicleId];
       }
@@ -280,7 +257,6 @@ export class RunVehicleSelectionService {
     this.ui.detectChanges();
   }
 
-  // The limit is a per-experiment constraint that applies to every vehicle, so the id is not read yet.
   getVehicleMaxCount(_vehicleId: string): number {
     const maxByConstraint = Number(
       this.params.constraintsData?.numberOfVehicleAvailable,
@@ -306,21 +282,15 @@ export class RunVehicleSelectionService {
     const previousMode = this.vehicleSelectionMode[vehicleId];
     this.vehicleSelectionMode[vehicleId] = mode;
 
-    // Only update mode, preserve existing count values
     if (previousMode !== mode) {
       if (mode === 'count') {
-        // Switching to count mode - keep existing count, ensure it has a minimum value of 1
         if (
           this.selectedVehicleCounts[vehicleId] == null ||
           this.selectedVehicleCounts[vehicleId] === 0
         ) {
           this.selectedVehicleCounts[vehicleId] = 1;
         }
-        // Note: We don't delete selectedLicensePlates or selectedVehicleIdsByLicensePlate
-        // so user can switch back without losing their selection
       } else {
-        // Switching to license-plate mode - preserve existing count value
-        // Count will only update when user actually selects/deselects license plates
         if (
           this.selectedVehicleCounts[vehicleId] == null ||
           this.selectedVehicleCounts[vehicleId] === 0
@@ -334,7 +304,6 @@ export class RunVehicleSelectionService {
   }
 
   openLicensePlateSelectionDialog(event: Event, vehicleId: string): void {
-    // Prevent the radio button from being triggered
     event.stopPropagation();
 
     const vehicleType = this.fleet.myVehicleTypes.find(
@@ -348,7 +317,6 @@ export class RunVehicleSelectionService {
       return;
     }
 
-    // Get the depot ID from the selected depot or experiment depots
     const depotId =
       this.state.getSelectedDepotObject()?.depotId ||
       this.state.experiment.depots?.[0]?.depotId;
@@ -368,7 +336,6 @@ export class RunVehicleSelectionService {
     modalRef.result.then(
       (result) => {
         if (result) {
-          // Store the selected license plates for this vehicle type
           this.selectedLicensePlates[vehicleId] = result.selectedLicensePlates;
           this.selectedVehicleIdsByLicensePlate[vehicleId] =
             result.selectedVehicleIds;
@@ -383,7 +350,6 @@ export class RunVehicleSelectionService {
     return this.selectedLicensePlates[vehicleId]?.length || 0;
   }
 
-  // Check if any selected vehicle in 'license-plate' mode has no vehicle IDs selected
   getInvalidVehicleSelections(): string[] {
     const invalidVehicles: string[] = [];
 

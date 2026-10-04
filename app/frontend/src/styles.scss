@@ -118,7 +118,6 @@ mat-icon {
 .custom-tooltip .tooltip-inner {
   background-color: white;
   color: black;
-  /* Optional: Change text color if needed */
 }
 
 .mat-step-header .mat-step-icon-selected,
@@ -196,27 +195,21 @@ mat-icon {
   }
 }
 
-/* Global styles.scss */
 #toast-container {
   .toast-success {
     background-color: #28a745 !important;
-    /* Green background for success toasts */
   }
 
   .toast-error {
     background-color: #dc3545 !important;
-    /* Red background for error toasts */
   }
 
   .toast-info {
     background-color: #18b3cb !important;
-    /* Blue background for info toasts */
   }
 
   .toast-warning {
     background-color: #a06a00 !important;
-    /* Deep amber: the toast text is white, and the bright yellow it replaces
-       left that text at ~1.6:1 contrast. This one reads at ~4.6:1 (WCAG AA). */
   }
 }
 
@@ -226,7 +219,6 @@ mat-icon {
 
 .custom-modal-width .modal-dialog {
   max-width: 90%;
-  /* Adjust the width as needed */
 }
 
 .custom-modal-content {
@@ -235,7 +227,6 @@ mat-icon {
 
 .custom-modal-width-sm .modal-dialog {
   max-width: 90%;
-  /* Adjust the width as needed */
 }
 
 .custom-modal-content-sm {
@@ -255,14 +246,12 @@ mat-icon {
   background-color: #28a745 !important;
   color: #ffffff !important;
 }
-// Fix for iOS bold text rendering
 strong {
   font-weight: bold !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-// display scrollbar when ngbModal is open
 .modal-open {
   overflow: unset !important;
 }

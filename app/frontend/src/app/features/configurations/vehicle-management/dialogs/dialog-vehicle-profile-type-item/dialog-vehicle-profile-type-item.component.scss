@@ -99,14 +99,12 @@
   }
 }
 
-// Badge styling
 .badge {
   font-size: 0.75rem;
   padding: 0.35em 0.65em;
   font-weight: 600;
 }
 
-// Scrollbar styling
 .modal-body::-webkit-scrollbar {
   width: 8px;
 }
@@ -125,7 +123,6 @@
   }
 }
 
-// Responsive adjustments
 @media (max-width: 768px) {
   .modal-body {
     .card-body {

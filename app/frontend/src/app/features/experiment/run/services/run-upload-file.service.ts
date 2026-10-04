@@ -144,7 +144,6 @@ export class RunUploadFileService {
 
     this.experimentService.getMyDepots().subscribe({
       next: (depots: MyDepot[]) => {
-        // Normalize depot structure for compatibility (moved from service)
         this.state.depots = (depots || []).map((depot: MyDepot) => ({
           ...depot,
           depotName: depot.depotName,
@@ -156,10 +155,8 @@ export class RunUploadFileService {
         if (this.state.depots && this.state.depots.length > 0) {
           this.state.selectedDepotIdName = this.state.depots[0].depotName;
 
-          // Update input data keys from the first depot
           this.updateInputDataKeysFromDepot(this.state.depots[0]);
           this.updateRequiredFileTypeByDepot(this.state.depots[0]);
-          // refresh dynamic parameters view for selected depot
           this.params.refreshDynamicParametersForSelectedDepot();
 
           if (this.state.selectedDepotIdName) {
@@ -169,7 +166,6 @@ export class RunUploadFileService {
             );
           }
 
-          // Initialize upload button state
           this.updateCanUploadState();
         }
       },
@@ -205,7 +201,6 @@ export class RunUploadFileService {
     );
     this.inputDataKeys = uniqueItems.map((item) => item.displayName);
 
-    // Update upload button state when depot requirements change
     this.updateCanUploadState();
   }
 
@@ -215,15 +210,11 @@ export class RunUploadFileService {
       return;
     }
 
-    // Check for duplicate categories
     if (this.hasAnyDuplicateCategories()) {
       this.canUpload = false;
       return;
     }
 
-    // Note: Duplicate file names and file sizes only show warnings but don't disable submit
-
-    // Get only required file types (where required === true)
     const requiredDisplayNames = this.depotInputDataItems
       .filter((item) => item.required === true)
       .map((item) => item.displayName);
@@ -235,8 +226,6 @@ export class RunUploadFileService {
       )
       .filter((displayName) => !!displayName);
 
-    // Check if all required files are uploaded
-    // If no files are required, every() returns true (allowing optional-only uploads)
     const allRequiredUploaded = requiredDisplayNames.every((required) =>
       uploadedDisplayNames.includes(required),
     );
@@ -257,17 +246,14 @@ export class RunUploadFileService {
   hasDuplicateCategory(fileObj: PreOrderFileItem): boolean {
     if (!fileObj.file.displayName) return false;
 
-    // Count how many files have the same displayName
     const count = this.preOrderFiles.filter(
       (item) => item.file.displayName === fileObj.file.displayName,
     ).length;
 
-    // If count > 1, this category is duplicated
     return count > 1;
   }
 
   hasAnyDuplicateCategories(): boolean {
-    // Check if any file in preOrderFiles has a duplicate category
     return this.preOrderFiles.some((fileObj) =>
       this.hasDuplicateCategory(fileObj),
     );
@@ -276,29 +262,24 @@ export class RunUploadFileService {
   hasDuplicateFileName(fileObj: PreOrderFileItem): boolean {
     if (!fileObj.file.name) return false;
 
-    // Count how many files have the same file name
     const count = this.preOrderFiles.filter(
       (item) => item.file.name === fileObj.file.name,
     ).length;
 
-    // If count > 1, this file name is duplicated
     return count > 1;
   }
 
   hasDuplicateFileSize(fileObj: PreOrderFileItem): boolean {
     if (!fileObj.file.size) return false;
 
-    // Only check for duplicate file size if file name is also duplicated
     if (!this.hasDuplicateFileName(fileObj)) return false;
 
-    // Count how many files have the same file size AND same file name
     const count = this.preOrderFiles.filter(
       (item) =>
         item.file.size === fileObj.file.size &&
         item.file.name === fileObj.file.name,
     ).length;
 
-    // If count > 1, this file size is duplicated (with matching name)
     return count > 1;
   }
 
@@ -311,13 +292,11 @@ export class RunUploadFileService {
   getFileWarningMessages(fileObj: PreOrderFileItem): string[] {
     const messages: string[] = [];
 
-    // Check duplicate file name first
     if (this.hasDuplicateFileName(fileObj)) {
       messages.push(
         this.transloco.translate('duplicate_file_name', {}, 'index'),
       );
 
-      // Only check duplicate file size if file name is also duplicated
       if (this.hasDuplicateFileSize(fileObj)) {
         messages.push(
           this.transloco.translate('duplicate_file_size', {}, 'index'),
@@ -331,13 +310,11 @@ export class RunUploadFileService {
   getAllErrorMessages(fileObj: PreOrderFileItem): string {
     const messages: string[] = [];
 
-    // Add file warning messages if any (WARNING - displayed first)
     if (this.hasFileWarning(fileObj)) {
       const warningMessages = this.getFileWarningMessages(fileObj);
       messages.push(...warningMessages);
     }
 
-    // Add duplicate category message if applicable (ERROR - displayed after warnings)
     if (this.hasDuplicateCategory(fileObj)) {
       messages.push(
         this.transloco.translate(

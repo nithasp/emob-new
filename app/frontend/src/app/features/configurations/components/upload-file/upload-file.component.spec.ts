@@ -19,7 +19,6 @@ function createFileList(...files: File[]): FileList {
   return dataTransfer.files;
 }
 
-/** Simulates the (change) event of the hidden <input type="file">. */
 function createInputChangeEvent(...files: File[]): Event {
   const input = document.createElement('input');
   input.type = 'file';
@@ -27,7 +26,6 @@ function createInputChangeEvent(...files: File[]): Event {
   return { target: input } as unknown as Event;
 }
 
-/** Builds a real .xlsx File whose first row contains the given headers. */
 async function createExcelFile(
   headers: string[],
   name = 'config.xlsx'
@@ -94,7 +92,6 @@ describe('UploadFileComponent', () => {
       ],
       schemas: [NO_ERRORS_SCHEMA],
     })
-      // Replace the template so we don't pull in transloco pipes.
       .overrideComponent(UploadFileComponent, { set: { template: '' } })
       .compileComponents();
 
@@ -228,8 +225,6 @@ describe('UploadFileComponent', () => {
 
   describe('resetFileInput', () => {
     it('should clear the input value so the same file can be re-selected', () => {
-      // A text input stands in for the file input, whose value cannot be
-      // programmatically set to a non-empty string.
       const input = document.createElement('input');
       input.value = 'previous.xlsx';
 
@@ -325,7 +320,6 @@ describe('UploadFileComponent', () => {
       ngbModalSpy.open.and.returnValue(modalRef);
 
       await invokeUploadFile(file);
-      // Let the dialogRef.result.then(...) callback run.
       await Promise.resolve();
 
       expect(ngbModalSpy.open).toHaveBeenCalledWith(DialogConfirmationComponent, {

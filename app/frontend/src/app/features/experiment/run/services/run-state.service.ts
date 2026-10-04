@@ -3,7 +3,6 @@ import { Experiment, Run, Validate, MyDepot } from '../../models/experiment.mode
 
 @Injectable()
 export class RunStateService {
-  // store data
   public experiment = <Experiment>{};
   isCreateMode: boolean = false;
   public isUpload: boolean = false;
@@ -30,10 +29,6 @@ export class RunStateService {
       (depot) => depot.depotName === this.selectedDepotIdName,
     );
   }
-
-  // ======================================================================
-  // Open VRP — depot scope (global switcher)
-  // ======================================================================
 
   get scopeDepotId(): string {
     if (!this.isFileSelectionStep && this.experiment?.depots?.length) {

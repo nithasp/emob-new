@@ -27,7 +27,6 @@ export function getNumberValue(value: NumberValue): number {
   }
 
   if (typeof value === 'object') {
-    // For objects, try to convert to string first
     const stringValue = String(value);
     const numValue = Number(stringValue);
     return isNaN(numValue) ? 0 : numValue;

@@ -36,7 +36,6 @@ function codeOf(body: string): string | undefined {
   }
 }
 
-/** A file download asks for a Blob, so the API's JSON error arrives as one and has to be read first. */
 function errorCode(error: HttpErrorResponse): Observable<string | undefined> {
   const body: unknown = error.error;
   if (body instanceof Blob) {
@@ -53,8 +52,6 @@ function errorCode(error: HttpErrorResponse): Observable<string | undefined> {
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  // Resolved on first use: the services below need HttpClient, which is still being built while
-  // the interceptors are created
   constructor(private readonly injector: Injector) {}
 
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
@@ -68,8 +65,6 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(req).pipe(catchError((error: HttpErrorResponse) => this.handleError(error, req, next)));
     }
 
-    // A token the client already knows to be expired is renewed before the request leaves, which
-    // saves the round trip that would only come back as 401
     if (!authService.hasValidToken()) {
       return this.retryWithFreshToken(req, next);
     }

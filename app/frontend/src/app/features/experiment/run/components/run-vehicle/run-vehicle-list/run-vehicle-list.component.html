@@ -11,8 +11,6 @@
       {{ t("run_list_hint") }}
     </div>
 
-    <!-- one block per vehicle type; inside a block the
-         return-to-depot rows come first, open routes last -->
     <div class="openvrp-lgroup rounded-3" *ngFor="
         let group of fleet.runVehicleGroups;
         trackBy: trackRunVehicleGroup

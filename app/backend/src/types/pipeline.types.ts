@@ -2,7 +2,6 @@ import { Depot, DepotInputData } from './company.types';
 import { LatLng } from './geo.types';
 import { Constraint } from './parameter.types';
 
-// Values the frontend groups customers by; it reads them as plain strings.
 export const REPLACE_TYPE = {
   subdistrict: 'SUB_DISTRICT CENTROID',
   district: 'DISTRICT CENTROID',
@@ -90,8 +89,6 @@ export interface CustomerNode {
   extra: { orderId: string; channel: string; customerName: string; tel: string; productsInfo: never[] };
 }
 
-// A depot as the run page reads it: the node fields the map needs plus the depot's own master
-// data, since the page replaces its depot list with these entries after an upload.
 export interface DepotNode {
   id: string;
   depotId: string;
@@ -197,7 +194,6 @@ export interface VehicleSelectionInput {
   numberOfVehiclesAvailable?: number | null | undefined;
 }
 
-// Saved next to the run so the page can restore the vehicle tab when it is reopened.
 export interface VehicleSelection {
   vehicleTypeId: string;
   numberOfVehiclesAvailable: number;

@@ -14,7 +14,6 @@ import { HttpHeaders, provideHttpClient, withFetch, withInterceptorsFromDi } fro
 import { logError, logMessage } from './services/logger.service';
 
 if (!environment.production) {
-  // Adds messages only in a dev environment
   loadDevMessages();
   loadErrorMessages();
 }

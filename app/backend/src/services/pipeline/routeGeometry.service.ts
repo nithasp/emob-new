@@ -55,8 +55,6 @@ async function fromOsrm(points: LatLng[]): Promise<RouteGeometry | null> {
   };
 }
 
-// Road geometry comes from an OSRM server when one is configured. Without one, or when it does
-// not answer, the legs are straight lines with an estimated road distance.
 export async function routeGeometry(points: LatLng[]): Promise<RouteGeometry> {
   if (config.solver.osrmUrl && points.length > 1) {
     try {

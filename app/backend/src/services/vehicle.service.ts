@@ -8,6 +8,7 @@ import {
   Vehicle,
   VehicleCreationResult,
   VehicleFilters,
+  VehicleReferences,
   VehicleRow,
   VehicleType,
 } from '../types/vehicle.types';
@@ -56,14 +57,7 @@ export function createVehicleService({ vehicles, vehicleTypes, depots }: Vehicle
 
   // A depot or vehicle type id from another company matches no row here, so a vehicle can never be
   // attached to another tenant's master data (OWASP API1)
-  async function assertReferences(
-    companyId: string,
-    refs: {
-      startDepotId?: string | undefined;
-      endDepotId?: string | undefined;
-      vehicleTypeId?: string | undefined;
-    },
-  ): Promise<void> {
+  async function assertReferences(companyId: string, refs: VehicleReferences): Promise<void> {
     const depotIds = [...new Set([refs.startDepotId, refs.endDepotId].filter((id): id is string => !!id))];
     if (depotIds.length) {
       const found = await depots.findByIds(companyId, depotIds);

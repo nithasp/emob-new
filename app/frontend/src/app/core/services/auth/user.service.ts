@@ -10,7 +10,6 @@ export class UserService {
 
   constructor(private readonly authService: AuthService) {}
 
-  /** The id experiments carry as `triggeredBy`; emitted once the session has been restored. */
   getUserId(): Observable<string | null> {
     return this.authService.authInitialized$.pipe(
       filter((initialized) => initialized),

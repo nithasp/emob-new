@@ -12,8 +12,6 @@ describe('DialogVerifyLocationComponent', () => {
       declarations: [DialogVerifyLocationComponent],
       schemas: [NO_ERRORS_SCHEMA],
     })
-      // Replace the template so we don't pull in transloco pipes/child
-      // elements used by the real verify-location template.
       .overrideComponent(DialogVerifyLocationComponent, {
         set: { template: '' },
       })

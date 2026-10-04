@@ -14,7 +14,6 @@ CREATE TABLE depots (
 
 CREATE INDEX idx_depots_company_id ON depots(company_id);
 
--- The files a run of this depot expects, and the header columns each one must carry.
 CREATE TABLE depot_input_data (
     id BIGSERIAL PRIMARY KEY,
     depot_id UUID NOT NULL REFERENCES depots(depot_id) ON DELETE CASCADE,

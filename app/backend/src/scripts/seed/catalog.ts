@@ -98,7 +98,6 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   product('P1100', 'Laundry Detergent 800 g x 12', 'Case', 10.3, 0.018),
 ];
 
-// Ordered in the files but absent from the product master: the transform reports them as missing
 export const UNLISTED_PRODUCTS: SeedProduct[] = [
   product('P9001', 'Seasonal Gift Basket (New)', 'Basket', 0, 0),
   product('P9002', 'Cold Brew Coffee 250 ml x 12 (Trial)', 'Pack', 0, 0),

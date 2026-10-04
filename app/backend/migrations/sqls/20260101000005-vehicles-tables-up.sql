@@ -27,8 +27,6 @@ CREATE TABLE vehicle_types (
 
 CREATE UNIQUE INDEX vehicle_types_company_name_key ON vehicle_types (company_id, LOWER(name));
 
--- Vehicles are master data in a central pool. The depot ids are a home base only; a run picks the
--- start and end depot per vehicle group.
 CREATE TABLE vehicles (
     vehicle_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,

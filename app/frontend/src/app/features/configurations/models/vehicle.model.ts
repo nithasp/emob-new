@@ -243,7 +243,6 @@ export interface OpenVrpRunVehicleEntry {
 export interface OpenVrpRunVehicleGroup {
   vehicleTypeId: string;
   vehicleTypeName: string;
-  /** Vehicles across every row of this type. */
   total: number;
   entries: OpenVrpRunVehicleEntry[];
 }
@@ -253,9 +252,7 @@ export interface OpenVrpPoolBuilder {
   count: number;
   endOfRoute: OpenVrpEndOfRoute;
   chosenVehicleIds: string[];
-  /** null follows the depot in scope */
   startDepotId: string | null;
-  /** null follows the start depot */
   endDepotId: string | null;
   maxTrip: number;
   loadingDuration: string | null;
@@ -276,7 +273,6 @@ export interface OpenVrpVehiclePreset {
   entries: OpenVrpPresetEntry[];
 }
 
-/** The figures one summary block shows, for a depot or for the whole fleet. */
 export interface OpenVrpRunSummaryTotals {
   total: number;
   returnCount: number;
@@ -288,9 +284,14 @@ export interface OpenVrpRunSummaryTotals {
 export interface OpenVrpDepotSummary {
   depotId: string;
   depotName: string;
-  /** Sample data standing in for a depot the API does not report yet. */
   isMock: boolean;
   totals: OpenVrpRunSummaryTotals;
+}
+
+export interface OpenVrpSummaryView {
+  depots: OpenVrpDepotSummary[];
+  grandTotals: OpenVrpRunSummaryTotals;
+  isMultiDepot: boolean;
 }
 
 export interface OpenVrpDepotRunList {

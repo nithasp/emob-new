@@ -29,11 +29,11 @@ tr:nth-child(even) {
   align-items: center;
 }
 .custom-overlay-container {
-  z-index: 1000; /* Adjust the value as needed */
+  z-index: 1000;
 }
 
 .active {
-  background-color: #d3d3d3; /* Change this to your desired color */
+  background-color: #d3d3d3;
   border-left: 5px solid #0e145f;
   padding-bottom: 10px;
 }

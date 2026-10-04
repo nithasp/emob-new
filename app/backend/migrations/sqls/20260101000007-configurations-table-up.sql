@@ -1,5 +1,3 @@
--- file_blob_path is the object key in storage. An 'actual' row with an empty path is the slot new
--- actual-location files are uploaded into; each upload becomes a dated row of its own.
 CREATE TABLE configurations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,

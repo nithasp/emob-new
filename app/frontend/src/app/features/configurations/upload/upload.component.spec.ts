@@ -64,7 +64,6 @@ describe('UploadComponent', () => {
       'translate',
     ]);
 
-    // Default return value to keep ngOnInit happy.
     configurationService.getConfigurations.and.returnValue(
       of({ configurations: [] } as unknown as GraphqlResponse)
     );
@@ -80,8 +79,6 @@ describe('UploadComponent', () => {
         { provide: TranslocoService, useValue: transloco },
       ],
     })
-      // Replace the template so we don't pull in transloco pipes/material
-      // tree/table dependencies used purely for display.
       .overrideComponent(UploadComponent, { set: { template: '' } })
       .compileComponents();
 

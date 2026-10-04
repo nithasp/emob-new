@@ -10,8 +10,6 @@ const UNIQUE_MESSAGES: Array<[prefix: string, message: string]> = [
   ['vehicle_types_company_name', 'A vehicle type with that name already exists'],
 ];
 
-// Shared by the REST error handler and the GraphQL error formatter, so a constraint the database
-// enforces reads the same on both
 export function fromPostgres(err: PostgresError): HandledError | null {
   switch (err.code) {
     case '23505':

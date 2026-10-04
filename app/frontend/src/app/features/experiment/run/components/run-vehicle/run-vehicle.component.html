@@ -1,6 +1,5 @@
 <ng-container *transloco="let t; read: 'index'">
   <div style="min-height: 720px" class="openvrp-vehicle-tab">
-    <!-- Header: title + preset configuration -->
     <div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mt-4 mb-2">
       <div>
         <h2 class="mb-1 fw-bold">{{ t("select_vehicle_from_pool") }}</h2>
@@ -98,15 +97,11 @@
       {{ t("no_vehicle_in_run_list") }}
     </p>
 
-    <!-- 3-pane layout: pool config panel / run list / summary -->
     <div class="row g-3 openvrp-three mt-1" [class.vehicle-selection-error]="fleet.vehicleSelectionError">
-      <!-- Pane 1: vehicle pool (configuration panel) -->
       <app-run-vehicle-pool class="col-lg-4 col-md-6"></app-run-vehicle-pool>
 
-      <!-- Pane 2: run list (selected vehicles) -->
       <app-run-vehicle-list class="col-lg-5 col-md-6"></app-run-vehicle-list>
 
-      <!-- Pane 3: summary -->
       <app-run-vehicle-summary class="col-lg-3 col-md-12"></app-run-vehicle-summary>
     </div>
 
@@ -133,7 +128,6 @@
     </div>
   </div>
 
-  <!-- Open VRP: save preset dialog -->
   <ng-template #savePresetModal let-modal>
     <div class="modal-header">
       <h4 class="modal-title">{{ t("save_preset") }}</h4>

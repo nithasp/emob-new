@@ -13,43 +13,28 @@ import {
   VrpSolutionData,
   VrpGeoJsonData,
 } from '../../models/location.model';
+import { VrpDashboardCard, VrpDashboardRow } from '../../models/result.model';
 import { ExperimentFileService } from '../../services/experiment-file.service';
 
 @Injectable()
 export class ResultPlanService {
   private readonly logger = inject(LoggerService);
 
-  // data store
   experiment?: Experiment;
   isLoading: boolean = true;
-  // API-fetched plan data
   private vrpStatsData: Record<string, unknown> = {};
   vrpSolutionData: VrpSolutionData = {};
   geoJsonRawData: VrpGeoJsonData = {};
-  // VRP routing nodes for data lookup
   routingNodes: RoutingNode[] = [];
   routingNodesMap: Record<number, RoutingNode> = {};
   routingNodesByIdMap: Record<string, RoutingNode> = {};
   headersReport: string[] = [];
   dataSourceReport: ReportDataItem[] = [];
-  vrpDashboardCards: {
-    label: string;
-    value: string | number;
-    isFeasible?: boolean;
-  }[] = [];
-  vrpDashboardRows: {
-    index: number;
-    metric: string;
-    totalValue: number | null;
-    excessValue: number | null;
-    unit: string;
-    statusOk: boolean | null;
-  }[] = [];
+  vrpDashboardCards: VrpDashboardCard[] = [];
+  vrpDashboardRows: VrpDashboardRow[] = [];
   dataRouteInfo = new MatTableDataSource<RouteInfo>([]);
   routeInfoDetails: RouteInfo | null = null;
 
-  // The page used to do this work itself, in one flow. These mark the two points of that flow
-  // where the route table and the filter take over, so both still happen at the same moment.
   readonly routesBuilt$ = new Subject<void>();
   readonly planLoaded$ = new Subject<void>();
 

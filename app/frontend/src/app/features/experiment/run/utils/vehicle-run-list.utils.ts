@@ -5,16 +5,11 @@ import {
   OpenVrpRunVehicleGroup,
 } from '@features/configurations/models/vehicle.model';
 
-/** Return-to-depot rows lead each block; open routes sink to the bottom. */
 const ROUTE_ORDER: Record<OpenVrpEndOfRoute, number> = {
   return: 0,
   no_return: 1,
 };
 
-/**
- * Two rows describe the same vehicles when only their size tells them apart:
- * same type, same way of picking, same route and same trips.
- */
 function isSameRunCondition(
   a: OpenVrpRunVehicleEntry,
   b: OpenVrpRunVehicleEntry,
@@ -30,12 +25,6 @@ function isSameRunCondition(
   );
 }
 
-/**
- * Adds `entry` to the run list, unless a row with exactly the same conditions
- * is already there. That row then takes the vehicles — plates are unioned so
- * a vehicle is never listed twice — and is returned, so the caller can tell
- * the planner that no new row was created.
- */
 export function addOrMergeRunEntry(
   list: OpenVrpRunVehicleEntry[],
   entry: OpenVrpRunVehicleEntry,
@@ -61,11 +50,6 @@ export function addOrMergeRunEntry(
   return existing;
 }
 
-/**
- * One block per vehicle type, in the order each type first joined the run.
- * Inside a block closed routes come first and open routes last; rows sharing
- * a route keep the order they were added in.
- */
 export function groupRunEntriesByVehicleType(
   entries: OpenVrpRunVehicleEntry[] | undefined,
 ): OpenVrpRunVehicleGroup[] {
@@ -89,7 +73,6 @@ export function groupRunEntriesByVehicleType(
   }
 
   for (const group of groups) {
-    // Array#sort is stable, so rows on the same route keep insertion order
     group.entries.sort(
       (a, b) => ROUTE_ORDER[a.endOfRoute] - ROUTE_ORDER[b.endOfRoute],
     );

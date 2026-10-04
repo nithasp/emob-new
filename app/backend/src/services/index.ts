@@ -58,8 +58,6 @@ export const configurationService = createConfigurationService({
   storage: storageService,
 });
 
-// The runner and the experiment service need each other: the runner calls back into the service
-// to plan a run, so it is handed a function that resolves the service when a job fires
 export const experimentRunner = createExperimentRunner({
   experiments,
   solve: (runId) => experimentService.solve(runId),

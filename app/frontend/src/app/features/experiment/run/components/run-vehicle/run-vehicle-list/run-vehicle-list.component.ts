@@ -56,11 +56,6 @@ export class RunVehicleListComponent {
     return `${entry.startDepotName} → ${this.transloco.translate('ends_at_last_stop', {}, 'index')}`;
   }
 
-  /**
-   * The run list scrolls on its own, so the row that grew can sit below the
-   * fold — where neither the highlight nor the changed count would be seen.
-   * `nearest` leaves a row that is already visible where it is.
-   */
   private scrollRunEntryIntoView(entryId: number): void {
     // after the pending change detection, so the row is laid out with its
     // new count before it is measured
@@ -74,7 +69,6 @@ export class RunVehicleListComponent {
     });
   }
 
-  /** Honours the OS "reduce motion" setting for animated feedback. */
   private prefersReducedMotion(): boolean {
     return (
       window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false

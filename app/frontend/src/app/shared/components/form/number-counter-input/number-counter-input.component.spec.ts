@@ -12,7 +12,6 @@ describe('NumberCounterInputComponent', () => {
       declarations: [NumberCounterInputComponent],
       schemas: [NO_ERRORS_SCHEMA],
     })
-      // Replace the template so we don't pull in transloco pipes.
       .overrideComponent(NumberCounterInputComponent, {
         set: { template: '' },
       })

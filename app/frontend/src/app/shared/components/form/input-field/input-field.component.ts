@@ -52,11 +52,11 @@ export class InputFieldComponent
   @Input() decimal: number = 0;
   @Input() comma: boolean = false;
   @Input() suffix: string = '';
-  @Input() suffixIcon?: string; // Icon name for dynamic suffix icon button
-  @Input() suffixClickable: boolean = false; // Whether the suffix icon should be clickable
+  @Input() suffixIcon?: string;
+  @Input() suffixClickable: boolean = false;
 
   @Output() valueChange: EventEmitter<string> = new EventEmitter<string>();
-  @Output() suffixIconClick: EventEmitter<void> = new EventEmitter<void>(); // Event emitter for suffix icon clicks
+  @Output() suffixIconClick: EventEmitter<void> = new EventEmitter<void>();
 
   private controlSubscription?: Subscription;
 

@@ -1,6 +1,6 @@
 import pool from '../database';
 import { Queryable } from '../types/database.types';
-import { VehicleFilters, VehicleRow, VehicleUpdate } from '../types/vehicle.types';
+import { NewVehicle, VehicleFilters, VehicleRow, VehicleUpdate } from '../types/vehicle.types';
 import { requireRow } from '../utils/rows';
 
 export class VehicleRepository {
@@ -47,11 +47,7 @@ export class VehicleRepository {
     return rows.map((row) => row.license_plate as string);
   }
 
-  async create(
-    companyId: string,
-    vehicle: { licensePlate: string; startDepotId: string; endDepotId: string; vehicleTypeId: string },
-    db: Queryable = pool,
-  ): Promise<VehicleRow> {
+  async create(companyId: string, vehicle: NewVehicle, db: Queryable = pool): Promise<VehicleRow> {
     const { rows } = await db.query(
       `INSERT INTO vehicles (company_id, license_plate, start_depot_id, end_depot_id, vehicle_type_id)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,

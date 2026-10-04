@@ -5,8 +5,6 @@ import { contentTypeOf } from './keys';
 
 const isMissing = (err: unknown): boolean => (err as NodeJS.ErrnoException).code === 'ENOENT';
 
-// Development stand-in for the bucket: the same keys become paths under one folder, so switching
-// to R2 changes nothing for the code that reads and writes objects
 export class LocalStorageDriver implements StorageDriver {
   readonly name = 'local';
 

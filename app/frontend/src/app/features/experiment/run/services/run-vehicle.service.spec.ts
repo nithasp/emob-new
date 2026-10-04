@@ -34,9 +34,6 @@ describe('RunVehicleService', () => {
     });
 
     it('buildVehiclesPayload() aggregates several run-list rows of one type', () => {
-      // The run list may hold the same vehicle type more than once, one row per
-      // set of routing conditions. The validation contract takes one entry per
-      // type, so the rows are summed (and plates de-duplicated) here.
       fleet.runVehicleList.push(
         createRunEntry({ vehicleTypeId: 'v1', mode: 'count', count: 3 }),
         createRunEntry({

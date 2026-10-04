@@ -25,7 +25,6 @@ export class LayoutComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroying$))
       .subscribe((user) => {
         this.setLoginDisplay(user);
-        // The session ended in this tab or was cleared by the interceptor
         if (!user) {
           this.router.navigate(['/login']);
         }

@@ -1,6 +1,5 @@
 <ng-container *transloco="let t; read: 'vehicleManagement'">
   <div id="vehicle-dialog" class="px-3 py-4 w-100 position-relative" [class.is-loading]="isLoading">
-    <!-- Loading State -->
     <div *ngIf="isLoading"
       class="d-flex flex-column align-items-center justify-content-center position-absolute w-100 h-100 bg-white"
       style="z-index: 10; top: 0; left: 0; right: 0; bottom: 0">
@@ -8,36 +7,26 @@
       <p class="mt-3 text-secondary small text-center">{{ t("loading_vehicle_data") }}</p>
     </div>
 
-    <!-- Main Content -->
     <div *ngIf="!isLoading" class="w-100 h-100">
-      <!-- Header -->
       <div class="modal-header border-0 pb-2">
         <h1 class="fw-bold h4 modal-title">
           {{ t(isViewMode ? "view_vehicle" : isEditMode ? "edit_vehicle" : "add_vehicle") }}
         </h1>
       </div>
 
-      <!-- Form Body -->
       <div class="modal-body pb-0">
         <form [formGroup]="form" class="d-flex flex-column gap-3 gap-sm-2 mt-3">
-          <!-- Vehicle Type -->
           <app-input-select idAttribute="vehicleTypeId" valueAttribute="name" [placeholder]="t('vehicle_type')"
             [options]="vehicleTypeOptions" [control]="form.controls.vehicleType" [required]="true"
             [disabled]="isViewMode">
           </app-input-select>
 
-          <!-- Vehicle Pool: depot binding removed from master data.
-               Vehicles live in a central pool; the depot and routing conditions
-               are assigned per run in the Open VRP vehicle selection phase. -->
-
-          <!-- License Plate (Edit/View Mode) -->
           <div *ngIf="isEditMode || isViewMode">
             <app-input-field class="w-100" [placeholder]="t('license_plate')" [control]="form.controls.licensePlate"
               [required]="true" [disabled]="isViewMode">
             </app-input-field>
           </div>
 
-          <!-- License Plate (Create Mode) -->
           <div *ngIf="!isEditMode && !isViewMode">
             <div class="row g-2 align-items-stretch">
               <div class="col-12 col-sm flex-grow-1">
@@ -53,7 +42,6 @@
               </div>
             </div>
 
-            <!-- License Plates List -->
             <div *ngIf="licensePlates.length > 0" class="bg-light rounded-3 p-3 overflow-auto mt-2">
               <div class="row row-cols-1 row-cols-sm-2 g-2">
                 <div class="col" *ngFor="let plate of licensePlates; let i = index">
@@ -74,7 +62,6 @@
         </form>
       </div>
 
-      <!-- Footer -->
       <div class="modal-footer border-0 pt-3">
         <div class="row g-2 m-0 p-0 w-100 justify-content-end">
           <div class="btn-action col-12 col-sm-auto">

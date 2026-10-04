@@ -7,8 +7,6 @@ import { Area, GeneratedOrders, OrderOptions, SeedDepot, SeedProduct } from '../
 import { haversineKm, round } from '../../utils/geo';
 import { SEED_PRODUCTS, UNLISTED_PRODUCTS } from './catalog';
 
-// Deterministic generator: the same seed always produces the same orders, so a re-seed leaves the
-// demo looking the way it did
 export class Random {
   constructor(private state: number) {}
 
@@ -31,7 +29,6 @@ export class Random {
     return this.next() < probability;
   }
 
-  /** Roughly bell-shaped around zero, within +/- spread. */
   spread(spread: number): number {
     return ((this.next() + this.next() + this.next()) / 3 - 0.5) * 2 * spread;
   }

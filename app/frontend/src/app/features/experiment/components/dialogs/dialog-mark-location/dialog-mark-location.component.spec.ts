@@ -35,7 +35,7 @@ describe('DialogMarkLocationComponent', () => {
     component = fixture.componentInstance;
     component.location = { latitude: 13.7563, longitude: 100.5018 };
     component.address = '123 Test Street';
-    fixture.detectChanges(); // runs ngOnInit + ngAfterViewInit (map init + initial marker)
+    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -61,7 +61,6 @@ describe('DialogMarkLocationComponent', () => {
     expect(component.isEditLocation).toBeTrue();
     expect(component.location.longitude).toBeCloseTo(100.6, 4);
     expect(component.location.latitude).toBeCloseTo(13.8, 4);
-    // marker is cleared and re-added, so still exactly one feature
     expect(component.vectorSource.getFeatures().length).toBe(1);
   });
 

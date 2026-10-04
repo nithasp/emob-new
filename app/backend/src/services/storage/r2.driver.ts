@@ -17,7 +17,6 @@ const isMissing = (err: unknown): boolean => {
   return name === 'NoSuchKey' || name === 'NotFound' || $metadata?.httpStatusCode === 404;
 };
 
-// Cloudflare R2 speaks the S3 API: the region is always "auto" and the endpoint carries the account
 export class R2StorageDriver implements StorageDriver {
   readonly name = 'r2';
   private readonly client: S3Client;

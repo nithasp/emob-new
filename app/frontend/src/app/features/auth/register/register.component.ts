@@ -8,7 +8,6 @@ import { RegisterField } from '@core/models/auth.model';
 import { AuthService } from '@core/services/auth/auth.service';
 import { applySavedLanguage, authErrorMessage, passwordsMatch, switchLanguage } from '../auth-page.utils';
 
-// The same rules the API applies, so a rejected value is caught before the request is sent
 const USERNAME_PATTERN = /^[\p{L}\p{N}._@+-]+$/u;
 const MIN_USERNAME_LENGTH = 3;
 const MIN_PASSWORD_LENGTH = 8;
@@ -67,7 +66,6 @@ export class RegisterComponent implements OnInit {
     return (control.invalid || mismatch) && control.touched;
   }
 
-  /** Translation key of the first problem with a field, shown under it. */
   errorKey(field: RegisterField): string {
     const errors = this.form.controls[field].errors;
     if (errors?.['required']) return 'error_required';

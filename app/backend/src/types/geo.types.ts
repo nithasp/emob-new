@@ -39,3 +39,9 @@ export interface AddressParts {
   district?: string | null | undefined;
   province?: string | null | undefined;
 }
+
+export interface NearestDistrict {
+  province: string;
+  district: string;
+  distanceKm: number;
+}

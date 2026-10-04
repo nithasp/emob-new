@@ -6,8 +6,6 @@ import { requireRow } from '../utils/rows';
 const DEPOT_FIELDS = `d.depot_id, d.depot_name, d.latitude, d.longitude, d.time_window_early, d.time_window_late,
   d.created_at, d.updated_at, c.company_name`;
 
-// The input definitions ride along as one JSON column, so a depot list costs a single query
-// instead of one more per depot
 const SELECT_DEPOTS = `
   SELECT ${DEPOT_FIELDS},
     COALESCE(

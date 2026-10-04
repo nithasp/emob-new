@@ -1,9 +1,5 @@
 import { GazetteerDistrict, GazetteerProvince } from '../types/geo.types';
 
-// Administrative areas of the Bangkok Metropolitan Region with an approximate centre point each.
-// It stands in for the geocoding service: enough to place an address that arrives without
-// coordinates and to sanity-check one that arrives with them.
-
 const district = (
   en: string,
   th: string,

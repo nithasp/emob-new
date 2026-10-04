@@ -1,6 +1,3 @@
-// The file layouts a depot run is fed with. The seed writes them into depot_input_data and the
-// configuration rows; the transform step reads uploads by the same names.
-
 export const INPUT_KEYS = {
   preorder: 'preorder',
   timeWindow: 'time_window',

@@ -337,8 +337,6 @@ export class DialogVehicleTypeComponent implements OnInit, OnDestroy {
               this.maximumDurationObject = this.parseTimeString(maximumDuration);
             }
 
-            // Angular form can't assign array value to the form array directly,
-            // so we need to push it to the form array
             if (data.allowedBreaks && Array.isArray(data.allowedBreaks)) {
               this.allowedBreaks.clear();
               this.breakTimeObjects = [];
@@ -346,12 +344,10 @@ export class DialogVehicleTypeComponent implements OnInit, OnDestroy {
               data.allowedBreaks.forEach((breakData: Break) => {
                 const mappedBreakData = this.mapBreakDataToForm(breakData);
 
-                // Push the break data to the form array
                 this.allowedBreaks.push(
                   this.createBreakFormGroup(mappedBreakData)
                 );
 
-                // Assign default time, duration values to ngb-timepicker
                 this.breakTimeObjects.push(
                   this.createBreakTimeObjects(mappedBreakData)
                 );

@@ -130,16 +130,14 @@ export class RunUploadFileComponent {
         if (confirmed) {
           this.spinner.show();
 
-          // Send the file exactly as the user picked it. The backend parses each
-          // upload according to its inputdata fileFormatType, so a .csv must stay
-          // real CSV bytes — the AI service reads it back with pandas.read_csv.
+          // Send the file exactly as the user picked it. The backend parses each upload by its file
+          // extension, so a .csv must stay real CSV bytes.
           const newPayload = this.files.preOrderFiles
             .filter((item): item is { id: string; file: FileWithCategory } =>
               this.files.isFileWithCategory(item.file),
             )
             .map(({ file }) => ({ file, keyName: file.keyName || '' }));
 
-          // Prepare depotIds (single or multiple selection)
           let depotIds: string[] = [];
           if (this.state.selectedDepotIdName) {
             const found = this.state.depots.find(
@@ -168,8 +166,6 @@ export class RunUploadFileComponent {
                   this.files.setTransformWarnings([]);
                 }
 
-                // getExperiment step
-                // Refresh experiment data first, then proceed with grouping to ensure latest depots exist
                 this.experimentService
                   .getExperiment(this.state.experiment.runId)
                   .pipe(take(1))
@@ -213,10 +209,8 @@ export class RunUploadFileComponent {
                           'index',
                         )}.`,
                       );
-                      // Fetch latest dynamic parameters for the selected depot and rebuild UI
                       this.params.getDynamicParameters();
 
-                      // Update upload button state after successful upload
                       this.files.updateCanUploadState();
                       this.spinner.hide();
                     },
@@ -273,12 +267,10 @@ export class RunUploadFileComponent {
     this.runMap.vectorSource.clear();
     this.state.isUpload = false;
     setTimeout(() => {
-      /** spinner ends after 5 seconds */
       this.spinner.hide();
     }, 1000);
     this.resetOrderData();
 
-    // Update upload button state after file deletion
     this.files.updateCanUploadState();
   }
 
@@ -307,34 +299,25 @@ export class RunUploadFileComponent {
       .then((confirmed: boolean) => {
         if (!confirmed) return;
 
-        // Navigate back to first tab (Orders Data)
         this.navigation.activeNavId = 1;
 
-        // Reset step state to upload mode (allow depot selection and file upload)
         this.state.isUpload = false;
         this.state.isFileSelectionStep = true;
         this.state.isFilePreview = true;
 
-        // Clear uploaded files and preview data
         this.files.preOrderFiles = [];
 
-        // Clear map orders markers and data-related states
         this.runMap.vectorSource.clear();
         this.resetOrderData();
 
-        // Hide transform warnings
         this.files.transformWarnings = [];
         this.files.transformWarningCollapseStates = [];
 
-        // Refresh depot list and input requirements from server with spinner
         this.files.getMyDepots(true);
 
-        // Reset upload button state
         this.files.updateCanUploadState();
       })
-      .catch(() => {
-        // dismissed: do nothing
-      });
+      .catch(() => {});
   }
 
   private resetOrderData() {
@@ -362,10 +345,8 @@ export class RunUploadFileComponent {
       this.files.updateRequiredFileTypeByDepot(undefined);
     }
     await this.fileColumns.validateUploadedFilesAgainstDepot();
-    // refresh dynamic parameters render when depot changes
     this.params.refreshDynamicParametersForSelectedDepot();
 
-    // Update upload button state after depot change
     this.files.updateCanUploadState();
   }
 }

@@ -20,13 +20,9 @@ import { RunVehicleService } from './run-vehicle.service';
 export class RunVehiclePoolService {
   private readonly logger = inject(LoggerService);
 
-  // ---------- Open VRP: central vehicle pool / run list ----------
-  /** Central pool (master data): all company vehicles grouped by vehicleTypeId. */
   public poolVehiclesByType: Record<string, MyVehicles[]> = {};
   public poolLoading: boolean = false;
-  /** Currently expanded pool card (vehicle type) in the configuration panel. */
   public openPoolCardTypeId: string | null = null;
-  /** Builder (configuration panel) state per `${depotId}:${vehicleTypeId}`. */
   private poolBuilders: Record<string, OpenVrpPoolBuilder> = {};
 
   constructor(
@@ -35,10 +31,6 @@ export class RunVehiclePoolService {
     private readonly ui: RunUiService,
     private readonly fleet: RunVehicleService,
   ) {}
-
-  // ======================================================================
-  // Open VRP — central vehicle pool (configuration panel)
-  // ======================================================================
 
   loadVehiclePool(): void {
     this.poolLoading = true;
@@ -68,17 +60,14 @@ export class RunVehiclePoolService {
       });
   }
 
-  /** Vehicles of this type registered in the central pool. */
   getPoolVehicles(vehicleTypeId: string): MyVehicles[] {
     return this.poolVehiclesByType[vehicleTypeId] || [];
   }
 
-  /** Whether this type has registered vehicles (license plates) in the pool. */
   isPoolTypeTracked(vehicleTypeId: string): boolean {
     return this.getPoolVehicles(vehicleTypeId).length > 0;
   }
 
-  /** vehicleIds already reserved by "by plate" entries in this run. */
   private usedVehicleIdsInRun(): Set<string> {
     const used = new Set<string>();
     for (const entry of this.fleet.runVehicleList) {
@@ -89,7 +78,6 @@ export class RunVehiclePoolService {
     return used;
   }
 
-  /** Plates of this type still selectable in "by plate" mode. */
   getPoolAvailableVehicles(vehicleTypeId: string): MyVehicles[] {
     const used = this.usedVehicleIdsInRun();
     return this.getPoolVehicles(vehicleTypeId).filter(
@@ -101,8 +89,6 @@ export class RunVehiclePoolService {
     this.fleet.multiTripDemo = !this.fleet.multiTripDemo;
     this.poolBuilders = {};
     this.openPoolCardTypeId = null;
-    // keep what the planner chose, only re-clamp it to the ceiling the
-    // preview data now implies
     for (const entry of this.fleet.runVehicleList) {
       entry.maxTrip = this.fleet.clampMaxTrip(entry.maxTrip);
       entry.loadingDuration =
@@ -138,7 +124,6 @@ export class RunVehiclePoolService {
       chosenVehicleIds: [],
       startDepotId: null,
       endDepotId: null,
-      // opens on the vehicle type's own trips, overwritable up to the standard
       maxTrip: this.fleet.getVehicleTypeMaxTrip(vehicleTypeId),
       loadingDuration: null,
     };
@@ -163,11 +148,6 @@ export class RunVehiclePoolService {
     this.setPoolBuilderCount(vehicleTypeId, builder.count + delta);
   }
 
-  /**
-   * Typed straight into the quantity box — a large group would mean dozens of
-   * clicks on the stepper. The pool no longer caps a type, so the number is
-   * only kept a whole, non-negative count.
-   */
   setPoolBuilderCount(vehicleTypeId: string, count: number | null): number {
     const builder = this.getPoolBuilder(vehicleTypeId);
     const requested = Number(count);
@@ -211,11 +191,6 @@ export class RunVehiclePoolService {
     this.getPoolBuilder(vehicleTypeId).startDepotId = depotId || null;
   }
 
-  /**
-   * What the depot selects open on: the depot in scope while it is one of the
-   * company's depots, and the first depot otherwise. A select can only land on
-   * an option it actually lists, so this never resolves to an unknown depot.
-   */
   private get defaultBuilderDepotId(): string {
     const scopeDepotId = this.state.scopeDepotId;
     const isListed = this.state.depots.some(
@@ -224,7 +199,6 @@ export class RunVehiclePoolService {
     return (isListed ? scopeDepotId : this.state.depots[0]?.depotId) || '';
   }
 
-  /** Opens on the depot in scope; a group may start from any depot. */
   getBuilderStartDepotId(vehicleTypeId: string): string {
     return (
       this.getPoolBuilder(vehicleTypeId).startDepotId ||
@@ -236,7 +210,6 @@ export class RunVehiclePoolService {
     this.getPoolBuilder(vehicleTypeId).endDepotId = depotId || null;
   }
 
-  /** Returns to where the group started (A → A) until another depot is picked. */
   getBuilderEndDepotId(vehicleTypeId: string): string {
     return (
       this.getPoolBuilder(vehicleTypeId).endDepotId ||
@@ -249,7 +222,6 @@ export class RunVehiclePoolService {
     this.setPoolBuilderMaxTrip(vehicleTypeId, builder.maxTrip + delta);
   }
 
-  /** Typed straight into the trips box — a stepper is painful past a few. */
   setPoolBuilderMaxTrip(
     vehicleTypeId: string,
     maxTrip: number | null,
@@ -259,10 +231,6 @@ export class RunVehiclePoolService {
     this.syncBuilderLoadingDuration(vehicleTypeId, builder);
   }
 
-  /**
-   * A group only reloads from trip 2 onwards, so the reload time appears
-   * with multi-trip and is dropped again when the group falls back to one trip.
-   */
   private syncBuilderLoadingDuration(
     vehicleTypeId: string,
     builder: OpenVrpPoolBuilder,
@@ -278,7 +246,6 @@ export class RunVehiclePoolService {
     }
   }
 
-  /** Reload time of this pool card, overwritable for this run only. */
   getPoolBuilderLoadingDuration(vehicleTypeId: string): string {
     return (
       this.getPoolBuilder(vehicleTypeId).loadingDuration ||
@@ -298,7 +265,6 @@ export class RunVehiclePoolService {
   canAddPoolEntry(vehicleTypeId: string): boolean {
     const builder = this.getPoolBuilder(vehicleTypeId);
     if (builder.mode === 'license-plate') {
-      // a chosen plate may have been taken since, e.g. by loading a preset
       return this.getPoolAvailableVehicles(vehicleTypeId).some((vehicle) =>
         builder.chosenVehicleIds.includes(vehicle.vehicleId),
       );
@@ -333,7 +299,6 @@ export class RunVehiclePoolService {
       endDepotId,
       endDepotName,
       maxTrip,
-      // the reload time the planner left on the card, not the master default
       loadingDuration:
         maxTrip > DEFAULT_MAX_TRIP
           ? this.getPoolBuilderLoadingDuration(vehicleTypeId)
@@ -380,8 +345,6 @@ export class RunVehiclePoolService {
     const index = list.findIndex((entry) => entry.id === entryId);
     if (index < 0) return;
     const entry = list[index];
-    // Removing the row returns the vehicles to the pool, then the entry
-    // configuration is restored into the panel for editing (mockup behavior).
     list.splice(index, 1);
     const key = `${this.state.scopeDepotId || 'default'}:${entry.vehicleTypeId}`;
     this.poolBuilders[key] = {
@@ -391,8 +354,6 @@ export class RunVehiclePoolService {
       chosenVehicleIds:
         entry.mode === 'license-plate' ? [...entry.vehicleIds] : [],
       startDepotId: entry.startDepotId || null,
-      // a row that returns where it started keeps following the start depot,
-      // so moving the start while editing moves the return with it
       endDepotId:
         entry.endDepotId !== entry.startDepotId ? entry.endDepotId : null,
       maxTrip: this.fleet.clampMaxTrip(entry.maxTrip),

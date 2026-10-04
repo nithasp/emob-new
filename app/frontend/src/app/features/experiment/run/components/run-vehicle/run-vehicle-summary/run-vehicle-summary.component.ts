@@ -15,11 +15,6 @@ export class RunVehicleSummaryComponent {
     return summary.depotId;
   }
 
-  /**
-   * Shows the full depot name only when the column was too narrow to fit it.
-   * Measuring on hover rather than through a binding keeps it honest: the text
-   * is laid out by then, and no layout is read on every change detection.
-   */
   openTooltipIfTruncated(tooltip: NgbTooltip, element: HTMLElement): void {
     if (element.scrollWidth > element.clientWidth) {
       tooltip.open();

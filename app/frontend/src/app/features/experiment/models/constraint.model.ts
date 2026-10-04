@@ -1,6 +1,5 @@
 export type ConstraintValue = string | number;
 
-// Allow future, dynamic constraint keys while keeping current keys strongly typed
 export interface Constraint extends Record<string, ConstraintValue | undefined> {
   earlyDeliveryTime: string;
   backToDepotTime: string;

@@ -44,7 +44,6 @@ export class RunParameterService {
     minimumVehicle: 0,
   };
   constraintsFromFileLoaded: boolean = false;
-  // dynamic parameters rendering
   public allDynamicParameters: DynamicParameter[] = [];
   public dynamicParametersByCategory: Array<{
     key: string;
@@ -415,7 +414,6 @@ export class RunParameterService {
     });
   }
 
-  // Build validateExperiment parameter payload from dynamicParametersByCategory
   buildValidateParameterFromDynamic(): TimingAndCapacity {
     const payload: Record<string, string | number> = {};
 
@@ -426,7 +424,6 @@ export class RunParameterService {
           this.normalizeKeyName(param.keyName);
         if (!mappedKey) continue;
 
-        // normalize based on value type
         if (this.isNumberType(param)) {
           const numericValue = Number(param.value);
           payload[mappedKey] = isNaN(numericValue) ? 0 : numericValue;
@@ -517,7 +514,6 @@ export class RunParameterService {
   ): keyof Constraint | null {
     const keyName = (dynamicParameter.keyName || '').trim();
     switch (keyName) {
-      // keyName may arrive in PascalCase or camelCase; both map to the same key.
       case 'EarlyDeliveryTime':
       case 'earlyDeliveryTime':
         return 'earlyDeliveryTime';

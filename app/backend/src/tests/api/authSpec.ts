@@ -246,7 +246,6 @@ describe('Auth endpoints', () => {
       await ageRotation(first);
 
       await refreshWith(first).expect(401);
-      // The token that was still current goes with it: whoever holds it has to sign in again
       await refreshWith(second).expect(401);
     });
   });

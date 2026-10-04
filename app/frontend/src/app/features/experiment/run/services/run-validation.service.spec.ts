@@ -67,7 +67,6 @@ describe('RunValidationService', () => {
 
   describe('validateExperimentPreOrder()', () => {
     it('blocks submission and jumps to the vehicle tab when no vehicle is selected', () => {
-      // the Open VRP run list starts empty — nothing has been added to the run
       validation.validateExperimentPreOrder();
 
       expect(fleet.vehicleSelectionError).toBeTrue();
@@ -89,8 +88,6 @@ describe('RunValidationService', () => {
 
       validation.validateExperimentPreOrder();
       tick();
-      // navigateToTab() refreshes the map viewport after the column's 0.3s
-      // slide, so that timer has to be drained before fakeAsync() returns.
       tick(350);
 
       expect(toastrSpy.success).toHaveBeenCalledWith('ok');
@@ -125,8 +122,6 @@ describe('RunValidationService', () => {
 
       validation.validateExperimentPreOrder();
       tick();
-      // navigateToTab() refreshes the map viewport after the column's 0.3s
-      // slide, so that timer has to be drained before fakeAsync() returns.
       tick(350);
 
       expect(validation.isValidationWarning).toBeTrue();

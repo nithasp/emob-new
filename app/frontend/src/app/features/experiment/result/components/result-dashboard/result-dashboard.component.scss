@@ -28,7 +28,6 @@
 @include striped-rows;
 @include icon-alignment;
 
-// ─── VRP Toggle Buttons (custom active state for brand color) ────────────────
 .vrp-toggle-btn {
   font-size: 12px;
 
@@ -45,7 +44,6 @@
   width: 15px;
 }
 
-// ─── Shared VRP section base ─────────────────────────────────────────────────
 .vrp-section {
   font-size: 13px;
 }
@@ -54,7 +52,6 @@
   background: #0e1547;
 }
 
-// ─── VRP Dashboard ───────────────────────────────────────────────────────────
 .vrp-dashboard-header {
   font-size: 15px;
   letter-spacing: 0.3px;
@@ -111,7 +108,6 @@
   }
 }
 
-// ─── VRP Stats Key-Value View ────────────────────────────────────────────────
 .table-vrp-stats {
   height: 400px;
   overflow-y: auto;

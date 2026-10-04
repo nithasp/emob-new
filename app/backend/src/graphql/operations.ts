@@ -1,8 +1,5 @@
 import { SampleOperation } from '../types/graphql.types';
 
-// Ready-made operations for the bundled Altair explorer and the exported Altair collection.
-// They are the same documents the web app sends, trimmed to the fields that explain themselves.
-
 const RUN_ID = '00000000-0000-4000-8000-000000000000';
 
 const DEPOT_FIELDS = `depotId

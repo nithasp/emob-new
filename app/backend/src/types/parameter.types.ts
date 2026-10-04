@@ -63,8 +63,6 @@ export interface DynamicParameterUpdateResult {
   results: DynamicParameter[];
 }
 
-// The planning constraints a run is validated and solved with. Known keys are typed; a company
-// can add further parameters, which travel through as extra keys.
 export interface Constraint {
   earlyDeliveryTime?: string | undefined;
   backToDepotTime?: string | undefined;

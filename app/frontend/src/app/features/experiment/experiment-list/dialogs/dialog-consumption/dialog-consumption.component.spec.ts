@@ -21,7 +21,6 @@ describe('DialogConsumptionComponent', () => {
       providers: [{ provide: NgbActiveModal, useValue: activeModal }],
       schemas: [NO_ERRORS_SCHEMA],
     })
-      // Replace the template so we don't pull in transloco pipes.
       .overrideComponent(DialogConsumptionComponent, { set: { template: '' } })
       .compileComponents();
 

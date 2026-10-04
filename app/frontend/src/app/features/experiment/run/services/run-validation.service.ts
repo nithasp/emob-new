@@ -48,7 +48,6 @@ export class RunValidationService {
   ) {}
 
   validateExperimentPreOrder() {
-    // Open VRP: at least one vehicle group must be added to the run list
     if (this.fleet.runVehicleList.length === 0) {
       this.fleet.vehicleSelectionError = true;
       this.navigation.navigateToTab(2);
@@ -59,7 +58,6 @@ export class RunValidationService {
     const parameterPayload = this.params.buildValidateParameterFromDynamic();
     const vehiclesPayload = this.fleet.buildVehiclesPayload();
 
-    // proceed with validation using constructed parameterPayload
     if (
       (parameterPayload.earlyDeliveryTime || '') >
       (parameterPayload.backToDepotTime || '')
@@ -90,10 +88,8 @@ export class RunValidationService {
           const validateResult = result.result;
           const errors = validateResult?.error || [];
           const warnings = validateResult?.warning || [];
-          // Error case: backend explicitly returns isSuccesses=false, or sends an error[] payload
           const hasError =
             validateResult?.isSuccesses === false || errors.length > 0;
-          // Warning case: backend flags isWarning=true and there is no blocking error
           const hasWarning =
             !hasError && (validateResult?.isWarning === true || warnings.length > 0);
 
@@ -105,7 +101,6 @@ export class RunValidationService {
             }
           }
           this.state.haveUpdateAfterValidated = false;
-          // Sync constraints with the payload used for validation so UI reflects latest
           const mergedConstraint: Constraint = {
             ...this.params.constraintsData,
             ...(parameterPayload as Partial<Constraint>),
@@ -113,10 +108,8 @@ export class RunValidationService {
           this.params.constraintsData = mergedConstraint;
           this.state.validateExperiment = validateResult?.validate || null;
           this.dataService.clearData(this.state.experiment.runId);
-          // Rebuild dynamic parameters so values reflect constraintsData when validated
           this.params.refreshDynamicParametersForSelectedDepot();
-          this.navigation.navigateToTab(4); // Always navigate to validation tab after validation
-          // Mark validation as completed and show corresponding messages (success path)
+          this.navigation.navigateToTab(4);
           this.state.haveValidated = true;
 
           this.isValidationWarning = hasWarning;

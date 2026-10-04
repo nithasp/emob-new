@@ -1,6 +1,3 @@
-// Component styles do not reach into another component, so each part of the result page includes
-// the shared rules its own template needs.
-
 @mixin full-width-table {
   table {
     width: 100%;

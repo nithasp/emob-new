@@ -311,7 +311,6 @@ describe('GraphQL API', () => {
         .expect(200);
       const result = validated.body.data.validateExperiment.result;
       expect(result.isSuccesses).toBe(true);
-      // The sample orders name two products the product master does not list
       expect(result.warning[0].errorType).toBe('missing_product');
 
       const submitted = await demo.gql(SUBMIT, { input: { runId } }).expect(200);

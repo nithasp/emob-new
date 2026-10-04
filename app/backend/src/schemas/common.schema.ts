@@ -7,7 +7,6 @@ export const requiredText = (max: number) =>
 
 export const optionalText = (max: number) => requiredText(max).optional();
 
-// A cleared form field arrives as null, an empty string or not at all; all three mean "no value"
 export const nullableText = (max: number) =>
   z
     .union([z.string().trim().max(max, `must be at most ${max} characters`), z.null()])

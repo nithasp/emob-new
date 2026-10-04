@@ -378,7 +378,6 @@
               </div>
             </div>
 
-            <!-- Allowed Breaks Section -->
             <div class="col-12 mt-4">
               <h2 class="mb-3">
                 {{ t("allowed_breaks") }}
@@ -394,7 +393,6 @@
                   <div class="">{{ t("earliest_start") }}</div>
                   <div class="">{{ t("latest_start") }}</div>
                   <div class="" *ngIf="!isViewMode">
-                    <!-- Trash Icon (Delete Button) -->
                   </div>
                 </div>
 
@@ -419,7 +417,6 @@
                     "
                     class="table-body gap-2 align-items-center"
                   >
-                    <!-- Name Field -->
                     <div>
                       <app-input-field
                         placeholder=""
@@ -428,7 +425,6 @@
                       ></app-input-field>
                     </div>
 
-                    <!-- Duration Field with Time Picker -->
                     <div>
                       <app-dynamic-popover [placement]="'bottom-start'">
                         <app-input-field
@@ -456,7 +452,6 @@
                       </app-dynamic-popover>
                     </div>
 
-                    <!-- Earliest Start Field with Time Picker -->
                     <div>
                       <app-dynamic-popover [placement]="'bottom-start'">
                         <app-input-field
@@ -488,7 +483,6 @@
                       </app-dynamic-popover>
                     </div>
 
-                    <!-- Latest Start Field with Time Picker -->
                     <div>
                       <app-dynamic-popover [placement]="'bottom-start'">
                         <app-input-field
@@ -520,7 +514,6 @@
                       </app-dynamic-popover>
                     </div>
 
-                    <!-- Delete Button -->
                     <div *ngIf="!isViewMode">
                       <button
                         type="button"

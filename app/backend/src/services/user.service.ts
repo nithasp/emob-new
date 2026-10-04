@@ -1,6 +1,6 @@
 import { config } from '../config';
 import { UserServiceDeps } from '../types/service.types';
-import { AuthUser, PublicUser, UserRole } from '../types/user.types';
+import { AccountUpsert, AuthUser, PublicUser, UserRegistration } from '../types/user.types';
 import { AppError } from '../utils/errors';
 import { hashPassword, spendVerifyTime, verifyPassword } from './password.service';
 import { displayName, rolesOf } from './token.service';
@@ -46,12 +46,7 @@ export function createUserService({ users, companies }: UserServiceDeps) {
 
     // A new account always joins the shared workspace as a planner; the role and the company are
     // never taken from the request (OWASP API3 mass assignment)
-    async register(input: {
-      username: string;
-      password: string;
-      firstName: string;
-      lastName: string;
-    }): Promise<PublicUser> {
+    async register(input: UserRegistration): Promise<PublicUser> {
       if (await users.findByUsername(input.username)) {
         throw new AppError('Username already exists', 409, 'conflict');
       }
@@ -70,14 +65,7 @@ export function createUserService({ users, companies }: UserServiceDeps) {
     },
 
     // Seeding only: creates the account, or refreshes its name, role and password when it exists
-    async upsertAccount(input: {
-      companyId: string;
-      username: string;
-      password: string;
-      firstName: string;
-      lastName: string;
-      role: UserRole;
-    }): Promise<PublicUser> {
+    async upsertAccount(input: AccountUpsert): Promise<PublicUser> {
       const passwordHash = await hashPassword(input.password);
       const existing = await users.findByUsername(input.username);
       if (!existing) {

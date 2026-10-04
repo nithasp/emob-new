@@ -5,10 +5,6 @@ import { SAMPLE_OPERATIONS } from '../graphql/operations';
 import { GRAPHQL_PATH } from '../graphql/path';
 import { SampleOperation } from '../types/graphql.types';
 
-// Writes the sample operations as a collection file for the Altair desktop app or browser
-// extension (Collections > Import). Every request reads its token from the {{accessToken}}
-// environment variable.
-
 const OUTPUT = path.join(__dirname, '..', '..', 'altair', 'emob-api.agc');
 
 const endpoint = `${config.publicBaseUrl || `http://localhost:${config.port}`}${GRAPHQL_PATH}`;

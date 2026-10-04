@@ -5,13 +5,13 @@ import {
   GazetteerProvince,
   GeocodeHit,
   LatLng,
+  NearestDistrict,
 } from '../../types/geo.types';
 import { haversineKm } from '../../utils/geo';
 
 const PREFIXES =
   /^(khet|amphoe|amphur|khwaeng|tambon|changwat|province|district|เขต|อำเภอ|แขวง|ตำบล|จังหวัด|อ\.|ต\.|จ\.)/;
 
-// Spelling of the same place varies between files: prefixes, spacing, hyphens and case
 const normalise = (value: string | null | undefined): string =>
   (value ?? '')
     .toLowerCase()
@@ -106,7 +106,7 @@ export function geocodeAddress(address: AddressParts): GeocodeHit | null {
   return null;
 }
 
-export function nearestDistrict(point: LatLng): { province: string; district: string; distanceKm: number } {
+export function nearestDistrict(point: LatLng): NearestDistrict {
   let best = { province: '', district: '', distanceKm: Number.POSITIVE_INFINITY };
   for (const province of GAZETTEER) {
     for (const district of province.districts) {

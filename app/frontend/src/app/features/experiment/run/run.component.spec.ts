@@ -44,10 +44,7 @@ describe('RunComponent', () => {
     } = await configureRunPage({ declarations: [RunComponent] }));
     fixture = TestBed.createComponent(RunComponent);
     component = fixture.componentInstance;
-    // The page provides its own services, so they are read from its injector
     state = fixture.debugElement.injector.get(RunStateService);
-    // These specs drive the lifecycle hooks directly and never render the template, so the
-    // view refresh the page services ask for is stubbed out
     spyOn(fixture.debugElement.injector.get(RunUiService), 'detectChanges');
   });
 
@@ -68,8 +65,6 @@ describe('RunComponent', () => {
 
   describe('ngAfterViewInit()', () => {
     beforeEach(() => {
-      // ngAfterViewInit() reads history.state.isCreateMode; jsdom-less Karma
-      // starts with history.state === null, so seed it to avoid a TypeError.
       history.replaceState({ isCreateMode: false }, '');
       document.body.insertAdjacentHTML('beforeend', '<div id="popup"></div>');
       vehicleServiceSpy.getMyVehicleTypes.and.returnValue(of([]));

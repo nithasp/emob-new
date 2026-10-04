@@ -96,7 +96,6 @@ export interface ConfigurationExplorerFileTypeChildren {
   blobPath?: string;
 }
 
-// New interfaces for actual location year/month grouping
 export interface ConfigurationExplorerYearNode {
   year: string;
   children: ConfigurationExplorerMonthNode[];

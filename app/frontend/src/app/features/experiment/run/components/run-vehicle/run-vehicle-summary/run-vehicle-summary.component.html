@@ -1,8 +1,5 @@
 <ng-container *transloco="let t; read: 'index'">
   <div class="openvrp-pane openvrp-pane-summary h-100 overflow-auto bg-white">
-    <!-- The five figures are declared once here and rendered
-         for every depot and again for the fleet-wide
-         roll-up, so the blocks cannot drift apart. -->
     <ng-template #summaryRows let-totals="totals">
       <div class="openvrp-map-summary">
         <div class="openvrp-msrow d-flex justify-content-between align-items-center">
@@ -56,8 +53,6 @@
           {{ t("depots_unit") }}</span>
       </div>
 
-      <!-- one block per depot taking part in this run -->
-
       <div class="openvrp-depot-group-container">
         <div class="openvrp-depot-group bg-white" *ngFor="
           let depot of view.depots;
@@ -65,8 +60,6 @@
         ">
           <div class="openvrp-depot-fixed d-flex align-items-center mb-2 fw-medium">
             <mat-icon>location_on</mat-icon>
-            <!-- the tooltip is opened by hand so it appears
-                 only when the name is actually clipped -->
             <span class="openvrp-depot-name flex-fill text-truncate" #depotNameText
               [ngbTooltip]="depot.depotName" #depotNameTip="ngbTooltip" triggers="manual"
               container="body" placement="top"
@@ -82,7 +75,6 @@
       </div>
 
 
-      <!-- fleet-wide roll-up, once a second depot reports -->
       <div class="openvrp-grand-summary" *ngIf="view.isMultiDepot">
         <div class="openvrp-grand-title d-flex align-items-center mb-1 fw-bold">
           <mat-icon>functions</mat-icon>

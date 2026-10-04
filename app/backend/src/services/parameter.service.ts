@@ -12,8 +12,6 @@ import { parse } from '../utils/validation';
 
 const NUMBER_TYPE = /^number/i;
 
-// keyName is stored as the planner knows it ("EarlyDeliveryTime"); the planning constraint uses
-// the same name with a lower-case first letter
 export const constraintKey = (keyName: string): string => keyName.charAt(0).toLowerCase() + keyName.slice(1);
 
 function problemWith(parameter: DynamicParameter, value: string | number): string | null {
@@ -46,8 +44,6 @@ export function toConstraint(parameters: DynamicParameter[]): Constraint {
   return constraint;
 }
 
-// The parameters a run was validated with: the depot's definitions carrying the values the planner
-// sent, so the run keeps showing them after the defaults change
 export function snapshotParameters(
   parameters: DynamicParameter[],
   constraint: Constraint,
@@ -58,7 +54,6 @@ export function snapshotParameters(
   });
 }
 
-// One parameter per key: the depot's own definition wins over the company-wide one
 export function scopeToDepot(parameters: DynamicParameter[], depotId: string | null): DynamicParameter[] {
   const byKey = new Map<string, DynamicParameter>();
   for (const parameter of parameters) {
@@ -81,8 +76,6 @@ export function createParameterService({ parameters }: ParameterServiceDeps) {
       return toConstraint(scopeToDepot(all, scope));
     },
 
-    // Each value is checked against its own rule; a value that fails is reported and left as it
-    // was, while the valid ones in the same request are still saved
     async updateValues(companyId: string, input: unknown): Promise<DynamicParameterUpdateResult> {
       const updates = parse(dynamicParameterUpdatesSchema, input);
       const errors: DynamicParameterUpdateError[] = [];

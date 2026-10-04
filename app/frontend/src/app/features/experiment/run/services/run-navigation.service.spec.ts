@@ -25,7 +25,6 @@ describe('RunNavigationService', () => {
 
   describe('tab navigation', () => {
     it('getNextTab()/getPreviousTab() route around missing vehicle/parameter tabs', () => {
-      // No vehicle types, no dynamic parameters -> Orders Data goes straight to Validation
       expect(navigation.getNextTab(1)).toBe(4);
       expect(navigation.getPreviousTab(4)).toBe(1);
 

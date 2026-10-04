@@ -2,8 +2,6 @@ import { LatLng } from '../types/geo.types';
 
 const EARTH_RADIUS_KM = 6371;
 
-// Straight-line distance understates what a truck drives; this factor brings it close to road
-// distance in a dense city grid.
 export const ROAD_FACTOR = 1.35;
 
 export const AVERAGE_SPEED_KMH = 28;
@@ -39,7 +37,6 @@ export function isInsideThailand(point: LatLng): boolean {
   );
 }
 
-// Accepts "13.75, 100.51" as a planner types it; anything else is not a coordinate.
 export function parseLatLng(value: unknown): LatLng | null {
   if (typeof value !== 'string') return null;
   const match = /^\s*(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)\s*$/.exec(value);

@@ -83,12 +83,6 @@ export class UploadFileComponent {
     }
   }
 
-  /**
-   * Shows a confirmation dialog asking the user to confirm the upload of the given file to the specified category.
-   * If the user confirms, then the file is uploaded to the server.
-   * @param file The file to be uploaded.
-   */
-
   private async uploadFile(file: File) {
     const workbook = new ExcelJS.Workbook();
     try {

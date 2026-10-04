@@ -4,8 +4,6 @@
 @include count-badge;
 @include icon-button;
 
-/* run list: one tinted block per vehicle type, white rows inside — the same
-   card-on-surface pairing the pool pane uses */
 .openvrp-lgroup {
   border: 1px solid $ovrp-line;
   background: $ovrp-surface-2;
@@ -29,7 +27,6 @@
     color: $ovrp-brand;
   }
 
-  /* a long type name truncates instead of pushing the count out of the block */
   .openvrp-lgroup-name {
     min-width: 0;
   }
@@ -45,28 +42,19 @@
   border-radius: 9px;
   padding: 9px 11px;
   gap: 9px;
-  /* slow settle once the merge highlight is dropped */
   transition:
     border-width 0.8s ease,
     border-color 0.8s ease,
     padding 0.8s ease,
     box-shadow 0.8s ease;
 
-  /* the row a duplicate was just added to — amber like the warning toast, and
-     held for exactly as long as that toast (RUN_ENTRY_MERGE_NOTICE_MS) */
   &.merged {
     border-width: 2px;
     border-color: $ovrp-q4-amber;
-    /* the 2px the thicker border takes on each side is given back here, so the
-       row keeps its size and the rows under it don't shift as it highlights */
     padding: 7px 9px;
     box-shadow: 0 0 0 3px $ovrp-q4-amber-soft;
-    /* quick to arrive, slow to leave */
     transition-duration: 0.1s;
 
-    /* the count is what actually changed, so it does the moving — a shake on
-       the whole row would read as "rejected", which is the opposite of what
-       happened */
     .openvrp-lcount {
       animation: openvrp-count-pulse 0.45s ease-out;
     }
@@ -102,11 +90,7 @@
   .openvrp-ltitle {
     font-size: 14.5px;
 
-    /* how many vehicles a row carries is the number planners scan for, so it
-       reads at least as strongly as the type name — the muted grey it used to
-       be was hard on eyes that need more contrast */
     .openvrp-lcount {
-      /* inline-block so the merge pulse below can scale it */
       display: inline-block;
       font-size: 16px;
       color: $ovrp-ink;
@@ -144,8 +128,6 @@
   }
 }
 
-/* The highlight itself stays — only the movement is dropped for anyone who
-   asked their system for less of it. */
 @media (prefers-reduced-motion: reduce) {
   .openvrp-lrow {
     transition: none;

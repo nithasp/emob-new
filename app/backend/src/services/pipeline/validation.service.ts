@@ -71,8 +71,6 @@ export function buildFleet(
   return fleet;
 }
 
-// The loosest limit any vehicle of the run offers, tightened by the run's own parameters. An
-// order that breaks these cannot be served by any vehicle, whatever the route.
 export function runLimits(fleet: FleetVehicle[], constraint: Constraint): RunLimits {
   const most = (pick: (vehicle: FleetVehicle) => number): number =>
     fleet.length ? Math.max(...fleet.map(pick)) : UNLIMITED;

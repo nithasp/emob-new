@@ -16,8 +16,6 @@ import { configurationPrefix, extensionOf, safeFileName } from './storage/keys';
 
 const notFound = () => new AppError('Configuration not found', 404, 'not_found');
 
-// Header names are compared the way the upload dialog compares them, so the server accepts
-// exactly the files the dialog lets through
 const normaliseHeader = (header: string): string => header.trim().toLowerCase().replace(/\s+/g, '_');
 
 export function createConfigurationService({ configurations, depots, storage }: ConfigurationServiceDeps) {
@@ -100,8 +98,6 @@ export function createConfigurationService({ configurations, depots, storage }: 
       return toConfiguration(row, await depotMap(companyId));
     },
 
-    // A regular configuration keeps one file that each upload replaces. The actual-location slot
-    // keeps none: every upload there becomes a dated entry, so the history stays browsable.
     async replaceFile(companyId: string, id: string, upload: UploadedFile): Promise<Configuration> {
       const row = await configurations.show(companyId, id);
       if (!row) throw notFound();

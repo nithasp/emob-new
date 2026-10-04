@@ -25,6 +25,5 @@ export interface SampleOperation {
   folder: 'Experiments' | 'Master data' | 'Vehicles' | 'Parameters';
   query: string;
   variables?: Record<string, unknown>;
-  /** Shown as a tab when the explorer opens; the rest ship in the collection only. */
   pinned?: boolean;
 }

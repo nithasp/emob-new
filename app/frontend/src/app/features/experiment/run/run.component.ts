@@ -87,7 +87,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.route.params
         .pipe(take(1))
         .subscribe((params: { [x: string]: string }) => {
-          // First, ensure vehicle types are loaded
           this.vehicleService
             .getMyVehicleTypes()
             .pipe(take(1))
@@ -96,7 +95,6 @@ export class RunComponent implements OnInit, AfterViewInit {
                 this.fleet.myVehicleTypes = applyMultiTripFallback(vehicleTypes);
                 this.ui.detectChanges();
 
-                // Now proceed with loading experiment data
                 this.experimentService
                   .getExperiment(params['runId'])
                   .subscribe({
@@ -292,7 +290,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       this.pool.loadVehiclePool();
     }, 100);
     this.validation.resetMessageCache();
-    // react to language changes: only trigger change detection (no regroup)
     this.transloco.langChanges$.subscribe(() => {
       this.validation.resetMessageCache();
       this.ui.detectChanges();
@@ -301,7 +298,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
   async initializeDataFromExperiment(experiment: Experiment) {
     this.logger.log("initialize Data From Experiment's historical", experiment);
-    // Load Parameter
     if (experiment.fileUrls?.validate?.parameterFormats) {
       this.experimentFiles.dataFromFileUrlToJson(
         experiment.fileUrls.validate.parameterFormats,
@@ -309,7 +305,6 @@ export class RunComponent implements OnInit, AfterViewInit {
         this.logger.log('Constraint', response);
         this.params.constraintsData = { ...response };
         this.params.constraintsFromFileLoaded = true;
-        // Ensure UI reflects constraint values on init
         if (this.params.allDynamicParameters?.length) {
           this.params.refreshDynamicParametersForSelectedDepot();
         }
@@ -318,10 +313,8 @@ export class RunComponent implements OnInit, AfterViewInit {
     } else {
       this.params.getDynamicParameters();
     }
-    // ensure dynamic parameter metadata for rendering is loaded too
     this.params.getDynamicParameters();
 
-    // Load Vehicles data
     if (experiment.fileUrls?.validate?.vehicleTypes) {
       this.toastr.info(
         this.transloco.translate('loading_vehicle_data', {}, 'index'),
@@ -342,7 +335,6 @@ export class RunComponent implements OnInit, AfterViewInit {
 
     this.files.showExperimentFiles(experiment.inputdata);
 
-    // Update upload button state after loading files
     this.files.updateCanUploadState();
 
     this.toastr.info(
@@ -350,7 +342,6 @@ export class RunComponent implements OnInit, AfterViewInit {
       `${this.transloco.translate('please_wait', {}, 'index')} ...`,
     );
 
-    // load geocoding location
     if (experiment.fileUrls?.transform?.locations) {
       this.logger.log(
         'experiment.fileUrls?.transform?.locations',
@@ -371,7 +362,6 @@ export class RunComponent implements OnInit, AfterViewInit {
         'experiment.fileUrls?.validate?.preVRPSolution',
         experiment.fileUrls?.validate?.preVRPSolution,
       );
-      // load validation data
       this.toastr.info(
         this.transloco.translate('loading_validation_data', {}, 'index'),
         `${this.transloco.translate('please_wait', {}, 'index')} ...`,
@@ -382,7 +372,6 @@ export class RunComponent implements OnInit, AfterViewInit {
         this.logger.log('Result', response);
         this.state.validateExperiment = response.validate;
         this.state.haveValidated = true;
-        // Rebuild dynamic parameters so values reflect constraintsData when page initializes with historical validation
         if (this.params.allDynamicParameters?.length) {
           this.params.refreshDynamicParametersForSelectedDepot();
         }

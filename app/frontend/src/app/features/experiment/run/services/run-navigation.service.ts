@@ -8,7 +8,6 @@ import { RunVehicleService } from './run-vehicle.service';
 @Injectable()
 export class RunNavigationService {
   public activeNavId = 1;
-  /** Open VRP: collapse the map column while working on the Vehicle tab. */
   public isMapCollapsed: boolean = false;
 
   constructor(
@@ -20,20 +19,15 @@ export class RunNavigationService {
   ) {}
 
   navigateToTab(page: number) {
-    // Your logic to navigate to the next tab
-    this.activeNavId = page; // Assuming 'tab2' is the id of the next tab
+    this.activeNavId = page;
 
-    // Trigger change detection to refresh the table
     this.ui.detectChanges();
     if (page === 2) {
       this.params.refreshDynamicParametersForSelectedDepot();
     }
-    // The map column can be collapsed on the vehicle tab, so its geometry
-    // may change whenever the active tab changes
     this.refreshMapSize();
   }
 
-  /** The map column is hidden while collapsed on the Vehicle tab. */
   get isMapPaneHidden(): boolean {
     return this.isMapCollapsed && this.activeNavId === 2 && this.state.isUpload;
   }
@@ -43,7 +37,6 @@ export class RunNavigationService {
     this.refreshMapSize();
   }
 
-  /** Direct tab clicks; programmatic navigation goes through navigateToTab. */
   onNavTabChange(): void {
     this.refreshMapSize();
   }
@@ -56,17 +49,17 @@ export class RunNavigationService {
 
   getNextTab(currentTab: number): number {
     switch (currentTab) {
-      case 1: // Orders Data
+      case 1:
         if (this.fleet.hasMyVehicleTypes()) return 2;
         if (this.params.hasDynamicParameters()) return 3;
         return 4;
-      case 2: // Vehicle
+      case 2:
         if (this.params.hasDynamicParameters()) return 3;
         return 4;
-      case 3: // Parameters
+      case 3:
         return 4;
-      case 4: // Validation
-        return 4; // Already at the last tab
+      case 4:
+        return 4;
       default:
         return currentTab;
     }
@@ -74,17 +67,17 @@ export class RunNavigationService {
 
   getPreviousTab(currentTab: number): number {
     switch (currentTab) {
-      case 4: // Validation
+      case 4:
         if (this.params.hasDynamicParameters()) return 3;
         if (this.fleet.hasMyVehicleTypes()) return 2;
         return 1;
-      case 3: // Parameters
+      case 3:
         if (this.fleet.hasMyVehicleTypes()) return 2;
         return 1;
-      case 2: // Vehicle
+      case 2:
         return 1;
-      case 1: // Orders Data
-        return 1; // Already at the first tab
+      case 1:
+        return 1;
       default:
         return currentTab;
     }

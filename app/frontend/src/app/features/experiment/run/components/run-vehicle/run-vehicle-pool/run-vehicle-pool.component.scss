@@ -4,7 +4,6 @@
 @include fade-in;
 @include multi-trip-note;
 
-/* pool cards */
 .openvrp-poolcard {
   border: 1px solid $ovrp-line;
   border-radius: 9px;
@@ -134,8 +133,6 @@
 
 .openvrp-plate-check {
   gap: 5px;
-  /* grown with the row text, so the same number of plates is still in view
-     before the list has to be scrolled */
   max-height: 150px;
 
   label {
@@ -156,8 +153,6 @@
     flex: 1;
     border: 1px solid $ovrp-line;
     border-radius: 7px;
-    /* the two labels are long enough to wrap in a narrow pane, so the side
-       padding stays tight and the extra room goes into the rows */
     padding: 7px 5px;
     cursor: pointer;
     font-size: 13.5px;

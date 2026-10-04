@@ -4,6 +4,8 @@ import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 import { LoggerService } from '@core/services/logger.service';
 import {
+  DepotUploadDialogResult,
+  DepotUploadReplaceResult,
   FileWithCategory,
   PreOrderFileDescriptor,
   PreOrderFileItem,
@@ -33,7 +35,6 @@ export class RunFileIntakeService {
   async uploadFile(file: FileWithCategory) {
     const id = this.state.generateUniqueId();
 
-    // Check for duplicate file size and name before proceeding
     const warningMessages: string[] = [];
 
     const hasDuplicateFileName = this.files.preOrderFiles.some(
@@ -66,17 +67,14 @@ export class RunFileIntakeService {
       this.logger.log('Columns cached for file:', id, columnNames);
     }
 
-    // Find the matched item for the new file
     const matchedItem = this.files.depotInputDataItems.find(
       (item) => item.keyName === keyName,
     );
 
-    // Find if a file of this type already exists (by keyName)
     const index = this.files.preOrderFiles.findIndex(
       (f) => f.file.keyName === keyName,
     );
 
-    // Also check if any existing file has the same columnRequired
     const existingFileWithSameColumns = matchedItem
       ? this.files.preOrderFiles.find((fileItem) => {
           const existingKeyName = this.files.isFileWithCategory(fileItem.file)
@@ -97,9 +95,6 @@ export class RunFileIntakeService {
       : undefined;
 
     if (index !== -1 || existingFileWithSameColumns) {
-      // duplicate file logic here (either same keyName OR same columnRequired)
-
-      // Determine which file is being duplicated
       const duplicatedFileIndex =
         index !== -1
           ? index
@@ -111,7 +106,6 @@ export class RunFileIntakeService {
           ? this.files.preOrderFiles[duplicatedFileIndex].file.displayName
           : displayName;
 
-      // Show confirmation dialog before replacing
       const focusedElement = document.activeElement as HTMLElement;
       if (focusedElement) {
         focusedElement.blur();
@@ -147,25 +141,13 @@ export class RunFileIntakeService {
       dialogRef.componentInstance.showRadioOptions = true;
       dialogRef.componentInstance.inputDataKeys = this.files.inputDataKeys;
       dialogRef.componentInstance.preOrderFiles = this.files.preOrderFiles;
-      // Pass data for column validation
       dialogRef.componentInstance.depotInputDataItems =
         this.files.depotInputDataItems;
       dialogRef.componentInstance.fileColumns = columnNames || [];
 
       dialogRef.result
         .then(
-          (
-            result:
-              | {
-                  replace: boolean;
-                  category?: string;
-                  validationFailed?: boolean;
-                  missingColumns?: string[];
-                  targetDisplayName?: string;
-                }
-              | boolean,
-          ) => {
-            // Handle both old boolean format and new object format for backwards compatibility
+          (result: DepotUploadReplaceResult | boolean) => {
             if (typeof result === 'boolean') {
               if (result && duplicatedFileIndex !== -1) {
                 file.keyName = keyName;
@@ -176,7 +158,6 @@ export class RunFileIntakeService {
                 this.files.updateCanUploadState();
               }
             } else if (result && typeof result === 'object') {
-              // Check if validation failed - show invalid modal and don't add file
               if (
                 result.validationFailed &&
                 result.missingColumns &&
@@ -205,11 +186,10 @@ export class RunFileIntakeService {
                   [validationError],
                 );
                 this.logger.log('Validation FAILED from dialog - missing columns');
-                return; // Don't add the file
+                return;
               }
 
               if (result.replace && duplicatedFileIndex !== -1) {
-                // Replace existing file
                 file.keyName = keyName;
                 file.displayName = displayName;
                 file.isFirstOfType = true;
@@ -217,7 +197,6 @@ export class RunFileIntakeService {
                 this.state.isFilePreview = true;
                 this.files.updateCanUploadState();
               } else if (result.category) {
-                // Add as new file with selected category
                 const selectedItem = this.files.depotInputDataItems.find(
                   (item) => item.displayName === result.category,
                 );
@@ -233,19 +212,13 @@ export class RunFileIntakeService {
             }
           },
         )
-        .catch(() => {
-          // Dialog dismissed
-        });
+        .catch(() => {});
     } else {
-      // no duplicate file logic here
-      // Check if columnRequired is duplicated AND none of the duplicate files are in preOrderFiles yet
-      // Find the matched item for the current file
       const matchedItemForNew = this.files.depotInputDataItems.find(
         (item) => item.keyName === keyName,
       );
 
       if (matchedItemForNew) {
-        // Check if there are other items with the same columnRequired
         const itemsWithSameColumns = this.files.depotInputDataItems.filter((item) => {
           return (
             item.columnRequired.length ===
@@ -257,7 +230,6 @@ export class RunFileIntakeService {
         });
 
         if (itemsWithSameColumns.length > 1) {
-          // Duplicate columnRequired found - now check if ANY of them are already in preOrderFiles
           const anyDuplicateInPreOrderFiles = itemsWithSameColumns.some(
             (item) => {
               return this.files.preOrderFiles.some((fileItem) => {
@@ -270,7 +242,6 @@ export class RunFileIntakeService {
           );
 
           if (!anyDuplicateInPreOrderFiles) {
-            // None of the duplicate columnRequired files are in preOrderFiles yet - show dialog
             const focusedElement = document.activeElement as HTMLElement;
             if (focusedElement) {
               focusedElement.blur();
@@ -292,25 +263,14 @@ export class RunFileIntakeService {
             dialogRef.componentInstance.inputDataKeys =
               itemsWithSameColumns.map((item) => item.displayName);
             dialogRef.componentInstance.preOrderFiles = this.files.preOrderFiles;
-            // Pass data for column validation
             dialogRef.componentInstance.depotInputDataItems =
               this.files.depotInputDataItems;
             dialogRef.componentInstance.fileColumns = columnNames || [];
 
             dialogRef.result
               .then(
-                (
-                  result:
-                    | {
-                        category?: string;
-                        validationFailed?: boolean;
-                        missingColumns?: string[];
-                        targetDisplayName?: string;
-                      }
-                    | boolean,
-                ) => {
+                (result: DepotUploadDialogResult | boolean) => {
                   if (result && typeof result === 'object') {
-                    // Check if validation failed - show invalid modal and don't add file
                     if (
                       result.validationFailed &&
                       result.missingColumns &&
@@ -341,7 +301,7 @@ export class RunFileIntakeService {
                       this.logger.log(
                         'Validation FAILED from dialog - missing columns',
                       );
-                      return; // Don't add the file
+                      return;
                     }
 
                     if (result.category) {
@@ -360,16 +320,12 @@ export class RunFileIntakeService {
                   }
                 },
               )
-              .catch(() => {
-                // Dialog dismissed
-              });
-            return; // Exit early to prevent default behavior
+              .catch(() => {});
+            return;
           }
         }
       }
 
-      // Default behavior: no duplicate columnRequired OR at least one duplicate is already in preOrderFiles
-      // Just add the file normally
       file.keyName = keyName;
       file.displayName = displayName;
       file.isFirstOfType = true;
@@ -377,7 +333,6 @@ export class RunFileIntakeService {
       this.state.isFilePreview = true;
     }
 
-    // Update upload button state after file changes
     this.files.updateCanUploadState();
   }
 
@@ -389,7 +344,6 @@ export class RunFileIntakeService {
     });
 
     if (isOpened) {
-      // Capture current displayName before user makes a selection
       const currentDisplayName = this.files.isFileWithCategory(fileObj.file)
         ? fileObj.file.displayName || ''
         : (fileObj.file as PreOrderFileDescriptor).displayName || '';
@@ -415,14 +369,12 @@ export class RunFileIntakeService {
 
     const selectedDisplayName = event.value;
 
-    // Get the previous displayName from our tracked object
     const previousDisplayName =
       this.fileDisplayNameBeforeChange[fileObj.id] || '';
 
     this.logger.log('Previous displayName from tracking:', previousDisplayName);
 
     if (selectedDisplayName) {
-      // First: Validate if file columns match the new category requirements
       this.logger.log('Starting column validation...');
       const isValid = await this.fileColumns.validateFileColumnsForCategory(
         fileObj,
@@ -431,14 +383,12 @@ export class RunFileIntakeService {
       this.logger.log('Validation result:', isValid);
 
       if (!isValid) {
-        // Validation failed, modal already shown, revert to previous value
         this.logger.log('Validation failed, reverting...');
         this.revertFileDisplayName(fileObj, previousDisplayName);
         this.logger.log('=== handleInputDataKeyChange END (validation failed) ===');
         return;
       }
 
-      // Second: Check if this category already exists in other files (for warning only)
       const isDuplicate = this.files.preOrderFiles.some(
         (item) =>
           item.id !== fileObj.id &&
@@ -449,8 +399,6 @@ export class RunFileIntakeService {
         this.logger.log(
           'Category already exists in another file, showing warning...',
         );
-        // Show warning toast but allow the change
-        // hasDuplicateCategory will show red border (2px solid #dc3545)
         this.toastr.warning(
           this.transloco.translate(
             'a_file_with_this_category_is_already_added',
@@ -487,11 +435,9 @@ export class RunFileIntakeService {
       }
     }
 
-    // Update our tracked object with the new confirmed value
     this.fileDisplayNameBeforeChange[fileObj.id] = selectedDisplayName;
     this.logger.log('Updated tracking with new value:', selectedDisplayName);
 
-    // Update upload button state after category change
     this.files.updateCanUploadState();
     this.logger.log('=== handleInputDataKeyChange END (success) ===');
   }
@@ -527,13 +473,11 @@ export class RunFileIntakeService {
       }
     }
 
-    // Force update the specific file in the array to trigger change detection
     const index = this.files.preOrderFiles.findIndex((f) => f.id === fileObj.id);
     if (index !== -1) {
       this.files.preOrderFiles[index] = { ...fileObj };
     }
 
-    // Trigger change detection to update the UI
     this.ui.detectChanges();
 
     this.logger.log('File reverted successfully', {

@@ -32,7 +32,6 @@ import { TranslocoPaginatorIntl } from './transloco-paginator-intl';
       })
     },
     { provide: TRANSLOCO_LOADER, useClass: TranslocoHttpLoader },
-    // ← **this line fixes** the “No provider for TRANSLOCO_TRANSPILER” error:
     { provide: TRANSLOCO_TRANSPILER, useClass: DefaultTranspiler },
     { provide: TRANSLOCO_MISSING_HANDLER, useClass: DefaultMissingHandler },
     { provide: TRANSLOCO_INTERCEPTOR, useClass: DefaultInterceptor },

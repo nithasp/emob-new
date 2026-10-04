@@ -53,7 +53,6 @@ export class CustomerListComponent implements OnInit {
       (item) => item.index === customer.index && item.name === customer.name
     );
     if (existingIndex !== -1) {
-      // Replace the existing entry
       this.customersLocationUpdated[existingIndex] = {
         nodeId: customer.nodeId,
         index: customer.index,
@@ -62,7 +61,6 @@ export class CustomerListComponent implements OnInit {
         longitude: locationUpdated.longitude,
       };
     } else {
-      // Add a new entry
       this.customersLocationUpdated.push({
         nodeId: customer.nodeId,
         index: customer.index,
@@ -124,8 +122,6 @@ export class CustomerListComponent implements OnInit {
         })),
       } satisfies DataPreOrder);
 
-    // Match openCustomerOrderDetails in run.component: runtime customers use
-    // additionalProperties + name, not only Excel-grouped rows or extra.*.
     const channel: string =
       selected?.additionalProperties?.channel ??
       base.CHANNEL ??
@@ -180,12 +176,10 @@ export class CustomerListComponent implements OnInit {
   }
 
   findLocationType(name: string): LocationType {
-    // Find and remove the customer from uncertain
     const uncertainIndex =
       this.uploadDataGroupCustomers.uncertain.customers.findIndex(
         (c) => c.name === name
       );
-    // Find and remove the customer from unverify
     const unverifyIndex =
       this.uploadDataGroupCustomers.unverify.customers.findIndex(
         (c) => c.name === name

@@ -56,7 +56,6 @@ import { TranslocoRootModule } from 'src/transloco/transloco-root.module';
     provideHttpClient(),
     provideAnimations(),
     provideToastr(),
-    // Attaches the access token to every API and GraphQL request, and renews it when it expires
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,

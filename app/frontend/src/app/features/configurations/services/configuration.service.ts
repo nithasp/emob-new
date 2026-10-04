@@ -150,7 +150,7 @@ export class ConfigurationService {
           input: file,
         },
         context: {
-          useMultipart: true, // Ensure multipart upload is enabled
+          useMultipart: true,
         },
       })
       .pipe(
@@ -182,7 +182,7 @@ export class ConfigurationService {
           },
         },
         context: {
-          useMultipart: true, // Ensure multipart upload is enabled
+          useMultipart: true,
         },
       })
       .pipe(

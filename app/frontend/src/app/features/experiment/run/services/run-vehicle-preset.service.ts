@@ -24,10 +24,6 @@ export class RunVehiclePresetService {
     private readonly pool: RunVehiclePoolService,
   ) {}
 
-  // ======================================================================
-  // Open VRP — preset configuration (save / load run list per depot)
-  // ======================================================================
-
   /**
    * Memoised so the getter returns the *same* array instance between change
    * detection runs. Re-parsing storage on every run handed `*ngFor` brand new
@@ -79,7 +75,6 @@ export class RunVehiclePresetService {
     for (const savedEntry of preset.entries) {
       const vehicleTypeName = this.fleet.getVehicleName(savedEntry.vehicleTypeId);
       if (!vehicleTypeName) {
-        // vehicle type no longer exists in master data
         adjusted = true;
         continue;
       }
@@ -89,16 +84,12 @@ export class RunVehiclePresetService {
       if (savedEntry.maxTrip != null && maxTrip !== savedEntry.maxTrip) {
         adjusted = true;
       }
-      // a preset keeps the reload time the planner saved with it; the vehicle
-      // type default only fills in for presets saved before it was editable
       const loadingDuration =
         maxTrip > DEFAULT_MAX_TRIP
           ? savedEntry.loadingDuration ||
             this.fleet.getVehicleTypeLoadingDuration(savedEntry.vehicleTypeId) ||
             this.fleet.multiTripDefaults.defaultLoadingDuration
           : null;
-      // presets saved before identical rows were merged may still hold
-      // duplicates; they fold together here just like a manual add
       if (savedEntry.mode === 'license-plate') {
         const chosenVehicles = this.pool.getPoolAvailableVehicles(
           savedEntry.vehicleTypeId,

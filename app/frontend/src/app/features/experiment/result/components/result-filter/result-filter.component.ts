@@ -14,6 +14,7 @@ import { FilterCriteria } from '@shared/models/common.model';
 import { LanguageChangeService } from '@core/services/language-change.service';
 import { LoggerService } from '@core/services/logger.service';
 import { RouteInfo } from '../../../models/location.model';
+import { RouteFilter } from '../../../models/result.model';
 import { ResultPlanService } from '../../services/result-plan.service';
 import { ResultMapService } from '../../services/result-map.service';
 import { ROUTE_COLUMNS } from '../../utils/route-columns.utils';
@@ -29,11 +30,7 @@ export class ResultFilterComponent implements OnInit, AfterViewInit {
   @ViewChild('filterModal', { static: false, read: TemplateRef })
   filterModal!: TemplateRef<unknown>;
   @ViewChild('chipListbox') chipListbox!: ElementRef<HTMLElement>;
-  public activeFilters: Array<{
-    column: string;
-    criteria: string;
-    value: string;
-  }> = [];
+  public activeFilters: RouteFilter[] = [];
   searchControl = new FormControl<string>('');
   showFilterPanel = false;
   filterCriteriaToDisplay: string[] = [
@@ -65,8 +62,6 @@ export class ResultFilterComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    // Only a loaded plan hands the table over to this filter and starts the language listener;
-    // while the plan is loading, or after it failed to load, both stay off
     this.plan.planLoaded$.subscribe(() => {
       this.plan.dataRouteInfo.filterPredicate =
         this.multiFilterPredicate.bind(this);
@@ -181,7 +176,7 @@ export class ResultFilterComponent implements OnInit, AfterViewInit {
     setTimeout(() => this.checkOverflow(), 0);
   }
 
-  removeFilter(filt: { column: string; criteria: string; value: string }) {
+  removeFilter(filt: RouteFilter) {
     this.activeFilters = this.activeFilters.filter((x) => x !== filt);
     this.plan.dataRouteInfo.filter = this.activeFilters.length
       ? JSON.stringify(this.activeFilters)

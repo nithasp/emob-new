@@ -305,3 +305,27 @@ export interface CategoryValidationResult {
   missingColumns: string[];
   targetDisplayName?: string;
 }
+
+export type InputDataColumns = Pick<
+  DepotInputDataItem,
+  'keyName' | 'displayName' | 'columnRequired'
+>;
+
+export interface FileDepotValidation {
+  isValid: boolean;
+  keyName?: string;
+  displayName?: string;
+  isFirstOfType?: boolean;
+  columnNames?: string[];
+}
+
+export interface DepotUploadDialogResult {
+  category?: string;
+  validationFailed?: boolean;
+  missingColumns?: string[];
+  targetDisplayName?: string;
+}
+
+export interface DepotUploadReplaceResult extends DepotUploadDialogResult {
+  replace: boolean;
+}

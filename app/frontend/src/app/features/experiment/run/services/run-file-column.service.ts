@@ -3,7 +3,12 @@ import * as ExcelJS from 'exceljs';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 import { LoggerService } from '@core/services/logger.service';
-import { FileWithCategory, PreOrderFileItem } from '../../models/pre-order.model';
+import {
+  FileDepotValidation,
+  FileWithCategory,
+  InputDataColumns,
+  PreOrderFileItem,
+} from '../../models/pre-order.model';
 import { RunUiService } from './run-ui.service';
 import { RunUploadFileService } from './run-upload-file.service';
 
@@ -11,7 +16,6 @@ import { RunUploadFileService } from './run-upload-file.service';
 export class RunFileColumnService {
   private readonly logger = inject(LoggerService);
 
-  // Store file columns when first uploaded for later validation
   fileColumnsCache: { [fileId: string]: string[] } = {};
 
   constructor(
@@ -61,9 +65,7 @@ export class RunFileColumnService {
     return cols.filter(Boolean);
   }
 
-  findMatchingInputDataItem(
-    columnNames: string[],
-  ): { keyName: string; displayName: string; columnRequired: string[] } | null {
+  findMatchingInputDataItem(columnNames: string[]): InputDataColumns | null {
     return (
       this.files.depotInputDataItems.find((item) => {
         return item.columnRequired.every((requiredCol) =>
@@ -76,13 +78,7 @@ export class RunFileColumnService {
   async validateSingleFileAgainstDepot(
     file: FileWithCategory,
     fileId?: string,
-  ): Promise<{
-    isValid: boolean;
-    keyName?: string;
-    displayName?: string;
-    isFirstOfType?: boolean;
-    columnNames?: string[];
-  }> {
+  ): Promise<FileDepotValidation> {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = async (e: ProgressEvent<FileReader>) => {
@@ -139,7 +135,6 @@ export class RunFileColumnService {
             ).filter((value) => typeof value === 'string') as string[];
           }
 
-          // Cache column names for later validation if fileId is provided
           if (fileId) {
             this.fileColumnsCache[fileId] = columnNames;
             this.logger.log('Cached columns for file:', fileId, columnNames);
@@ -156,14 +151,12 @@ export class RunFileColumnService {
               columnNames: columnNames,
             });
           } else {
-            // Show missing columns for each required input data type
             const validationErrors = [];
             for (const item of this.files.depotInputDataItems) {
               const missingColumns = item.columnRequired.filter(
                 (col) => !columnNames.includes(col),
               );
               if (missingColumns.length === item.columnRequired.length) {
-                // All required columns are missing
                 validationErrors.push(
                   `<strong>${this.transloco.translate(
                     'file_for',
@@ -178,7 +171,6 @@ export class RunFileColumnService {
                     .join('')}</ul>`,
                 );
               } else if (missingColumns.length > 0) {
-                // Some columns are missing
                 validationErrors.push(
                   `<strong>${this.transloco.translate(
                     'file_for',
@@ -232,7 +224,6 @@ export class RunFileColumnService {
       hasCachedColumns: !!this.fileColumnsCache[fileObj.id],
     });
 
-    // Find the required columns for the selected category
     const targetItem = this.files.depotInputDataItems.find(
       (item) => item.displayName === selectedDisplayName,
     );
@@ -251,7 +242,6 @@ export class RunFileColumnService {
       columnRequired: targetItem.columnRequired,
     });
 
-    // First, try to use cached columns (from when file was first uploaded)
     const cachedColumns = this.fileColumnsCache[fileObj.id];
     if (cachedColumns && cachedColumns.length > 0) {
       this.logger.log('Using cached columns for validation:', cachedColumns);
@@ -262,8 +252,6 @@ export class RunFileColumnService {
       );
     }
 
-    // If this is a PreOrderFileDescriptor (loaded from server), we cannot validate actual file columns
-    // In this case, we'll assume it's valid
     if (!this.files.isFileWithCategory(fileObj.file)) {
       this.logger.log(
         'File is PreOrderFileDescriptor and no cached columns, skipping validation',
@@ -271,7 +259,6 @@ export class RunFileColumnService {
       return true;
     }
 
-    // Check if the file is a valid File object
     const file = fileObj.file as FileWithCategory;
     if (!file || !(file instanceof File)) {
       this.logger.error('File is not a valid File object:', file);
@@ -283,7 +270,6 @@ export class RunFileColumnService {
 
     this.logger.log('Starting file read for validation:', file.name);
 
-    // Read the file and get its columns
     return new Promise<boolean>((resolve) => {
       const reader = new FileReader();
 
@@ -335,7 +321,6 @@ export class RunFileColumnService {
             ).filter((value) => typeof value === 'string') as string[];
           }
 
-          // Cache these columns for future validations
           this.fileColumnsCache[fileObj.id] = columnNames;
           this.logger.log('Cached columns for future use:', columnNames);
 
@@ -365,11 +350,7 @@ export class RunFileColumnService {
 
   private validateColumnsAgainstCategory(
     columnNames: string[],
-    targetItem: {
-      keyName: string;
-      displayName: string;
-      columnRequired: string[];
-    },
+    targetItem: InputDataColumns,
     fileName: string,
   ): boolean {
     this.logger.log('validateColumnsAgainstCategory:', {
@@ -379,7 +360,6 @@ export class RunFileColumnService {
       requiredColumns: targetItem.columnRequired,
     });
 
-    // Check if all required columns are present
     const missingColumns = targetItem.columnRequired.filter(
       (col) => !columnNames.includes(col),
     );
@@ -387,7 +367,6 @@ export class RunFileColumnService {
     this.logger.log('Missing columns:', missingColumns);
 
     if (missingColumns.length > 0) {
-      // Show error modal with missing columns
       const validationError = `<strong>${this.transloco.translate(
         'file_for',
         {},
@@ -409,11 +388,10 @@ export class RunFileColumnService {
         [validationError],
       );
       this.logger.log('Validation FAILED - missing columns');
-      return false; // Validation failed - missing columns
+      return false;
     } else {
-      // All required columns are present
       this.logger.log('Validation PASSED - all columns present');
-      return true; // Validation passed
+      return true;
     }
   }
 
@@ -431,14 +409,12 @@ export class RunFileColumnService {
     }
     this.files.preOrderFiles = validFiles;
 
-    // Update upload button state after validation
     this.files.updateCanUploadState();
   }
 
   validateFileAgainstDepotRequirements(
     file: PreOrderFileItem,
   ): Promise<boolean> {
-    // Read the file to get column names
     return new Promise<boolean>((resolve) => {
       const reader = new FileReader();
       reader.onload = async (e: ProgressEvent<FileReader>) => {
@@ -495,7 +471,6 @@ export class RunFileColumnService {
             ).filter((value) => typeof value === 'string') as string[];
           }
 
-          // Check if file matches any of the depot's input data requirements
           const matchingInputDataItem =
             this.findMatchingInputDataItem(columnNames);
           if (matchingInputDataItem) {
@@ -504,7 +479,6 @@ export class RunFileColumnService {
               file.file.displayName = matchingInputDataItem.displayName;
               file.file.isFirstOfType = false;
             }
-            // Keep existing files editable when re-validating against depot
             resolve(true);
           } else {
             resolve(false);
@@ -522,7 +496,6 @@ export class RunFileColumnService {
           reader.readAsArrayBuffer(file.file);
         }
       } else {
-        // For descriptor items (loaded from server), consider them valid
         resolve(true);
       }
     });

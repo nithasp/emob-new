@@ -19,7 +19,6 @@
   }
 }
 
-// Global styles for overwrite z-index of mat-select panels in ngbModal
 ::ng-deep .cdk-overlay-container {
   z-index: 2000 !important;
 }

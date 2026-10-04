@@ -4,8 +4,6 @@ import { ExperimentRunnerDeps } from '../types/service.types';
 
 const MAX_ERROR_LENGTH = 500;
 
-// Stands in for the queue and the worker of the planning service: a submitted run waits, runs and
-// finishes on timers inside this process. Pending runs are picked up again after a restart.
 export function createExperimentRunner({ experiments, solve }: ExperimentRunnerDeps) {
   const timers = new Map<string, NodeJS.Timeout>();
 

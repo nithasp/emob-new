@@ -87,13 +87,12 @@ export class DialogMapDetailsComponent implements OnInit, AfterViewInit {
       dataProjection: 'EPSG:4326',
       featureProjection: 'EPSG:3857',
     });
-    // Reduce coordinates in LineString features by 50%
     const reducedItemFeatures = itemFeatures.map((feature, index) => {
       const geometry = feature.getGeometry();
       if (geometry?.getType() === 'LineString') {
         const lineString = geometry as LineString;
         const coordinates = lineString.getCoordinates();
-        const reducedCoordinates = coordinates.filter((_, i) => i % 2 === 0); // Keep every other coordinate
+        const reducedCoordinates = coordinates.filter((_, i) => i % 2 === 0);
         this.logger.log(
           index,
           'Original coordinates:',
@@ -110,7 +109,6 @@ export class DialogMapDetailsComponent implements OnInit, AfterViewInit {
       features: [...reducedItemFeatures],
     });
 
-    // mapping depots for features
     depots.forEach((depot: GeoJSONFeatureCollection) => {
       const features = new GeoJSON().readFeatures(depot, {
         dataProjection: 'EPSG:4326',
@@ -163,7 +161,6 @@ export class DialogMapDetailsComponent implements OnInit, AfterViewInit {
 
     this.map.on('pointermove', this.handlePointerMove.bind(this));
 
-    // Initialize overlay for popup
     const element = document.getElementById('popupMapDeatils')!;
     this.popUp = new Overlay({
       element: element,
@@ -187,7 +184,6 @@ export class DialogMapDetailsComponent implements OnInit, AfterViewInit {
     if (feature) {
       const geometry = feature.getGeometry();
       if (geometry instanceof LineString) {
-        // Get the closest point on the LineString to the event's pixel location
         coordinates = geometry.getClosestPoint(
           this.map.getCoordinateFromPixel(event.pixel)
         );
@@ -195,7 +191,6 @@ export class DialogMapDetailsComponent implements OnInit, AfterViewInit {
       } else if (geometry instanceof Point) {
         coordinates = geometry.getCoordinates();
       } else {
-        // Handle other geometry types if needed
         coordinates = [];
       }
       this.popUp?.setPosition(coordinates);
@@ -300,7 +295,6 @@ export class DialogMapDetailsComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Find the nodeIndex from the featureCollection based on the point name
     const allFeatures = new GeoJSON().readFeatures(this.featureCollection, {
       dataProjection: 'EPSG:4326',
       featureProjection: 'EPSG:3857',

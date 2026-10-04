@@ -75,7 +75,6 @@ describe('ResultFilterComponent', () => {
     });
 
     it('supports string operators: contains/starts_with/ends_with and their negations', () => {
-      // numberOfReplaceTypes is treated as a passthrough (string) column
       expect(
         component.evaluateFilter(
           'numberOfReplaceTypes',
@@ -153,8 +152,6 @@ describe('ResultFilterComponent', () => {
 
   describe('applyFilter() / removeFilter() / setSearchOption() / setSelectedFilterCriteria()', () => {
     beforeEach(() => {
-      // resetRouteMapUi()/applyMapFilter() touch the live OL map, which isn't
-      // set up in this describe block; that's covered separately below.
       spyOn(resultMap, 'resetRouteMapUi');
       spyOn(resultMap, 'applyMapFilter');
     });

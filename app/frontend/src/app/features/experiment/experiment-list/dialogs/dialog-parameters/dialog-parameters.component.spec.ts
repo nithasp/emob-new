@@ -32,7 +32,6 @@ describe('DialogParametersComponent', () => {
       ],
       schemas: [NO_ERRORS_SCHEMA],
     })
-      // Replace the template so we don't pull in transloco pipes.
       .overrideComponent(DialogParametersComponent, { set: { template: '' } })
       .compileComponents();
 

@@ -17,7 +17,6 @@ import { RunValidationService } from '../../services/run-validation.service';
   styleUrl: './run-vehicle.component.scss',
 })
 export class RunVehicleComponent {
-  // Open VRP: preset configuration (save/load vehicle run list per depot)
   public presetName: string = '';
   @ViewChild('savePresetModal') savePresetModalTemplate?: TemplateRef<unknown>;
 

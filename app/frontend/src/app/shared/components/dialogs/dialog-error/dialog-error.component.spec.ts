@@ -21,7 +21,6 @@ describe('DialogErrorComponent', () => {
       providers: [{ provide: NgbActiveModal, useValue: activeModal }],
       schemas: [NO_ERRORS_SCHEMA],
     })
-      // Replace the template so we don't pull in transloco pipes.
       .overrideComponent(DialogErrorComponent, { set: { template: '' } })
       .compileComponents();
 

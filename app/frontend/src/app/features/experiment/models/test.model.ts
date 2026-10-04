@@ -42,11 +42,6 @@ export interface ResultPageSpies {
   paramsSubject: Subject<{ [key: string]: string }>;
 }
 
-/**
- * The result component consumes these plan payloads through `any`-typed fields
- * (`vrpSolutionData`, `geoJsonRawData`, `routingNodesMap`), so its spec
- * describes them with the shapes below rather than the shared models.
- */
 export interface SpecRoutingNode {
   index: number;
   nodeId: string;

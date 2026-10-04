@@ -24,10 +24,6 @@ describe('DialogLicensePlateSelectionComponent', () => {
         { provide: VehicleService, useValue: mockVehicleService },
       ],
     })
-      // The template uses the *transloco structural directive and `| transloco`
-      // pipe (via TranslocoModule), which needs a real TRANSLOCO_TRANSPILER
-      // provider to render. Blanking the template avoids pulling that in,
-      // matching the pattern used by vehicle-type-dialog.component.spec.ts.
       .overrideComponent(DialogLicensePlateSelectionComponent, { set: { template: '' } })
       .compileComponents();
 

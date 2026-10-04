@@ -27,8 +27,6 @@ const MAX_ISSUES_PER_FILE = 100;
 const DEFAULT_UNIT_WEIGHT_KG = 5;
 const DEFAULT_UNIT_VOLUME_M3 = 0.01;
 
-// How far a given coordinate may sit from the centre of the area its address names before the
-// address is trusted over the coordinate
 const SUBDISTRICT_RADIUS_KM = 6;
 const DISTRICT_RADIUS_KM = 15;
 const CENTROID_JITTER_DEGREES = 0.004;
@@ -42,8 +40,6 @@ function hash(value: string): number {
   return result >>> 0;
 }
 
-// Several orders resolved to the same centre point would stack on the map; each gets a small,
-// repeatable offset of its own
 function jitter(point: LatLng, seed: string): LatLng {
   const h = hash(seed);
   const dLat = (((h & 0xffff) / 0xffff) * 2 - 1) * CENTROID_JITTER_DEGREES;

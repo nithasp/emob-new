@@ -13,7 +13,7 @@ import {
   ReplaceType,
   ValidationType,
 } from '../../models/pre-order.model';
-import { MyDepot, DepotInputRequirement } from '../../models/experiment.model';
+import { MyDepot, DepotLocationInput } from '../../models/experiment.model';
 import {
   DataGroup,
   DisplayLocationType,
@@ -35,7 +35,6 @@ export class RunOrderDataService {
   public uploadDataGroupCustomers?: DataGroup | null;
   public customersLocationUpdated: Array<CustomerUpdated> = [];
   public countUploadedCustomers: number = 0;
-  //display table and virtualization
 
   displayLocationType: DisplayLocationType = {
     verify: false,
@@ -129,25 +128,9 @@ export class RunOrderDataService {
     return { verify, uncertain, unverify };
   }
 
-  private loadLocationDepot(
-    incoming: Array<{
-      depotId?: string;
-      id?: string;
-      depotName?: string;
-      name?: string;
-      latitude?: number | string;
-      longitude?: number | string;
-      columns?: string[];
-      inputdata?: DepotInputRequirement[];
-      timeWindowEarly?: string | number;
-      timeWindowLate?: string | number;
-      createdAt?: string;
-      updatedAt?: string;
-    }>,
-  ) {
+  private loadLocationDepot(incoming: DepotLocationInput[]) {
     this.logger.log('loadLocationDepot incoming', incoming);
 
-    // Always use the incoming depots array for default selection and display
     const normalizedIncoming: MyDepot[] = incoming.map((item) => {
       const nameKey =
         typeof item.depotName === 'string'
@@ -189,7 +172,6 @@ export class RunOrderDataService {
       }));
     }
 
-    // Set default selection to the first depot in the incoming list
     if (this.state.depots && this.state.depots.length > 0) {
       const defaultDepotName =
         (this.state.experiment && this.state.experiment.depots && this.state.experiment.depots[0]
@@ -230,7 +212,6 @@ export class RunOrderDataService {
     }
 
     this.dataSource.data = newData;
-    // this.dataSource.data = newData;
   }
 
   displayDataInTable(locationType: LocationType) {
@@ -296,7 +277,6 @@ export class RunOrderDataService {
       })),
     };
 
-    // Pass customer directly as dataCustomer (the component expects Customer type)
     modalRef.componentInstance.dataPreOrder = dataPreOrder;
     modalRef.componentInstance.dataCustomer = customer;
 
@@ -358,12 +338,10 @@ export class RunOrderDataService {
   }
 
   moveCustomerToEdit(customer: Customer, locationUpdated: Location) {
-    // Find and remove the customer from uncertain
     const uncertainIndex =
       this.uploadDataGroupCustomers!.uncertain.customers.findIndex(
         (c) => c.name === customer.name,
       );
-    // Find and remove the customer from unverify
     const unverifyIndex =
       this.uploadDataGroupCustomers!.unverify.customers.findIndex(
         (c) => c.name === customer.name,
@@ -401,19 +379,15 @@ export class RunOrderDataService {
         (i) => i.index === item.index && i.name === item.name,
       );
       if (existingIndex !== -1) {
-        // Replace the existing entry
         this.customersLocationUpdated[existingIndex] = item;
       } else {
-        // Add a new entry
         this.customersLocationUpdated.push(item);
       }
 
-      // Find and remove the customer from uncertain
       const uncertainIndex =
         this.uploadDataGroupCustomers!.uncertain.customers.findIndex(
           (c) => c.name === item.name,
         );
-      // Find and remove the customer from unverify
       const unverifyIndex =
         this.uploadDataGroupCustomers!.unverify.customers.findIndex(
           (c) => c.name === item.name,

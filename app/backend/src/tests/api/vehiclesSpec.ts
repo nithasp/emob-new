@@ -1,4 +1,4 @@
-import { TestPlanner } from '../../types/test.types';
+import { ListedParameter, TestPlanner } from '../../types/test.types';
 import { demoPlanner, uniqueName } from '../support/api';
 
 const TYPE_FIELDS = `vehicleTypeId name access dimension { width height depth } maximumWeightCapacity
@@ -163,11 +163,7 @@ describe('Vehicles and parameters', () => {
   describe('dynamic parameters', () => {
     it('save a valid value and report an invalid one in the same request', async () => {
       const listed = await demo.gql(PARAMETERS, { depotId: depotIds[2] }).expect(200);
-      const parameters = listed.body.data.dynamicParameters as Array<{
-        id: string;
-        keyName: string;
-        value: unknown;
-      }>;
+      const parameters = listed.body.data.dynamicParameters as ListedParameter[];
       const early = parameters.find((parameter) => parameter.keyName === 'EarlyDeliveryTime');
       const available = parameters.find((parameter) => parameter.keyName === 'NumberOfVehicleAvailable');
       if (!early || !available) throw new Error('the seed left no delivery-time or fleet-size parameter');

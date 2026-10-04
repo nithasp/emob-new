@@ -26,7 +26,6 @@
   }
 }
 
-/* validation tab summary */
 .openvrp-scard {
   border: 1px solid $ovrp-line;
   border-radius: 10px;
@@ -53,7 +52,6 @@
   }
 }
 
-/* Q4 preview: multi time windows (validation tab, mirrors mockup .ordcard) */
 .openvrp-ordcard {
   border: 1px dashed $ovrp-line-strong;
   border-radius: 10px;
@@ -70,10 +68,6 @@
     font-family: "Consolas", "Courier New", monospace;
     color: #31406b;
   }
-
-  /* the pill carries 13.5px of its own now — this block only used to exist to
-     lift it off the 9px it was, and repeating the size here would just be a
-     second place to keep in step */
 
   .openvrp-tws {
     gap: 7px;

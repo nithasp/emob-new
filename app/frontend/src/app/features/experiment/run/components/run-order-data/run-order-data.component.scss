@@ -40,7 +40,6 @@ button.link-verify {
   min-width: 100px;
 }
 
-/* one cell shape, four verification states — only the fill differs */
 .text-highlight-verify,
 .text-highlight-uncertain,
 .text-highlight-unverify,
@@ -89,7 +88,6 @@ button.link-verify {
   }
 }
 
-/* every wrapping column shares one shape; only the width is per-column */
 .mat-column-No,
 .mat-column-ORDERID_ORG,
 .mat-column-AUMPHER,

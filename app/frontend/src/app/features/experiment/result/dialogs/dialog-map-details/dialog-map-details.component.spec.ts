@@ -212,8 +212,6 @@ describe('DialogMapDetailsComponent', () => {
       const feature = new Feature({
         geometry: new Point([0, 0]),
       });
-      // Polygon isn't handled explicitly, but any geometry other than
-      // Point/LineString should fall through to the default branch.
       spyOn(feature, 'getGeometry').and.returnValue({
         getType: () => 'Polygon',
       } as any);

@@ -34,7 +34,6 @@ function createMockVehicle(overrides: Partial<MyVehicles> = {}): MyVehicles {
   };
 }
 
-/** Builds an NgbModalRef-like stub with a controllable result promise. */
 function createModalRef(result: Promise<unknown>): NgbModalRef {
   return {
     componentInstance: {},
@@ -70,7 +69,6 @@ describe('VehicleComponent', () => {
       'translate',
     ]);
 
-    // Default return values to keep ngOnInit happy.
     vehicleService.getMyVehicles.and.returnValue(of([]));
     vehicleService.deleteVehicle.and.returnValue(of(true));
     transloco.translate.and.callFake(((key: string) => key) as never);
@@ -86,7 +84,6 @@ describe('VehicleComponent', () => {
       ],
       schemas: [NO_ERRORS_SCHEMA],
     })
-      // Replace the template so we don't pull in transloco pipes/material deps.
       .overrideComponent(VehicleComponent, { set: { template: '' } })
       .compileComponents();
 
@@ -95,8 +92,6 @@ describe('VehicleComponent', () => {
   });
 
   afterEach(() => {
-    // Tear down the component so the MatTableDataSource render subscription
-    // does not leak into the global test teardown.
     fixture.destroy();
   });
 
@@ -133,8 +128,6 @@ describe('VehicleComponent', () => {
     it('should assign the paginator to the data source', () => {
       const paginator = {} as MatPaginator;
       component.paginator = paginator;
-      // Use a lightweight stub so we don't drive MatTableDataSource internals
-      // (which wire directly into paginator.page) with an inert paginator.
       const dataSourceStub = {
         data: [] as MyVehicles[],
         paginator: null as MatPaginator | null,
@@ -187,7 +180,6 @@ describe('VehicleComponent', () => {
         .componentInstance as { mode: string; vehicle: MyVehicles };
       expect(instance.mode).toBe('edit');
       expect(instance.vehicle).toEqual(vehicle);
-      // Should be a copy, not the same reference.
       expect(instance.vehicle).not.toBe(vehicle);
     });
 

@@ -47,8 +47,6 @@ describe('DialogVehicleProfileTypeItemComponent', () => {
       declarations: [DialogVehicleProfileTypeItemComponent],
       providers: [{ provide: NgbActiveModal, useValue: activeModal }],
     })
-      // Replace the template so we don't pull in the transloco pipe/directive
-      // or Angular Material dependencies used purely for display.
       .overrideComponent(DialogVehicleProfileTypeItemComponent, {
         set: { template: '' },
       })

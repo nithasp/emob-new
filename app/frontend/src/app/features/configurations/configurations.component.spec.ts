@@ -12,8 +12,6 @@ describe('ConfigurationsComponent', () => {
       declarations: [ConfigurationsComponent],
       schemas: [NO_ERRORS_SCHEMA],
     })
-      // Replace the template so we don't pull in transloco pipes/child
-      // components used by the real configuration template.
       .overrideComponent(ConfigurationsComponent, { set: { template: '' } })
       .compileComponents();
 

@@ -51,7 +51,6 @@ function createMockExperiment(overrides: Partial<Experiment> = {}): Experiment {
   };
 }
 
-/** Builds an NgbModalRef-like stub with a controllable result promise. */
 function createModalRef(result: Promise<unknown>): NgbModalRef {
   return {
     componentInstance: {},
@@ -107,7 +106,6 @@ describe('ExperimentListComponent', () => {
       'translate',
     ]);
 
-    // Default return values to keep ngOnInit happy.
     experimentService.getExperiments.and.returnValue(of([]));
     transloco.translate.and.callFake(((key: string) => key) as never);
     router.navigate.and.resolveTo(true);
@@ -126,7 +124,6 @@ describe('ExperimentListComponent', () => {
       ],
       schemas: [NO_ERRORS_SCHEMA],
     })
-      // Replace the template so we don't pull in transloco pipes/material deps.
       .overrideComponent(ExperimentListComponent, { set: { template: '' } })
       .compileComponents();
 
@@ -149,7 +146,7 @@ describe('ExperimentListComponent', () => {
       experimentService.getExperiments.and.returnValue(of(experiments));
 
       component.ngOnInit();
-      tick(500); // hiddenSpinner() hides the named spinner after a 500ms delay
+      tick(500);
 
       expect(experimentService.getExperiments).toHaveBeenCalled();
       expect(component.dataSource.data).toEqual(experiments);
@@ -162,7 +159,7 @@ describe('ExperimentListComponent', () => {
       );
 
       component.loadData();
-      tick(500); // hiddenSpinner() hides the named spinner after a 500ms delay
+      tick(500);
 
       expect(spinner.hide).toHaveBeenCalledWith('experiment');
     }));
@@ -328,7 +325,7 @@ describe('ExperimentListComponent', () => {
       const openSpy = spyOn(component, 'openParametersDialog');
 
       component.getParameter('run-1');
-      tick(500); // hiddenSpinner() hides the named spinner after a 500ms delay
+      tick(500);
 
       expect(constraintService.getDynamicParameter).toHaveBeenCalledWith(
         'run-1'
@@ -343,7 +340,7 @@ describe('ExperimentListComponent', () => {
       );
 
       component.getParameter('run-1');
-      tick(500); // hiddenSpinner() hides the named spinner after a 500ms delay
+      tick(500);
 
       expect(spinner.hide).toHaveBeenCalledWith('experiment');
       expect(toastr.error).toHaveBeenCalled();
@@ -359,7 +356,7 @@ describe('ExperimentListComponent', () => {
       });
 
       component.getConsumption(experiment);
-      tick(500); // hiddenSpinner() hides the named spinner after a 500ms delay
+      tick(500);
 
       expect(component.paramsConsumption.countGeocoding).toBe(5);
       expect(component.paramsConsumption.countReroute).toBe(3);
@@ -576,7 +573,7 @@ describe('ExperimentListComponent', () => {
 
     it('should hide the experiment spinner', fakeAsync(() => {
       component.hiddenSpinner();
-      tick(500); // hiddenSpinner() hides the named spinner after a 500ms delay
+      tick(500);
 
       expect(spinner.hide).toHaveBeenCalledWith('experiment');
     }));

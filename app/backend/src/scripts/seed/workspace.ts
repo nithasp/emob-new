@@ -26,6 +26,7 @@ import {
   GeneratedOrders,
   Owner,
   Scenario,
+  SeedConfiguration,
   SeededVehicleType,
   TypeKey,
 } from '../../types/seed.types';
@@ -192,7 +193,6 @@ async function seedUsers(companyId: string): Promise<Record<Owner, PublicUser>> 
     lastName: 'Admin',
     role: 'Admin',
   });
-  // Colleagues exist to own some of the runs; nobody signs in as them
   const somchai = await userService.upsertAccount({
     companyId,
     username: 'somchai',
@@ -217,8 +217,6 @@ async function seedUsers(companyId: string): Promise<Record<Owner, PublicUser>> 
   return { demo, somchai, nattaya };
 }
 
-// A re-seed starts from a clean workspace: the company's rows and stored files are removed, the
-// accounts and their sessions are kept
 async function resetCompany(companyId: string): Promise<void> {
   for (const table of [
     'experiments',
@@ -298,7 +296,7 @@ async function seedParameters(companyId: string, depotIds: Record<DepotKey, stri
 async function addConfiguration(
   companyId: string,
   depotId: string,
-  configuration: { name: string; category: string; columns: string[]; replace: boolean; timestamp?: Date },
+  configuration: SeedConfiguration,
   file?: { fileName: string; content: Buffer },
 ): Promise<void> {
   const row = await repositories.configurations.create({
@@ -396,7 +394,6 @@ async function seedConfigurations(companyId: string, depotIds: Record<DepotKey, 
       },
     );
 
-    // The empty row is the slot the "Update" menu uploads into; the dated ones are its history
     await addConfiguration(companyId, depotId, {
       name: ACTUAL_LOCATION_NAME,
       category: ACTUAL_CATEGORY,

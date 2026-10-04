@@ -72,7 +72,6 @@ export class CustomerDetailsComponent
 
   page = 1;
 
-  // Map
   public map!: Map;
   public iconStyle: Partial<IconStyle> = {};
   public vectorSource!: VectorSource;
@@ -125,7 +124,6 @@ export class CustomerDetailsComponent
         changes['dataCustomer'].previousValue['name']
       ) {
         this.logger.log('have change', this.locationType);
-        // Detect changes to the @Input property
         this.refreshLocation();
       }
     } else {
@@ -135,7 +133,6 @@ export class CustomerDetailsComponent
   }
 
   refreshLocation() {
-    // Logic to refresh the component
     this.location.latitude = Number(this.dataCustomer.latitude);
     this.location.longitude = Number(this.dataCustomer.longitude);
     this.setLocation(this.dataCustomer, this.location);
@@ -262,7 +259,6 @@ export class CustomerDetailsComponent
       }
     });
   }
-  // Provide a unified iterable type for template to avoid NG2 union errors
   get detailRows(): Array<ProductDetail | PreOrder> {
     const details = (this.dataPreOrder as DetailsPreOrder | DataPreOrder)?.details || [];
     return details as Array<ProductDetail | PreOrder>;

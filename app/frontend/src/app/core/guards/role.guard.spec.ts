@@ -22,7 +22,6 @@ function setup() {
   authService.canEnterAsDemo.and.returnValue(false);
   authService.hasAnyRole.and.returnValue(true);
 
-  // A marker instead of a real UrlTree: the guards only pass along what the router builds
   const router = jasmine.createSpyObj<Router>('Router', ['createUrlTree']);
   router.createUrlTree.and.callFake((commands: unknown[]) => commands.join('') as unknown as UrlTree);
 

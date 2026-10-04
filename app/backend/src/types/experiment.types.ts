@@ -1,6 +1,6 @@
 import { Depot } from './company.types';
 import { DynamicParameter } from './parameter.types';
-import { TransformResult } from './pipeline.types';
+import { TransformFile, TransformResult } from './pipeline.types';
 
 export const EXPERIMENT_STATUSES = [
   'Initializing',
@@ -25,7 +25,12 @@ export interface ExperimentInputFile {
   fileSize: number;
 }
 
-// Storage keys of what each stage wrote. A null key means that stage has not produced the file.
+export interface UploadedInputFile {
+  meta: ExperimentInputFile;
+  content: Buffer;
+  transform: TransformFile;
+}
+
 export interface ExperimentFiles {
   transform: { locations: string | null; warning: string | null };
   validate: {

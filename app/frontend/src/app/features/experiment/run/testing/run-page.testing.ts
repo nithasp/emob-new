@@ -267,7 +267,6 @@ export function createRunPageSpies(): RunPageSpies {
     'VehicleService',
     ['getMyVehicleTypes', 'getMyVehicles'],
   );
-  // The vehicle pool is loaded as part of the page's init flow, so every spec needs this to emit
   vehicleServiceSpy.getMyVehicles.and.returnValue(of([]));
 
   return {
@@ -322,8 +321,6 @@ export function createRunPageSpies(): RunPageSpies {
   };
 }
 
-// Declared components never render their template: the specs call methods directly, which keeps
-// material and the other template dependencies out of the test module
 export async function configureRunPage(
   options: { declarations?: Type<unknown>[] } = {},
 ): Promise<RunPageSpies> {

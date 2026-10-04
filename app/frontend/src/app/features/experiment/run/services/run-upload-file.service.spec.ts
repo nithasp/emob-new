@@ -117,7 +117,7 @@ describe('RunUploadFileService', () => {
 
       const message = files.getAllErrorMessages(a);
       expect(message.length).toBeGreaterThan(0);
-      expect(message.split(', ').length).toBe(3); // dup name + dup size + dup category
+      expect(message.split(', ').length).toBe(3);
     });
 
     it('hasAnyDuplicateCategories() reflects whether any file has a duplicate category', () => {
@@ -180,7 +180,7 @@ describe('RunUploadFileService', () => {
       files.updateInputDataKeysFromDepot(depot);
 
       expect(files.inputDataKeys.length).toBe(1);
-      expect(files.canUpload).toBeFalse(); // no files uploaded yet
+      expect(files.canUpload).toBeFalse();
     });
 
     it('updateCanUploadState() requires all required categories to be present, ignores optional ones', () => {

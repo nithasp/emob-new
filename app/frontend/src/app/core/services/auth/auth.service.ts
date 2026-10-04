@@ -49,7 +49,6 @@ export class AuthService {
   readonly authInitialized$ = this.initializedSubject.asObservable();
 
   constructor(private readonly authApi: AuthApiService) {
-    // Signing out keeps the login page through a refresh; a tab that is opened again is a new visit
     if (!isTabRefresh()) {
       sessionStorage.removeItem(DEMO_OPT_OUT_KEY);
     }
@@ -116,10 +115,6 @@ export class AuthService {
     return expectedRoles.some((role) => roles.includes(role));
   }
 
-  /**
-   * A visitor with no session is let in as the demo account, unless they signed out in this tab:
-   * a sign-out that walked straight back in would not be one.
-   */
   canEnterAsDemo(): boolean {
     return environment.auth.autoDemoLogin && sessionStorage.getItem(DEMO_OPT_OUT_KEY) === null;
   }

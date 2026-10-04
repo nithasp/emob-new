@@ -290,7 +290,6 @@ export class ResultMapService {
       this.handleClick(event)
     );
 
-    // Initialize overlay for popup
     const element = document.getElementById('popupMapResult')!;
     this.popUp = new Overlay({
       element: element,
@@ -300,7 +299,6 @@ export class ResultMapService {
   }
 
   handlePointerMove(event: MapPointerBrowserEvent): void {
-    // show popup and compute hovered feature
     let coordinates: Coordinate;
     const feature = this.map.forEachFeatureAtPixel(event.pixel, (feat) => feat);
 
@@ -317,7 +315,6 @@ export class ResultMapService {
         coordinates = [];
       }
 
-      // position and fill popup
       this.popUp?.setPosition(coordinates);
       const props = feature.getProperties();
       if (props['features'] && props['features'].length > 0) {
@@ -331,13 +328,11 @@ export class ResultMapService {
       this.popUp?.setPosition(undefined);
     }
 
-    // determine which route (if any) is hovered
     if (feature && feature.getGeometry()?.getType() === 'LineString') {
       this.highlightedFeatureCollectionId = feature.get(
         'routeIndex'
       ) as number;
     } else if (feature && feature.get('features')) {
-      // if it's a cluster, pick one child routeIndex
       const members = feature.get('features') as FeatureLike[];
       this.highlightedFeatureCollectionId =
         (members[0]?.get('routeIndex') as number) || null;
@@ -345,10 +340,8 @@ export class ResultMapService {
       this.highlightedFeatureCollectionId = null;
     }
 
-    // ─── CLEAR OUT “DIM” STYLES ON HOVERED ROUTE ───────────────────────────────
     const hoverId = this.highlightedFeatureCollectionId;
     if (hoverId != null) {
-      // 1) reset any manual style on the line itself
       this.vectorLayer
         .getSource()!
         .getFeatures()
@@ -358,7 +351,6 @@ export class ResultMapService {
           }
         });
 
-      // 2) reset any manual style on its cluster(s)
       this.clusterLayer
         .getSource()!
         .getFeatures()
@@ -370,11 +362,9 @@ export class ResultMapService {
         });
     }
 
-    // force a redraw so styleFunction / clusterStyleFunction re-runs
     this.vectorLayer.getSource()?.changed();
     this.clusterLayer.getSource()?.changed();
 
-    // Update cursor style
     this.pointMove(event);
   }
 
@@ -430,32 +420,28 @@ export class ResultMapService {
       });
     }
 
-    // ─── ROUTE LINES ────────────────────────────────────────────────────────────
     const idx = feature.get('routeIndex') as number;
     const color = feature.get('color') as string;
     const hovered = this.highlightedFeatureCollectionId;
 
-    // 1) HOVER-ONLY MODE
     if (hovered != null) {
       if (idx === hovered) {
         return new Style({
           stroke: new Stroke({ color: '#04948c', width: 6 }),
         });
       }
-      return []; // hide all non-hovered lines
+      return [];
     }
 
-    // 2) FILTER-AWARE MODE
     if (this.visibleRoutes.size > 0) {
       if (!this.visibleRoutes.has(idx)) {
-        return this.dimStyle; // dim out-of-filter lines
+        return this.dimStyle;
       }
       return new Style({
         stroke: new Stroke({ color, width: 3 }),
       });
     }
 
-    // 3) NO HOVER, NO FILTERS → default behavior
     if (this.highlightedFeatureCollectionId === idx) {
       return new Style({
         stroke: new Stroke({ color: '#04948c', width: 6 }),
@@ -474,10 +460,8 @@ export class ResultMapService {
 
     const hovered = this.highlightedFeatureCollectionId;
 
-    //─── 1) HOVER-ONLY MODE ────────────────────────────────────────────────────────
     if (hovered != null) {
       if (idxs.includes(hovered)) {
-        // only draw the hovered cluster, highlighted
         return new Style({
           image: new CircleStyle({
             radius: 15,
@@ -491,14 +475,12 @@ export class ResultMapService {
           }),
         });
       }
-      return []; // hide all other clusters
+      return [];
     }
 
-    //─── 2) FILTER-AWARE MODE ──────────────────────────────────────────────────────
     if (this.visibleRoutes.size > 0) {
       const anyVisible = idxs.some((i) => this.visibleRoutes.has(i));
       if (!anyVisible) {
-        // out-of-filter clusters get dimmed
         return new Style({
           image: new CircleStyle({
             radius: 10,
@@ -512,7 +494,6 @@ export class ResultMapService {
           }),
         });
       }
-      // in-filter & not hovered → normal color/size
       return new Style({
         image: new CircleStyle({
           radius: 10,
@@ -527,7 +508,6 @@ export class ResultMapService {
       });
     }
 
-    //─── 3) NO HOVER, NO FILTERS → ORIGINAL BEHAVIOR ───────────────────────────────
     if (idxs.includes(hovered!)) {
       return new Style({
         image: new CircleStyle({
@@ -557,13 +537,11 @@ export class ResultMapService {
   }
 
   applyMapFilter() {
-    // compute visibleRoutes array exactly as you do now
     const visibleRoutesArr = (
       this.plan.dataRouteInfo.filteredData as RouteInfo[]
     ).map((r) => r.routeIndex);
     this.visibleRoutes = new Set(visibleRoutesArr);
 
-    // 1) vector lines
     this.vectorLayer
       .getSource()!
       .getFeatures()
@@ -571,30 +549,25 @@ export class ResultMapService {
         if (feat.getGeometry()?.getType() === 'LineString') {
           const idx = feat.get('routeIndex') as number;
           if (!this.visibleRoutes.has(idx)) {
-            // outside filter → dim
             feat.setStyle(this.dimStyle);
           } else {
-            // inside filter → let styleFunction handle normal vs hover
             feat.setStyle(undefined);
           }
         }
       });
 
-    // 2) clusters (points)
     this.clusterLayer
       .getSource()!
       .getFeatures()
       .forEach((clusterFeat) => {
         const members = clusterFeat.get('features') as FeatureLike[];
         const routeIndexes = members.map((m) => m.get('routeIndex') as number);
-        // if *none* of the member routes is in your filter → dim
         const isAnyVisible = routeIndexes.some((i) =>
           this.visibleRoutes.has(i)
         );
         if (isAnyVisible) {
           clusterFeat.setStyle(undefined);
         } else {
-          // dim circle for “hidden” clusters
           clusterFeat.setStyle(
             new Style({
               image: new CircleStyle({
@@ -617,14 +590,11 @@ export class ResultMapService {
   }
 
   resetRouteMapUi(): void {
-    // Clear the current highlight
     this.highlightedFeatureCollectionId = null;
 
-    // Grab your vector and cluster layers by index
     const vectorLayer = this.map.getLayers().item(1) as VectorLayer;
     const clusterLayer = this.map.getLayers().item(2) as VectorLayer;
 
-    // Tell OL that the source changed so it re-runs your style functions
     vectorLayer.getSource()?.changed();
     clusterLayer.getSource()?.changed();
 

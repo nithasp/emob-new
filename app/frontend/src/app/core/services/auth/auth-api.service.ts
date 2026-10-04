@@ -25,7 +25,6 @@ export class AuthApiService {
       .pipe(map((res) => res.data));
   }
 
-  /** Signs in as the shared demo account; the API answers 404 when demo access is switched off. */
   demo(): Observable<AuthSession> {
     return this.http
       .post<ApiResponse<AuthSession>>(`${this.baseUrl}/demo`, {}, WITH_COOKIE)

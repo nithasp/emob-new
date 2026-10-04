@@ -45,8 +45,6 @@ export interface VehicleType {
   modifiedAt: Date;
 }
 
-// The fields the vehicle type form owns. An update replaces every one of them, because the form
-// leaves a cleared field out of the request instead of sending null.
 export interface VehicleTypeFormValues {
   name: string;
   access: AccessType[];
@@ -109,6 +107,19 @@ export interface NewVehicles {
   startDepotId: string;
   endDepotId: string;
   vehicleTypeId: string;
+}
+
+export interface NewVehicle {
+  licensePlate: string;
+  startDepotId: string;
+  endDepotId: string;
+  vehicleTypeId: string;
+}
+
+export interface VehicleReferences {
+  startDepotId?: string | undefined;
+  endDepotId?: string | undefined;
+  vehicleTypeId?: string | undefined;
 }
 
 export interface VehicleUpdate {

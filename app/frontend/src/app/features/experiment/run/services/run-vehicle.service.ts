@@ -12,6 +12,7 @@ import {
   OpenVrpRunSummaryTotals,
   OpenVrpRunVehicleEntry,
   OpenVrpRunVehicleGroup,
+  OpenVrpSummaryView,
   DEFAULT_MAX_TRIP,
 } from '@features/configurations/models/vehicle.model';
 import { getMultiTripSystemDefaults } from '@features/configurations/utils/multi-trip-fallback.utils';
@@ -24,11 +25,6 @@ import { groupRunEntriesByVehicleType } from '../utils/vehicle-run-list.utils';
 import { RunStateService } from './run-state.service';
 import { RunUiService } from './run-ui.service';
 
-/**
- * How long a duplicate add stays announced. The toast and the highlighted row
- * are one notice in two places, so they read off the same number — a highlight
- * that faded first left the toast pointing at a row nothing marked any more.
- */
 const RUN_ENTRY_MERGE_NOTICE_MS = 8000;
 
 const OPEN_VRP_MULTI_TRIP_DEMO = [
@@ -39,34 +35,15 @@ const OPEN_VRP_MULTI_TRIP_DEMO = [
 
 @Injectable()
 export class RunVehicleService {
-  // vehicles
   public myVehicleTypes: VehicleType[] = [];
   public vehicleSelectionError: boolean = false;
-  /** Run list (selected vehicles) kept per depot scope, mirroring the mockup. */
   public runVehicleListByDepot: Record<string, OpenVrpRunVehicleEntry[]> = {};
   private runEntryIdCounter = 1;
-  /** Run list row that just absorbed a duplicate, highlighted for a moment. */
   public highlightedRunEntryId: number | null = null;
   private highlightTimer?: ReturnType<typeof setTimeout>;
-  /**
-   * Preview switch: feeds mock multi-trip master data into the vehicle tab so
-   * the finished UI can be reviewed before the API ships the real fields.
-   * Nothing else is stubbed — every panel below still runs the real logic.
-   */
   public multiTripDemo: boolean = false;
-  /**
-   * Preview switch: a run still reports one depot, so the summary pane is fed
-   * extra sample depots to show the multi-depot roll-up. Only those extra
-   * depots are mock — every figure is counted by the real aggregation.
-   */
   public multiDepotDemo: boolean = false;
-  /** Sample run lists behind `multiDepotDemo`, built once per preview. */
   private mockDepotRunLists: OpenVrpDepotRunList[] | null = null;
-  /**
-   * System defaults a pool card opens on. Same source the vehicle type dialog
-   * seeds its form with, so "the default" means one number across the app.
-   * Mock today — swap `getMultiTripSystemDefaults()` for the API payload.
-   */
   public readonly multiTripDefaults = getMultiTripSystemDefaults();
 
   readonly runEntryMerged$ = new Subject<number>();
@@ -119,7 +96,6 @@ export class RunVehicleService {
     modalRef.componentInstance.vehicleType = vehicleType;
   }
 
-  /** Run list (selected vehicles) of the current depot scope. */
   get runVehicleList(): OpenVrpRunVehicleEntry[] {
     const key = this.state.scopeDepotId || 'default';
     if (!this.runVehicleListByDepot[key]) {
@@ -127,10 +103,6 @@ export class RunVehicleService {
     }
     return this.runVehicleListByDepot[key];
   }
-
-  // ======================================================================
-  // Open VRP — run list (selected vehicles)
-  // ======================================================================
 
   removeRunEntry(entryId: number): void {
     const list = this.runVehicleList;
@@ -147,11 +119,6 @@ export class RunVehicleService {
     this.ui.detectChanges();
   }
 
-  /**
-   * A group with exactly the same conditions never becomes a second row: its
-   * vehicles are added to the existing row, and the planner is told which row
-   * grew while it is briefly highlighted in the list.
-   */
   notifyRunEntryMerged(
     entry: OpenVrpRunVehicleEntry,
     addedCount: number,
@@ -173,21 +140,10 @@ export class RunVehicleService {
     this.runEntryMerged$.next(entry.id);
   }
 
-  /**
-   * Fleet-wide standard: the most trips a day any vehicle type may be raised
-   * to. It is the hard bound of the trips box — a run can overwrite the
-   * vehicle type's own number, but never go past this one.
-   */
   getSystemMaxTrip(): number {
     return Math.max(this.multiTripDefaults.systemMaxTrip, DEFAULT_MAX_TRIP);
   }
 
-  /**
-   * This vehicle type's own max trips — the same number the vehicle type
-   * dialog puts in formVehicleType.controls.maxTrip, and what a pool card
-   * opens on. The API value wins once it ships; until then the system default
-   * fills in. Never above the fleet-wide standard.
-   */
   getVehicleTypeMaxTrip(vehicleTypeId: string): number {
     const vehicleType = this.myVehicleTypes.find(
       (candidate) => candidate.vehicleTypeId === vehicleTypeId,
@@ -213,16 +169,10 @@ export class RunVehicleService {
     return vehicleType?.loadingDuration || null;
   }
 
-  /**
-   * Whether the trips box is offered at all. It follows the fleet-wide
-   * standard, not the vehicle type: a type that defaults to one trip can
-   * still be pushed higher for this run.
-   */
   isMultiTripAllowed(): boolean {
     return this.getSystemMaxTrip() > DEFAULT_MAX_TRIP;
   }
 
-  /** A run may overwrite the type's trips up to the fleet-wide standard. */
   clampMaxTrip(maxTrip: number): number {
     const requested = Number(maxTrip);
     if (!Number.isFinite(requested) || requested < DEFAULT_MAX_TRIP) {
@@ -247,16 +197,10 @@ export class RunVehicleService {
 
   toggleMultiDepotDemo(): void {
     this.multiDepotDemo = !this.multiDepotDemo;
-    // dropped so the next preview picks up any depots and vehicle types that
-    // finished loading since the last one
     this.mockDepotRunLists = null;
     this.ui.detectChanges();
   }
 
-  /**
-   * Sample depots for the preview. They are ordinary run entries, so they go
-   * through the same aggregation as real ones instead of a parallel mock path.
-   */
   private ensureMockDepotRunLists(
     usedDepotIds: Set<string>,
   ): OpenVrpDepotRunList[] {
@@ -273,25 +217,14 @@ export class RunVehicleService {
     return this.mockDepotRunLists;
   }
 
-  /**
-   * Summary of the depot in scope, shown next to the run list and in the
-   * validation tab. The summary pane itself uses `summaryView`, which reports
-   * every depot.
-   */
   get runListTotals(): OpenVrpRunSummaryTotals {
     return sumRunEntries(this.runVehicleList);
   }
 
-  /** Run list of the depot in scope, one block per vehicle type (pane 2). */
   get runVehicleGroups(): OpenVrpRunVehicleGroup[] {
     return groupRunEntriesByVehicleType(this.runVehicleList);
   }
 
-  /**
-   * Vehicles whose group starts from a depot other than the one in scope. The
-   * start depot is selectable per group, so the validation tab only reports
-   * the scope as consistent while this stays at zero.
-   */
   get runListOutOfScopeStartCount(): number {
     const scopeDepotId = this.state.scopeDepotId;
     if (!scopeDepotId) return 0;
@@ -302,15 +235,7 @@ export class RunVehicleService {
       .reduce((sum, entry) => sum + entry.count, 0);
   }
 
-  /**
-   * The summary pane's view model — one block per depot plus the fleet-wide
-   * roll-up, assembled in a single getter so the template reads it once.
-   */
-  get summaryView(): {
-    depots: OpenVrpDepotSummary[];
-    grandTotals: OpenVrpRunSummaryTotals;
-    isMultiDepot: boolean;
-  } {
+  get summaryView(): OpenVrpSummaryView {
     const depots = this.depotSummaries;
     return {
       depots,
@@ -319,12 +244,6 @@ export class RunVehicleService {
     };
   }
 
-  /**
-   * One summary per depot taking part in this run. The depot in scope always
-   * appears; any further depot that already carries a run list joins it, which
-   * is exactly what arrives once the API reports more than one depot per run.
-   * Until then the preview switch appends sample depots.
-   */
   private get depotSummaries(): OpenVrpDepotSummary[] {
     const summaries: OpenVrpDepotSummary[] = [];
     const used = new Set<string>();

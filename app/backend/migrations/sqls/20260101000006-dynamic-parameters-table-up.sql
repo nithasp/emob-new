@@ -1,5 +1,3 @@
--- category, display_name and description hold one text per locale: {"th_TH": "...", "en_US": "..."}.
--- joi_config is the rule a new value is checked against before it is saved.
 CREATE TABLE dynamic_parameters (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,

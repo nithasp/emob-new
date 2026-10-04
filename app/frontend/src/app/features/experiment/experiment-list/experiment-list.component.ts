@@ -123,7 +123,6 @@ export class ExperimentListComponent implements AfterViewInit, OnDestroy, OnInit
     }
   }
 
-  /** The label for the checkbox on the passed row */
   checkboxLabel(row: Experiment): string {
     return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row `;
   }

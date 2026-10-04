@@ -77,7 +77,6 @@ function createMockVehicle(overrides: Partial<MyVehicles> = {}): MyVehicles {
   };
 }
 
-/** Builds an NgbModalRef-like stub with a controllable result promise. */
 function createModalRef(result: Promise<unknown>): NgbModalRef {
   return {
     componentInstance: {},
@@ -125,7 +124,6 @@ describe('DialogVehicleComponent', () => {
       'translate',
     ]);
 
-    // Default return values to keep ngOnInit happy.
     vehicleService.getMyVehicleTypes.and.returnValue(
       of([createMockVehicleType()])
     );
@@ -145,8 +143,6 @@ describe('DialogVehicleComponent', () => {
         { provide: TranslocoService, useValue: transloco },
       ],
     })
-      // Replace the template so we don't pull in transloco pipes/directives
-      // or the app-input-select/app-input-field custom elements.
       .overrideComponent(DialogVehicleComponent, { set: { template: '' } })
       .compileComponents();
 
@@ -266,8 +262,6 @@ describe('DialogVehicleComponent', () => {
 
       expect(ngbModal.open).toHaveBeenCalled();
       expect(spinner.show).toHaveBeenCalled();
-      // Vehicle Pool: the dialog no longer asks for depots. The backend still
-      // requires both ids, so a new vehicle takes the first available depot.
       expect(vehicleService.createVehicle).toHaveBeenCalledWith({
         vehicleTypeId: 'type-1',
         startDepotId: 'depot-1',

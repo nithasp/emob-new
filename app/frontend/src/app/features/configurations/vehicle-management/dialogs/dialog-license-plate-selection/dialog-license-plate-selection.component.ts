@@ -34,7 +34,6 @@ import { LoggerService } from '@core/services/logger.service';
 export class DialogLicensePlateSelectionComponent implements OnInit {
   private readonly logger = inject(LoggerService);
 
-  // Input properties set by parent component
   vehicleType!: VehicleType;
   vehicleId!: string;
   depotId?: string;

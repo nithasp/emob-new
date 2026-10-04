@@ -32,7 +32,6 @@
       </div>
 
       <div class="openvrp-pc-body" *ngIf="pool.openPoolCardTypeId === vehicle.vehicleTypeId">
-        <!-- Selection mode -->
         <div class="openvrp-pc-row">
           <div class="openvrp-pc-lab fw-semibold">
             {{ t("selection_mode") }}
@@ -65,7 +64,6 @@
           </div>
         </div>
 
-        <!-- Quantity (count mode) -->
         <div class="openvrp-pc-row" *ngIf="
             pool.getPoolBuilder(vehicle.vehicleTypeId).mode ===
             'count'
@@ -108,7 +106,6 @@
           </div>
         </div>
 
-        <!-- License plates (by plate mode) -->
         <div class="openvrp-pc-row" *ngIf="
             pool.getPoolBuilder(vehicle.vehicleTypeId).mode ===
             'license-plate'
@@ -146,7 +143,6 @@
           </div>
         </div>
 
-        <!-- Routing conditions (overwrite default) -->
         <div class="openvrp-pc-row">
           <div class="openvrp-pc-lab fw-semibold">
             {{ t("end_of_route") }}
@@ -177,7 +173,6 @@
           </div>
         </div>
 
-        <!-- Start depot (opens on the current scope) -->
         <div class="openvrp-pc-row">
           <div class="openvrp-pc-lab fw-semibold">
             {{ t("start_depot") }}
@@ -196,7 +191,6 @@
           </select>
         </div>
 
-        <!-- End depot (return mode: A -> A or A -> B) -->
         <div class="openvrp-pc-row" *ngIf="
             pool.getPoolBuilder(vehicle.vehicleTypeId)
               .endOfRoute === 'return'

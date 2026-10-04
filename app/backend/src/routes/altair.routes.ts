@@ -53,7 +53,6 @@ async function renderOptions(req: Request): Promise<RenderOptions> {
     endpointURL,
     initialHeaders,
     serveInitialOptionsInSeperateRequest: true,
-    // Each visit starts from the options below, so the token in them is always a fresh one
     preserveState: false,
     disableAccount: true,
     initialEnvironments: {

@@ -52,7 +52,6 @@ describe('ResultComponent', () => {
     } = await configureResultPage({ declarations: [ResultComponent] }));
     fixture = TestBed.createComponent(ResultComponent);
     component = fixture.componentInstance;
-    // The page provides its own services, so they are read from its injector
     plan = fixture.debugElement.injector.get(ResultPlanService);
     resultMap = fixture.debugElement.injector.get(ResultMapService);
     experimentFiles = TestBed.inject(ExperimentFileService);
@@ -86,7 +85,6 @@ describe('ResultComponent', () => {
       expect(plan.isLoading).toBeFalse();
       expect(spinnerSpy.hide).toHaveBeenCalled();
 
-      // buildVrpStatsReport
       expect(plan.headersReport).toEqual(['property', 'value']);
       const customerCountRow = plan.dataSourceReport.find(
         (r) => r.property === 'customerCount'
@@ -105,7 +103,6 @@ describe('ResultComponent', () => {
       );
       expect(unassignedRow?.value).toBe(0);
 
-      // buildVrpStatsDashboard
       expect(
         plan.vrpDashboardCards.find((c) => c.label === 'customerCount')
           ?.value
@@ -115,7 +112,6 @@ describe('ResultComponent', () => {
           ?.totalValue
       ).toBe(50);
 
-      // buildRouteInfoFromVrpSolution
       expect(plan.dataRouteInfo.data.length).toBe(1);
       const route = plan.dataRouteInfo.data[0];
       expect(route.routeLabel).toBe(1);
@@ -125,7 +121,6 @@ describe('ResultComponent', () => {
       expect(route.zone).toEqual(['Z1']);
       expect(route.routeDistances).toEqual([500, 500]);
 
-      // loadAndProcessGeoJSON / initMap
       expect(resultMap.map).toBeInstanceOf(OlMap);
       expect(resultMap.mapAlreadyRendered).toBeTrue();
     }));

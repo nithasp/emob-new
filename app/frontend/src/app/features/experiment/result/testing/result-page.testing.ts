@@ -245,8 +245,6 @@ export function createResultPageSpies(): ResultPageSpies {
   };
 }
 
-// Declared components get an empty template: the specs call methods directly, which keeps
-// transloco and material out of the test module
 export async function configureResultPage(
   options: { declarations?: Type<unknown>[] } = {},
 ): Promise<ResultPageSpies> {
