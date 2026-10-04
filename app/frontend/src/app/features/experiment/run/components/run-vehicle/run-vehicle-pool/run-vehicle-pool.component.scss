@@ -1,0 +1,195 @@
+@use '../../../styles/run-shared' as *;
+
+@include pane;
+@include fade-in;
+@include multi-trip-note;
+
+/* pool cards */
+.openvrp-poolcard {
+  border: 1px solid $ovrp-line;
+  border-radius: 9px;
+}
+
+.openvrp-pc-head {
+  padding: 10px 12px;
+  cursor: pointer;
+
+  .openvrp-pc-code {
+    font-size: 14.5px;
+  }
+
+  .openvrp-pc-info {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: $ovrp-faint;
+    cursor: pointer;
+
+    &:hover {
+      color: $ovrp-brand;
+    }
+  }
+
+  .openvrp-pc-chev {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: $ovrp-faint;
+  }
+}
+
+.openvrp-pc-body {
+  padding: 0 12px 12px;
+  border-top: 1px solid $ovrp-line;
+  animation: fadeIn 0.2s ease-in;
+}
+
+.openvrp-pc-row {
+  margin-top: 10px;
+}
+
+.openvrp-pc-lab {
+  font-size: 13.5px;
+  color: #3c4453;
+  margin-bottom: 6px;
+}
+
+.openvrp-radio2 {
+  gap: 7px;
+
+  .openvrp-rbtn {
+    flex: 1;
+    border: 1px solid $ovrp-line;
+    border-radius: 7px;
+    padding: 6px 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: #fff;
+    color: $ovrp-ink;
+
+    &.on {
+      border-color: $ovrp-brand;
+      background: #edf1f9;
+      color: $ovrp-brand;
+      font-weight: 600;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.openvrp-qty {
+  gap: 7px;
+
+  button {
+    width: 28px;
+    height: 28px;
+    border: 1px solid $ovrp-line;
+    cursor: pointer;
+    font-size: 15px;
+    color: $ovrp-muted;
+
+    &:hover:not(:disabled) {
+      border-color: $ovrp-brand;
+      color: $ovrp-brand;
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+
+  .openvrp-qty-input {
+    width: 58px;
+    height: 28px;
+    border: 1px solid $ovrp-line;
+    color: $ovrp-ink;
+    font-size: 13.5px;
+    -moz-appearance: textfield;
+    appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $ovrp-brand;
+      box-shadow: 0 0 0 2px rgba(35, 47, 78, 0.12);
+    }
+  }
+
+  .openvrp-qty-left {
+    font-size: 13.5px;
+    color: $ovrp-faint;
+  }
+}
+
+.openvrp-plate-check {
+  gap: 5px;
+  /* grown with the row text, so the same number of plates is still in view
+     before the list has to be scrolled */
+  max-height: 150px;
+
+  label {
+    gap: 7px;
+    font-size: 13.5px;
+    cursor: pointer;
+
+    input[type="checkbox"] {
+      cursor: pointer;
+    }
+  }
+}
+
+.openvrp-eorseg {
+  gap: 6px;
+
+  .openvrp-eoropt {
+    flex: 1;
+    border: 1px solid $ovrp-line;
+    border-radius: 7px;
+    /* the two labels are long enough to wrap in a narrow pane, so the side
+       padding stays tight and the extra room goes into the rows */
+    padding: 7px 5px;
+    cursor: pointer;
+    font-size: 13.5px;
+    background: #fff;
+    color: $ovrp-ink;
+
+    &.on.o-closed {
+      border-color: $ovrp-closed;
+      background: $ovrp-closed-soft;
+      color: $ovrp-closed-ink;
+    }
+
+    &.on.o-open {
+      border-color: $ovrp-open;
+      background: $ovrp-open-soft;
+      color: $ovrp-open-ink;
+    }
+  }
+}
+
+.openvrp-addbtn {
+  margin-top: 12px;
+  background: $ovrp-brand;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: #31406b;
+  }
+
+  &:disabled {
+    background: #c7ccd4;
+    cursor: not-allowed;
+  }
+}

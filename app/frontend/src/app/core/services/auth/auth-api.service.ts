@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { environment } from 'src/environments/environment';
-import { ApiResponse, AuthSession, AuthUser, RegisterRequest } from '../models/auth.model';
+import { environment } from '@env/environment';
+import { ApiResponse, AuthSession, AuthUser, RegisterRequest } from '../../models/auth.model';
 
 // The refresh cookie only travels on calls that send credentials
 const WITH_COOKIE = { withCredentials: true };

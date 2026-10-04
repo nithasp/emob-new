@@ -3,7 +3,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { UnauthorizedComponent } from './unauthorized.component';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '@core/services/auth/auth.service';
 
 describe('UnauthorizedComponent', () => {
   let component: UnauthorizedComponent;

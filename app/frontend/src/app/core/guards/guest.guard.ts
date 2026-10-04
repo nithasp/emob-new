@@ -3,7 +3,7 @@ import { CanActivate, Router, UrlTree } from "@angular/router";
 import { Observable, of } from "rxjs";
 import { catchError, filter, map, switchMap, take } from "rxjs/operators";
 
-import { AuthService } from 'src/app/services/auth.service';
+import { AuthService } from '../services/auth/auth.service';
 
 /**
  * Keeps a signed-in user out of the login and register pages. A visitor with no session is sent

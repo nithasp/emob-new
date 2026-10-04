@@ -3,7 +3,7 @@
  * the `no-console` rule is an error; here the calls are deliberate and guarded.
  */
 import { Injectable } from '@angular/core';
-import { environment } from 'src/environments/environment';
+import { environment } from '@env/environment';
 
 /**
  * Logging is on in development only. The nprod (test) and prod environments

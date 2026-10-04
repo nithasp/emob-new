@@ -1,0 +1,104 @@
+<ng-container *transloco="let t; read: 'index'">
+  <div id="mapResult" class="map" [hidden]="!resultMap.mapAlreadyRendered"></div>
+  <div
+    id="popupMapResult"
+    class="ol-popup"
+    [ngClass]="{ 'depot-popup': resultMap.popupContent?.['isDepot'] }"
+    [hidden]="!resultMap.mapAlreadyRendered"
+  >
+    <div
+      id="popup-content"
+      class="row justify-content-end"
+      style="font-size: smaller"
+      *ngIf="resultMap.popupContent"
+    >
+      <p
+        class="d-inline-block text-truncate mr-2"
+        *ngIf="resultMap.popupContent?.['routeLabel']"
+      >
+        <strong>{{ t("route_label") }} : </strong>
+        <span>{{ resultMap.popupContent['routeLabel'] }}</span>
+      </p>
+      <p
+        class="d-inline-block text-truncate mr-2"
+        *ngIf="resultMap.popupContent?.['nodeIndex']"
+      >
+        <strong>{{ t("point_index") }} : </strong>
+        <span>{{ resultMap.popupContent["nodeIndex"] }}</span>
+      </p>
+      <p
+        class="d-inline-block text-truncate mr-2"
+        *ngIf="resultMap.popupContent?.['routeOrder']"
+      >
+        <strong>{{ t("route_order") }} : </strong>
+        <span>{{ resultMap.popupContent["routeOrder"] }}</span>
+      </p>
+      <p
+        class="d-inline-block text-truncate mr-2"
+        *ngIf="resultMap.popupContent?.['name']"
+      >
+        <strong>
+          <span>
+            {{
+              resultMap.popupContent['isDepot'] ? t("depot_name") : t("order_id")
+            }}</span
+          >
+          <span> : </span>
+        </strong>
+        <span>{{ resultMap.popupContent["name"] }}</span>
+      </p>
+      <p
+        class="d-inline-block text-truncate mr-2"
+        *ngIf="resultMap.popupContent?.['numCustomers']"
+      >
+        <strong>{{ t("total_points") }} : </strong>
+        <span>{{ resultMap.popupContent["numCustomers"] }}</span>
+      </p>
+      <p
+        class="d-inline-block text-truncate mr-2"
+        *ngIf="resultMap.popupContent?.['distance']"
+      >
+        <strong>{{ t("distance") }} : </strong>
+        <span
+          >{{ getNumberValue(resultMap.popupContent["distance"] || 0) | number : "1.2-2" }}
+          {{ "kilometer" | transloco }}</span
+        >
+      </p>
+      <p
+        class="d-inline-block text-truncate mr-2"
+        *ngIf="resultMap.popupContent?.['duration']"
+      >
+        <strong>{{ t("duration") }} : </strong>
+        <span>
+          {{ getNumberValue(resultMap.popupContent["duration"] || 0) / 60 | number : "1.2-2" }}
+          {{ "hours" | transloco }}</span
+        >
+      </p>
+      <p
+        class="d-inline-block text-truncate mr-2"
+        *ngIf="resultMap.popupContent?.['weight']"
+      >
+        <strong>{{ t("weight") }} : </strong>
+        <span
+          >{{ getNumberValue(resultMap.popupContent["weight"] || 0) | number : "1.2-2" }}
+          {{ "kg" | transloco }}.</span
+        >
+      </p>
+      <p
+        class="d-inline-block text-truncate mr-2"
+        *ngIf="resultMap.popupContent?.['zone']"
+      >
+        <strong>{{ t("zone") }} : </strong>
+        <span>{{ resultMap.popupContent["zone"] }}</span>
+      </p>
+    </div>
+  </div>
+  @if(!resultMap.mapAlreadyRendered){
+  <div class="container-preview">
+    <mat-spinner class="custom-spinner"></mat-spinner>
+    <p class="h3" style="color: gray">
+      {{ t("map_is_rendering_data") }} ...
+    </p>
+  </div>
+  }
+</ng-container>

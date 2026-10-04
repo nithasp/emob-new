@@ -1,0 +1,166 @@
+<ng-container *transloco="let t; read: 'index'">
+  <div
+    style="
+      height: 700px;
+      font-size: 11px;
+      padding: 3px;
+      overflow-y: scroll;
+    "
+  >
+    <table
+      mat-table
+      matSort
+      [dataSource]="plan.dataRouteInfo"
+      multiTemplateDataRows
+      class="mat-elevation-z8 mt-3"
+      [hidden]="false"
+    >
+      <ng-container
+        *ngFor="let column of columnsToDisplay"
+        [matColumnDef]="column"
+      >
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          class="text-wrap text-capitalize"
+        >
+          {{ t(column | snakeCase) }}
+        </th>
+        <td
+          mat-cell
+          *matCellDef="let element"
+          style="white-space: nowrap"
+        >
+          <ng-container *ngIf="isNumber(element[column]); else nonNumber">
+            <ng-container [ngSwitch]="column">
+              <ng-container *ngSwitchCase="'weight'">
+                {{ element[column] | number : "1.0-0" }} {{ t("kg") }}
+              </ng-container>
+
+              <ng-container *ngSwitchCase="'travelDistance'">
+                {{ element[column] | number : "1.0-0" }} {{ t("km") }}
+              </ng-container>
+
+              <ng-container *ngSwitchCase="'travelDuration'">
+                {{ element[column] / 60 | number : "1.0-2" }}
+                {{ "hours" | transloco }}
+              </ng-container>
+              <ng-container *ngSwitchCase="'serviceTime'">
+                {{ element[column] / 60 | number : "1.0-2" }}
+                {{ "hours" | transloco }}
+              </ng-container>
+
+              <ng-container *ngSwitchDefault>
+                {{ element[column] | number : "1.0-0" }}
+              </ng-container>
+            </ng-container>
+          </ng-container>
+
+          <ng-template #nonNumber>
+            {{ element[column] }}
+          </ng-template>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="expand">
+        <th mat-header-cell *matHeaderCellDef aria-label="row actions">
+          &nbsp;
+        </th>
+        <td mat-cell *matCellDef="let element">
+          <div class="d-flex align-items-center">
+            <button
+              mat-icon-button
+              aria-label="expand row"
+              (click)="toggleRow(element); $event.stopPropagation()"
+              [disabled]="plan.isLoading"
+            >
+              <mat-icon *ngIf="expandedElement.includes(element)"
+                >keyboard_arrow_up</mat-icon
+              >
+              <mat-icon *ngIf="!expandedElement.includes(element)"
+                >keyboard_arrow_down</mat-icon
+              >
+            </button>
+            <button
+              mat-raised-button
+              class="bg-custom-secondary small-button"
+              (click)="resultMap.openRouteDetails(element.routeIndex)"
+              [disabled]="plan.isLoading"
+            >
+              <mat-icon>route</mat-icon>
+              <span>{{ t("details") }}</span>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="expandedDetail">
+        <td
+          mat-cell
+          *matCellDef="let element"
+          class="bg-custom-secondary"
+          [attr.colspan]="columnsToDisplayWithExpand.length"
+        >
+          <div [@detailExpand]="isExpanded(element)">
+            <div
+              class="d-flex flex-row flex-wrap"
+              style="overflow-x: auto; max-width: 900px"
+            >
+              @for(node of element.route; let i = $index; track $index) {
+              <div
+                class="route-box p-1 pb-0 card m-1 ml-0 pl-2"
+                style="font-size: smaller !important; width: 50px"
+                [ngClass]="{
+                  'bg-custom-primary p-1':
+                    i === 0 || i === element.route.length - 1
+                }"
+                (click)="handleDistance(node)"
+              >
+                <div class="route-node-label">
+                  {{
+                    i === 0 || i === element.route.length - 1
+                      ? t("depot_expand")
+                      : node
+                  }}
+                </div>
+                <div class="route-node-distance">
+                  @if(element.routeDistances?.[i] != null) {
+                  {{ element.routeDistances[i] | number : "1.0-1" }}
+                  {{ "km" | transloco }}
+                  }
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr
+        mat-header-row
+        *matHeaderRowDef="columnsToDisplayWithExpand"
+      ></tr>
+      <tr
+        mat-row
+        class="hover-row"
+        *matRowDef="let element; columns: columnsToDisplayWithExpand"
+        [class.example-expanded-row]="expandedElement.includes(element)"
+        (mouseenter)="resultMap.onMouseEnter(element)"
+        (mouseleave)="resultMap.onMouseLeave(element)"
+      ></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: ['expandedDetail']"
+        class="example-detail-row"
+      ></tr>
+    </table>
+  </div>
+
+  <mat-paginator
+    [pageSizeOptions]="[15, 30, 50]"
+    showFirstLastButtons
+    aria-label="Select page of periodic elements"
+    [hidden]="false"
+  ></mat-paginator>
+</ng-container>

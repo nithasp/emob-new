@@ -9,15 +9,15 @@ import LineString from 'ol/geom/LineString';
 import { Style } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
 
-import { MapDetailsDialogComponent } from './map-details-dialog.component';
-import { CustomerDetailsComponent } from '../customer-details/customer-details.component';
-import { SnakeCasePipe } from 'src/app/directives/snakecase.pipe.directive';
-import { GeoJSONFeatureCollection, PointDetail } from 'src/app/models/experiment.model';
-import { RoutingNode } from 'src/app/models/location.model';
+import { DialogMapDetailsComponent } from './dialog-map-details.component';
+import { CustomerDetailsComponent } from '../../../components/customer-details/customer-details.component';
+import { SnakeCasePipe } from '@shared/pipes/snake-case.pipe';
+import { GeoJSONFeatureCollection, PointDetail } from '../../../models/experiment.model';
+import { RoutingNode } from '../../../models/location.model';
 
-describe('MapDetailsDialogComponent', () => {
-  let component: MapDetailsDialogComponent;
-  let fixture: ComponentFixture<MapDetailsDialogComponent>;
+describe('DialogMapDetailsComponent', () => {
+  let component: DialogMapDetailsComponent;
+  let fixture: ComponentFixture<DialogMapDetailsComponent>;
   let ngbActiveModalSpy: jasmine.SpyObj<NgbActiveModal>;
   let ngbModalSpy: jasmine.SpyObj<NgbModal>;
 
@@ -26,7 +26,7 @@ describe('MapDetailsDialogComponent', () => {
     ngbModalSpy = jasmine.createSpyObj('NgbModal', ['open']);
 
     await TestBed.configureTestingModule({
-      declarations: [MapDetailsDialogComponent, SnakeCasePipe],
+      declarations: [DialogMapDetailsComponent, SnakeCasePipe],
       imports: [
         CommonModule,
         TranslocoTestingModule.forRoot({
@@ -41,7 +41,7 @@ describe('MapDetailsDialogComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MapDetailsDialogComponent);
+    fixture = TestBed.createComponent(DialogMapDetailsComponent);
     component = fixture.componentInstance;
   });
 

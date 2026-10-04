@@ -1,17 +1,17 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TRANSLOCO_SCOPE, TranslocoService } from '@jsverse/transloco';
-import { TransformResult } from 'src/app/models/experiment.model';
-import { ValidationTableRow } from 'src/app/models/validation-table.model';
-import { buildTableRows, createCachedValidationMessageFn } from 'src/app/shared/utils/validation-table.utils';
+import { TransformResult } from '../../../models/experiment.model';
+import { ValidationTableRow } from '../../../models/validation-table.model';
+import { buildTableRows, createCachedValidationMessageFn } from '../../utils/validation-table.utils';
 
 @Component({
-  selector: 'app-transform-validation-dialog',
-  templateUrl: './transform-validation-dialog.component.html',
-  styleUrls: ['./transform-validation-dialog.component.scss'],
+  selector: 'app-dialog-transform-validation',
+  templateUrl: './dialog-transform-validation.component.html',
+  styleUrls: ['./dialog-transform-validation.component.scss'],
   providers: [{ provide: TRANSLOCO_SCOPE, useValue: ['index', 'validation'] }],
 })
-export class TransformValidationDialogComponent implements OnInit {
+export class DialogTransformValidationComponent implements OnInit {
   @Input() validationResponse?: TransformResult;
 
   tableRows: ValidationTableRow[] = [];

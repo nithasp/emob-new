@@ -5,18 +5,18 @@ import { TranslocoService } from '@jsverse/transloco';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { of } from 'rxjs';
 
-import { VehicleTypeDialogComponent } from './vehicle-type-dialog.component';
-import { VehicleService } from 'src/app/services/vehicle.service';
+import { DialogVehicleTypeComponent } from './dialog-vehicle-type.component';
+import { VehicleService } from '../../../services/vehicle.service';
 import {
   VehicleType,
   AccessTypeEnum,
   VehicleProfileTypeEnum,
   TimeObject,
-} from 'src/app/models/vehicle.model';
+} from '../../../models/vehicle.model';
 
-describe('VehicleTypeDialogComponent', () => {
-  let component: VehicleTypeDialogComponent;
-  let fixture: ComponentFixture<VehicleTypeDialogComponent>;
+describe('DialogVehicleTypeComponent', () => {
+  let component: DialogVehicleTypeComponent;
+  let fixture: ComponentFixture<DialogVehicleTypeComponent>;
 
   let mockActiveModal: jasmine.SpyObj<NgbActiveModal>;
   let mockNgbModal: jasmine.SpyObj<NgbModal>;
@@ -92,7 +92,7 @@ describe('VehicleTypeDialogComponent', () => {
     mockTransloco.translate.and.callFake(((key: string) => key) as never);
 
     await TestBed.configureTestingModule({
-      imports: [VehicleTypeDialogComponent],
+      imports: [DialogVehicleTypeComponent],
       providers: [
         { provide: NgbActiveModal, useValue: mockActiveModal },
         { provide: VehicleService, useValue: mockVehicleService },
@@ -100,14 +100,14 @@ describe('VehicleTypeDialogComponent', () => {
         { provide: TranslocoService, useValue: mockTransloco },
       ],
     })
-      .overrideComponent(VehicleTypeDialogComponent, { set: { template: '' } })
+      .overrideComponent(DialogVehicleTypeComponent, { set: { template: '' } })
       // NgbModalModule re-provides NgbModal in its own `providers` array, which
       // shadows a plain TestBed provider override for standalone components
       // that import NgbModule; overrideProvider bypasses that shadowing.
       .overrideProvider(NgbModal, { useValue: mockNgbModal })
       .compileComponents();
 
-    fixture = TestBed.createComponent(VehicleTypeDialogComponent);
+    fixture = TestBed.createComponent(DialogVehicleTypeComponent);
     component = fixture.componentInstance;
   });
 

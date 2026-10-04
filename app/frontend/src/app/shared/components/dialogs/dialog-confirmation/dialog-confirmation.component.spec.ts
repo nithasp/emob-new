@@ -4,18 +4,18 @@ import { CommonModule } from '@angular/common';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 
-import { ConfirmationDialogComponent } from './confirmation-dialog.component';
+import { DialogConfirmationComponent } from './dialog-confirmation.component';
 
-describe('ConfirmationDialogComponent', () => {
-  let component: ConfirmationDialogComponent;
-  let fixture: ComponentFixture<ConfirmationDialogComponent>;
+describe('DialogConfirmationComponent', () => {
+  let component: DialogConfirmationComponent;
+  let fixture: ComponentFixture<DialogConfirmationComponent>;
   let activeModalSpy: jasmine.SpyObj<NgbActiveModal>;
 
   beforeEach(async () => {
     activeModalSpy = jasmine.createSpyObj('NgbActiveModal', ['close', 'dismiss']);
 
     await TestBed.configureTestingModule({
-      declarations: [ConfirmationDialogComponent],
+      declarations: [DialogConfirmationComponent],
       imports: [
         CommonModule,
         TranslocoTestingModule.forRoot({
@@ -27,7 +27,7 @@ describe('ConfirmationDialogComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ConfirmationDialogComponent);
+    fixture = TestBed.createComponent(DialogConfirmationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

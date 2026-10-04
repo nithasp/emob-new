@@ -4,9 +4,9 @@ import {
   ValidationErrors,
   FormGroup,
 } from '@angular/forms';
-import { timeStringToMinutes } from 'src/app/directives/time-string-to-minutes.pipe';
-import { TimeRangeValidatorConfig } from 'src/app/models/time.model';
-import { logWarning } from 'src/app/services/logger.service';
+import { timeStringToMinutes } from '../pipes/time-string-to-minutes.pipe';
+import { TimeRangeValidatorConfig } from '../models/time.model';
+import { logWarning } from '@core/services/logger.service';
 
 export function createTimeRangeValidator(
   config: TimeRangeValidatorConfig

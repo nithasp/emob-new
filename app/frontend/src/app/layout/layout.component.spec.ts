@@ -3,9 +3,9 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
-import { IndexComponent } from './index.component';
-import { AuthService } from '../services/auth.service';
-import { AuthUser } from '../models/auth.model';
+import { LayoutComponent } from './layout.component';
+import { AuthService } from '@core/services/auth/auth.service';
+import { AuthUser } from '@core/models/auth.model';
 
 function user(overrides: Partial<AuthUser> = {}): AuthUser {
   return {
@@ -21,9 +21,9 @@ function user(overrides: Partial<AuthUser> = {}): AuthUser {
   };
 }
 
-describe('IndexComponent', () => {
-  let component: IndexComponent;
-  let fixture: ComponentFixture<IndexComponent>;
+describe('LayoutComponent', () => {
+  let component: LayoutComponent;
+  let fixture: ComponentFixture<LayoutComponent>;
   let currentUser$: BehaviorSubject<AuthUser | null>;
   let routerSpy: jasmine.SpyObj<Router>;
 
@@ -32,7 +32,7 @@ describe('IndexComponent', () => {
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
-      declarations: [IndexComponent],
+      declarations: [LayoutComponent],
       providers: [
         {
           provide: AuthService,
@@ -46,7 +46,7 @@ describe('IndexComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(IndexComponent);
+    fixture = TestBed.createComponent(LayoutComponent);
     component = fixture.componentInstance;
   });
 

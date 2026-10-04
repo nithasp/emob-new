@@ -1,0 +1,398 @@
+<ng-container *transloco="let t; read: 'index'">
+  <div style="min-height: 720px">
+    <!-- Open VRP: run configuration summary -->
+    <div class="row g-2 mt-4 openvrp-summary-grid">
+      <div class="col-6 col-md-4">
+        <div class="openvrp-scard h-100 bg-white">
+          <div class="k fw-semibold text-uppercase">{{ t("depot") }}</div>
+          <div class="v v-sm fw-semibold">{{ state.scopeDepotName }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="openvrp-scard h-100 bg-white">
+          <div class="k fw-semibold text-uppercase">{{ t("total_vehicles") }}</div>
+          <div class="v fw-semibold">
+            {{ fleet.runListTotals.total }}
+            <small class="fw-normal">{{ t("vehicles_unit") }}</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="openvrp-scard h-100 bg-white">
+          <div class="k fw-semibold text-uppercase">{{ t("return_to_depot") }}</div>
+          <div class="v text-return fw-semibold">
+            {{ fleet.runListTotals.returnCount }}
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="openvrp-scard h-100 bg-white">
+          <div class="k fw-semibold text-uppercase">{{ t("dont_return_to_depot") }}</div>
+          <div class="v text-noreturn fw-semibold">
+            {{ fleet.runListTotals.noReturnCount }}
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="openvrp-scard h-100 bg-white">
+          <div class="k fw-semibold text-uppercase">{{ t("multi_trip_vehicles") }}</div>
+          <div class="v text-multitrip fw-semibold">
+            {{ fleet.runListTotals.multiTripCount }}
+            <small class="fw-normal">{{ t("vehicles_unit") }}</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="openvrp-scard h-100 bg-white">
+          <div class="k fw-semibold text-uppercase">{{ t("total_trips_planned") }}</div>
+          <div class="v fw-semibold">
+            {{ fleet.runListTotals.plannedTrips }}
+            <small class="fw-normal">{{ t("trips_unit") }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="openvrp-checks mt-2 py-1 px-3 bg-white">
+      <div class="openvrp-checkrow d-flex align-items-center" *ngIf="fleet.runListOutOfScopeStartCount === 0">
+        <mat-icon class="ci ci-ok flex-shrink-0">check_circle</mat-icon>
+        <span>
+          {{ t("scope_check_prefix") }}
+          <b>{{ state.scopeDepotName }}</b>
+          {{ t("scope_check_suffix") }}
+        </span>
+      </div>
+      <div class="openvrp-checkrow d-flex align-items-center" *ngIf="fleet.runListOutOfScopeStartCount > 0">
+        <mat-icon class="ci ci-warn flex-shrink-0">warning</mat-icon>
+        <span>
+          {{ fleet.runListOutOfScopeStartCount }}
+          {{ t("start_depot_outside_scope_warning") }}
+          <b>{{ state.scopeDepotName }}</b>
+        </span>
+      </div>
+      <div class="openvrp-checkrow d-flex align-items-center" *ngIf="fleet.runListTotals.noReturnCount > 0">
+        <mat-icon class="ci ci-warn flex-shrink-0">warning</mat-icon>
+        <span>
+          {{ fleet.runListTotals.noReturnCount }}
+          {{ t("open_route_check_warning") }}
+        </span>
+      </div>
+      <div class="openvrp-checkrow d-flex align-items-center" *ngIf="fleet.runListTotals.noReturnCount === 0">
+        <mat-icon class="ci ci-ok flex-shrink-0">check_circle</mat-icon>
+        <span>{{ t("closed_route_check_ok") }}</span>
+      </div>
+      <div class="openvrp-checkrow d-flex align-items-center" *ngIf="fleet.runListTotals.multiTripCount > 0">
+        <mat-icon class="ci ci-trip flex-shrink-0">replay</mat-icon>
+        <span>
+          {{ fleet.runListTotals.multiTripCount }}
+          {{ t("multi_trip_check") }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Hidden for now prepare for Q4 -->
+    <!-- Q4 preview: multi time windows — solver picks the better
+         window per order (static teaser, mirrors the mockup) -->
+    <!-- <div class="openvrp-ordcard">
+      <div class="openvrp-oh d-flex align-items-center fw-semibold">
+        <span class="openvrp-ord-id">ORD-1042</span>
+        <span>· {{ t("time_window_review") }}</span>
+        <span class="openvrp-q4-pill fw-bold">Q4</span>
+      </div>
+      <div class="openvrp-tws d-flex flex-wrap align-items-center">
+        <span class="openvrp-twchip pick rounded fw-medium">08:00–11:00 ✓</span>
+        <span class="openvrp-twchip rounded bg-white fw-medium">14:00–17:00</span>
+        <span class="openvrp-tw-note">{{
+          t("time_window_review_note")
+          }}</span>
+      </div>
+    </div> -->
+
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <ngb-alert
+          type="success"
+          [dismissible]="false"
+          class="verification-correct-alert mt-5 mb-5"
+          *ngIf="
+            state.haveValidated &&
+            !validation.isValidationWarning &&
+            !validation.isValidationError &&
+            !state.isFileSelectionStep
+          "
+        >
+          <strong class="h-2"
+            >{{ t("verification_is_correct") }}!
+          </strong>
+          <span
+            >{{
+              t(
+                "pre_order_verification_is_correct_you_can_continue_to_route_your_plan"
+              )
+            }}
+          </span>
+        </ngb-alert>
+
+        <ng-container
+          *transloco="
+            let tVal;
+            scope: 'validation';
+            read: 'validation'
+          "
+        >
+          <div
+            class="container-validation-warning-error new-warning-error-validation"
+            *ngIf="validation.validationWarnings.length > 0"
+          >
+            <div
+              class="validation-warning-error-item"
+              *ngFor="
+                let warning of validation.validationWarnings;
+                let i = index
+              "
+            >
+              <ngb-alert [dismissible]="false">
+                <div
+                  class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-lg-between gap-2"
+                >
+                  <div class="d-flex flex-wrap align-items-baseline gap-2">
+                    <strong>{{ validation.getWarningTypeLabel(warning.errorType) }}</strong>
+                    <button
+                      type="button"
+                      class="link link-primary link-opacity-75-hover"
+                      (click)="validation.toggleValidationWarningCollapse(i)"
+                      [attr.aria-expanded]="
+                        !validation.validationWarningCollapseStates[i]
+                      "
+                    >
+                      {{ t("show_details") }}
+                    </button>
+                  </div>
+                  <button
+                    *ngIf="warning.errorType === 'missing_product'"
+                    mat-raised-button
+                    class="bg-custom-primary text-nowrap flex-shrink-0"
+                    (click)="validation.validateExperimentPreOrder()"
+                  >
+                    <mat-icon>rule</mat-icon>
+                    {{ t("revalidate") }}
+                  </button>
+                </div>
+              </ngb-alert>
+              <div
+                class="validation-warning-error-item-wrapper mb-3 overflow-x-auto"
+                [ngbCollapse]="validation.validationWarningCollapseStates[i]"
+              >
+                <ng-container
+                  *ngIf="
+                    warning.errorType === 'missing_product';
+                    else defaultWarningTable
+                  "
+                >
+                  <table class="table table-striped">
+                    <thead>
+                      <tr class="text-nowrap">
+                        <th scope="col">
+                          {{ t("product_id_missing") }}
+                        </th>
+                        <th scope="col">{{ t("sku_code") }}</th>
+                        <th scope="col">{{ t("product_name") }}</th>
+                        <th scope="col">
+                          {{ t("packaging_type") }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="text-nowrap" *ngFor="let detail of warning.detail">
+                        <td class="text-nowrap">
+                          {{
+                            detail.context?.missing_product_quantity
+                              ?.productId
+                          }}
+                        </td>
+                        <td class="text-nowrap">
+                          {{
+                            detail.context?.missing_product_quantity
+                              ?.skuCode
+                          }}
+                        </td>
+                        <td class="text-nowrap">
+                          {{
+                            detail.context?.missing_product_quantity
+                              ?.name
+                          }}
+                        </td>
+                        <td class="text-nowrap">
+                          {{
+                            detail.context?.missing_product_quantity
+                              ?.packagingType
+                          }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </ng-container>
+                <ng-template #defaultWarningTable>
+                  <table class="table table-striped">
+                    <thead>
+                      <tr class="text-nowrap">
+                        <th>
+                          {{
+                            t("validation_table_header_file_name")
+                          }}
+                        </th>
+                        <th>
+                          {{ t("validation_table_header_message") }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        class="text-nowrap"
+                        *ngFor="
+                          let row of validation.getRowsForWarning(warning)
+                        "
+                      >
+                        <td class="text-nowrap">{{ row.fileName }}</td>
+                        <td class="text-nowrap">
+                          {{
+                            validation.getValidationMessage(
+                              row.type,
+                              row.params
+                            )
+                          }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="container-validation-warning-error new-warning-error-validation"
+            *ngIf="validation.validationErrors.length > 0"
+          >
+            <div
+              class="validation-warning-error-item"
+              *ngFor="
+                let error of validation.validationErrors;
+                let i = index
+              "
+            >
+              <ngb-alert type="danger" [dismissible]="false">
+                <div
+                  class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-lg-between gap-2"
+                >
+                  <div class="d-flex flex-wrap align-items-baseline gap-2">
+                    <strong>{{ validation.getWarningTypeLabel(error.errorType) }}</strong>
+                    <button
+                      type="button"
+                      class="link link-primary link-opacity-75-hover"
+                      (click)="validation.toggleValidationErrorCollapse(i)"
+                      [attr.aria-expanded]="
+                        !validation.validationErrorCollapseStates[i]
+                      "
+                    >
+                      {{ t("show_details") }}
+                    </button>
+                  </div>
+                  <button
+                    mat-raised-button
+                    class="bg-custom-primary text-nowrap flex-shrink-0"
+                    (click)="validation.validateExperimentPreOrder()"
+                  >
+                    <mat-icon>rule</mat-icon>
+                    {{ t("revalidate") }}
+                  </button>
+                </div>
+              </ngb-alert>
+              <div
+                class="validation-warning-error-item-wrapper mb-3 overflow-x-auto"
+                [ngbCollapse]="validation.validationErrorCollapseStates[i]"
+              >
+                <table class="table table-striped">
+                  <thead>
+                    <tr class="text-nowrap">
+                      <th>
+                        {{
+                          t("validation_table_header_file_name")
+                        }}
+                      </th>
+                      <th>
+                        {{ t("validation_table_header_message") }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      class="text-nowrap"
+                      *ngFor="let row of validation.getRowsForError(error)"
+                    >
+                      <td class="text-nowrap">{{ row.fileName }}</td>
+                      <td class="text-nowrap">
+                        {{
+                          validation.getValidationMessage(
+                            row.type,
+                            row.params
+                          )
+                        }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="col text-start">
+        <button
+          mat-raised-button
+          class="bg-custom-secondary"
+          (click)="exportValidationData()"
+        >
+          <mat-icon>download</mat-icon>
+          {{ t("export_invalid_and_warning") }}
+        </button>
+      </div>
+      <div class="col text-end">
+        <button
+          mat-raised-button
+          color="secondary"
+          class="btn btn-secondary pr-3"
+          (click)="navigation.navigateToPreviousTab()"
+        >
+          <mat-icon>first_page</mat-icon>
+          {{ "back" | transloco }}
+        </button>
+        <button
+          mat-raised-button
+          class="bg-custom-primary"
+          (click)="routePlanning()"
+          *ngIf="
+            !state.haveUpdateAfterValidated &&
+            state.haveValidated &&
+            !validation.isValidationError
+          "
+        >
+          <mat-icon>route</mat-icon>
+          {{ t("plan_my_route") }}
+        </button>
+        <button
+          mat-raised-button
+          class="bg-custom-primary pr-3"
+          (click)="validation.validateExperimentPreOrder()"
+          *ngIf="
+            (state.haveUpdateAfterValidated && state.haveValidated) ||
+            validation.isValidationError
+          "
+        >
+          <mat-icon>rule</mat-icon>
+          {{ t("revalidate") }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

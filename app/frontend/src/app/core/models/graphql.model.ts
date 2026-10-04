@@ -1,24 +1,24 @@
-import { ActualLocation, Configuration } from './configuration.model';
+import { ActualLocation, Configuration } from '@features/configurations/models/configuration.model';
 import {
   Constraint,
   DynamicParameter,
   DeleteDynamicParameter,
   UpdateDynamicParameter,
   Parameter,
-} from './constraint.model';
+} from '@features/experiment/models/constraint.model';
 import {
   DownloadResultFile,
   Experiment,
   ExperimentState,
   UploadPreOrderResponse,
-} from './experiment.model';
+} from '@features/experiment/models/experiment.model';
 import {
   MyVehicles,
   VehicleType,
   Depot,
   VehicleEnumOption,
   VehicleCreationResult,
-} from './vehicle.model';
+} from '@features/configurations/models/vehicle.model';
 
 export interface Response {
   myDepots: [Depot];

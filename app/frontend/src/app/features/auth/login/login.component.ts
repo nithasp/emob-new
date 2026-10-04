@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { AuthService } from 'src/app/services/auth.service';
-import { environment } from 'src/environments/environment';
+import { AuthService } from '@core/services/auth/auth.service';
+import { environment } from '@env/environment';
 import { applySavedLanguage, authErrorMessage, switchLanguage } from '../auth-page.utils';
 
 @Component({

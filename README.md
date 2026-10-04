@@ -184,10 +184,19 @@ app/
 │       └── tests/           API and unit specs
 └── frontend/
     └── src/app/
-        ├── auth/            login and register pages
-        ├── guards/ interceptors/ services/    session, token refresh, role guard
-        └── index/           experiments, run, result, configurations, vehicle management
+        ├── core/            session, token refresh, guards, interceptor, GraphQL client, logger
+        ├── layout/          frame around the signed-in pages (top bar, page outlet)
+        ├── shared/          dialogs, form controls, pipes, directives, Material module
+        └── features/
+            ├── auth/            login, register, unauthorized
+            ├── experiment/      experiment list, run and result pages
+            │   ├── run/         upload file, order data, vehicle, parameter, validation, map
+            │   └── result/      route information, dashboard, filter, route table, map
+            └── configurations/  master data upload, vehicle management
 ```
+
+Inside `src/app`, imports that cross a folder boundary use the `@core/*`, `@shared/*` and `@features/*`
+aliases (`@env/*` for `src/environments`); imports within one feature stay relative.
 
 ## Deploying
 

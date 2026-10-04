@@ -4,7 +4,7 @@ import {
   DataGroup,
   Location,
   LocationType,
-} from 'src/app/models/location.model';
+} from '../../models/location.model';
 import {
   Customer,
   CustomerProduct,
@@ -13,8 +13,8 @@ import {
   DataPreOrder,
   DetailsPreOrder,
   GroupedDataPreOrder
-} from 'src/app/models/pre-order.model';
-import { LoggerService } from 'src/app/services/logger.service';
+} from '../../models/pre-order.model';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
   selector: 'app-customer-list',

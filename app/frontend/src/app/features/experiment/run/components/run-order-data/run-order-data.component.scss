@@ -1,0 +1,157 @@
+@use '../../styles/run-shared' as *;
+
+@include form-field-spacing;
+@include material-buttons;
+@include full-width-table;
+
+button.link-verify {
+  font-size: 15px;
+  user-select: inherit;
+  flex-direction: row;
+  font-weight: 500;
+}
+
+.fab-success {
+  background-color: green;
+  color: white;
+  min-width: 100px;
+}
+
+.fab-edit {
+  background-color: #0c23f1 !important;
+  color: white;
+}
+
+.fab-warning {
+  background-color: #ffc107 !important;
+  color: white;
+  min-width: 100px;
+}
+
+.fab-danger {
+  background-color: #dc3545 !important;
+  color: white;
+  min-width: 100px;
+}
+
+.fab-visibility-off {
+  background-color: gray;
+  color: white;
+  min-width: 100px;
+}
+
+/* one cell shape, four verification states — only the fill differs */
+.text-highlight-verify,
+.text-highlight-uncertain,
+.text-highlight-unverify,
+.text-highlight-edit {
+  border: none;
+  box-sizing: border-box;
+  width: 100%;
+  height: 24px;
+  padding: 0px 5px;
+  color: rgb(0, 0, 0);
+  font-size: 13px;
+  transition: 0.3s;
+}
+
+.text-highlight-uncertain {
+  background-color: #fff3cd;
+}
+
+.text-highlight-unverify {
+  background-color: #f1aeb5;
+}
+
+.text-highlight-edit {
+  background-color: #cfe2ff;
+}
+
+.small-icon-button {
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0px !important;
+
+  & > *[role="img"] {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .mat-mdc-button-touch-target {
+    width: 24px !important;
+    height: 24px !important;
+  }
+}
+
+/* every wrapping column shares one shape; only the width is per-column */
+.mat-column-No,
+.mat-column-ORDERID_ORG,
+.mat-column-AUMPHER,
+.mat-column-PROVINCE {
+  word-wrap: break-word !important;
+  white-space: unset !important;
+  flex: 0 0 5% !important;
+  overflow-wrap: break-word;
+  word-break: break-word;
+
+  -ms-hyphens: auto;
+  -moz-hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+.mat-column-No {
+  width: 50px !important;
+}
+
+.mat-column-ORDERID_ORG {
+  width: 240px !important;
+}
+
+.mat-column-AUMPHER,
+.mat-column-PROVINCE {
+  width: 100px !important;
+}
+
+.mat-mdc-row .mat-mdc-cell {
+  border-bottom: 1px solid transparent;
+  border-top: 1px solid transparent;
+  cursor: pointer;
+}
+
+.mdc-data-table__cell,
+.mdc-data-table__header-cell {
+  padding: 0 5px;
+}
+
+.table-container {
+  height: 400px;
+}
+
+.mat-paginator-sticky {
+  z-index: 10;
+}
+
+tr.example-element-row:not(.example-expanded-row):hover {
+  background: whitesmoke;
+}
+
+tr.example-element-row:not(.example-expanded-row):active {
+  background: #efefef;
+}
+
+tr.mat-mdc-footer-row td {
+  font-weight: bold;
+}
+
+.address-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

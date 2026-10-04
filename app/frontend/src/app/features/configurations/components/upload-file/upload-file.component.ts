@@ -6,8 +6,8 @@ import {
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslocoService } from '@jsverse/transloco';
 import { ToastrService } from 'ngx-toastr';
-import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
-import { DetailsDialogComponent } from '../../components/details-dialog/details-dialog.component';
+import { DialogConfirmationComponent } from '@shared/components/dialogs/dialog-confirmation/dialog-confirmation.component';
+import { DialogDetailsComponent } from '@shared/components/dialogs/dialog-details/dialog-details.component';
 import * as ExcelJS from 'exceljs';
 
 @Component({
@@ -144,7 +144,7 @@ export class UploadFileComponent {
       return;
     }
 
-    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+    const dialogRef = this.ngbModal.open(DialogConfirmationComponent, {
       centered: true,
       animation: true,
     });
@@ -164,7 +164,7 @@ export class UploadFileComponent {
     if (focusedElement) {
       focusedElement.blur();
     }
-    const dialogRef = this.ngbModal.open(DetailsDialogComponent, {
+    const dialogRef = this.ngbModal.open(DialogDetailsComponent, {
       centered: true,
       animation: true,
     });

@@ -6,14 +6,14 @@ import { TranslocoService } from '@jsverse/transloco';
 import { of, throwError } from 'rxjs';
 
 import { VehicleTypeComponent } from './vehicle-type.component';
-import { VehicleService } from 'src/app/services/vehicle.service';
+import { VehicleService } from '../../services/vehicle.service';
 import {
   AccessTypeEnum,
   VehicleProfileTypeEnum,
   VehicleType,
-} from 'src/app/models/vehicle.model';
-import { VehicleTypeDialogComponent } from '../dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
-import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
+} from '../../models/vehicle.model';
+import { DialogVehicleTypeComponent } from '../dialogs/dialog-vehicle-type/dialog-vehicle-type.component';
+import { DialogConfirmationComponent } from '@shared/components/dialogs/dialog-confirmation/dialog-confirmation.component';
 
 function createMockVehicleType(
   overrides: Partial<VehicleType> = {}
@@ -158,7 +158,7 @@ describe('VehicleTypeComponent', () => {
       component.openVehicleTypeModal('create');
 
       expect(ngbModal.open).toHaveBeenCalledWith(
-        VehicleTypeDialogComponent,
+        DialogVehicleTypeComponent,
         jasmine.objectContaining({ size: 'lg', backdrop: 'static' })
       );
       const instance = ngbModal.open.calls.mostRecent().returnValue
@@ -266,7 +266,7 @@ describe('VehicleTypeComponent', () => {
       component.deleteVehicleType(createMockVehicleType());
 
       expect(ngbModal.open).toHaveBeenCalledWith(
-        ConfirmationDialogComponent,
+        DialogConfirmationComponent,
         jasmine.objectContaining({ centered: true })
       );
       const instance = ngbModal.open.calls.mostRecent().returnValue

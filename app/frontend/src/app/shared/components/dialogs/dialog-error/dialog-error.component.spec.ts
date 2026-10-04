@@ -2,11 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { ErrorDialogComponent } from './error-dialog.component';
+import { DialogErrorComponent } from './dialog-error.component';
 
-describe('ErrorDialogComponent', () => {
-  let component: ErrorDialogComponent;
-  let fixture: ComponentFixture<ErrorDialogComponent>;
+describe('DialogErrorComponent', () => {
+  let component: DialogErrorComponent;
+  let fixture: ComponentFixture<DialogErrorComponent>;
 
   let activeModal: jasmine.SpyObj<NgbActiveModal>;
 
@@ -17,15 +17,15 @@ describe('ErrorDialogComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      declarations: [ErrorDialogComponent],
+      declarations: [DialogErrorComponent],
       providers: [{ provide: NgbActiveModal, useValue: activeModal }],
       schemas: [NO_ERRORS_SCHEMA],
     })
       // Replace the template so we don't pull in transloco pipes.
-      .overrideComponent(ErrorDialogComponent, { set: { template: '' } })
+      .overrideComponent(DialogErrorComponent, { set: { template: '' } })
       .compileComponents();
 
-    fixture = TestBed.createComponent(ErrorDialogComponent);
+    fixture = TestBed.createComponent(DialogErrorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

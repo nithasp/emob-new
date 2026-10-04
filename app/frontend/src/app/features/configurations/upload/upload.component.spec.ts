@@ -6,9 +6,9 @@ import { TranslocoService } from '@jsverse/transloco';
 import { of } from 'rxjs';
 
 import { UploadComponent } from './upload.component';
-import { ConfigurationService } from 'src/app/services/configuration.service';
-import { Configuration } from 'src/app/models/configuration.model';
-import { Response as GraphqlResponse } from 'src/app/models/graphql.model';
+import { ConfigurationService } from '../services/configuration.service';
+import { Configuration } from '../models/configuration.model';
+import { Response as GraphqlResponse } from '@core/models/graphql.model';
 
 function createMockConfiguration(
   overrides: Partial<Configuration> = {}

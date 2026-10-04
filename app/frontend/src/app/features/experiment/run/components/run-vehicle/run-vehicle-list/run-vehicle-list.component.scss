@@ -1,0 +1,181 @@
+@use '../../../styles/run-shared' as *;
+
+@include pane;
+@include count-badge;
+@include icon-button;
+
+/* run list: one tinted block per vehicle type, white rows inside — the same
+   card-on-surface pairing the pool pane uses */
+.openvrp-lgroup {
+  border: 1px solid $ovrp-line;
+  background: $ovrp-surface-2;
+  padding: 8px;
+
+  & + .openvrp-lgroup {
+    margin-top: 10px;
+  }
+}
+
+.openvrp-lgroup-head {
+  gap: 6px;
+  padding: 0 3px 8px;
+  font-size: 14px;
+  color: $ovrp-ink;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: $ovrp-brand;
+  }
+
+  /* a long type name truncates instead of pushing the count out of the block */
+  .openvrp-lgroup-name {
+    min-width: 0;
+  }
+
+  .openvrp-lgroup-count {
+    font-size: 14.5px;
+    color: $ovrp-muted;
+  }
+}
+
+.openvrp-lrow {
+  border: 1px solid $ovrp-line;
+  border-radius: 9px;
+  padding: 9px 11px;
+  gap: 9px;
+  /* slow settle once the merge highlight is dropped */
+  transition:
+    border-width 0.8s ease,
+    border-color 0.8s ease,
+    padding 0.8s ease,
+    box-shadow 0.8s ease;
+
+  /* the row a duplicate was just added to — amber like the warning toast, and
+     held for exactly as long as that toast (RUN_ENTRY_MERGE_NOTICE_MS) */
+  &.merged {
+    border-width: 2px;
+    border-color: $ovrp-q4-amber;
+    /* the 2px the thicker border takes on each side is given back here, so the
+       row keeps its size and the rows under it don't shift as it highlights */
+    padding: 7px 9px;
+    box-shadow: 0 0 0 3px $ovrp-q4-amber-soft;
+    /* quick to arrive, slow to leave */
+    transition-duration: 0.1s;
+
+    /* the count is what actually changed, so it does the moving — a shake on
+       the whole row would read as "rejected", which is the opposite of what
+       happened */
+    .openvrp-lcount {
+      animation: openvrp-count-pulse 0.45s ease-out;
+    }
+  }
+
+  .openvrp-lico {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    &.closed {
+      background: $ovrp-closed-soft;
+      color: $ovrp-closed;
+    }
+
+    &.open {
+      background: $ovrp-open-soft;
+      color: $ovrp-open;
+    }
+  }
+
+  .openvrp-lmain {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .openvrp-ltitle {
+    font-size: 14.5px;
+
+    /* how many vehicles a row carries is the number planners scan for, so it
+       reads at least as strongly as the type name — the muted grey it used to
+       be was hard on eyes that need more contrast */
+    .openvrp-lcount {
+      /* inline-block so the merge pulse below can scale it */
+      display: inline-block;
+      font-size: 16px;
+      color: $ovrp-ink;
+    }
+
+    .openvrp-ltrip {
+      font-size: 13.5px;
+      background: $ovrp-trip-soft;
+      color: $ovrp-trip-ink;
+      border-radius: 5px;
+      padding: 2px 7px;
+    }
+  }
+
+  .openvrp-lsub {
+    font-size: 13.5px;
+    color: $ovrp-muted;
+    text-overflow: ellipsis;
+
+    &.openvrp-ltripsub {
+      color: $ovrp-trip-ink;
+    }
+  }
+}
+
+@keyframes openvrp-count-pulse {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* The highlight itself stays — only the movement is dropped for anyone who
+   asked their system for less of it. */
+@media (prefers-reduced-motion: reduce) {
+  .openvrp-lrow {
+    transition: none;
+
+    &.merged .openvrp-lcount {
+      animation: none;
+    }
+  }
+}
+
+.openvrp-lbadge {
+  font-size: 13.5px;
+  padding: 2px 8px;
+  border-radius: 5px;
+
+  &.closed {
+    background: $ovrp-closed-soft;
+    color: $ovrp-closed-ink;
+  }
+
+  &.open {
+    background: $ovrp-open-soft;
+    color: $ovrp-open-ink;
+  }
+}
+
+.openvrp-empty-list {
+  color: $ovrp-faint;
+  font-size: 13px;
+  padding: 26px 8px;
+  border: 1.5px dashed $ovrp-line-strong;
+  border-radius: 10px;
+}

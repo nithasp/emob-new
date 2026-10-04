@@ -1,0 +1,91 @@
+<ng-container *transloco="let t; read: 'index'">
+  <div class="row">
+    <div
+      id="map"
+      class="map col-12 mt-3"
+      style="min-height: 1020px"
+    ></div>
+
+    <div id="popup" class="ol-popup" [hidden]="runMap.popupContent?.isDepot">
+      <button
+        (click)="runMap.closePopupMapShow()"
+        id="popup-closer"
+        class="ol-popup-closer btn btn-link"
+      ></button>
+      <div
+        id="popup-content"
+        class="row justify-content-end mt-2"
+        *ngIf="runMap.popupContent && !runMap.popupContent.isDepot"
+      >
+        <p class="d-inline-block text-truncate" style="max-width: 300px">
+          <strong>{{ "address" | transloco }} : </strong>
+          {{ runMap.popupContent.data.originalAddress?.address }}
+        </p>
+        <p class="d-inline-block text-truncate" style="max-width: 300px">
+          <strong>{{ "sub_district" | transloco }} : </strong>
+          {{ runMap.popupContent.data.originalAddress?.subdistrict }}
+        </p>
+        <p class="d-inline-block text-truncate" style="max-width: 300px">
+          <strong>{{ "district" | transloco }} : </strong
+          >{{ runMap.popupContent.data.originalAddress?.district }}
+        </p>
+
+        <p class="d-inline-block text-truncate" style="max-width: 300px">
+          <strong>{{ "province" | transloco }} : </strong
+          >{{ runMap.popupContent.data.originalAddress?.province }}
+        </p>
+      </div>
+      <button
+        class="float-right"
+        mat-raised-button
+        class="bg-custom-primary"
+        (click)="orders.openCustomerOrderDetails(runMap.popupContent!.data)"
+      >
+        {{ t("details") }}
+      </button>
+    </div>
+
+    <div class="col-md-12 mt-2">
+      <div class="row">
+        <div class="col-sm-3 col-6 pl-sm-1 pb-2">
+          <img src="assets/image/depot.png" alt="icon" />
+          <small class="ml-1">{{ t("depot_warehouse") }}</small>
+        </div>
+        <div
+          class="col-sm-3 col-6 pb-2"
+          *ngIf="
+            (orders.uploadDataGroupCustomers?.verify?.customers)!.length > 0
+          "
+        >
+          <img src="assets/image/verify.png" alt="icon" />
+          <small class="ml-1">{{ t("verify_location") }}</small>
+        </div>
+        <div
+          class="col-sm-3 col-6 pb-2"
+          *ngIf="(orders.uploadDataGroupCustomers?.edit?.customers)!.length > 0"
+        >
+          <img src="assets/image/edit.png" alt="icon" />
+          <small class="ml-1">{{ t("edit_location") }}</small>
+        </div>
+        <div
+          class="col-sm-3 col-6 pb-2"
+          *ngIf="
+            (orders.uploadDataGroupCustomers?.uncertain?.customers)!.length > 0
+          "
+        >
+          <img src="assets/image/uncertain.png" alt="icon" />
+          <small class="ml-1">{{ t("uncertain_location") }}</small>
+        </div>
+        <div
+          class="col-sm-3 col-6 pb-2"
+          *ngIf="
+            (orders.uploadDataGroupCustomers?.unverify?.customers)!.length > 0
+          "
+        >
+          <img src="assets/image/unverify.png" alt="icon" />
+          <small class="ml-1">{{ t("unverify_location") }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

@@ -1,0 +1,124 @@
+<ng-container *transloco="let t; read: 'index'">
+  <div class="d-flex gap-1 mb-2">
+    <button
+      class="btn btn-outline-secondary btn-sm rounded-pill d-flex align-items-center gap-1 vrp-toggle-btn"
+      [class.vrp-toggle-active]="vrpStatsView === 'dashboard'"
+      (click)="vrpStatsView = 'dashboard'"
+    >
+      <mat-icon class="vrp-toggle-icon">data_object</mat-icon> Dashboard
+    </button>
+    <button
+      class="btn btn-outline-secondary btn-sm rounded-pill d-flex align-items-center gap-1 vrp-toggle-btn"
+      [class.vrp-toggle-active]="vrpStatsView === 'keyvalue'"
+      (click)="vrpStatsView = 'keyvalue'"
+    >
+      <mat-icon class="vrp-toggle-icon">list</mat-icon> All Metrics
+    </button>
+  </div>
+
+  <div class="border rounded overflow-hidden bg-white vrp-section mb-3" *ngIf="vrpStatsView === 'dashboard'">
+    <div class="vrp-bg-primary text-white fw-semibold px-3 py-2 vrp-dashboard-header">VRP Statistics Dashboard Overview</div>
+
+    <div class="d-flex border-bottom overflow-auto">
+      <div
+        *ngFor="let card of plan.vrpDashboardCards; let last = last"
+        class="flex-fill p-3"
+        [class.border-end]="!last"
+      >
+        <div class="fs-6 text-secondary fw-semibold small mb-1 vrp-card-label">{{ card.label }}</div>
+        <div
+          class="fs-5 fw-bold d-flex align-items-center gap-1 vrp-card-value"
+          [class.text-success]="card.isFeasible === true"
+          [class.text-danger]="card.isFeasible === false"
+        >
+          <span>
+            @if(isNumber(card.value)){
+              {{ getNumberValue(card.value) | number : "1.0-2" }}
+            }@else{
+              {{ card.value }}
+            }
+          </span>
+          @if(card.isFeasible === true){
+            <mat-icon class="text-success vrp-status-icon">check_circle</mat-icon>
+          }@else if(card.isFeasible === false){
+            <mat-icon class="text-danger vrp-status-icon">cancel</mat-icon>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="vrp-dashboard-info overflow-auto">
+      <table class="table table-sm mb-0 vrp-dashboard-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>metric</th>
+            <th class="text-right">totalValue</th>
+            <th class="text-right">excessValue</th>
+            <th class="text-center">unit</th>
+            <th class="text-center">status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of plan.vrpDashboardRows">
+            <td class="text-secondary fw-semibold">{{ row.index }}</td>
+            <td>{{ row.metric }}</td>
+            <td class="text-right">
+              @if(row.totalValue !== null){
+                {{ row.totalValue | number : "1.0-2" }}
+              }@else{
+                <span class="text-muted">-</span>
+              }
+            </td>
+            <td class="text-right">
+              @if(row.excessValue !== null){
+                {{ row.excessValue | number : "1.0-1" }}
+              }@else{
+                <span class="text-muted">-</span>
+              }
+            </td>
+            <td class="text-center text-secondary small">{{ row.unit }}</td>
+            <td class="text-center">
+              @if(row.statusOk === true){
+                <span class="badge bg-success">OK</span>
+              }@else if(row.statusOk === false){
+                <span class="badge bg-danger">Excess</span>
+              }@else{
+                <span class="text-muted">-</span>
+              }
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="table-vrp-stats border rounded overflow-hidden bg-white vrp-section mb-3" *ngIf="vrpStatsView === 'keyvalue'">
+    <table class="table table-sm table-hover mb-0">
+      <thead>
+        <tr>
+          <th scope="col">Property</th>
+          <th scope="col" class="text-right">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of plan.dataSourceReport">
+          <td class="fw-semibold text-secondary">{{ row["property"] }}</td>
+          <td
+            class="text-right"
+            [ngClass]="{
+              'text-success fw-semibold': row['value'] === 'Yes',
+              'text-danger fw-semibold': row['value'] === 'No'
+            }"
+          >
+            @if(isNumber(row['value'])){
+              {{ getNumberValue(row["value"]) | number : "1.0-2" }}
+            }@else{
+              {{ row["value"] }}
+            }
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ng-container>

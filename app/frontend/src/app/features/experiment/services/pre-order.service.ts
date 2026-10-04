@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { map, Observable, retry } from 'rxjs';
-import { Response } from '../models/graphql.model';
+import { Response } from '@core/models/graphql.model';
 import gql from 'graphql-tag';
 import { Apollo } from 'apollo-angular';
 import { UploadPreOrderResponse } from '../models/experiment.model';
-import { ErrorHandlingService } from './handle-error.service';
+import { ErrorHandlingService } from '@core/services/handle-error.service';
 
 @Injectable({
   providedIn: 'root'

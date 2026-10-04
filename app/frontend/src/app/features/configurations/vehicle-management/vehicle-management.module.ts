@@ -4,26 +4,28 @@ import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 
 import { NgbModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslocoModule, TRANSLOCO_SCOPE } from '@jsverse/transloco';
-import { MaterialModule } from 'src/app/material.module';
+import { MaterialModule } from '@shared/material.module';
 import { VehicleManagementRoutingModule } from './vehicle-management-routing.module';
 
-import { VehicleDialogComponent } from './dialogs/vehicle-dialog/vehicle-dialog.component';
+import { DialogVehicleComponent } from './dialogs/dialog-vehicle/dialog-vehicle.component';
+import { DialogVehicleProfileTypeItemComponent } from './dialogs/dialog-vehicle-profile-type-item/dialog-vehicle-profile-type-item.component';
 import { VehicleManagementComponent } from './vehicle-management.component';
 import { VehicleTypeComponent } from './vehicle-type/vehicle-type.component';
 import { VehicleComponent } from './vehicle/vehicle.component';
-import { VehicleTypeDialogComponent } from './dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
-import { InputFieldComponent } from 'src/app/shared/components/form/input-field/input-field.component';
-import { InputSelectComponent } from 'src/app/shared/components/form/input-select/input-select.component';
-import { DynamicPopoverComponent } from 'src/app/shared/components/dynamic-popover/dynamic-popover.component';
+import { DialogVehicleTypeComponent } from './dialogs/dialog-vehicle-type/dialog-vehicle-type.component';
+import { InputFieldComponent } from '@shared/components/form/input-field/input-field.component';
+import { InputSelectComponent } from '@shared/components/form/input-select/input-select.component';
+import { DynamicPopoverComponent } from '@shared/components/dynamic-popover/dynamic-popover.component';
 @NgModule({
   declarations: [
     VehicleManagementComponent,
     VehicleComponent,
     VehicleTypeComponent,
-    VehicleDialogComponent,
+    DialogVehicleComponent,
+    DialogVehicleProfileTypeItemComponent,
   ],
   imports: [
-    VehicleTypeDialogComponent,
+    DialogVehicleTypeComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

@@ -1,0 +1,134 @@
+@use '../../styles/run-shared' as *;
+
+@include material-buttons;
+@include link-button;
+@include full-width-table;
+@include route-colors;
+@include q4-pill;
+
+:host {
+  display: block;
+}
+
+.validation-warning-error-item-wrapper {
+  max-height: 250px;
+}
+
+.validation-warning-error-item {
+  ngb-alert {
+    .mat-mdc-raised-button {
+      white-space: nowrap;
+
+      ::ng-deep .mdc-button__label {
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+/* validation tab summary */
+.openvrp-scard {
+  border: 1px solid $ovrp-line;
+  border-radius: 10px;
+  padding: 11px 13px;
+
+  .k {
+    font-size: 13.5px;
+    color: $ovrp-faint;
+    letter-spacing: 0.03em;
+  }
+
+  .v {
+    font-size: 19px;
+    margin-top: 2px;
+
+    &.v-sm {
+      font-size: 14px;
+    }
+
+    small {
+      font-size: 13.5px;
+      color: $ovrp-muted;
+    }
+  }
+}
+
+/* Q4 preview: multi time windows (validation tab, mirrors mockup .ordcard) */
+.openvrp-ordcard {
+  border: 1px dashed $ovrp-line-strong;
+  border-radius: 10px;
+  background: $ovrp-q4-soft;
+  padding: 12px 14px;
+  margin-top: 14px;
+
+  .openvrp-oh {
+    gap: 9px;
+    font-size: 13px;
+  }
+
+  .openvrp-ord-id {
+    font-family: "Consolas", "Courier New", monospace;
+    color: #31406b;
+  }
+
+  /* the pill carries 13.5px of its own now — this block only used to exist to
+     lift it off the 9px it was, and repeating the size here would just be a
+     second place to keep in step */
+
+  .openvrp-tws {
+    gap: 7px;
+    margin-top: 9px;
+  }
+
+  .openvrp-twchip {
+    font-size: 13.5px;
+    font-family: "Consolas", "Courier New", monospace;
+    border: 1px solid $ovrp-line;
+    padding: 4px 9px;
+
+    &.pick {
+      border-color: $ovrp-now;
+      background: $ovrp-now-soft;
+      color: $ovrp-now;
+    }
+  }
+
+  .openvrp-tw-note {
+    font-size: 13.5px;
+    color: #8b93a1;
+  }
+}
+
+.openvrp-checks {
+  border: 1px solid $ovrp-line;
+  border-radius: 11px;
+
+  .openvrp-checkrow {
+    gap: 9px;
+    padding: 9px 0;
+    border-bottom: 1px solid $ovrp-line;
+    font-size: 13px;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .ci {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+
+      &.ci-ok {
+        color: $ovrp-now;
+      }
+
+      &.ci-warn {
+        color: $ovrp-q4-amber;
+      }
+
+      &.ci-trip {
+        color: $ovrp-trip;
+      }
+    }
+  }
+}

@@ -7,8 +7,8 @@ const angular = require('angular-eslint');
  * Flat config (ESLint 9) wired for Angular 18 via angular-eslint 18.
  *
  * `no-console` is enforced on its own account: all console output must go
- * through LoggerService (src/app/services/logger.service.ts) so that the nprod
- * and prod builds stay silent.
+ * through LoggerService (src/app/core/services/logger.service.ts) so that the
+ * nprod and prod builds stay silent.
  *
  * On top of that the three recommended sets are enabled — eslint,
  * typescript-eslint and angular-eslint. Specs are held to `no-console: off`

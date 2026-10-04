@@ -1,0 +1,87 @@
+@use '../../styles/run-shared' as *;
+
+@include material-buttons;
+@include icon-button;
+@include fade-in;
+
+:host {
+  display: block;
+}
+
+.vehicle-selection-error-msg {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* --- Vehicle tab: 3-pane layout --- */
+.openvrp-three {
+  border: 2px solid transparent;
+  border-radius: 10px;
+  transition: border-color 0.3s ease;
+
+  &.vehicle-selection-error {
+    animation: shake 0.4s ease-in-out;
+  }
+}
+
+.openvrp-demo-btn {
+  border-style: dashed !important;
+
+  &.on {
+    border-color: $ovrp-trip !important;
+    background: $ovrp-trip-soft !important;
+    color: $ovrp-trip-ink !important;
+
+    mat-icon {
+      color: $ovrp-trip;
+    }
+  }
+}
+
+.openvrp-demo-banner {
+  padding: 8px 12px;
+  border: 1px dashed $ovrp-trip;
+  background: $ovrp-trip-soft;
+  color: $ovrp-trip-ink;
+  font-size: 13.5px;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: $ovrp-trip;
+  }
+}
+
+/* presets */
+.openvrp-preset-btn {
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.openvrp-preset-menu {
+  min-width: 260px;
+  max-height: 300px;
+}
+
+.openvrp-preset-item {
+  cursor: pointer;
+
+  .openvrp-preset-info {
+    min-width: 0;
+  }
+
+  .openvrp-preset-name {
+    font-size: 13px;
+  }
+}

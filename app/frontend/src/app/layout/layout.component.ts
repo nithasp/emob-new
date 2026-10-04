@@ -1,16 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { UserProfile } from '../models/profile.model';
-import { AuthUser } from '../models/auth.model';
+import { UserProfile } from '@core/models/profile.model';
+import { AuthUser } from '@core/models/auth.model';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AuthService } from 'src/app/services/auth.service';
+import { AuthService } from '@core/services/auth/auth.service';
 @Component({
-  selector: 'app-users',
-  templateUrl: './index.component.html',
-  styleUrl: './index.component.scss'
+  selector: 'app-layout',
+  templateUrl: './layout.component.html',
+  styleUrl: './layout.component.scss'
 })
-export class IndexComponent implements OnInit, OnDestroy {
+export class LayoutComponent implements OnInit, OnDestroy {
   userProfile!: UserProfile;
   private readonly _destroying$ = new Subject<void>();
 

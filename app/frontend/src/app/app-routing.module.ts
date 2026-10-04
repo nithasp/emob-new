@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { RoleGuard } from './guards/role.guard';
-import { GuestGuard } from './guards/guest.guard';
-import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
-import { LoginComponent } from './auth/login/login.component';
-import { RegisterComponent } from './auth/register/register.component';
-import { environment } from 'src/environments/environment';
+import { RoleGuard } from '@core/guards/role.guard';
+import { GuestGuard } from '@core/guards/guest.guard';
+import { UnauthorizedComponent } from './features/auth/unauthorized/unauthorized.component';
+import { LoginComponent } from './features/auth/login/login.component';
+import { RegisterComponent } from './features/auth/register/register.component';
+import { environment } from '@env/environment';
 
 export const routes: Routes = [
     {
       path: 'users',
-      loadChildren: () => import("./index/index.module").then(m => m.IndexModule),
+      loadChildren: () => import("./layout/layout.module").then(m => m.LayoutModule),
       canActivate: [RoleGuard],
       data : {
         expectedRoles: [environment.roles.UserRole]

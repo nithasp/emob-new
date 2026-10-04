@@ -1,0 +1,178 @@
+<ng-container *transloco="let t; read: 'index'">
+  <div style="min-height: 720px" class="openvrp-vehicle-tab">
+    <!-- Header: title + preset configuration -->
+    <div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mt-4 mb-2">
+      <div>
+        <h2 class="mb-1 fw-bold">{{ t("select_vehicle_from_pool") }}</h2>
+        <p class="text-muted mb-0" style="font-size: 14px">
+          {{ t("select_vehicle_from_pool_hint") }}
+        </p>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <ng-template #multiTripDemoTipContent>{{
+          t("multi_trip_demo_hint")
+          }}</ng-template>
+        <button mat-stroked-button class="openvrp-preset-btn openvrp-demo-btn" [class.on]="fleet.multiTripDemo"
+          (click)="pool.toggleMultiTripDemo()" [ngbTooltip]="multiTripDemoTipContent" placement="bottom">
+          <mat-icon class="align-text-bottom">{{
+            fleet.multiTripDemo ? "toggle_on" : "toggle_off"
+            }}</mat-icon>
+          {{ t("multi_trip_demo") }}
+        </button>
+
+        <!-- Hidden for now prepare for Q4 -->
+        <!-- <ng-template #multiDepotDemoTipContent>{{
+          t("multi_depot_demo_hint")
+          }}</ng-template>
+        <button mat-stroked-button class="openvrp-preset-btn openvrp-demo-btn" [class.on]="multiDepotDemo"
+          (click)="toggleMultiDepotDemo()" [ngbTooltip]="multiDepotDemoTipContent" placement="bottom">
+          <mat-icon class="align-text-bottom">{{
+            multiDepotDemo ? "toggle_on" : "toggle_off"
+            }}</mat-icon>
+          {{ t("multi_depot_demo") }}
+        </button> -->
+
+
+        <!-- Template content keeps an already-open tooltip in sync
+             with the toggle state (string content is only rendered
+             once when the tooltip opens) -->
+        <ng-template #mapToggleTipContent>{{
+          navigation.isMapCollapsed ? t("show_map_hint") : t("hide_map_hint")
+          }}</ng-template>
+        <button mat-stroked-button class="openvrp-preset-btn" (click)="navigation.toggleMapCollapsed()"
+          [ngbTooltip]="mapToggleTipContent" placement="bottom">
+          <mat-icon class="align-text-bottom">{{
+            navigation.isMapCollapsed ? "map" : "visibility_off"
+            }}</mat-icon>
+          {{ navigation.isMapCollapsed ? t("show_map") : t("hide_map") }}
+        </button>
+        <button mat-stroked-button class="openvrp-preset-btn" (click)="openSavePresetDialog()"
+          [disabled]="fleet.runVehicleList.length === 0">
+          <mat-icon class="align-text-bottom">bookmark_add</mat-icon>
+          {{ t("save_preset") }}
+        </button>
+        <div ngbDropdown placement="bottom-end">
+          <button type="button" mat-stroked-button class="openvrp-preset-btn" id="openVrpLoadPreset"
+            ngbDropdownToggle [disabled]="presets.currentDepotPresets.length === 0">
+            <mat-icon class="align-text-bottom">bookmarks</mat-icon>
+            {{ t("load_preset") }} ({{
+            presets.currentDepotPresets.length
+            }})
+          </button>
+          <div ngbDropdownMenu aria-labelledby="openVrpLoadPreset" class="openvrp-preset-menu overflow-auto">
+            <div ngbDropdownItem class="openvrp-preset-item d-flex align-items-center justify-content-between gap-2 text-wrap" role="button" *ngFor="
+                let preset of presets.currentDepotPresets;
+                trackBy: trackPresetById
+              " (click)="presets.loadPreset(preset)">
+              <div class="openvrp-preset-info">
+                <span class="openvrp-preset-name fw-semibold">{{
+                  preset.name
+                  }}</span>
+                <small class="text-muted d-block">
+                  {{ preset.entries.length }}
+                  {{ t("vehicle_groups") }} ·
+                  {{ preset.createdAt | date: "dd/MM/yy HH:mm" }}
+                </small>
+              </div>
+              <button type="button" class="openvrp-iconbtn del d-flex align-items-center justify-content-center p-0 rounded bg-white" [ngbTooltip]="t('remove')"
+                (click)="presets.deletePreset(preset, $event)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="openvrp-demo-banner d-flex align-items-center gap-2 mt-2 rounded-3 fw-medium" *ngIf="fleet.multiTripDemo">
+      <mat-icon class="flex-shrink-0">science</mat-icon>
+      <span>{{ t("multi_trip_demo_banner") }}</span>
+    </div>
+
+    <div class="openvrp-demo-banner d-flex align-items-center gap-2 mt-2 rounded-3 fw-medium" *ngIf="fleet.multiDepotDemo">
+      <mat-icon class="flex-shrink-0">science</mat-icon>
+      <span>{{ t("multi_depot_demo_banner") }}</span>
+    </div>
+
+    <p *ngIf="fleet.vehicleSelectionError" class="vehicle-selection-error-msg text-center text-danger mb-2 fw-medium">
+      {{ t("no_vehicle_in_run_list") }}
+    </p>
+
+    <!-- 3-pane layout: pool config panel / run list / summary -->
+    <div class="row g-3 openvrp-three mt-1" [class.vehicle-selection-error]="fleet.vehicleSelectionError">
+      <!-- Pane 1: vehicle pool (configuration panel) -->
+      <app-run-vehicle-pool class="col-lg-4 col-md-6"></app-run-vehicle-pool>
+
+      <!-- Pane 2: run list (selected vehicles) -->
+      <app-run-vehicle-list class="col-lg-5 col-md-6"></app-run-vehicle-list>
+
+      <!-- Pane 3: summary -->
+      <app-run-vehicle-summary class="col-lg-3 col-md-12"></app-run-vehicle-summary>
+    </div>
+
+    <div class="col text-end mt-3">
+      <button mat-raised-button color="secondary" class="btn btn-secondary pr-3"
+        (click)="navigation.navigateToPreviousTab()">
+        <mat-icon>first_page</mat-icon>
+        {{ "back" | transloco }}
+      </button>
+      <button *ngIf="!params.hasDynamicParameters()" mat-raised-button class="bg-custom-primary pr-3"
+        (click)="validation.validateExperimentPreOrder()">
+        <mat-icon>rule</mat-icon>
+        {{
+        state.haveUpdateAfterValidated && state.haveValidated
+        ? t("revalidate")
+        : t("validate")
+        }}
+      </button>
+      <button *ngIf="params.hasDynamicParameters()" mat-raised-button class="bg-custom-primary"
+        (click)="navigation.navigateToNextTab()">
+        <mat-icon>last_page</mat-icon>
+        {{ t("next") }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Open VRP: save preset dialog -->
+  <ng-template #savePresetModal let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">{{ t("save_preset") }}</h4>
+      <button
+        type="button"
+        class="btn-close"
+        aria-label="Close"
+        (click)="modal.dismiss()"
+      ></button>
+    </div>
+    <div class="modal-body">
+      <p class="text-muted" style="font-size: 13px">
+        {{ t("save_preset_hint") }} ({{ state.scopeDepotName }})
+      </p>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="presetName"
+        [placeholder]="t('preset_name')"
+        maxlength="60"
+      />
+    </div>
+    <div class="modal-footer">
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        (click)="modal.dismiss()"
+      >
+        {{ "cancel" | transloco }}
+      </button>
+      <button
+        type="button"
+        mat-raised-button
+        class="bg-custom-primary"
+        [disabled]="!presetName.trim()"
+        (click)="modal.close(true)"
+      >
+        {{ "save" | transloco }}
+      </button>
+    </div>
+  </ng-template>
+</ng-container>

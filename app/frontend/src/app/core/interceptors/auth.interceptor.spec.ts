@@ -5,8 +5,8 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { AuthInterceptor } from './auth.interceptor';
-import { AuthService } from '../services/auth.service';
-import { TokenRefreshService } from '../services/token-refresh.service';
+import { AuthService } from '../services/auth/auth.service';
+import { TokenRefreshService } from '../services/auth/token-refresh.service';
 
 const GRAPHQL = '/api/v1/graphql';
 const EXPIRED = { status: 401, message: 'Access token has expired.', data: null, code: 'token_expired' };

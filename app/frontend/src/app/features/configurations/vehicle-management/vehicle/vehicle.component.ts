@@ -2,16 +2,16 @@ import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ConfirmationDialogComponent } from '../../../components/confirmation-dialog/confirmation-dialog.component';
-import { VehicleDialogComponent } from '../dialogs/vehicle-dialog/vehicle-dialog.component';
-import { VehicleService } from 'src/app/services/vehicle.service';
-import { MyVehicles } from 'src/app/models/vehicle.model';
+import { DialogConfirmationComponent } from '@shared/components/dialogs/dialog-confirmation/dialog-confirmation.component';
+import { DialogVehicleComponent } from '../dialogs/dialog-vehicle/dialog-vehicle.component';
+import { VehicleService } from '../../services/vehicle.service';
+import { MyVehicles } from '../../models/vehicle.model';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
-import { ActionMode } from 'src/app/models/common.model';
-import { LoggerService } from 'src/app/services/logger.service';
+import { ActionMode } from '@shared/models/common.model';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
   selector: 'app-vehicle',
@@ -64,7 +64,7 @@ export class VehicleComponent implements OnInit {
   }
 
   openVehicleModal(vehicle?: MyVehicles, mode: ActionMode = 'create'): void {
-    const modalRef = this.ngbModal.open(VehicleDialogComponent, {
+    const modalRef = this.ngbModal.open(DialogVehicleComponent, {
       centered: true,
       size: 'lg',
       animation: true,
@@ -87,7 +87,7 @@ export class VehicleComponent implements OnInit {
   }
 
   deleteVehicle(vehicle: MyVehicles): void {
-    const modalRef = this.ngbModal.open(ConfirmationDialogComponent, {
+    const modalRef = this.ngbModal.open(DialogConfirmationComponent, {
       centered: true,
     });
     modalRef.componentInstance.title = this.transloco.translate(

@@ -7,14 +7,14 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
-import { VehicleService } from 'src/app/services/vehicle.service';
-import { LicensePlateItem, LicensePlateSelectionResult, MyVehicles, VehicleType } from 'src/app/models/vehicle.model';
+import { VehicleService } from '../../../services/vehicle.service';
+import { LicensePlateItem, LicensePlateSelectionResult, MyVehicles, VehicleType } from '../../../models/vehicle.model';
 import { TranslocoModule } from '@jsverse/transloco';
-import { InputFieldComponent } from 'src/app/shared/components/form/input-field/input-field.component';
-import { LoggerService } from 'src/app/services/logger.service';
+import { InputFieldComponent } from '@shared/components/form/input-field/input-field.component';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
-  selector: 'app-license-plate-selection-dialog',
+  selector: 'app-dialog-license-plate-selection',
   standalone: true,
   imports: [
     CommonModule,
@@ -28,10 +28,10 @@ import { LoggerService } from 'src/app/services/logger.service';
     TranslocoModule,
     InputFieldComponent,
   ],
-  templateUrl: './license-plate-selection-dialog.component.html',
-  styleUrl: './license-plate-selection-dialog.component.scss',
+  templateUrl: './dialog-license-plate-selection.component.html',
+  styleUrl: './dialog-license-plate-selection.component.scss',
 })
-export class LicensePlateSelectionDialogComponent implements OnInit {
+export class DialogLicensePlateSelectionComponent implements OnInit {
   private readonly logger = inject(LoggerService);
 
   // Input properties set by parent component

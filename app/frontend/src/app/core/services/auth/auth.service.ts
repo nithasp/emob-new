@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
-import { environment } from 'src/environments/environment';
-import { AuthSession, AuthUser, RegisterRequest } from '../models/auth.model';
+import { environment } from '@env/environment';
+import { AuthSession, AuthUser, RegisterRequest } from '../../models/auth.model';
 import { AuthApiService } from './auth-api.service';
 
 const USER_KEY = 'currentUser';

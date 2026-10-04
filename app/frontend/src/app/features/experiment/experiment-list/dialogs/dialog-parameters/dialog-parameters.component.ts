@@ -1,14 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { DynamicParameter, GroupedParameters, LocalizedText } from 'src/app/models/constraint.model';
+import { DynamicParameter, GroupedParameters, LocalizedText } from '../../../models/constraint.model';
 import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
-  selector: 'app-parameters-dialog',
-  templateUrl: './parameters-dialog.component.html',
-  styleUrl: './parameters-dialog.component.scss',
+  selector: 'app-dialog-parameters',
+  templateUrl: './dialog-parameters.component.html',
+  styleUrl: './dialog-parameters.component.scss',
 })
-export class ParametersDialogComponent implements OnInit {
+export class DialogParametersComponent implements OnInit {
   @Input() dynamicParameters: DynamicParameter[] = [];
 
   public isLegacyFormat: boolean = false;

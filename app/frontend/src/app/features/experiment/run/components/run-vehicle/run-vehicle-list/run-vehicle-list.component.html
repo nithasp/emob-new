@@ -1,0 +1,87 @@
+<ng-container *transloco="let t; read: 'index'">
+  <div class="openvrp-pane h-100 overflow-auto bg-white">
+    <div class="openvrp-pane-title d-flex align-items-center fw-semibold">
+      <mat-icon>playlist_add_check</mat-icon>
+      {{ t("vehicles_in_this_run") }}
+      <span class="openvrp-count-badge ms-auto rounded-pill fw-bold text-nowrap">{{
+        t("run_list_total_badge", { count: fleet.runListTotals.total })
+        }}</span>
+    </div>
+    <div class="openvrp-pane-sub">
+      {{ t("run_list_hint") }}
+    </div>
+
+    <!-- one block per vehicle type; inside a block the
+         return-to-depot rows come first, open routes last -->
+    <div class="openvrp-lgroup rounded-3" *ngFor="
+        let group of fleet.runVehicleGroups;
+        trackBy: trackRunVehicleGroup
+      ">
+      <div class="openvrp-lgroup-head d-flex align-items-center fw-semibold">
+        <mat-icon class="flex-shrink-0">local_shipping</mat-icon>
+        <span class="openvrp-lgroup-name text-truncate">{{
+          group.vehicleTypeName
+          }}</span>
+        <span class="openvrp-lgroup-count ms-auto flex-shrink-0 fw-medium text-nowrap">{{ group.total }}
+          {{ t("vehicles_unit") }}</span>
+      </div>
+
+      <div class="d-flex flex-column gap-2">
+        <div class="openvrp-lrow d-flex align-items-center bg-white" *ngFor="
+            let entry of group.entries;
+            trackBy: trackRunVehicleEntry
+          " [class.merged]="fleet.highlightedRunEntryId === entry.id"
+          [attr.data-run-entry-id]="entry.id">
+          <span class="openvrp-lico d-flex align-items-center justify-content-center flex-shrink-0" [class.closed]="entry.endOfRoute === 'return'"
+            [class.open]="entry.endOfRoute === 'no_return'">
+            <mat-icon>{{
+              entry.endOfRoute === "return"
+              ? "keyboard_return"
+              : "trending_flat"
+              }}</mat-icon>
+          </span>
+          <div class="openvrp-lmain">
+            <div class="openvrp-ltitle fw-semibold">
+              {{ entry.vehicleTypeName }}
+              <span class="openvrp-lcount">×{{ entry.count }}</span>
+              <span class="openvrp-ltrip ms-1 fw-bold text-nowrap" *ngIf="entry.maxTrip > 1" [ngbTooltip]="t('multi_trip')">
+                ⟳ {{ entry.maxTrip }}
+              </span>
+            </div>
+            <div class="openvrp-lsub overflow-hidden">
+              {{ getRunEntryDetail(entry) }}
+            </div>
+            <div class="openvrp-lsub overflow-hidden">
+              {{ getRunEntryRoute(entry) }}
+            </div>
+            <div class="openvrp-lsub openvrp-ltripsub overflow-hidden" *ngIf="entry.maxTrip > 1">
+              {{ getRunEntryTrips(entry) }}
+            </div>
+          </div>
+          <span class="openvrp-lbadge fw-bold text-nowrap" [class.closed]="entry.endOfRoute === 'return'"
+            [class.open]="entry.endOfRoute === 'no_return'">
+            {{
+            entry.endOfRoute === "return"
+            ? t("return_to_depot")
+            : t("dont_return_to_depot")
+            }}
+          </span>
+          <div class="d-flex gap-1">
+            <button type="button" class="openvrp-iconbtn d-flex align-items-center justify-content-center p-0 rounded bg-white" [ngbTooltip]="t('edit')"
+              (click)="pool.editRunEntry(entry.id)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button type="button" class="openvrp-iconbtn del d-flex align-items-center justify-content-center p-0 rounded bg-white" [ngbTooltip]="t('remove')"
+              (click)="fleet.removeRunEntry(entry.id)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="openvrp-empty-list text-center" *ngIf="fleet.runVehicleList.length === 0">
+      {{ t("no_vehicles_in_run") }}
+    </div>
+  </div>
+</ng-container>

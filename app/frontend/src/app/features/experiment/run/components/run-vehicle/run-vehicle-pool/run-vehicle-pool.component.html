@@ -1,0 +1,324 @@
+<ng-container *transloco="let t; read: 'index'">
+  <div class="openvrp-pane openvrp-pane-pool h-100 overflow-auto">
+    <div class="openvrp-pane-title d-flex align-items-center fw-semibold">
+      <mat-icon>inventory_2</mat-icon>
+      {{ t("vehicle_pool") }}
+    </div>
+    <div class="openvrp-pane-sub">
+      {{ t("vehicle_pool_hint") }}
+    </div>
+    <div *ngIf="pool.poolLoading" class="text-center text-muted py-3">
+      {{ t("loading_vehicle_data") }} ...
+    </div>
+
+    <div class="openvrp-poolcard mb-2 overflow-hidden bg-white" *ngFor="let vehicle of fleet.availableVehicleTypes">
+      <div class="openvrp-pc-head d-flex align-items-center gap-2 user-select-none" (click)="pool.togglePoolCard(vehicle.vehicleTypeId)">
+        <span class="openvrp-pc-code fw-semibold">{{
+          vehicle.name
+          }}</span>
+        <mat-icon class="openvrp-pc-info" (click)="
+            openPoolVehicleTypeInfo(
+              $event,
+              vehicle.vehicleTypeId
+            )
+          ">info</mat-icon>
+        <mat-icon class="openvrp-pc-chev ms-auto">
+          {{
+          pool.openPoolCardTypeId === vehicle.vehicleTypeId
+          ? "expand_more"
+          : "chevron_right"
+          }}
+        </mat-icon>
+      </div>
+
+      <div class="openvrp-pc-body" *ngIf="pool.openPoolCardTypeId === vehicle.vehicleTypeId">
+        <!-- Selection mode -->
+        <div class="openvrp-pc-row">
+          <div class="openvrp-pc-lab fw-semibold">
+            {{ t("selection_mode") }}
+          </div>
+          <div class="openvrp-radio2 d-flex">
+            <button type="button" class="openvrp-rbtn text-center" [class.on]="
+                pool.getPoolBuilder(vehicle.vehicleTypeId).mode ===
+                'count'
+              " (click)="
+                pool.setPoolBuilderMode(
+                  vehicle.vehicleTypeId,
+                  'count'
+                )
+              ">
+              {{ t("by_count") }}
+            </button>
+            <button type="button" class="openvrp-rbtn text-center" [class.on]="
+                pool.getPoolBuilder(vehicle.vehicleTypeId).mode ===
+                'license-plate'
+              " [disabled]="
+                !pool.isPoolTypeTracked(vehicle.vehicleTypeId)
+              " (click)="
+                pool.setPoolBuilderMode(
+                  vehicle.vehicleTypeId,
+                  'license-plate'
+                )
+              ">
+              {{ t("by_license_plate") }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Quantity (count mode) -->
+        <div class="openvrp-pc-row" *ngIf="
+            pool.getPoolBuilder(vehicle.vehicleTypeId).mode ===
+            'count'
+          ">
+          <div class="openvrp-pc-lab fw-semibold">
+            {{ t("number_of_vehicles") }}
+          </div>
+          <div class="openvrp-qty d-flex align-items-center">
+            <button type="button" class="flex-shrink-0 rounded bg-white lh-1" [disabled]="
+                pool.getPoolBuilder(vehicle.vehicleTypeId).count <=
+                0
+              " (click)="
+                pool.changePoolBuilderCount(
+                  vehicle.vehicleTypeId,
+                  -1
+                )
+              ">
+              −
+            </button>
+            <input class="openvrp-qty-input py-0 px-1 rounded bg-white fw-semibold text-center" type="number" inputmode="numeric" min="0"
+              [attr.aria-label]="t('number_of_vehicles')" [value]="
+                pool.getPoolBuilder(vehicle.vehicleTypeId).count
+              " (input)="
+                pool.setPoolBuilderCount(
+                  vehicle.vehicleTypeId,
+                  $any($event.target).valueAsNumber
+                )
+              " (blur)="
+                $any($event.target).value =
+                  pool.getPoolBuilder(vehicle.vehicleTypeId).count
+              " />
+            <button type="button" class="flex-shrink-0 rounded bg-white lh-1" (click)="
+                pool.changePoolBuilderCount(
+                  vehicle.vehicleTypeId,
+                  1
+                )
+              ">
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- License plates (by plate mode) -->
+        <div class="openvrp-pc-row" *ngIf="
+            pool.getPoolBuilder(vehicle.vehicleTypeId).mode ===
+            'license-plate'
+          ">
+          <div class="openvrp-pc-lab fw-semibold">
+            {{ t("choose_license_plates") }}
+          </div>
+          <div class="openvrp-plate-check d-flex flex-column overflow-auto">
+            <label class="d-flex align-items-center m-0" *ngFor="
+                let poolVehicle of pool.getPoolAvailableVehicles(
+                  vehicle.vehicleTypeId
+                )
+              ">
+              <input type="checkbox" [checked]="
+                  pool.isPoolPlateChosen(
+                    vehicle.vehicleTypeId,
+                    poolVehicle.vehicleId
+                  )
+                " (change)="
+                  pool.togglePoolPlate(
+                    vehicle.vehicleTypeId,
+                    poolVehicle.vehicleId,
+                    $any($event.target).checked
+                  )
+                " />
+              {{ poolVehicle.licensePlate }}
+            </label>
+            <span *ngIf="
+                pool.getPoolAvailableVehicles(
+                  vehicle.vehicleTypeId
+                ).length === 0
+              " class="text-muted" style="font-size: 12.5px">
+              {{ t("no_available_plates") }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Routing conditions (overwrite default) -->
+        <div class="openvrp-pc-row">
+          <div class="openvrp-pc-lab fw-semibold">
+            {{ t("end_of_route") }}
+          </div>
+          <div class="openvrp-eorseg d-flex">
+            <button type="button" class="openvrp-eoropt o-closed text-center fw-semibold" [class.on]="
+                pool.getPoolBuilder(vehicle.vehicleTypeId)
+                  .endOfRoute === 'return'
+              " (click)="
+                pool.setPoolEndOfRoute(
+                  vehicle.vehicleTypeId,
+                  'return'
+                )
+              ">
+              ↩ {{ t("return_to_depot") }}
+            </button>
+            <button type="button" class="openvrp-eoropt o-open text-center fw-semibold" [class.on]="
+                pool.getPoolBuilder(vehicle.vehicleTypeId)
+                  .endOfRoute === 'no_return'
+              " (click)="
+                pool.setPoolEndOfRoute(
+                  vehicle.vehicleTypeId,
+                  'no_return'
+                )
+              ">
+              ➝ {{ t("dont_return_to_depot") }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Start depot (opens on the current scope) -->
+        <div class="openvrp-pc-row">
+          <div class="openvrp-pc-lab fw-semibold">
+            {{ t("start_depot") }}
+          </div>
+          <select class="form-select form-select-sm" [ngModel]="
+              pool.getBuilderStartDepotId(vehicle.vehicleTypeId)
+            " (ngModelChange)="
+              pool.onPoolStartDepotChange(
+                vehicle.vehicleTypeId,
+                $event
+              )
+            ">
+            <option *ngFor="let depot of state.depots" [value]="depot.depotId">
+              {{ depot.depotName }}
+            </option>
+          </select>
+        </div>
+
+        <!-- End depot (return mode: A -> A or A -> B) -->
+        <div class="openvrp-pc-row" *ngIf="
+            pool.getPoolBuilder(vehicle.vehicleTypeId)
+              .endOfRoute === 'return'
+          ">
+          <div class="openvrp-pc-lab fw-semibold">
+            {{ t("end_depot") }}
+          </div>
+          <select class="form-select form-select-sm" [ngModel]="
+              pool.getBuilderEndDepotId(vehicle.vehicleTypeId)
+            " (ngModelChange)="
+              pool.onPoolEndDepotChange(
+                vehicle.vehicleTypeId,
+                $event
+              )
+            ">
+            <option *ngFor="let depot of state.depots" [value]="depot.depotId">
+              {{ depot.depotName }}
+            </option>
+          </select>
+        </div>
+
+        <div class="openvrp-pc-row">
+          <div class="openvrp-pc-lab fw-semibold">
+            {{ t("trips_per_vehicle") }}
+          </div>
+
+          <ng-container *ngIf="fleet.isMultiTripAllowed(); else singleTripType">
+            <div class="openvrp-qty d-flex align-items-center">
+              <button type="button" class="flex-shrink-0 rounded bg-white lh-1" [disabled]="
+                  pool.getPoolBuilder(vehicle.vehicleTypeId)
+                    .maxTrip <= 1
+                " (click)="
+                  pool.changePoolBuilderMaxTrip(
+                    vehicle.vehicleTypeId,
+                    -1
+                  )
+                ">
+                −
+              </button>
+              <input class="openvrp-qty-input py-0 px-1 rounded bg-white fw-semibold text-center" type="number" inputmode="numeric" min="1"
+                [max]="fleet.getSystemMaxTrip()" [attr.aria-label]="t('trips_per_vehicle')" [value]="
+                  pool.getPoolBuilder(vehicle.vehicleTypeId)
+                    .maxTrip
+                " (input)="
+                  pool.setPoolBuilderMaxTrip(
+                    vehicle.vehicleTypeId,
+                    $any($event.target).valueAsNumber
+                  )
+                " (blur)="
+                  $any($event.target).value =
+                    pool.getPoolBuilder(vehicle.vehicleTypeId)
+                      .maxTrip
+                " />
+              <button type="button" class="flex-shrink-0 rounded bg-white lh-1" [disabled]="
+                  pool.getPoolBuilder(vehicle.vehicleTypeId)
+                    .maxTrip >= fleet.getSystemMaxTrip()
+                " (click)="
+                  pool.changePoolBuilderMaxTrip(
+                    vehicle.vehicleTypeId,
+                    1
+                  )
+                ">
+                +
+              </button>
+              <span class="openvrp-qty-left">
+                / {{ fleet.getSystemMaxTrip() }}
+                {{ t("trips_unit") }}
+              </span>
+            </div>
+            <div class="openvrp-mtnote d-flex flex-wrap align-items-center mt-2 rounded-3" *ngIf="
+                pool.getPoolBuilder(vehicle.vehicleTypeId)
+                  .maxTrip > 1
+              ">
+              <mat-icon class="flex-shrink-0">replay</mat-icon>
+              <span>{{ t("reload_at_depot") }}</span>
+              <app-dynamic-popover class="d-inline-flex align-items-center" [placement]="'bottom-start'">
+                <button popover-trigger type="button" class="openvrp-mtedit d-inline-flex align-items-center gap-1 rounded lh-base"
+                  [ngbTooltip]="t('loading_duration')">
+                  <b>{{
+                    pool.getPoolBuilderLoadingDuration(
+                    vehicle.vehicleTypeId
+                    )
+                    }}</b>
+                  <mat-icon class="flex-shrink-0">edit</mat-icon>
+                </button>
+
+                <div popover-content>
+                  <p class="card-title">
+                    {{ t("loading_duration") }}
+                  </p>
+                  <ngb-timepicker [ngModel]="
+                      pool.getPoolBuilderLoadingDuration(
+                        vehicle.vehicleTypeId
+                      )
+                    " (ngModelChange)="
+                      pool.setPoolBuilderLoadingDuration(
+                        vehicle.vehicleTypeId,
+                        $event
+                      )
+                    " />
+                  <small class="text-muted d-block">{{
+                    t("loading_duration_hint")
+                    }}</small>
+                </div>
+              </app-dynamic-popover>
+            </div>
+          </ng-container>
+
+          <ng-template #singleTripType>
+            <div class="openvrp-mtnote muted d-flex flex-wrap align-items-center mt-2 rounded-3">
+              <mat-icon class="flex-shrink-0">info</mat-icon>
+              <span>{{ t("single_trip_type_hint") }}</span>
+            </div>
+          </ng-template>
+        </div>
+
+        <button type="button" class="openvrp-addbtn p-2 w-100 border-0 rounded-3 text-white fw-semibold"
+          [disabled]="!pool.canAddPoolEntry(vehicle.vehicleTypeId)"
+          (click)="pool.addPoolEntryToRun(vehicle.vehicleTypeId)">
+          + {{ t("add_to_run") }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

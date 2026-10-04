@@ -6,8 +6,8 @@ import { ToastrService } from 'ngx-toastr';
 import * as ExcelJS from 'exceljs';
 
 import { UploadFileComponent } from './upload-file.component';
-import { ConfirmationDialogComponent } from '../../components/confirmation-dialog/confirmation-dialog.component';
-import { DetailsDialogComponent } from '../../components/details-dialog/details-dialog.component';
+import { DialogConfirmationComponent } from '@shared/components/dialogs/dialog-confirmation/dialog-confirmation.component';
+import { DialogDetailsComponent } from '@shared/components/dialogs/dialog-details/dialog-details.component';
 
 const XLSX_MIME =
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -304,7 +304,7 @@ describe('UploadFileComponent', () => {
       await invokeUploadFile(file);
 
       expect(alertSpy).not.toHaveBeenCalled();
-      expect(ngbModalSpy.open).toHaveBeenCalledWith(ConfirmationDialogComponent, {
+      expect(ngbModalSpy.open).toHaveBeenCalledWith(DialogConfirmationComponent, {
         centered: true,
         animation: true,
       });
@@ -328,7 +328,7 @@ describe('UploadFileComponent', () => {
       // Let the dialogRef.result.then(...) callback run.
       await Promise.resolve();
 
-      expect(ngbModalSpy.open).toHaveBeenCalledWith(ConfirmationDialogComponent, {
+      expect(ngbModalSpy.open).toHaveBeenCalledWith(DialogConfirmationComponent, {
         centered: true,
         animation: true,
       });
@@ -370,7 +370,7 @@ describe('UploadFileComponent', () => {
       component.alertInvalidation('file_invalid', ['line one', 'line two']);
 
       expect(blurSpy).toHaveBeenCalled();
-      expect(ngbModalSpy.open).toHaveBeenCalledWith(DetailsDialogComponent, {
+      expect(ngbModalSpy.open).toHaveBeenCalledWith(DialogDetailsComponent, {
         centered: true,
         animation: true,
       });

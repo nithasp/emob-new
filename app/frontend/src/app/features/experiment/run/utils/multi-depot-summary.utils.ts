@@ -5,7 +5,7 @@ import {
   OpenVrpDepotSummary,
   OpenVrpRunSummaryTotals,
   OpenVrpRunVehicleEntry,
-} from 'src/app/models/vehicle.model';
+} from '@features/configurations/models/vehicle.model';
 
 /**
  * Flips to true once a run reports a vehicle list for more than one depot.

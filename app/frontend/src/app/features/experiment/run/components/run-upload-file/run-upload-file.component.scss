@@ -1,0 +1,70 @@
+@use '../../styles/run-shared' as *;
+
+@include form-field-spacing;
+@include material-buttons;
+@include link-button;
+@include full-width-table;
+@include q4-pill;
+
+.icon-browser {
+  font-size: 20px;
+}
+
+.icon-upload {
+  font-size: 50px;
+  height: fit-content;
+  width: fit-content;
+  color: rgba(86, 87, 89, 0.726);
+}
+
+.dropzone {
+  background-color: rgb(240, 242, 246);
+  padding: 80px 0px;
+}
+
+.table-order-data {
+  td {
+    place-content: center;
+  }
+}
+
+.upload-submit-button {
+  max-width: 80px;
+}
+
+.text-warning-intense {
+  color: #b35a00 !important;
+  font-weight: bold;
+  mat-icon {
+    vertical-align: middle;
+  }
+}
+
+.transform-warning-item {
+  .transform-warning-item-wrapper {
+    max-height: 250px;
+  }
+}
+
+/* --- Orders tab: depot mode chips --- */
+.openvrp-depot-mode {
+  background: $ovrp-surface-2;
+  border: 1px solid $ovrp-line;
+  border-radius: 9px;
+  gap: 3px;
+
+  .openvrp-dm-btn {
+    font-size: 13.5px;
+    color: $ovrp-muted;
+    padding: 6px 13px;
+    border-radius: 7px;
+    gap: 6px;
+    cursor: default;
+
+    &.on {
+      background: #fff;
+      color: $ovrp-ink;
+      box-shadow: 0 1px 2px rgba(19, 26, 42, 0.1);
+    }
+  }
+}

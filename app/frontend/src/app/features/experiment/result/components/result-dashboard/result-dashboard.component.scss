@@ -1,0 +1,157 @@
+@use '../../styles/result-shared' as *;
+
+@include full-width-table;
+
+.table th,
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 1px;
+  font-size: 11px;
+  padding-left: 5px;
+}
+
+.table td {
+  padding-right: 5px;
+  text-align: right;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: #0e145f;
+  color: white;
+}
+
+@include striped-rows;
+@include icon-alignment;
+
+// ─── VRP Toggle Buttons (custom active state for brand color) ────────────────
+.vrp-toggle-btn {
+  font-size: 12px;
+
+  &.vrp-toggle-active {
+    background: #0e1547;
+    color: #fff;
+    border-color: #0e1547;
+  }
+}
+
+.vrp-toggle-icon {
+  font-size: 15px;
+  height: 15px;
+  width: 15px;
+}
+
+// ─── Shared VRP section base ─────────────────────────────────────────────────
+.vrp-section {
+  font-size: 13px;
+}
+
+.vrp-bg-primary {
+  background: #0e1547;
+}
+
+// ─── VRP Dashboard ───────────────────────────────────────────────────────────
+.vrp-dashboard-header {
+  font-size: 15px;
+  letter-spacing: 0.3px;
+}
+
+.vrp-card-label {
+  letter-spacing: 0.8px;
+}
+
+.vrp-card-value {
+  color: #0e1547;
+}
+
+.vrp-status-icon {
+  font-size: 22px;
+}
+
+.vrp-dashboard-info {
+  height: 275px;
+}
+
+.vrp-dashboard-table {
+  thead tr th {
+    background: #0e1547;
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 8px 12px;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  tbody tr {
+    &:nth-child(even) {
+      background-color: #f4f6fb;
+    }
+
+    &:nth-child(odd) {
+      background-color: #fff;
+    }
+
+    td {
+      padding: 7px 12px;
+      vertical-align: middle;
+      font-size: 13px;
+
+      &:first-child,
+      &:nth-child(2) {
+        text-align: left;
+      }
+    }
+  }
+}
+
+// ─── VRP Stats Key-Value View ────────────────────────────────────────────────
+.table-vrp-stats {
+  height: 400px;
+  overflow-y: auto;
+
+  thead tr th {
+    background: #0e1547;
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 8px 14px;
+    letter-spacing: 0.3px;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    &:nth-child(even) {
+      background-color: #f4f6fb;
+    }
+
+    &:nth-child(odd) {
+      background-color: #fff;
+    }
+
+    td {
+      padding: 7px 14px;
+      vertical-align: middle;
+      font-size: 13px;
+
+      &:first-child {
+        white-space: nowrap;
+        width: 1%;
+      }
+    }
+
+    &:last-child td {
+      border-bottom: none;
+    }
+  }
+}

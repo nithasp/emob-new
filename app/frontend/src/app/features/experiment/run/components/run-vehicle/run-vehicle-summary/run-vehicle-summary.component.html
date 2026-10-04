@@ -1,0 +1,105 @@
+<ng-container *transloco="let t; read: 'index'">
+  <div class="openvrp-pane openvrp-pane-summary h-100 overflow-auto bg-white">
+    <!-- The five figures are declared once here and rendered
+         for every depot and again for the fleet-wide
+         roll-up, so the blocks cannot drift apart. -->
+    <ng-template #summaryRows let-totals="totals">
+      <div class="openvrp-map-summary">
+        <div class="openvrp-msrow d-flex justify-content-between align-items-center">
+          <span class="k">{{ t("total_vehicles") }}</span>
+          <span class="v fw-semibold">
+            {{ totals.total }}
+            <small class="openvrp-msunit fw-medium">{{
+              t("vehicles_unit")
+              }}</small>
+          </span>
+        </div>
+        <div class="openvrp-msrow d-flex justify-content-between align-items-center">
+          <span class="k text-return">↩ {{ t("return_to_depot") }}</span>
+          <span class="v text-return fw-semibold">{{
+            totals.returnCount
+            }}</span>
+        </div>
+        <div class="openvrp-msrow d-flex justify-content-between align-items-center">
+          <span class="k text-noreturn">➝ {{ t("dont_return_to_depot") }}</span>
+          <span class="v text-noreturn fw-semibold">{{
+            totals.noReturnCount
+            }}</span>
+        </div>
+        <div class="openvrp-msrow openvrp-msrow-sep d-flex justify-content-between align-items-center">
+          <span class="k text-multitrip">⟳ {{ t("multi_trip_vehicles") }}</span>
+          <span class="v text-multitrip fw-semibold">
+            {{ totals.multiTripCount }}
+            <small class="openvrp-msunit fw-medium">/ {{ totals.total }}
+              {{ t("vehicles_unit") }}</small>
+          </span>
+        </div>
+        <div class="openvrp-msrow openvrp-msrow-soft d-flex justify-content-between align-items-center">
+          <span class="k">{{
+            t("total_trips_planned")
+            }}</span>
+          <span class="v">
+            {{ totals.plannedTrips }}
+            <small class="openvrp-msunit fw-medium">{{
+              t("trips_unit")
+              }}</small>
+          </span>
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-container *ngIf="fleet.summaryView as view">
+      <div class="openvrp-pane-title d-flex align-items-center fw-semibold">
+        <mat-icon>summarize</mat-icon>
+        {{ t("summary") }}
+        <span class="openvrp-count-badge ms-auto rounded-pill fw-bold" *ngIf="view.isMultiDepot">{{ view.depots.length }}
+          {{ t("depots_unit") }}</span>
+      </div>
+
+      <!-- one block per depot taking part in this run -->
+
+      <div class="openvrp-depot-group-container">
+        <div class="openvrp-depot-group bg-white" *ngFor="
+          let depot of view.depots;
+          trackBy: trackDepotSummary
+        ">
+          <div class="openvrp-depot-fixed d-flex align-items-center mb-2 fw-medium">
+            <mat-icon>location_on</mat-icon>
+            <!-- the tooltip is opened by hand so it appears
+                 only when the name is actually clipped -->
+            <span class="openvrp-depot-name flex-fill text-truncate" #depotNameText
+              [ngbTooltip]="depot.depotName" #depotNameTip="ngbTooltip" triggers="manual"
+              container="body" placement="top"
+              (mouseenter)="openTooltipIfTruncated(depotNameTip, depotNameText)"
+              (mouseleave)="depotNameTip.close()">{{ depot.depotName }}</span>
+            <span class="openvrp-mock-pill flex-shrink-0 rounded-pill fw-semibold" *ngIf="depot.isMock">{{ t("sample_data") }}</span>
+          </div>
+          <ng-container *ngTemplateOutlet="
+            summaryRows;
+            context: { totals: depot.totals }
+          "></ng-container>
+        </div>
+      </div>
+
+
+      <!-- fleet-wide roll-up, once a second depot reports -->
+      <div class="openvrp-grand-summary" *ngIf="view.isMultiDepot">
+        <div class="openvrp-grand-title d-flex align-items-center mb-1 fw-bold">
+          <mat-icon>functions</mat-icon>
+          {{ t("all_depots_total") }}
+          <small class="ms-auto fw-medium">{{ view.depots.length }}
+            {{ t("depots_unit") }}</small>
+        </div>
+        <ng-container *ngTemplateOutlet="
+            summaryRows;
+            context: { totals: view.grandTotals }
+          "></ng-container>
+      </div>
+    </ng-container>
+
+    <div class="openvrp-mtnote d-flex flex-wrap align-items-center mt-2 rounded-3" *ngIf="fleet.summaryView.grandTotals.multiTripCount > 0">
+      <mat-icon class="flex-shrink-0">replay</mat-icon>
+      <span>{{ t("multi_trip_summary_hint") }}</span>
+    </div>
+  </div>
+</ng-container>

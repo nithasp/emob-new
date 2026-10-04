@@ -9,9 +9,9 @@ import isExtractableFile from 'extract-files/isExtractableFile.mjs';
 import { createUploadLink } from 'apollo-upload-client';
 
 import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
-import { environment } from 'src/environments/environment';
+import { environment } from '@env/environment';
 import { HttpHeaders, provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
-import { logError, logMessage } from 'src/app/services/logger.service';
+import { logError, logMessage } from './services/logger.service';
 
 if (!environment.production) {
   // Adds messages only in a dev environment

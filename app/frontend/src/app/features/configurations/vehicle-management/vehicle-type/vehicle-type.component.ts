@@ -1,20 +1,20 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { formatNumber } from '@angular/common';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { DEFAULT_MAX_TRIP, VehicleType } from 'src/app/models/vehicle.model';
-import { VehicleService } from 'src/app/services/vehicle.service';
-import { VehicleTypeDialogComponent } from '../dialogs/vehicle-type-dialog/vehicle-type-dialog.component';
+import { DEFAULT_MAX_TRIP, VehicleType } from '../../models/vehicle.model';
+import { VehicleService } from '../../services/vehicle.service';
+import { DialogVehicleTypeComponent } from '../dialogs/dialog-vehicle-type/dialog-vehicle-type.component';
 import { ToastrService } from 'ngx-toastr';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
+import { DialogConfirmationComponent } from '@shared/components/dialogs/dialog-confirmation/dialog-confirmation.component';
 import { finalize } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
-import { ActionMode } from 'src/app/models/common.model';
-import { LoggerService } from 'src/app/services/logger.service';
+import { ActionMode } from '@shared/models/common.model';
+import { LoggerService } from '@core/services/logger.service';
 import {
   applyMultiTripFallback,
   forgetMultiTripFallback,
-} from 'src/app/shared/utils/multi-trip-fallback.utils';
+} from '../../utils/multi-trip-fallback.utils';
 
 @Component({
   selector: 'app-vehicle-type',
@@ -74,7 +74,7 @@ export class VehicleTypeComponent implements OnInit {
   }
 
   openVehicleTypeModal(mode: ActionMode, vehicleType?: VehicleType): void {
-    const modalRef = this.ngbModal.open(VehicleTypeDialogComponent, {
+    const modalRef = this.ngbModal.open(DialogVehicleTypeComponent, {
       centered: true,
       size: 'lg',
       animation: true,
@@ -121,7 +121,7 @@ export class VehicleTypeComponent implements OnInit {
   }
 
   deleteVehicleType(vehicleType: VehicleType): void {
-    const modalRef = this.ngbModal.open(ConfirmationDialogComponent, {
+    const modalRef = this.ngbModal.open(DialogConfirmationComponent, {
       centered: true,
     });
     modalRef.componentInstance.title = this.transloco.translate(

@@ -22,26 +22,26 @@ import { FeatureLike } from 'ol/Feature';
 import { Fill, Icon, Stroke, Style, Text } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
 import { Coordinate } from 'ol/coordinate';
-import { CustomerDetailsComponent } from '../customer-details/customer-details.component';
+import { CustomerDetailsComponent } from '../../../components/customer-details/customer-details.component';
 import {
   RouteInfo,
   GeoJSONFeatureCollection,
   PointDetail,
-} from 'src/app/models/experiment.model';
+} from '../../../models/experiment.model';
 import {
   FeatureProperties,
   RoutingNode,
   RoutingNodeProductQuantity,
-} from 'src/app/models/location.model';
+} from '../../../models/location.model';
 import { MapBrowserEvent } from 'ol';
-import { LoggerService } from 'src/app/services/logger.service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
-  selector: 'app-map-details-dialog',
-  templateUrl: './map-details-dialog.component.html',
-  styleUrl: './map-details-dialog.component.scss',
+  selector: 'app-dialog-map-details',
+  templateUrl: './dialog-map-details.component.html',
+  styleUrl: './dialog-map-details.component.scss',
 })
-export class MapDetailsDialogComponent implements OnInit, AfterViewInit {
+export class DialogMapDetailsComponent implements OnInit, AfterViewInit {
   private readonly logger = inject(LoggerService);
 
   @Input() routeInfo!: RouteInfo;

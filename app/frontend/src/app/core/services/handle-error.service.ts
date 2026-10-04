@@ -4,7 +4,7 @@ import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { NgxSpinnerService } from "ngx-spinner";
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ErrorDialogComponent } from '../index/components/error-dialog/error-dialog.component';
+import { DialogErrorComponent } from '@shared/components/dialogs/dialog-error/dialog-error.component';
 import { LoggerService } from './logger.service';
 
 @Injectable({
@@ -32,7 +32,7 @@ export class ErrorHandlingService {
       if (focusedElement) {
         focusedElement.blur();
       }
-      const dialogRef = this.ngbModal.open(ErrorDialogComponent, {
+      const dialogRef = this.ngbModal.open(DialogErrorComponent, {
         centered: true,
         animation: true,
         windowClass: 'custom-model',

@@ -2,11 +2,11 @@ import { TranslocoService } from '@jsverse/transloco';
 import {
   ValidationWarningInput,
   WarningDetail,
-} from 'src/app/models/experiment.model';
+} from '../../models/experiment.model';
 import {
   ValidationParams,
   ValidationTableRow,
-} from 'src/app/models/validation-table.model';
+} from '../../models/validation-table.model';
 
 export function getValidationMessage(
   transloco: TranslocoService,
@@ -96,4 +96,14 @@ function formatNestedValues(obj: Record<string, unknown>): Record<string, unknow
   }
 
   return result;
+}
+
+export function deduplicateByInput(details: WarningDetail[]): WarningDetail[] {
+  const seenInputIds = new Set<string | number>();
+  return details.filter((detail) => {
+    if (detail.input === undefined || detail.input === null) return true;
+    if (seenInputIds.has(detail.input)) return false;
+    seenInputIds.add(detail.input);
+    return true;
+  });
 }

@@ -1,8 +1,8 @@
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { VehicleService } from 'src/app/services/vehicle.service';
-import { ExperimentService } from 'src/app/services/experiment.service';
+import { VehicleService } from '../../../services/vehicle.service';
+import { ExperimentService } from '@features/experiment/services/experiment.service';
 import {
   VehicleType,
   MyVehicles,
@@ -10,25 +10,25 @@ import {
   VehicleCreateInput,
   VehicleCreateResponse,
   VehicleUpdateResponse,
-} from 'src/app/models/vehicle.model';
-import { MyDepot } from 'src/app/models/experiment.model';
-import { ActionMode } from 'src/app/models/common.model';
+} from '../../../models/vehicle.model';
+import { MyDepot } from '@features/experiment/models/experiment.model';
+import { ActionMode } from '@shared/models/common.model';
 import { forkJoin, of, Observable } from 'rxjs';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { finalize, catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
-import { licensePlateDuplicateValidator } from 'src/app/shared/validators/license-plate.validator';
-import { VehicleFormControls } from 'src/app/models/forms/vehicle-form-control.model';
-import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
-import { LoggerService } from 'src/app/services/logger.service';
+import { licensePlateDuplicateValidator } from '@shared/validators/license-plate.validator';
+import { VehicleFormControls } from '../../../models/forms/vehicle-form-control.model';
+import { DialogConfirmationComponent } from '@shared/components/dialogs/dialog-confirmation/dialog-confirmation.component';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
-  selector: 'app-vehicle-dialog',
-  templateUrl: './vehicle-dialog.component.html',
-  styleUrls: ['./vehicle-dialog.component.scss'],
+  selector: 'app-dialog-vehicle',
+  templateUrl: './dialog-vehicle.component.html',
+  styleUrls: ['./dialog-vehicle.component.scss'],
 })
-export class VehicleDialogComponent implements OnInit {
+export class DialogVehicleComponent implements OnInit {
   private readonly logger = inject(LoggerService);
 
   @Input() mode: ActionMode = 'create';
@@ -282,7 +282,7 @@ export class VehicleDialogComponent implements OnInit {
     }
 
     const action = this.isEditMode ? 'update' : 'create';
-    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+    const dialogRef = this.ngbModal.open(DialogConfirmationComponent, {
       centered: true,
       animation: true,
     });

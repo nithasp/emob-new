@@ -15,7 +15,7 @@ import {
   IconStyle,
   Location,
   LocationType,
-} from 'src/app/models/location.model';
+} from '../../models/location.model';
 import {
   Customer,
   DetailsPreOrder,
@@ -24,8 +24,8 @@ import {
   getDescription,
   PreOrder,
   ProductDetail,
-} from 'src/app/models/pre-order.model';
-import { DataPreOrder } from 'src/app/models/pre-order.model';
+} from '../../models/pre-order.model';
+import { DataPreOrder } from '../../models/pre-order.model';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
@@ -43,10 +43,10 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import OSM from 'ol/source/OSM';
 import { Style } from 'ol/style';
-import { MarkLocationDialogComponent } from '../mark-location-dialog/mark-location-dialog.component';
+import { DialogMarkLocationComponent } from '../dialogs/dialog-mark-location/dialog-mark-location.component';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
-import { LoggerService } from 'src/app/services/logger.service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
   selector: 'app-customer-details',
@@ -300,7 +300,7 @@ export class CustomerDetailsComponent
     if (focusedElement) {
       focusedElement.blur();
     }
-    const dialogRef = this.ngbModal.open(MarkLocationDialogComponent, {
+    const dialogRef = this.ngbModal.open(DialogMarkLocationComponent, {
       centered: true,
       windowClass: 'custom-modal-align-right',
       backdrop: 'static',

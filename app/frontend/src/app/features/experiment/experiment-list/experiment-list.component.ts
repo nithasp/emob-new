@@ -12,24 +12,24 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { Experiment, ExperimentCounts } from 'src/app/models/experiment.model';
-import { ConstraintService } from 'src/app/services/constraint.service';
-import { ExperimentService } from 'src/app/services/experiment.service';
+import { Experiment, ExperimentCounts } from '../models/experiment.model';
+import { ConstraintService } from '../services/constraint.service';
+import { ExperimentService } from '../services/experiment.service';
 import { ToastrService } from 'ngx-toastr';
-import { UserService } from 'src/app/services/user.service';
-import { ConfirmationDialogComponent } from '../components/confirmation-dialog/confirmation-dialog.component';
-import { ParametersDialogComponent } from '../components/parameters-dialog/parameters-dialog.component';
-import { DynamicParameter } from 'src/app/models/constraint.model';
-import { ConsumptionDialogComponent } from '../components/consumption-dialog/consumption-dialog.component';
+import { UserService } from '@core/services/auth/user.service';
+import { DialogConfirmationComponent } from '@shared/components/dialogs/dialog-confirmation/dialog-confirmation.component';
+import { DialogParametersComponent } from './dialogs/dialog-parameters/dialog-parameters.component';
+import { DynamicParameter } from '../models/constraint.model';
+import { DialogConsumptionComponent } from './dialogs/dialog-consumption/dialog-consumption.component';
 import { TranslocoService } from '@jsverse/transloco';
-import { LoggerService } from 'src/app/services/logger.service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
-  selector: 'app-experiment',
-  templateUrl: './experiment.component.html',
-  styleUrl: './experiment.component.scss',
+  selector: 'app-experiment-list',
+  templateUrl: './experiment-list.component.html',
+  styleUrl: './experiment-list.component.scss',
 })
-export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
+export class ExperimentListComponent implements AfterViewInit, OnDestroy, OnInit {
   private readonly logger = inject(LoggerService);
 
   columnsStorageKey = 'experimentDisplayedColumns';
@@ -201,7 +201,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       focusedElement.blur();
     }
 
-    const dialogRef = this.ngbModal.open(ParametersDialogComponent, {
+    const dialogRef = this.ngbModal.open(DialogParametersComponent, {
       centered: true,
       animation: true,
       size: 'lg',
@@ -216,7 +216,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
       focusedElement.blur();
     }
 
-    const dialogRef = this.ngbModal.open(ConsumptionDialogComponent, {
+    const dialogRef = this.ngbModal.open(DialogConsumptionComponent, {
       centered: true,
       animation: true,
       size: size,
@@ -235,7 +235,7 @@ export class ExperimentComponent implements AfterViewInit, OnDestroy, OnInit {
     if (focusedElement) {
       focusedElement.blur();
     }
-    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+    const dialogRef = this.ngbModal.open(DialogConfirmationComponent, {
       centered: true,
       animation: true,
     });

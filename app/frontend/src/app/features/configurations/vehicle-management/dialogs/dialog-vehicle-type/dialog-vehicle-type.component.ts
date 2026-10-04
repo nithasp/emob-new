@@ -21,7 +21,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { NgbActiveModal, NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
-import { ConfirmationDialogComponent } from 'src/app/index/components/confirmation-dialog/confirmation-dialog.component';
+import { DialogConfirmationComponent } from '@shared/components/dialogs/dialog-confirmation/dialog-confirmation.component';
 import {
   VehicleType,
   AccessTypeEnum,
@@ -33,31 +33,31 @@ import {
   BreakTimeObject,
   Break,
   DEFAULT_MAX_TRIP,
-} from 'src/app/models/vehicle.model';
-import { VehicleService } from 'src/app/services/vehicle.service';
-import { minutesToTimeString } from 'src/app/directives/time-string-to-minutes.pipe';
+} from '../../../models/vehicle.model';
+import { VehicleService } from '../../../services/vehicle.service';
+import { minutesToTimeString } from '@shared/pipes/time-string-to-minutes.pipe';
 import {
   ConfigVehicleTypeFormControls,
   BreakFormControls,
-} from 'src/app/models/forms/vehicle-type-form-control.model';
-import { createTimeRangeValidator } from 'src/app/shared/validators/time-range.validator';
+} from '../../../models/forms/vehicle-type-form-control.model';
+import { createTimeRangeValidator } from '@shared/validators/time-range.validator';
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
-import { MaterialModule } from 'src/app/material.module';
-import { InputFieldComponent } from 'src/app/shared/components/form/input-field/input-field.component';
-import { InputSelectComponent } from 'src/app/shared/components/form/input-select/input-select.component';
-import { DynamicPopoverComponent } from 'src/app/shared/components/dynamic-popover/dynamic-popover.component';
-import { ActionMode } from 'src/app/models/common.model';
-import { LoggerService } from 'src/app/services/logger.service';
+import { MaterialModule } from '@shared/material.module';
+import { InputFieldComponent } from '@shared/components/form/input-field/input-field.component';
+import { InputSelectComponent } from '@shared/components/form/input-select/input-select.component';
+import { DynamicPopoverComponent } from '@shared/components/dynamic-popover/dynamic-popover.component';
+import { ActionMode } from '@shared/models/common.model';
+import { LoggerService } from '@core/services/logger.service';
 import {
   getMultiTripSystemDefaults,
   persistMultiTripFallback,
   splitMultiTripInput,
-} from 'src/app/shared/utils/multi-trip-fallback.utils';
+} from '../../../utils/multi-trip-fallback.utils';
 
 @Component({
-  selector: 'app-vehicle-type-dialog',
-  templateUrl: './vehicle-type-dialog.component.html',
-  styleUrls: ['./vehicle-type-dialog.component.scss'],
+  selector: 'app-dialog-vehicle-type',
+  templateUrl: './dialog-vehicle-type.component.html',
+  styleUrls: ['./dialog-vehicle-type.component.scss'],
   standalone: true,
   imports: [
     CommonModule,
@@ -72,7 +72,7 @@ import {
     DynamicPopoverComponent,
   ],
 })
-export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
+export class DialogVehicleTypeComponent implements OnInit, OnDestroy {
   private readonly logger = inject(LoggerService);
 
   @Input() mode: ActionMode = 'create';
@@ -418,7 +418,7 @@ export class VehicleTypeDialogComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const dialogRef = this.ngbModal.open(ConfirmationDialogComponent, {
+    const dialogRef = this.ngbModal.open(DialogConfirmationComponent, {
       centered: true,
       animation: true,
     });

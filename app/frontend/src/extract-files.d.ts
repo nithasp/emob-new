@@ -1,5 +1,5 @@
 declare module 'extract-files/extractFiles.mjs' {
-  import { ObjectPath, Extraction } from './app/models/extract-files.model';
+  import { ObjectPath, Extraction } from './app/core/models/extract-files.model';
 
   export default function extractFiles<Extractable>(
     value: unknown,
@@ -9,7 +9,7 @@ declare module 'extract-files/extractFiles.mjs' {
 }
 
 declare module 'extract-files/isExtractableFile.mjs' {
-  import { ExtractableFile } from './app/models/extract-files.model';
+  import { ExtractableFile } from './app/core/models/extract-files.model';
 
   export default function isExtractableFile(
     value: unknown

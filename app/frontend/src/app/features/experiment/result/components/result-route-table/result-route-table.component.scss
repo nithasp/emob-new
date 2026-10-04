@@ -1,0 +1,106 @@
+@use '../../styles/result-shared' as *;
+
+:host {
+  display: block;
+}
+
+@include full-width-table;
+
+tr.example-detail-row {
+  height: 0;
+}
+
+tr.example-element-row:not(.example-expanded-row):hover {
+  background: whitesmoke;
+}
+
+tr.example-element-row:not(.example-expanded-row):active {
+  background: #efefef;
+}
+
+.example-element-row td {
+  border-bottom-width: 0;
+}
+
+.example-element-detail {
+  overflow: hidden;
+  display: flex;
+}
+
+.example-element-diagram {
+  min-width: 80px;
+  border: 2px solid black;
+  padding: 8px;
+  font-weight: lighter;
+  margin: 8px 0;
+  height: 104px;
+}
+
+.example-element-symbol {
+  font-weight: bold;
+  font-size: 40px;
+  line-height: normal;
+}
+
+.example-element-description {
+  padding: 16px;
+}
+
+.example-element-description-attribution {
+  opacity: 0.5;
+}
+
+@include striped-rows;
+@include icon-alignment;
+
+.text-wrap {
+  white-space: normal;
+  width: 100px;
+  /* Adjust the width as needed */
+  word-wrap: break-word;
+}
+
+.route-node-distance {
+  font-size: 10px;
+  color: gray;
+}
+
+.hover-row:hover {
+  background-color: #f5f5f5;
+  /* Change this to your desired hover color */
+  // cursor: pointer; /* Optional: change cursor to pointer */
+}
+
+.small-button {
+  padding: 4px 8px;
+  font-size: 12px;
+  min-width: 32px;
+}
+
+.small-button mat-icon {
+  font-size: 16px;
+}
+
+.route-box {
+  cursor: pointer;
+}
+
+.route-box:not(:first-child):not(:last-child):hover {
+  color: white;
+  background: #0606F4F0;
+}
+
+.route-box:not(:first-child):not(:last-child) {
+  transition: 0.1s;
+  cursor: pointer;
+}
+
+.route-box:not(:first-child):not(:last-child):hover .route-node-distance {
+  transition: 0.1s;
+  color: white;
+}
+
+.route-node-distance {
+  font-size: 10px;
+  color: gray;
+}

@@ -1,0 +1,223 @@
+/* Open VRP palette */
+$ovrp-ink: #171b22;
+$ovrp-muted: #69717f;
+$ovrp-faint: #98a0ad;
+$ovrp-line: #dbe0e8;
+$ovrp-line-strong: #c4cbd6;
+$ovrp-surface-2: #f7f9fb;
+$ovrp-brand: #232f4e;
+$ovrp-depot: #0e7c86;
+$ovrp-closed: #1f6feb;
+$ovrp-closed-soft: #e8f0fe;
+$ovrp-closed-ink: #12468f;
+$ovrp-open: #db7a16;
+$ovrp-open-soft: #fceeda;
+$ovrp-open-ink: #8a4a05;
+$ovrp-now: #188a5b;
+$ovrp-now-soft: #e2f4ec;
+$ovrp-q4-amber: #b27c10;
+$ovrp-q4-amber-soft: #fcf2dc;
+$ovrp-q4-soft: #eef0f3;
+$ovrp-trip: #6b3fc4;
+$ovrp-trip-soft: #f2eefc;
+$ovrp-trip-soft-line: #ded2f6;
+$ovrp-trip-ink: #4a2a8c;
+
+// Component styles do not reach into another component, so each part of the run page includes
+// the shared rules its own template needs.
+
+@mixin form-field-spacing {
+  .mat-mdc-form-field {
+    margin-top: 16px;
+  }
+}
+
+@mixin material-buttons {
+  .mat-mdc-button-base {
+    margin: 5px 5px 5px 0;
+    padding-left: 10px;
+    padding-right: 5px;
+    border-radius: 5px;
+    font-size: 13px;
+  }
+}
+
+@mixin link-button {
+  button.link {
+    font-size: 15px;
+    user-select: inherit;
+    flex-direction: row;
+    font-weight: 500;
+    border: none;
+    border-bottom: 1px dashed rgb(21, 2, 231);
+    background: none;
+  }
+}
+
+@mixin full-width-table {
+  table {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@mixin fade-in {
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+@mixin q4-pill {
+  .openvrp-q4-pill {
+    font-size: 13.5px;
+    letter-spacing: 0.05em;
+    background: $ovrp-q4-amber-soft;
+    color: $ovrp-q4-amber;
+    /* wider now the label is read at body size — 6px left the tag looking
+       pinched around its own text */
+    padding: 2px 8px;
+    border-radius: 5px;
+  }
+}
+
+@mixin pane {
+  .openvrp-pane {
+    border: 1px solid $ovrp-line;
+    border-radius: 11px;
+    padding: 14px;
+    max-height: 720px;
+    font-size: 13.5px;
+
+    &.openvrp-pane-pool {
+      background: $ovrp-surface-2;
+    }
+  }
+
+  // The error state is set on the 3-pane row, which belongs to the parent component's template
+  :host-context(.vehicle-selection-error) .openvrp-pane {
+    border-color: #dc3545 !important;
+  }
+
+  .openvrp-pane-title {
+    gap: 6px;
+    font-size: 15px;
+    margin-bottom: 2px;
+
+    mat-icon {
+      font-size: 19px;
+      width: 19px;
+      height: 19px;
+      color: $ovrp-brand;
+    }
+  }
+
+  .openvrp-pane-sub {
+    font-size: 14px;
+    color: $ovrp-muted;
+    margin: 11px 0;
+  }
+}
+
+@mixin count-badge {
+  .openvrp-count-badge {
+    font-size: 13px;
+    background: $ovrp-closed-soft;
+    color: $ovrp-closed-ink;
+    padding: 2px 9px;
+  }
+}
+
+@mixin multi-trip-note {
+  .openvrp-mtnote {
+    padding: 7px 9px;
+    border: 1px solid $ovrp-trip-soft-line;
+    background: $ovrp-trip-soft;
+    font-size: 13.5px;
+    color: $ovrp-trip-ink;
+    gap: 7px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: $ovrp-trip;
+    }
+
+    b {
+      font-family: "Consolas", "Courier New", monospace;
+    }
+
+    .openvrp-mtedit {
+      padding: 3px 8px;
+      border: 1px dashed $ovrp-trip;
+      background: #fff;
+      color: $ovrp-trip-ink;
+      font-size: 13.5px;
+      cursor: pointer;
+
+      &:hover {
+        background: $ovrp-trip-soft;
+        border-style: solid;
+      }
+
+      mat-icon {
+        font-size: 15px;
+        width: 15px;
+        height: 15px;
+        color: $ovrp-trip;
+      }
+    }
+
+    &.muted {
+      border-style: dashed;
+      border-color: $ovrp-line-strong;
+      background: $ovrp-surface-2;
+      color: $ovrp-muted;
+
+      mat-icon {
+        color: $ovrp-faint;
+      }
+    }
+  }
+}
+
+@mixin icon-button {
+  .openvrp-iconbtn {
+    width: 27px;
+    height: 27px;
+    border: 1px solid $ovrp-line;
+    cursor: pointer;
+    color: $ovrp-muted;
+
+    mat-icon {
+      font-size: 15px;
+      width: 15px;
+      height: 15px;
+    }
+
+    &:hover {
+      border-color: $ovrp-brand;
+      color: $ovrp-brand;
+    }
+
+    &.del:hover {
+      color: #d14343;
+      border-color: #f0bebe;
+    }
+  }
+}
+
+@mixin route-colors {
+  .text-return {
+    color: $ovrp-closed !important;
+  }
+
+  .text-noreturn {
+    color: $ovrp-open !important;
+  }
+
+  .text-multitrip {
+    color: $ovrp-trip !important;
+  }
+}

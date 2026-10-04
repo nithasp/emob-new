@@ -17,14 +17,14 @@ import {
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Icon, Style } from 'ol/style';
 import { Point } from 'ol/geom';
-import { Location } from 'src/app/models/location.model';
-import { LoggerService } from 'src/app/services/logger.service';
+import { Location } from '../../../models/location.model';
+import { LoggerService } from '@core/services/logger.service';
 @Component({
-  selector: 'app-mark-location-dialog',
-  templateUrl: './mark-location-dialog.component.html',
-  styleUrl: './mark-location-dialog.component.scss',
+  selector: 'app-dialog-mark-location',
+  templateUrl: './dialog-mark-location.component.html',
+  styleUrl: './dialog-mark-location.component.scss',
 })
-export class MarkLocationDialogComponent implements AfterViewInit {
+export class DialogMarkLocationComponent implements AfterViewInit {
   private readonly logger = inject(LoggerService);
 
   popupContent: string = '';

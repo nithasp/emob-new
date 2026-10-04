@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { VehicleProfileTypeItemDialogComponent } from './vehicle-profile-type-item-dialog.component';
+import { DialogVehicleProfileTypeItemComponent } from './dialog-vehicle-profile-type-item.component';
 import {
   AccessTypeEnum,
   VehicleProfileTypeEnum,
   VehicleType,
-} from 'src/app/models/vehicle.model';
+} from '../../../models/vehicle.model';
 
 function createMockVehicleType(
   overrides: Partial<VehicleType> = {}
@@ -32,9 +32,9 @@ function createMockVehicleType(
   };
 }
 
-describe('VehicleProfileTypeItemDialogComponent', () => {
-  let component: VehicleProfileTypeItemDialogComponent;
-  let fixture: ComponentFixture<VehicleProfileTypeItemDialogComponent>;
+describe('DialogVehicleProfileTypeItemComponent', () => {
+  let component: DialogVehicleProfileTypeItemComponent;
+  let fixture: ComponentFixture<DialogVehicleProfileTypeItemComponent>;
   let activeModal: jasmine.SpyObj<NgbActiveModal>;
 
   beforeEach(async () => {
@@ -44,17 +44,17 @@ describe('VehicleProfileTypeItemDialogComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      declarations: [VehicleProfileTypeItemDialogComponent],
+      declarations: [DialogVehicleProfileTypeItemComponent],
       providers: [{ provide: NgbActiveModal, useValue: activeModal }],
     })
       // Replace the template so we don't pull in the transloco pipe/directive
       // or Angular Material dependencies used purely for display.
-      .overrideComponent(VehicleProfileTypeItemDialogComponent, {
+      .overrideComponent(DialogVehicleProfileTypeItemComponent, {
         set: { template: '' },
       })
       .compileComponents();
 
-    fixture = TestBed.createComponent(VehicleProfileTypeItemDialogComponent);
+    fixture = TestBed.createComponent(DialogVehicleProfileTypeItemComponent);
     component = fixture.componentInstance;
     component.vehicleTypeData = createMockVehicleType();
   });

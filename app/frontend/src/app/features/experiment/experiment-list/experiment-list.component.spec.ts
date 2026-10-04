@@ -12,11 +12,11 @@ import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 import { of, throwError } from 'rxjs';
 
-import { ExperimentComponent } from './experiment.component';
-import { ExperimentService } from 'src/app/services/experiment.service';
-import { ConstraintService } from 'src/app/services/constraint.service';
-import { UserService } from 'src/app/services/user.service';
-import { Experiment, ExperimentState } from 'src/app/models/experiment.model';
+import { ExperimentListComponent } from './experiment-list.component';
+import { ExperimentService } from '../services/experiment.service';
+import { ConstraintService } from '../services/constraint.service';
+import { UserService } from '@core/services/auth/user.service';
+import { Experiment, ExperimentState } from '../models/experiment.model';
 
 function createMockExperiment(overrides: Partial<Experiment> = {}): Experiment {
   return {
@@ -59,9 +59,9 @@ function createModalRef(result: Promise<unknown>): NgbModalRef {
   } as unknown as NgbModalRef;
 }
 
-describe('ExperimentComponent', () => {
-  let component: ExperimentComponent;
-  let fixture: ComponentFixture<ExperimentComponent>;
+describe('ExperimentListComponent', () => {
+  let component: ExperimentListComponent;
+  let fixture: ComponentFixture<ExperimentListComponent>;
 
   let experimentService: jasmine.SpyObj<ExperimentService>;
   let constraintService: jasmine.SpyObj<ConstraintService>;
@@ -113,7 +113,7 @@ describe('ExperimentComponent', () => {
     router.navigate.and.resolveTo(true);
 
     await TestBed.configureTestingModule({
-      declarations: [ExperimentComponent],
+      declarations: [ExperimentListComponent],
       providers: [
         { provide: ExperimentService, useValue: experimentService },
         { provide: ConstraintService, useValue: constraintService },
@@ -127,10 +127,10 @@ describe('ExperimentComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
     })
       // Replace the template so we don't pull in transloco pipes/material deps.
-      .overrideComponent(ExperimentComponent, { set: { template: '' } })
+      .overrideComponent(ExperimentListComponent, { set: { template: '' } })
       .compileComponents();
 
-    fixture = TestBed.createComponent(ExperimentComponent);
+    fixture = TestBed.createComponent(ExperimentListComponent);
     component = fixture.componentInstance;
   });
 

@@ -5,7 +5,7 @@ import {
   SYSTEM_MAX_TRIP,
   VehicleType,
   VehicleTypeMultiTrip,
-} from 'src/app/models/vehicle.model';
+} from '../models/vehicle.model';
 
 export const MULTI_TRIP_API_READY = false;
 

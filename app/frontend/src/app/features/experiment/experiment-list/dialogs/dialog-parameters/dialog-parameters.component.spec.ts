@@ -3,11 +3,11 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { TranslocoService } from '@jsverse/transloco';
 
-import { ParametersDialogComponent } from './parameters-dialog.component';
+import { DialogParametersComponent } from './dialog-parameters.component';
 
-describe('ParametersDialogComponent', () => {
-  let component: ParametersDialogComponent;
-  let fixture: ComponentFixture<ParametersDialogComponent>;
+describe('DialogParametersComponent', () => {
+  let component: DialogParametersComponent;
+  let fixture: ComponentFixture<DialogParametersComponent>;
 
   let activeModal: jasmine.SpyObj<NgbActiveModal>;
   let transloco: jasmine.SpyObj<TranslocoService>;
@@ -25,7 +25,7 @@ describe('ParametersDialogComponent', () => {
     transloco.getActiveLang.and.returnValue('en_US');
 
     await TestBed.configureTestingModule({
-      declarations: [ParametersDialogComponent],
+      declarations: [DialogParametersComponent],
       providers: [
         { provide: NgbActiveModal, useValue: activeModal },
         { provide: TranslocoService, useValue: transloco },
@@ -33,10 +33,10 @@ describe('ParametersDialogComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
     })
       // Replace the template so we don't pull in transloco pipes.
-      .overrideComponent(ParametersDialogComponent, { set: { template: '' } })
+      .overrideComponent(DialogParametersComponent, { set: { template: '' } })
       .compileComponents();
 
-    fixture = TestBed.createComponent(ParametersDialogComponent);
+    fixture = TestBed.createComponent(DialogParametersComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

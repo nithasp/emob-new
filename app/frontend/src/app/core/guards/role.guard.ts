@@ -3,8 +3,8 @@ import { ActivatedRouteSnapshot, CanActivate, Router, UrlTree } from "@angular/r
 import { Observable, of } from "rxjs";
 import { catchError, filter, map, switchMap, take } from "rxjs/operators";
 
-import { AuthService } from 'src/app/services/auth.service';
-import { LoggerService } from 'src/app/services/logger.service';
+import { AuthService } from '../services/auth/auth.service';
+import { LoggerService } from '../services/logger.service';
 
 @Injectable()
 export class RoleGuard implements CanActivate {

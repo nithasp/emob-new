@@ -12,8 +12,8 @@ import {
   DynamicParameterValueUpdate,
   Parameter,
 } from '../models/constraint.model';
-import { Response } from '../models/graphql.model';
-import { ErrorHandlingService } from './handle-error.service';
+import { Response } from '@core/models/graphql.model';
+import { ErrorHandlingService } from '@core/services/handle-error.service';
 
 @Injectable({ providedIn: 'root' })
 export class ConstraintService {

@@ -7,18 +7,18 @@ import { TranslocoTestingModule } from '@jsverse/transloco';
 import * as OlProj from 'ol/proj';
 import type MapBrowserEvent from 'ol/MapBrowserEvent';
 
-import { MarkLocationDialogComponent } from './mark-location-dialog.component';
+import { DialogMarkLocationComponent } from './dialog-mark-location.component';
 
-describe('MarkLocationDialogComponent', () => {
-  let component: MarkLocationDialogComponent;
-  let fixture: ComponentFixture<MarkLocationDialogComponent>;
+describe('DialogMarkLocationComponent', () => {
+  let component: DialogMarkLocationComponent;
+  let fixture: ComponentFixture<DialogMarkLocationComponent>;
   let activeModalSpy: jasmine.SpyObj<NgbActiveModal>;
 
   beforeEach(async () => {
     activeModalSpy = jasmine.createSpyObj('NgbActiveModal', ['close', 'dismiss']);
 
     await TestBed.configureTestingModule({
-      declarations: [MarkLocationDialogComponent],
+      declarations: [DialogMarkLocationComponent],
       imports: [
         CommonModule,
         FormsModule,
@@ -31,7 +31,7 @@ describe('MarkLocationDialogComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MarkLocationDialogComponent);
+    fixture = TestBed.createComponent(DialogMarkLocationComponent);
     component = fixture.componentInstance;
     component.location = { latitude: 13.7563, longitude: 100.5018 };
     component.address = '123 Test Street';

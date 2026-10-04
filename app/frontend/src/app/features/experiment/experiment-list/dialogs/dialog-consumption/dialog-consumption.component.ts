@@ -1,13 +1,13 @@
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ExperimentCounts } from 'src/app/models/experiment.model';
+import { ExperimentCounts } from '../../../models/experiment.model';
 
 @Component({
-  selector: 'app-consumption-dialog',
-  templateUrl: './consumption-dialog.component.html',
-  styleUrl: './consumption-dialog.component.scss',
+  selector: 'app-dialog-consumption',
+  templateUrl: './dialog-consumption.component.html',
+  styleUrl: './dialog-consumption.component.scss',
 })
-export class ConsumptionDialogComponent {
+export class DialogConsumptionComponent {
   @Input() paramsConsumption: ExperimentCounts = {
     countGeocoding: 0,
     countReroute: 0,

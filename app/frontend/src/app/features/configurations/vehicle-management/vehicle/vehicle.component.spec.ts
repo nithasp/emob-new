@@ -13,10 +13,10 @@ import { TranslocoService } from '@jsverse/transloco';
 import { of, throwError } from 'rxjs';
 
 import { VehicleComponent } from './vehicle.component';
-import { VehicleService } from 'src/app/services/vehicle.service';
-import { MyVehicles } from 'src/app/models/vehicle.model';
-import { VehicleDialogComponent } from '../dialogs/vehicle-dialog/vehicle-dialog.component';
-import { ConfirmationDialogComponent } from '../../../components/confirmation-dialog/confirmation-dialog.component';
+import { VehicleService } from '../../services/vehicle.service';
+import { MyVehicles } from '../../models/vehicle.model';
+import { DialogVehicleComponent } from '../dialogs/dialog-vehicle/dialog-vehicle.component';
+import { DialogConfirmationComponent } from '@shared/components/dialogs/dialog-confirmation/dialog-confirmation.component';
 
 function createMockVehicle(overrides: Partial<MyVehicles> = {}): MyVehicles {
   return {
@@ -168,7 +168,7 @@ describe('VehicleComponent', () => {
       component.openVehicleModal();
 
       expect(ngbModal.open).toHaveBeenCalledWith(
-        VehicleDialogComponent,
+        DialogVehicleComponent,
         jasmine.objectContaining({ size: 'lg', backdrop: 'static' })
       );
       const instance = ngbModal.open.calls.mostRecent().returnValue
@@ -238,7 +238,7 @@ describe('VehicleComponent', () => {
       component.deleteVehicle(createMockVehicle());
 
       expect(ngbModal.open).toHaveBeenCalledWith(
-        ConfirmationDialogComponent,
+        DialogConfirmationComponent,
         jasmine.objectContaining({ centered: true })
       );
       const instance = ngbModal.open.calls.mostRecent().returnValue

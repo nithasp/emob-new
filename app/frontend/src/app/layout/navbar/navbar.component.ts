@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { LoggerService } from 'src/app/services/logger.service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
   selector: 'app-navbar',

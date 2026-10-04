@@ -1,10 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { UserProfile } from 'src/app/models/profile.model';
-import { AuthService } from 'src/app/services/auth.service';
+import { UserProfile } from '@core/models/profile.model';
+import { AuthService } from '@core/services/auth/auth.service';
 import packageJson from 'package.json';
 import { TranslocoService } from '@jsverse/transloco';
-import { LanguageChangeService } from 'src/app/services/language-change.service';
+import { LanguageChangeService } from '@core/services/language-change.service';
 import { filter } from 'rxjs/operators';
 
 

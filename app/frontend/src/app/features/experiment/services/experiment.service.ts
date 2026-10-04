@@ -3,7 +3,7 @@ import { Apollo } from 'apollo-angular';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import gql from 'graphql-tag';
-import { Response } from '../models/graphql.model';
+import { Response } from '@core/models/graphql.model';
 import {
   DownloadResultFile,
   Experiment,
@@ -13,9 +13,9 @@ import {
 } from '../models/experiment.model';
 import { TimingAndCapacity } from '../models/constraint.model';
 import { CustomerUpdated } from '../models/pre-order.model';
-import { VehicleValidationInput } from '../models/vehicle.model';
+import { VehicleValidationInput } from '@features/configurations/models/vehicle.model';
 import { ToastrService } from 'ngx-toastr';
-import { ErrorHandlingService } from './handle-error.service';
+import { ErrorHandlingService } from '@core/services/handle-error.service';
 
 @Injectable({ providedIn: 'root' })
 export class ExperimentService {

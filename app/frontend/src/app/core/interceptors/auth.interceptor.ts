@@ -8,9 +8,9 @@ import {
 import { Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, from, map, of, switchMap, throwError } from 'rxjs';
-import { environment } from 'src/environments/environment';
-import { AuthService } from '../services/auth.service';
-import { TokenRefreshService } from '../services/token-refresh.service';
+import { environment } from '@env/environment';
+import { AuthService } from '../services/auth/auth.service';
+import { TokenRefreshService } from '../services/auth/token-refresh.service';
 
 const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/demo', '/auth/logout'];
 const SESSION_EXPIRED = 'Your session has expired. Please sign in again.';

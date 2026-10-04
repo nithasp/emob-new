@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'app-configuration',
-  templateUrl: './configuration.component.html',
-  styleUrl: './configuration.component.scss',
+  selector: 'app-configurations',
+  templateUrl: './configurations.component.html',
+  styleUrl: './configurations.component.scss',
 })
-export class ConfigurationComponent {}
+export class ConfigurationsComponent {}

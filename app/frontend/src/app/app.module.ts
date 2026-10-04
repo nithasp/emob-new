@@ -8,24 +8,22 @@ import {
 } from '@angular/platform-browser/animations';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MaterialModule } from './material.module';
+import { MaterialModule } from '@shared/material.module';
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { CommonModule } from '@angular/common';
 import { HTTP_INTERCEPTORS, provideHttpClient } from '@angular/common/http';
-import { GraphQLModule } from './graphql.module';
+import { GraphQLModule } from '@core/graphql.module';
 import { provideToastr, ToastrModule } from 'ngx-toastr';
 
-import { RoleGuard } from './guards/role.guard';
-import { GuestGuard } from './guards/guest.guard';
-import { AuthInterceptor } from './interceptors/auth.interceptor';
-import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
-import { LoginComponent } from './auth/login/login.component';
-import { RegisterComponent } from './auth/register/register.component';
+import { RoleGuard } from '@core/guards/role.guard';
+import { GuestGuard } from '@core/guards/guest.guard';
+import { AuthInterceptor } from '@core/interceptors/auth.interceptor';
+import { AuthModule } from './features/auth/auth.module';
 import { RouterModule } from '@angular/router';
 import { TranslocoRootModule } from 'src/transloco/transloco-root.module';
 
 @NgModule({
-  declarations: [AppComponent, UnauthorizedComponent, LoginComponent, RegisterComponent],
+  declarations: [AppComponent],
   imports: [
     AppRoutingModule,
     RouterModule.forRoot([]),
@@ -50,6 +48,7 @@ import { TranslocoRootModule } from 'src/transloco/transloco-root.module';
       maxOpened: 5,
     }),
     TranslocoRootModule,
+    AuthModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   bootstrap: [AppComponent],

@@ -1,4 +1,4 @@
-import { DepotInputRequirement } from "./experiment.model";
+import { DepotInputRequirement } from "@features/experiment/models/experiment.model";
 
 export interface Vehicle {
   companyName: string;

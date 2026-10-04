@@ -14,15 +14,15 @@ import { TranslocoService } from '@jsverse/transloco';
 import { ToastrService } from 'ngx-toastr';
 
 import { CustomerDetailsComponent } from './customer-details.component';
-import { MarkLocationDialogComponent } from '../mark-location-dialog/mark-location-dialog.component';
+import { DialogMarkLocationComponent } from '../dialogs/dialog-mark-location/dialog-mark-location.component';
 import {
   Customer,
   DetailsPreOrder,
   ReplaceType,
   ValidationType,
   getDescription,
-} from 'src/app/models/pre-order.model';
-import { LocationType } from 'src/app/models/location.model';
+} from '../../models/pre-order.model';
+import { LocationType } from '../../models/location.model';
 
 function createCustomer(overrides: Partial<Customer> = {}): Customer {
   return {
@@ -271,7 +271,7 @@ describe('CustomerDetailsComponent', () => {
   });
 
   describe('markLocation()', () => {
-    it('opens MarkLocationDialogComponent seeded with the customer location', () => {
+    it('opens DialogMarkLocationComponent seeded with the customer location', () => {
       ngbModalSpy.open.and.returnValue({
         componentInstance: {},
         result: new Promise(() => {}),
@@ -280,7 +280,7 @@ describe('CustomerDetailsComponent', () => {
       component.markLocation();
 
       expect(ngbModalSpy.open).toHaveBeenCalledWith(
-        MarkLocationDialogComponent,
+        DialogMarkLocationComponent,
         jasmine.objectContaining({ centered: true })
       );
       const modalRef = ngbModalSpy.open.calls.mostRecent().returnValue;

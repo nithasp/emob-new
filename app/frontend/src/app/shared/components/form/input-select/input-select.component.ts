@@ -14,7 +14,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { Subscription } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
-import { SelectOption } from 'src/app/models/forms/select-option.model';
+import { SelectOption } from '../../../models/forms/select-option.model';
 
 @Component({
   selector: 'app-input-select',

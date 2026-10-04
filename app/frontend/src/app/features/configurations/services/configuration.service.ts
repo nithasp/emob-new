@@ -3,10 +3,10 @@ import { Injectable, inject } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Response } from '../models/graphql.model';
+import { Response } from '@core/models/graphql.model';
 import { ActualLocation, Configuration } from '../models/configuration.model';
-import { ErrorHandlingService } from './handle-error.service';
-import { LoggerService } from './logger.service';
+import { ErrorHandlingService } from '@core/services/handle-error.service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Injectable({
   providedIn: 'root',

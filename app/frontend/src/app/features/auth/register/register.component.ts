@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { RegisterField } from 'src/app/models/auth.model';
-import { AuthService } from 'src/app/services/auth.service';
+import { RegisterField } from '@core/models/auth.model';
+import { AuthService } from '@core/services/auth/auth.service';
 import { applySavedLanguage, authErrorMessage, passwordsMatch, switchLanguage } from '../auth-page.utils';
 
 // The same rules the API applies, so a rejected value is caught before the request is sent

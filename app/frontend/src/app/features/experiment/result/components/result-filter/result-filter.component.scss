@@ -1,0 +1,111 @@
+@use '../../styles/result-shared' as *;
+
+:host {
+  display: block;
+}
+
+@include icon-alignment;
+
+::ng-deep {
+  ngb-modal-window {
+    background: rgba(0, 0, 0, 0.5);
+
+    .filter-modal {
+      max-width: 480px;
+      width: 100%;
+      margin: 0 auto;
+    }
+  }
+
+  mat-chip-listbox {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    overflow: hidden;
+    transition: max-height 0.2s ease-in-out;
+
+    &.lines-ellipsis {
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+
+    [role="presentation"] {
+      display: block !important;
+    }
+
+    &[style*="max-height: none"] {
+      -webkit-line-clamp: initial;
+      max-height: none !important;
+    }
+
+    mat-chip {
+      margin-bottom: 8px;
+    }
+
+    .chip-row {
+      display: contents;
+    }
+  }
+}
+
+.filter-item {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  align-items: center;
+  margin-bottom: 12px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.search-control {
+  border-color: #6c757d;
+
+  &::placeholder {
+    font-size: 14px;
+  }
+}
+
+.modal-body {
+  button {
+    background-color: white !important;
+  }
+}
+
+.icon-clear-filter {
+  cursor: pointer;
+  margin: 0 4px;
+}
+
+.arrow-dropdown-icon {
+  &.rotate-arrow {
+    transform: rotate(180deg);
+  }
+}
+
+.chip-outline.button-expand {
+  border: none !important;
+  outline: none !important;
+
+  &:hover {
+    background: unset !important;
+
+    span {
+      color: #3f51b5 !important;
+    }
+
+    mat-icon {
+      color: #3f51b5 !important;
+    }
+  }
+}
+
+.button-add-filter {
+  border-radius: 16px;
+}
+
+.button-expand {
+  border-radius: 16px;
+}

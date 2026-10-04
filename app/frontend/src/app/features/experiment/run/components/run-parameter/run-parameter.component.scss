@@ -1,0 +1,30 @@
+@use '../../styles/run-shared' as *;
+
+@include material-buttons;
+@include link-button;
+
+:host {
+  display: block;
+}
+
+.mat-expansion-panel-header {
+  background-color: rgb(255, 252, 252);
+}
+
+.mat-expansion-panel p a,
+.mat-expansion-panel p {
+  font-size: 15px;
+  user-select: inherit;
+  flex-direction: row;
+  font-weight: 500;
+}
+
+.mat-expansion-panel p a {
+  border: none;
+  border-bottom: 1px dashed rgb(21, 2, 231);
+  background: none;
+}
+
+.text-highlight {
+  background-color: #f8d7da;
+}

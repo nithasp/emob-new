@@ -1,5 +1,5 @@
 import { Component, OnInit, HostListener } from '@angular/core';
-import { AuthService } from './services/auth.service';
+import { AuthService } from '@core/services/auth/auth.service';
 
 
 @Component({

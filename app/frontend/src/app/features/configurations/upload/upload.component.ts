@@ -10,16 +10,16 @@ import {
   ExplorerNode,
   ExcelRow,
   ConfigurationComponentData,
-} from 'src/app/models/configuration.model';
-import { ConfigurationService } from 'src/app/services/configuration.service';
+} from '../models/configuration.model';
+import { ConfigurationService } from '../services/configuration.service';
 import * as ExcelJS from 'exceljs';
 import { formatDate } from '@angular/common';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { UploadFileComponent } from '../upload-file/upload-file.component';
+import { UploadFileComponent } from '../components/upload-file/upload-file.component';
 import { firstValueFrom } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
-import { LoggerService } from 'src/app/services/logger.service';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
   selector: 'app-upload',

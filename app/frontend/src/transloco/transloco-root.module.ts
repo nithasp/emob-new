@@ -14,7 +14,7 @@ import {
   translocoConfig,
 } from '@jsverse/transloco';
 import { TranslocoHttpLoader } from './transloco-loader';
-import { environment } from 'src/environments/environment';
+import { environment } from '@env/environment';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { TranslocoPaginatorIntl } from './transloco-paginator-intl';
 

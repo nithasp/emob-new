@@ -11,16 +11,16 @@ import { ToastrService } from 'ngx-toastr';
 import { TranslocoService } from '@jsverse/transloco';
 import { of } from 'rxjs';
 
-import { VehicleDialogComponent } from './vehicle-dialog.component';
-import { VehicleService } from 'src/app/services/vehicle.service';
-import { ExperimentService } from 'src/app/services/experiment.service';
+import { DialogVehicleComponent } from './dialog-vehicle.component';
+import { VehicleService } from '../../../services/vehicle.service';
+import { ExperimentService } from '@features/experiment/services/experiment.service';
 import {
   AccessTypeEnum,
   MyVehicles,
   VehicleProfileTypeEnum,
   VehicleType,
-} from 'src/app/models/vehicle.model';
-import { MyDepot } from 'src/app/models/experiment.model';
+} from '../../../models/vehicle.model';
+import { MyDepot } from '@features/experiment/models/experiment.model';
 
 function createMockVehicleType(
   overrides: Partial<VehicleType> = {}
@@ -85,9 +85,9 @@ function createModalRef(result: Promise<unknown>): NgbModalRef {
   } as unknown as NgbModalRef;
 }
 
-describe('VehicleDialogComponent', () => {
-  let component: VehicleDialogComponent;
-  let fixture: ComponentFixture<VehicleDialogComponent>;
+describe('DialogVehicleComponent', () => {
+  let component: DialogVehicleComponent;
+  let fixture: ComponentFixture<DialogVehicleComponent>;
 
   let activeModal: jasmine.SpyObj<NgbActiveModal>;
   let ngbModal: jasmine.SpyObj<NgbModal>;
@@ -133,7 +133,7 @@ describe('VehicleDialogComponent', () => {
     transloco.translate.and.callFake(((key: string) => key) as never);
 
     await TestBed.configureTestingModule({
-      declarations: [VehicleDialogComponent],
+      declarations: [DialogVehicleComponent],
       imports: [ReactiveFormsModule],
       providers: [
         { provide: NgbActiveModal, useValue: activeModal },
@@ -147,10 +147,10 @@ describe('VehicleDialogComponent', () => {
     })
       // Replace the template so we don't pull in transloco pipes/directives
       // or the app-input-select/app-input-field custom elements.
-      .overrideComponent(VehicleDialogComponent, { set: { template: '' } })
+      .overrideComponent(DialogVehicleComponent, { set: { template: '' } })
       .compileComponents();
 
-    fixture = TestBed.createComponent(VehicleDialogComponent);
+    fixture = TestBed.createComponent(DialogVehicleComponent);
     component = fixture.componentInstance;
   });
 

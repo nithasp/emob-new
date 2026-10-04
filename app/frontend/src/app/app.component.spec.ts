@@ -3,7 +3,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
 
 import { AppComponent } from './app.component';
-import { AuthService } from './services/auth.service';
+import { AuthService } from '@core/services/auth/auth.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;

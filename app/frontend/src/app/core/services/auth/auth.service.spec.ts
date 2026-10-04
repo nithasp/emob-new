@@ -3,7 +3,7 @@ import { of, throwError } from 'rxjs';
 
 import { AuthService } from './auth.service';
 import { AuthApiService } from './auth-api.service';
-import { AuthSession, AuthUser } from '../models/auth.model';
+import { AuthSession, AuthUser } from '../../models/auth.model';
 
 const USER_KEY = 'currentUser';
 const DEMO_OPT_OUT_KEY = 'demoEntryDeclined';

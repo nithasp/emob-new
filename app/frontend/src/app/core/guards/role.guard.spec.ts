@@ -4,7 +4,7 @@ import { BehaviorSubject, firstValueFrom, of, throwError } from 'rxjs';
 
 import { RoleGuard } from './role.guard';
 import { GuestGuard } from './guest.guard';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../services/auth/auth.service';
 import { AuthSession, AuthUser } from '../models/auth.model';
 
 const USER = { id: 'user-1', roles: ['BRS'] } as AuthUser;

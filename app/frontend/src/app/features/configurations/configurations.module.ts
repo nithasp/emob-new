@@ -1,40 +1,20 @@
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ConfigurationRoutingModule } from './configuration-routing.module';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MaterialModule } from 'src/app/material.module';
-import { TranslocoModule } from '@jsverse/transloco';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { IndexModule } from '../index.module';
-import { NgxSpinnerModule } from 'ngx-spinner';
+import { TRANSLOCO_SCOPE } from '@jsverse/transloco';
+import { SharedModule } from '@shared/shared.module';
 
-import { ConfigurationComponent } from './configuration.component';
+import { ConfigurationsRoutingModule } from './configurations-routing.module';
+import { ConfigurationsComponent } from './configurations.component';
 import { UploadComponent } from './upload/upload.component';
-import { UploadFileComponent } from './upload-file/upload-file.component';
-import { InputFieldComponent } from 'src/app/shared/components/form/input-field/input-field.component';
-import { InputSelectComponent } from 'src/app/shared/components/form/input-select/input-select.component';
+import { UploadFileComponent } from './components/upload-file/upload-file.component';
 
 @NgModule({
   declarations: [
-    ConfigurationComponent,
+    ConfigurationsComponent,
     UploadComponent,
     UploadFileComponent
   ],
-  imports: [
-    CommonModule,
-    ConfigurationRoutingModule,
-    IndexModule,
-    TranslocoModule,
-    NgbModule,
-    MaterialModule,
-    FormsModule,
-    NgxSpinnerModule,
-    ReactiveFormsModule,
-    MaterialModule,
-    NgbModule,
-    InputFieldComponent,
-    InputSelectComponent
-  ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  imports: [SharedModule, ConfigurationsRoutingModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  providers: [{ provide: TRANSLOCO_SCOPE, useValue: 'index' }],
 })
-export class ConfigurationModule {}
+export class ConfigurationsModule {}

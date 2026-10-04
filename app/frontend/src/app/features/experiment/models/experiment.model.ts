@@ -1,4 +1,4 @@
-import { Configuration } from './configuration.model';
+import { Configuration } from '@features/configurations/models/configuration.model';
 import { Customer, Depot } from './pre-order.model';
 
 export interface ExperimentState {

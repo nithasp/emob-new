@@ -10,8 +10,8 @@ import { Subject, of, throwError } from 'rxjs';
 
 import { LoginComponent } from './login.component';
 import { RegisterComponent } from '../register/register.component';
-import { AuthService } from 'src/app/services/auth.service';
-import { AuthSession } from 'src/app/models/auth.model';
+import { AuthService } from '@core/services/auth/auth.service';
+import { AuthSession } from '@core/models/auth.model';
 
 const SESSION = { user: { name: 'Jane Doe' }, accessToken: 'token' } as AuthSession;
 

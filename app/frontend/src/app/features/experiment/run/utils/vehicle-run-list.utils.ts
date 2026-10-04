@@ -3,7 +3,7 @@ import {
   OpenVrpEndOfRoute,
   OpenVrpRunVehicleEntry,
   OpenVrpRunVehicleGroup,
-} from 'src/app/models/vehicle.model';
+} from '@features/configurations/models/vehicle.model';
 
 /** Return-to-depot rows lead each block; open routes sink to the bottom. */
 const ROUTE_ORDER: Record<OpenVrpEndOfRoute, number> = {

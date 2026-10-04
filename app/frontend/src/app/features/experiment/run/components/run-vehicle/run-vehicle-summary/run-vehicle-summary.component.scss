@@ -1,0 +1,145 @@
+@use '../../../styles/run-shared' as *;
+
+@include pane;
+@include count-badge;
+@include multi-trip-note;
+@include route-colors;
+
+.openvrp-depot-fixed {
+  gap: 5px;
+  border: 1px solid $ovrp-line;
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 14px;
+  background: $ovrp-surface-2;
+  color: $ovrp-ink;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: $ovrp-depot;
+  }
+}
+
+/* summary pane */
+.openvrp-map-summary {
+  border-top: 1px solid $ovrp-line;
+  padding-top: 10px;
+
+  .openvrp-msrow {
+    font-size: 14px;
+    padding: 5px 0;
+
+    .k {
+      color: $ovrp-muted;
+    }
+
+    /* unit spelled out next to every figure — "12 vehicles" and "31 trips"
+       are told apart at a glance, a bare number is not */
+    .openvrp-msunit {
+      margin-left: 3px;
+      font-size: 13.5px;
+      color: $ovrp-faint;
+    }
+
+    &.openvrp-msrow-sep {
+      border-top: 1px solid $ovrp-line;
+      margin-top: 5px;
+      padding-top: 9px;
+    }
+
+    &.openvrp-msrow-soft {
+      font-size: 13px;
+
+      .v {
+        font-weight: 500;
+        color: $ovrp-muted;
+      }
+    }
+  }
+}
+
+/* multi-depot summary: one group per depot, roll-up at the bottom */
+
+/* The other panes get their breathing room under the title from
+   `.openvrp-pane-sub`; this pane has no subtitle, so the 2px the title carries
+   was the whole gap. Restores the same rhythm the sibling panes read with. */
+.openvrp-depot-group-container {
+  margin-top: 12px;
+}
+
+/* Each depot is its own card. A rule between blocks was too weak to read as a
+   boundary once a third depot appeared — a frame plus the depot-coloured edge
+   makes "where one depot ends" obvious without a heading to announce it.
+   The outline stays light and the fill stays white so the filled roll-up
+   underneath still carries more weight than any single depot. */
+.openvrp-depot-group {
+  border: 1px solid $ovrp-line;
+  border-radius: 10px;
+  padding: 10px 12px 4px;
+
+  & + .openvrp-depot-group {
+    margin-top: 10px;
+  }
+
+  /* the card is the frame now, so the depot row drops its own box — nested
+     outlines only read as noise */
+  .openvrp-depot-fixed {
+    border: none;
+    border-radius: 0;
+    background: none;
+    padding: 0;
+  }
+
+  /* a long depot name truncates instead of pushing the pill out of the pane */
+  .openvrp-depot-name {
+    min-width: 0;
+  }
+}
+
+.openvrp-mock-pill {
+  border: 1px dashed $ovrp-trip;
+  /* a pill shape needs its ends wider than its sides, and more so now the
+     label inside it is read at body size */
+  padding: 2px 9px;
+  font-size: 13.5px;
+  background: $ovrp-trip-soft;
+  color: $ovrp-trip-ink;
+}
+
+.openvrp-grand-summary {
+  margin-top: 14px;
+  padding: 10px 11px 4px;
+  border: 1px solid $ovrp-line-strong;
+  border-radius: 10px;
+  background: $ovrp-surface-2;
+
+  /* the roll-up is framed already — the divider a per-depot block uses to
+     part itself from its heading would only double up here */
+  .openvrp-map-summary {
+    border-top: none;
+    padding-top: 0;
+  }
+}
+
+/* the roll-up heading sits a step above the depot rows it totals, and its
+   depot count a step below the heading — with 13.5px now the floor, the
+   heading takes the step up so that order still reads */
+.openvrp-grand-title {
+  gap: 6px;
+  font-size: 14.5px;
+  color: $ovrp-ink;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    color: $ovrp-brand;
+  }
+
+  small {
+    font-size: 13.5px;
+    color: $ovrp-faint;
+  }
+}

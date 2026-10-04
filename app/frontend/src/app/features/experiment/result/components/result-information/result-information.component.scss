@@ -1,0 +1,14 @@
+.input-group-text-custom {
+  min-width: 160px;
+  /* Set your desired width */
+  text-align: left;
+  /* Optional: Center the text */
+  display: inline-block;
+  /* Ensure it behaves like an inline element */
+  font-weight: bolder;
+}
+
+mat-card.mb-4 {
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,181 @@
+<ng-container *transloco="let t; read: 'index'">
+  <ng-template #filterModal let-modal>
+    <div class="modal-header">
+      <h1 style="font-weight: 500" class="mb-0">{{ t("add_filter") }}</h1>
+    </div>
+
+    <div class="modal-body">
+      <div class="filter-item">
+        <div class="text-capitalize">{{ "filter" | transloco }}</div>
+        <div ngbDropdown class="filter-name">
+          <button
+            ngbDropdownToggle
+            class="btn btn-outline-secondary btn-sm text-capitalize d-flex align-items-center justify-content-between w-100 text-black"
+          >
+            {{ t(selectedSearchOption | snakeCase) }}
+          </button>
+          <div ngbDropdownMenu class="w-100">
+            <button
+              ngbDropdownItem
+              *ngFor="let item of columnsToDisplay"
+              (click)="setSearchOption(item)"
+              class="text-capitalize text-black"
+            >
+              {{ t(item | snakeCase) }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-item">
+        <div class="text-capitalize">{{ t("operator") }}</div>
+        <div ngbDropdown class="filter-criteria">
+          <button
+            ngbDropdownToggle
+            class="btn btn-outline-secondary btn-sm text-capitalize d-flex align-items-center justify-content-between w-100 text-black"
+          >
+            {{ t(selectedFilterCriteria) }}
+          </button>
+          <div ngbDropdownMenu class="w-100">
+            <button
+              ngbDropdownItem
+              *ngFor="let crit of filterCriteriaToDisplay"
+              (click)="setSelectedFilterCriteria(crit)"
+              class="text-capitalize text-black"
+            >
+              {{ t(crit) }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-item">
+        <div class="text-capitalize">{{ t("value") }}</div>
+        <input
+          type="text"
+          class="form-control search-control fs-6 py-0 px-2"
+          [formControl]="searchControl"
+          [placeholder]="t('enter_value')"
+        />
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="onAddFilter(modal)"
+      >
+        {{ t("add_filter") }}
+      </button>
+      <button mat-raised-button type="button" (click)="modal.dismiss()">
+        {{ "cancel" | transloco }}
+      </button>
+    </div>
+  </ng-template>
+
+  <div class="w-100">
+    <div class="d-flex flex-wrap gap-1">
+      <mat-chip-listbox
+        aria-label="Applied filters"
+        class="d-flex flex-wrap gap-1 mb-1 chipListbox listbox-chip"
+        [class.lines-ellipsis]="hasOverflow"
+        #chipListbox
+      >
+        <mat-chip
+          *ngFor="let f of activeFilters"
+          highlighted
+          removable
+          (removed)="removeFilter(f)"
+          class="text-capitalize chip-outline"
+          color="primary"
+        >
+          {{ t(f.column | snakeCase) }}
+          {{ t(f.criteria) }}
+          {{ f.value }}
+          <mat-icon matChipRemove class="opacity-100">cancel</mat-icon>
+        </mat-chip>
+
+        <div
+          *ngIf="!hasOverflow"
+          class="filter-button-wrapper no-overflow d-inline-block align-items-center mt-1 ms-2"
+        >
+          <mat-icon
+            *ngIf="activeFilters.length"
+            class="icon-custom-primary icon-clear-filter"
+            (click)="clearFilter()"
+            ngbTooltip="Clear All"
+            placement="top"
+            >backspace</mat-icon
+          >
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="openFilter()"
+            [disabled]="plan.isLoading"
+            class="button-add-filter"
+          >
+            <mat-icon class="mr-2">filter_alt</mat-icon>
+            <span
+              >{{ t("add_filter") }}
+
+              <span *ngIf="activeFilters.length"
+                >({{ activeFilters.length }})
+              </span>
+            </span>
+          </button>
+        </div>
+      </mat-chip-listbox>
+
+      <div
+        *ngIf="hasOverflow"
+        class="d-flex align-items-center justify-content-between w-100"
+      >
+        <div
+          class="filter-button-wrapper has-overflow d-inline-block align-items-center"
+        >
+          <mat-icon
+            *ngIf="activeFilters.length"
+            class="icon-custom-primary icon-clear-filter"
+            (click)="clearFilter()"
+            ngbTooltip="Clear All"
+            placement="top"
+            >backspace</mat-icon
+          >
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="openFilter()"
+            [disabled]="plan.isLoading"
+            class="button-add-filter"
+          >
+            <mat-icon class="mr-2">filter_alt</mat-icon>
+            <span
+              >{{ t("add_filter") }}
+              <span *ngIf="activeFilters.length"
+                >({{ activeFilters.length }})</span
+              ></span
+            >
+          </button>
+        </div>
+
+        <button
+          (click)="toggleOverflow()"
+          class="d-flex align-items-center chip-outline button-expand"
+          color="primary"
+        >
+          <mat-icon
+            class="icon-custom-primary arrow-dropdown-icon"
+            [class.rotate-arrow]="showAllLines"
+            >keyboard_arrow_down</mat-icon
+          >
+          <span>
+            {{
+              showAllLines ? ("less" | transloco) : ("more" | transloco)
+            }}
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

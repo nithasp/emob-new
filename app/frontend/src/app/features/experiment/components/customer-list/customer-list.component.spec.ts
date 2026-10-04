@@ -7,13 +7,13 @@ import {
   DataGroup,
   Location,
   LocationType,
-} from 'src/app/models/location.model';
+} from '../../models/location.model';
 import {
   Customer,
   GroupedDataPreOrder,
   ReplaceType,
   ValidationType,
-} from 'src/app/models/pre-order.model';
+} from '../../models/pre-order.model';
 
 function createCustomer(overrides: Partial<Customer> = {}): Customer {
   return {

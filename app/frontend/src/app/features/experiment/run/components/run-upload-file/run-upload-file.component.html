@@ -1,0 +1,434 @@
+<ng-container *transloco="let t; read: 'index'">
+  <div class="row mx-0">
+    <div
+      class="container-transform-warning p-0"
+      *ngIf="files.transformWarnings.length > 0"
+    >
+      <div
+        class="transform-warning-item"
+        *ngFor="let warning of files.transformWarnings; let wi = index"
+      >
+        <ngb-alert [dismissible]="false">
+          <div
+            class="d-flex flex-wrap align-items-baseline gap-2"
+          >
+            <strong>{{ files.getWarningTitle(warning.title) }}</strong>
+            <button
+              type="button"
+              class="link link-primary link-opacity-75-hover"
+              (click)="files.toggleTransformWarningCollapse(wi)"
+              [attr.aria-expanded]="
+                !files.transformWarningCollapseStates[wi]
+              "
+            >
+              {{ t("show_details") }}
+            </button>
+          </div>
+        </ngb-alert>
+        <div
+          class="transform-warning-item-wrapper mb-3 overflow-auto"
+          [ngbCollapse]="files.transformWarningCollapseStates[wi]"
+        >
+          <table class="table table-striped text-nowrap">
+            <thead>
+              <tr>
+                <th scope="col">{{ t("product_id_missing") }}</th>
+                <th scope="col">{{ t("sku_code") }}</th>
+                <th scope="col">{{ t("product_name") }}</th>
+                <th scope="col">{{ t("packaging_type") }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let detail of warning.detail">
+                <td>
+                  {{
+                    detail.context?.missing_product_quantity
+                      ?.productId
+                  }}
+                </td>
+                <td>
+                  {{
+                    detail.context?.missing_product_quantity
+                      ?.skuCode
+                  }}
+                </td>
+                <td>
+                  {{
+                    detail.context?.missing_product_quantity?.name
+                  }}
+                </td>
+                <td>
+                  {{
+                    detail.context?.missing_product_quantity
+                      ?.packagingType
+                  }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden for now prepare for Q4 -->
+    <!-- Open VRP: depot scope mode (multi depot solver arrives in Q4) -->
+    <!-- <div class="openvrp-depot-mode d-inline-flex p-1 mb-3">
+      <span class="openvrp-dm-btn on d-inline-flex align-items-center fw-medium">
+        {{ t("single_depot_current_scope") }}
+      </span>
+      <span class="openvrp-dm-btn d-inline-flex align-items-center fw-medium" [ngbTooltip]="t('multi_depot_q4_hint')" placement="bottom">
+        {{ t("multi_depot") }}
+        <span class="openvrp-q4-pill fw-bold">Q4</span>
+      </span>
+    </div> -->
+
+    <div class="card p-3 mb-4">
+      <h4>
+        <mat-icon>location_on</mat-icon>
+        <span *ngIf="state.isFileSelectionStep">{{
+          t("manage_depots")
+        }}</span>
+        <span *ngIf="!state.isFileSelectionStep">{{ t("depots") }}</span>
+      </h4>
+      <mat-form-field
+        *ngIf="state.companyDepotType === 'Single'"
+        appearance="fill"
+        class="w-100"
+      >
+        <mat-label>
+          {{ t("single_depot_selection") }}
+        </mat-label>
+        <mat-select
+          *ngIf="state.isFileSelectionStep"
+          [(value)]="state.selectedDepotIdName"
+          (selectionChange)="onDepotSelectionChange()"
+          [disabled]="!state.isFilePreview"
+        >
+          <mat-option
+            *ngFor="let depot of state.depots"
+            [value]="depot.depotName"
+          >
+            {{ depot.depotName }}
+          </mat-option>
+        </mat-select>
+
+        <mat-select
+          *ngIf="!state.isFileSelectionStep"
+          [(value)]="state.selectedDepotIdName"
+          disabled
+        >
+          <mat-option
+            *ngFor="let depot of state.experiment.depots"
+            [value]="depot.depotName"
+          >
+            {{ depot.depotName }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <h4 *ngIf="state.isFileSelectionStep" class="file-type-required">
+        <span>{{ t("file_type_to_upload") }}: </span>
+        <ng-container
+          *ngIf="files.requiredFileTypes.length > 0; else noDepot"
+        >
+          <ng-container
+            *ngIf="
+              files.requiredFileTypes.length === 1;
+              else multipleTypes
+            "
+          >
+            <span>{{ files.requiredFileTypes[0] }} - </span>
+            <ng-container
+              *ngIf="
+                files.isFileTypeAlreadyAdded(files.requiredFileTypes[0]);
+                else showStatus
+              "
+            >
+              <span class="text-success">
+                {{ t("this_file_category_has_already_been_added") }}
+                <mat-icon>check_circle</mat-icon>
+              </span>
+            </ng-container>
+            <ng-template #showStatus>
+              <span
+                [ngClass]="
+                  files.isFileTypeRequired(files.requiredFileTypes[0])
+                    ? 'text-danger'
+                    : 'text-muted'
+                "
+              >
+                {{
+                  files.isFileTypeRequired(files.requiredFileTypes[0])
+                    ? t("required")
+                    : t("optional")
+                }}
+              </span>
+            </ng-template>
+          </ng-container>
+          <ng-template #multipleTypes>
+            <ul style="margin-bottom: 0">
+              <li *ngFor="let type of files.requiredFileTypes">
+                {{ type }} -
+                <ng-container
+                  *ngIf="
+                    files.isFileTypeAlreadyAdded(type);
+                    else showStatusMultiple
+                  "
+                >
+                  <span class="text-success">
+                    {{
+                      t("this_file_category_has_already_been_added")
+                    }}
+                    <mat-icon>check_circle</mat-icon>
+                  </span>
+                </ng-container>
+                <ng-template #showStatusMultiple>
+                  <span
+                    [ngClass]="
+                      files.isFileTypeRequired(type)
+                        ? 'text-danger'
+                        : 'text-muted'
+                    "
+                  >
+                    {{
+                      files.isFileTypeRequired(type)
+                        ? t("required")
+                        : t("optional")
+                    }}
+                  </span>
+                </ng-template>
+              </li>
+            </ul>
+          </ng-template>
+        </ng-container>
+        <ng-template #noDepot>
+          <span class="text-muted"> กรุณาเลือก Depot ก่อน </span>
+        </ng-template>
+      </h4>
+    </div>
+
+    <div class="col-md-12 mb-3 d-flex" *ngIf="state.isUpload">
+      <div class="input-group">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="basic-addon1">{{
+            t("experiment_name")
+          }}</span>
+        </div>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="state.experiment.name"
+          disabled="true"
+        />
+      </div>
+      <button
+        *ngIf="!state.isFileSelectionStep"
+        class="btn"
+        (click)="backToStep1()"
+      >
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+
+    <div
+      class="col-md-12 rounded-3 dropzone"
+      DropZone
+      (fileDropped)="onFileSelected($event)"
+      *ngIf="state.isFileSelectionStep"
+    >
+      <div class="row">
+        <div class="col-md-12 text-center">
+          <mat-icon class="icon-upload d-inline-flex">upload_file</mat-icon>
+          <div class="col-md-12 text-center">
+            <span>{{ "drag_and_drop_file_here" | transloco }}</span>
+            <span><br />{{ "or" | transloco }}</span>
+          </div>
+        </div>
+        <input
+          type="file"
+          class="d-none"
+          [accept]="files.requiredFileType"
+          (change)="onFileSelected($event)"
+          (click)="resetFileInput($event)"
+          #fileUpload
+        />
+        <div class="col-md-12 text-center mt-2">
+          <button
+            mat-stroked-button
+            class="bg-custom-primary"
+            (click)="fileUpload.click()"
+            [disabled]="
+              files.preOrderFiles.length === files.inputDataKeys.length
+            "
+          >
+            <mat-icon class="icon-browser">attach_file</mat-icon>
+            <span>{{ t("browse_file") }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-12 preorder-files-info">
+      <div class="w-100 overflow-auto">
+        @if (files.preOrderFiles.length) {
+          <table class="table table-striped table-order-data">
+            <thead>
+              <tr>
+                <th scope="col">{{ t("no") }}</th>
+                <th scope="col">{{ t("file_name") }}</th>
+                <th scope="col">{{ t("file_category") }}</th>
+                <th scope="col">{{ t("size") }}</th>
+                <th scope="col">{{ t("file_type") }}</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container
+                *ngFor="let fileObj of files.preOrderFiles; let i = index"
+              >
+                <tr
+                  [ngClass]="{
+                    'table-danger': files.hasDuplicateCategory(fileObj),
+                    'table-warning':
+                      files.hasFileWarning(fileObj) &&
+                      !files.hasDuplicateCategory(fileObj),
+                  }"
+                  [style.outline]="
+                    files.hasDuplicateCategory(fileObj)
+                      ? '2px solid #dc3545'
+                      : files.hasFileWarning(fileObj)
+                        ? '2px solid #d39e00'
+                        : null
+                  "
+                  [style.outline-offset]="
+                    files.hasDuplicateCategory(fileObj) ||
+                    files.hasFileWarning(fileObj)
+                      ? '-2px'
+                      : null
+                  "
+                >
+                  <td scope="row" class="ps-3 align-content-center justify-content-center">{{ i + 1 }}</td>
+                  <td class="align-content-center justify-content-center"
+                    style="
+                      word-wrap: break-word;
+                      min-width: 160px;
+                      max-width: 400px;
+                    "
+                    [ngClass]="{
+                      'pb-0':
+                        files.hasFileWarning(fileObj) ||
+                        files.hasDuplicateCategory(fileObj),
+                    }"
+                  >
+                    <span>{{ fileObj.file.name }}</span>
+                    <p
+                      #warningErrorMessage
+                      *ngIf="
+                        files.hasFileWarning(fileObj) ||
+                        files.hasDuplicateCategory(fileObj)
+                      "
+                    >
+                      <small
+                        [ngClass]="{
+                          'text-danger':
+                            files.hasDuplicateCategory(fileObj),
+                          'text-warning-intense':
+                            !files.hasDuplicateCategory(fileObj) &&
+                            files.hasFileWarning(fileObj),
+                        }"
+                        class="font-weight-bold"
+                        >{{ files.getAllErrorMessages(fileObj) }}</small
+                      >
+                    </p>
+                  </td>
+                  <td class="align-content-center justify-content-center">
+                    <mat-select
+                      class="step1"
+                      *ngIf="state.isFileSelectionStep"
+                      [(value)]="fileObj.file.displayName"
+                      (openedChange)="
+                        fileIntake.onCategoryDropdownOpened(fileObj, $event)
+                      "
+                      (selectionChange)="
+                        fileIntake.handleInputDataKeyChange(fileObj, $event)
+                      "
+                    >
+                      <mat-option
+                        *ngFor="let inputDataKey of files.inputDataKeys"
+                        [value]="inputDataKey"
+                      >
+                        {{ inputDataKey }}
+                      </mat-option>
+                    </mat-select>
+                    <span
+                      class="step2"
+                      *ngIf="!state.isFileSelectionStep"
+                    >
+                      {{ fileObj.file.displayName }}
+                    </span>
+                  </td>
+                  <td class="align-content-center justify-content-center">
+                    <span class="step1" *ngIf="state.isFileSelectionStep">
+                      {{
+                        fileObj.file.size / 1000000
+                          | number: "1.2-2"
+                      }}
+                      MB
+                    </span>
+                    <span
+                      class="step2"
+                      *ngIf="!state.isFileSelectionStep"
+                    >
+                      {{ fileObj.file.size }} MB</span
+                    >
+                  </td>
+                  <td class="align-content-center justify-content-center">
+                    <span class="step1" *ngIf="state.isFileSelectionStep"
+                      >{{ files.getFileTypeDisplay(fileObj) | slice: 0 : 10 }}
+                    </span>
+                    <span
+                      class="step2"
+                      *ngIf="!state.isFileSelectionStep"
+                    >
+                      {{ files.getFileTypeDisplay(fileObj) | slice: 0 : 10 }}
+                    </span>
+                  </td>
+                  <td class="align-content-center justify-content-center">
+                    <button
+                      *ngIf="state.isFileSelectionStep"
+                      class="btn"
+                      (click)="deleteFileInList(i)"
+                      [hidden]="!state.isOriginalExperiment()"
+                    >
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </ng-container>
+              <tr
+                class="text-center"
+                *ngIf="files.preOrderFiles.length === 0"
+              >
+                <td colspan="4" class="align-content-center justify-content-center">
+                  <strong>{{ t("no_files_uploaded") }}</strong>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+
+    <div class="text-end p-0">
+      <button
+        *ngIf="state.isFilePreview"
+        mat-raised-button
+        class="upload-submit-button bg-custom-primary mt-3 mr-0"
+        [disabled]="!files.canUpload"
+        (click)="handleUploadSubmit()"
+      >
+        {{ "confirm" | transloco }}
+      </button>
+    </div>
+  </div>
+</ng-container>

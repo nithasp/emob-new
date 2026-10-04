@@ -1,0 +1,102 @@
+<ng-container *transloco="let t; read: 'index'">
+  <mat-card class="p-3">
+    <mat-card-header class="p-3 justify-content-center">
+      <mat-card-title>{{ t("experiment_information") }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-body>
+      <div class="input-group input-group-sm mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text input-group-text-custom">{{
+            t("run_id")
+          }}</span>
+        </div>
+        <input
+          type="text"
+          class="form-control bg-white"
+          [value]="plan.experiment?.runId"
+          disabled
+        />
+      </div>
+      <div class="input-group input-group-sm mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text input-group-text-custom">{{
+            t("run")
+          }}</span>
+        </div>
+        <input
+          type="text"
+          class="form-control bg-white"
+          [value]="plan.experiment?.run"
+          disabled
+        />
+      </div>
+      <div class="input-group input-group-sm mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text input-group-text-custom">{{
+            t("experiment_name")
+          }}</span>
+        </div>
+        <input
+          type="text"
+          class="form-control bg-white"
+          [value]="plan.experiment?.name"
+          disabled
+        />
+      </div>
+      <div class="input-group input-group-sm mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text input-group-text-custom">{{
+            t("time_start")
+          }}</span>
+        </div>
+        <input
+          type="text"
+          class="form-control bg-white"
+          [value]="plan.experiment?.timeStart | date : 'dd MMM yy h:mm:ss a'"
+          disabled
+        />
+      </div>
+      <div class="input-group input-group-sm mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text input-group-text-custom">{{
+            t("time_end")
+          }}</span>
+        </div>
+        <input
+          type="text"
+          class="form-control bg-white"
+          [value]="plan.experiment?.timeEnd | date : 'dd MMM yy h:mm:ss a'"
+          disabled
+        />
+      </div>
+      <div class="input-group input-group-sm mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text input-group-text-custom">{{
+            t("status")
+          }}</span>
+        </div>
+        <input
+          type="text"
+          class="form-control bg-white"
+          [value]="plan.experiment?.status"
+          disabled
+        />
+      </div>
+      <div class="input-group input-group-sm mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text input-group-text-custom">{{
+            t("time_duration")
+          }}</span>
+        </div>
+        <input
+          type="text"
+          class="form-control bg-white"
+          [value]="
+            plan.experiment?.timeDuration || 0 | date : 'mm\'m\' ss\'s\''
+          "
+          disabled
+        />
+      </div>
+    </mat-card-body>
+  </mat-card>
+</ng-container>

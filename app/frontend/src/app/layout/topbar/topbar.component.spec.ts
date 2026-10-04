@@ -6,8 +6,8 @@ import { TranslocoTestingModule, TranslocoService } from '@jsverse/transloco';
 import { Subject } from 'rxjs';
 
 import { TopbarComponent } from './topbar.component';
-import { LanguageChangeService } from 'src/app/services/language-change.service';
-import { AuthService } from 'src/app/services/auth.service';
+import { LanguageChangeService } from '@core/services/language-change.service';
+import { AuthService } from '@core/services/auth/auth.service';
 
 describe('TopbarComponent', () => {
   let component: TopbarComponent;

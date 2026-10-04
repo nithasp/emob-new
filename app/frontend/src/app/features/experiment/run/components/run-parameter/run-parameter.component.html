@@ -1,0 +1,217 @@
+<ng-container *transloco="let t; read: 'index'">
+  <div style="min-height: 720px">
+    @if (
+      state.validateExperiment &&
+      state.validateExperiment.filters.constraints.over_distance.length >
+        0 &&
+      params.isValidateShowMessage.parameter.overDistance
+    ) {
+      <ngb-alert type="danger" [dismissible]="false">
+        <strong
+          >{{
+            params.validateMessage.filtersMessage.constraints.overDistance
+              .title
+          }}
+        </strong>
+        {{
+          params.validateMessage.filtersMessage.constraints.overDistance
+            .message
+        }}
+      </ngb-alert>
+    }
+    @if (
+      state.validateExperiment &&
+      state.validateExperiment.filters.constraints.over_weight.length >
+        0 &&
+      params.isValidateShowMessage.parameter.overWeight
+    ) {
+      <ngb-alert type="danger" [dismissible]="false">
+        <strong
+          >{{
+            params.validateMessage.filtersMessage.constraints.overWeight
+              .title
+          }}
+        </strong>
+        {{
+          params.validateMessage.filtersMessage.constraints.overWeight
+            .message
+        }}
+      </ngb-alert>
+    }
+    <mat-accordion [multi]="true">
+      <mat-expansion-panel
+        [expanded]="true"
+        *ngFor="
+          let group of params.dynamicParametersByCategory;
+          trackBy: trackByGroup
+        "
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            {{ params.getLocalized(group.items[0].category) || group.key }}
+            <mat-error
+              class="text-danger ml-3"
+              style="font-size: 12px"
+              *ngIf="
+                group.key === 'Generals' &&
+                params.constraintsData.earlyDeliveryTime >
+                  params.constraintsData.backToDepotTime
+              "
+            >
+              ***
+              {{
+                t(
+                  "early_delivery_time_should_be_less_than_back_to_depot"
+                )
+              }}
+            </mat-error>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <ul class="list-unstyled">
+          <li>
+            <ul>
+              <li
+                *ngFor="
+                  let param of group.items;
+                  trackBy: trackByParam
+                "
+                [ngClass]="{
+                  'text-highlight':
+                    (params.isOverWeightKey(param) &&
+                      state.validateExperiment &&
+                      state.validateExperiment.filters.constraints
+                        .over_weight.length > 0) ||
+                    (params.isOverDistanceKey(param) &&
+                      state.validateExperiment &&
+                      state.validateExperiment.filters.constraints
+                        .over_distance.length > 0),
+                }"
+              >
+                <p>
+                  <span>{{ params.getLocalized(param.displayName) }}</span>
+                  <app-dynamic-popover [placement]="'bottom-start'">
+                    <button
+                      popover-trigger
+                      class="link link-primary link-opacity-75-hover"
+                    >
+                      <ng-container
+                        [ngSwitch]="
+                          (param.valueType || '').toLowerCase()
+                        "
+                      >
+                        <ng-container *ngSwitchCase="'time'">{{
+                          param.value || "00:00"
+                        }}</ng-container>
+                        <ng-container
+                          *ngSwitchCase="'duration_hh:mm'"
+                          >{{
+                            "" + (param.value || "00:00")
+                              | timeFormat
+                          }}</ng-container
+                        >
+                        <ng-container *ngSwitchCase="'number'">{{
+                          +param.value | number: "1.0-0"
+                        }}</ng-container>
+                        <ng-container *ngSwitchCase="'number_kg'"
+                          >{{ +param.value | number: "1.0-0" }}
+                          <span class="metric">{{
+                            "kilogram" | transloco
+                          }}</span></ng-container
+                        >
+                        <ng-container *ngSwitchCase="'number_km'"
+                          >{{ +param.value | number: "1.0-0" }}
+                          <span class="metric">{{
+                            "kilometer" | transloco
+                          }}</span></ng-container
+                        >
+                        <ng-container *ngSwitchDefault>{{
+                          param.value
+                        }}</ng-container>
+                      </ng-container>
+                    </button>
+                    <div popover-content>
+                      <p class="card-title">
+                        {{ params.getLocalized(param.displayName) }}
+                      </p>
+                      <ng-container
+                        *ngIf="params.isTimeType(param); else numberEditor"
+                      >
+                        <ngb-timepicker
+                          [ngModel]="param.value || '00:00'"
+                          (ngModelChange)="
+                            params.onParamValueChange(param, $event)
+                          "
+                        />
+                      </ng-container>
+                      <ng-template #numberEditor>
+                        <app-number-counter-input
+                          [value]="+param.value || 0"
+                          (valueChange)="
+                            params.onParamValueChange(param, $event)
+                          "
+                          [maxValue]="param.joiConfig.max || 10000"
+                          [minValue]="param.joiConfig.min || 0"
+                          [count]="
+                            param.keyName ===
+                            'VehicleOrderSizeCapacity'
+                              ? 100
+                              : 1
+                          "
+                          [errorMessage]="
+                            param.joiConfig.message || null
+                          "
+                          class="d-inline-block mt-0 mb-3"
+                        ></app-number-counter-input>
+                      </ng-template>
+                      <div>
+                        <small class="text-muted">{{
+                          params.getLocalized(param.description)
+                        }}</small>
+                      </div>
+                    </div>
+                  </app-dynamic-popover>
+                </p>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </mat-expansion-panel>
+    </mat-accordion>
+
+    <div class="row mt-4">
+      <div class="col text-start">
+        <button
+          mat-raised-button
+          class="bg-custom-secondary"
+          (click)="setParameterDefault()"
+        >
+          <mat-icon>published_with_changes</mat-icon>
+          {{ t("set_as_default") }}
+        </button>
+      </div>
+      <div class="col text-end">
+        <button
+          mat-raised-button
+          color="secondary"
+          class="btn btn-secondary pr-3"
+          (click)="navigation.navigateToPreviousTab()"
+        >
+          <mat-icon>first_page</mat-icon>
+          {{ "back" | transloco }}
+        </button>
+        <button
+          mat-raised-button
+          class="bg-custom-primary pr-3"
+          (click)="validation.validateExperimentPreOrder()"
+        >
+          <mat-icon>rule</mat-icon>
+          {{
+            state.haveUpdateAfterValidated && state.haveValidated
+              ? t("revalidate")
+              : t("validate")
+          }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

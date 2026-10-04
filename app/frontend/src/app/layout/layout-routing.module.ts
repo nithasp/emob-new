@@ -1,37 +1,25 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ExperimentComponent } from './experiment/experiment.component';
-import { RunComponent } from './run/run.component';
-import { ResultComponent } from './result/result.component';
-import { IndexComponent } from './index.component';
+import { LayoutComponent } from './layout.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: IndexComponent,
+    component: LayoutComponent,
     children: [
-      {
-        path: 'experiments',
-        component: ExperimentComponent,
-      },
       {
         path: 'configurations',
         loadChildren: () =>
-          import('./configuration/configuration.module').then(
-            (m) => m.ConfigurationModule
+          import('../features/configurations/configurations.module').then(
+            (m) => m.ConfigurationsModule
           ),
       },
       {
-        path: 'run/:runId',
-        component: RunComponent,
-      },
-      {
-        path: 'result/:experimentId',
-        component: ResultComponent,
-      },
-      {
-        path: '**',
-        redirectTo: 'experiments',
+        path: '',
+        loadChildren: () =>
+          import('../features/experiment/experiment.module').then(
+            (m) => m.ExperimentModule
+          ),
       },
     ],
   },
@@ -41,4 +29,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class IndexRoutingModule {}
+export class LayoutRoutingModule {}

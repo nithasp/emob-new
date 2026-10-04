@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Response } from '../models/graphql.model';
-import { ErrorHandlingService } from './handle-error.service';
+import { Response } from '@core/models/graphql.model';
+import { ErrorHandlingService } from '@core/services/handle-error.service';
 import {
   MyVehicles,
   VehicleEnumOption,

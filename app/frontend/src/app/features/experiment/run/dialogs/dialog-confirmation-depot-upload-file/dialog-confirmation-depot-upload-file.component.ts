@@ -6,15 +6,15 @@ import {
   CategoryValidationResult,
   DepotInputDataItem,
   PreOrderFileItem,
-} from 'src/app/models/pre-order.model';
-import { LoggerService } from 'src/app/services/logger.service';
+} from '../../../models/pre-order.model';
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
-  selector: 'app-confirmation-depot-upload-file-dialog',
-  templateUrl: './confirmation-depot-upload-file-dialog.component.html',
-  styleUrls: ['./confirmation-depot-upload-file-dialog.component.scss'],
+  selector: 'app-dialog-confirmation-depot-upload-file',
+  templateUrl: './dialog-confirmation-depot-upload-file.component.html',
+  styleUrls: ['./dialog-confirmation-depot-upload-file.component.scss'],
 })
-export class ConfirmationDepotUploadFileDialogComponent {
+export class DialogConfirmationDepotUploadFileComponent {
   private readonly logger = inject(LoggerService);
 
   @Input() title: string = 'Confirm Action';
