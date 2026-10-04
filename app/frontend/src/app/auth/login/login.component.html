@@ -1,0 +1,89 @@
+<ng-container *transloco="let t; read: 'auth'">
+  <div class="auth-page">
+    <div class="auth-card">
+      <section class="auth-hero">
+        <div class="auth-hero__brand">E-Mobility · BANPU NEXT</div>
+        <div>
+          <h1>{{ t("product") }}</h1>
+          <p>{{ t("tagline") }}</p>
+        </div>
+        <ul>
+          <li><mat-icon>upload_file</mat-icon><span>{{ t("feature_upload") }}</span></li>
+          <li><mat-icon>local_shipping</mat-icon><span>{{ t("feature_fleet") }}</span></li>
+          <li><mat-icon>route</mat-icon><span>{{ t("feature_plan") }}</span></li>
+        </ul>
+      </section>
+
+      <section class="auth-form">
+        <div class="auth-lang">
+          <button type="button" [class.active]="currentLang === 'en'" (click)="toggleLang('en')">EN</button>
+          <button type="button" [class.active]="currentLang === 'th'" (click)="toggleLang('th')">TH</button>
+        </div>
+
+        <img class="auth-form__logo" src="assets/image/Group-bnext_logo.png" alt="Banpu NEXT" />
+        <div>
+          <h2>{{ t("sign_in") }}</h2>
+          <p class="auth-form__subtitle">{{ t("sign_in_subtitle") }}</p>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+          <div class="auth-field" [class.auth-field--invalid]="isInvalid('username')">
+            <label for="login-username">{{ t("username") }}</label>
+            <input
+              id="login-username"
+              type="text"
+              formControlName="username"
+              autocomplete="username"
+              autocapitalize="none"
+            />
+            <small *ngIf="isInvalid('username')">{{ t("error_required") }}</small>
+          </div>
+
+          <div class="auth-field" [class.auth-field--invalid]="isInvalid('password')">
+            <label for="login-password">{{ t("password") }}</label>
+            <div class="auth-field__control">
+              <input
+                id="login-password"
+                [type]="showPassword ? 'text' : 'password'"
+                formControlName="password"
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                class="auth-field__toggle"
+                [attr.aria-label]="t(showPassword ? 'hide_password' : 'show_password')"
+                (click)="showPassword = !showPassword"
+              >
+                <mat-icon>{{ showPassword ? "visibility_off" : "visibility" }}</mat-icon>
+              </button>
+            </div>
+            <small *ngIf="isInvalid('password')">{{ t("error_required") }}</small>
+          </div>
+
+          <button type="submit" class="auth-btn" [disabled]="isLoading || isDemoLoading">
+            {{ isLoading ? t("signing_in") : t("sign_in") }}
+          </button>
+        </form>
+
+        <ng-container *ngIf="demoEnabled">
+          <div class="auth-divider">{{ "or" | transloco }}</div>
+          <button
+            type="button"
+            class="auth-btn auth-btn--outline"
+            [disabled]="isLoading || isDemoLoading"
+            (click)="enterDemo()"
+          >
+            <mat-icon>explore</mat-icon>
+            {{ t("explore_demo") }}
+          </button>
+          <p class="auth-hint">{{ t("explore_demo_hint") }}</p>
+        </ng-container>
+
+        <p class="auth-form__footer">
+          {{ t("no_account") }}
+          <a routerLink="/register">{{ t("create_one") }}</a>
+        </p>
+      </section>
+    </div>
+  </div>
+</ng-container>

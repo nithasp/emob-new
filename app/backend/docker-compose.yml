@@ -1,0 +1,35 @@
+name: emob-web-app
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: emob-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: emob_user
+      POSTGRES_PASSWORD: emob_pass
+      POSTGRES_DB: emob_dev
+    ports:
+      # Published to this machine only, so the database is not reachable from the local network
+      - '127.0.0.1:5433:5432'
+    volumes:
+      - emob_postgres17_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U emob_user -d emob_dev']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer
+    container_name: emob-adminer
+    restart: always
+    ports:
+      - '127.0.0.1:8081:8080'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  emob_postgres17_data:

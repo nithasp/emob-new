@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+.env
+.env.*
+!.env.example
+*.log
+
+# Files written by the local storage driver (STORAGE_DRIVER=local)
+/storage
